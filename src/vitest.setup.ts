@@ -1,6 +1,4 @@
 import '@testing-library/jest-dom/vitest'
-import { matchMedia } from 'mock-match-media'
-import { beforeEach, vi } from 'vitest'
 
 /**
  * Suppress noisy `null` output from libraries in CI.
@@ -33,21 +31,6 @@ if (process.env.CI) {
 }
 
 /**
- * Required for Svelte component testing
- */
-globalThis.matchMedia = matchMedia
-
-/**
- * The 'maplibre-gl' library immediately invokes 'window.URL.createObjectURL' in global scope.
- * By default, our DOM unit testing environment does not provide stubs or mocks for the following URL methods.
- * Therefore these stubs exists to allow unit / component testing when we import 'maplibre-gl'.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-globalThis.URL.createObjectURL = (_obj: Blob | MediaSource): string => ''
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-globalThis.URL.revokeObjectURL = (_url: string) => undefined
-
-/**
  * Proxy for files that import and instantiate workers
  */
 
@@ -65,25 +48,4 @@ globalThis.Worker = new Proxy(class {} as new () => Worker, {
 			}
 		)
 	},
-})
-
-beforeEach(() => {
-	if (globalThis.navigator.userAgent.includes('jsdom')) {
-		// TODO(mc, 2024-02-09): https://github.com/jsdom/jsdom/issues/3368
-		vi.stubGlobal(
-			'ResizeObserver',
-			vi.fn(() => ({
-				observe: vi.fn(),
-				unobserve: vi.fn(),
-				disconnect: vi.fn(),
-			}))
-		)
-
-		// TODO(mc, 2024-02-09): https://github.com/jsdom/jsdom/issues/3002
-		Range.prototype.getClientRects = vi.fn(() => ({
-			item: vi.fn(),
-			length: 0,
-			[Symbol.iterator]: vi.fn(),
-		}))
-	}
 })

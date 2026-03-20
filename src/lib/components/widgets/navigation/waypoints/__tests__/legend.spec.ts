@@ -47,7 +47,7 @@ describe('NavigationServiceView waypoint legend', () => {
 		const onLeave = vi.fn()
 
 		const screen = renderSubject({ onEnter, onLeave })
-		const label = screen.getByText(/waypoint 1/iu)
+		const label = screen.getByText(/waypoint 1/iu, { exact: true })
 
 		await label.hover()
 

@@ -94,7 +94,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each positionLabelsList as [key, label] ([key, label])}
+			{#each positionLabelsList as labelList (labelList)}
+				{@const [key, label] = labelList}
 				{@const value = Number.parseFloat(formatNumeric(displayPosition[key]))}
 				<tr>
 					<th>{label}</th>
