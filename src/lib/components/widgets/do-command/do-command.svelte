@@ -19,21 +19,23 @@
 
 	type DoCommandable = Extract<ReturnType<typeof clientForBuiltinResource>, MLModelClient>
 
-	const resourceClientType = clientForBuiltinResource(resource) as DoCommandable
+	const resourceClientType = $derived(clientForBuiltinResource(resource)) as DoCommandable
 
-	const client = createResourceClient(
-		resourceClientType,
-		() => partID,
-		() => resource.name
+	const client = $derived(
+		createResourceClient(
+			resourceClientType,
+			() => partID,
+			() => resource.name
+		)
 	)
 
-	const doCommandMutation = createResourceMutation(client, 'doCommand')
+	const doCommandMutation = $derived(createResourceMutation(client, 'doCommand'))
 
-	let lastErr = $state<Error | null>()
+	let lastErr = $state<Error>()
 
 	const uid = $props.id()
 
-	const input = new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}')
+	const input = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
 
 	let output = $state('')
 
@@ -42,7 +44,7 @@
 			const parsedInput = Struct.fromJsonString(input.current ?? '{}')
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
-			lastErr = null
+			lastErr = undefined
 		} catch (error) {
 			lastErr = error as Error
 		}

@@ -11,7 +11,7 @@ export const scrollIntoView: Action<HTMLElement, ScrollIntoViewOptions | undefin
 		 * Set timeout enqueues the scroll action behind all other queued events.
 		 * This allows us to wait for other animation transitions to complete before scrolling into view.
 		 */
-		id = globalThis.setTimeout(() => {
+		id = window.setTimeout(() => {
 			node.scrollIntoView(scrollIntoViewOptions)
 		}, 0)
 	}

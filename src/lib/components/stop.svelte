@@ -32,13 +32,15 @@
 
 	const { partID, resourceName, client: clientClass }: Props = $props()
 
-	const client = createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
-		clientClass,
-		() => partID,
-		() => resourceName
+	const client = $derived(
+		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
+			clientClass,
+			() => partID,
+			() => resourceName
+		)
 	)
 
-	const stopMutation = createResourceMutation(client, 'stop')
+	const stopMutation = $derived(createResourceMutation(client, 'stop'))
 </script>
 
 <StopButton

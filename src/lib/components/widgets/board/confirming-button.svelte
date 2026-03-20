@@ -21,7 +21,7 @@ Right now, it is board-only
 		onclick(event)
 		clearTimeout(stateTimeout)
 		readyState = 'clicked'
-		stateTimeout = globalThis.setTimeout(() => {
+		stateTimeout = window.setTimeout(() => {
 			readyState = 'ready'
 		}, 1000)
 	}

@@ -13,7 +13,7 @@
 
 	const { name, getImage }: Props = $props()
 
-	let lastError: Error | null | undefined = $state()
+	let lastError = $state<Error>()
 
 	// en-CA for iso formatting (better for filename sorting)
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -42,7 +42,7 @@
 			return
 		}
 
-		lastError = null
+		lastError = undefined
 		if (image.data?.images?.[0]?.image) {
 			const imageBlob = new Blob([new Uint8Array(image.data.images[0].image)], {
 				type: image.data.images[0].mimeType || 'image/jpeg',

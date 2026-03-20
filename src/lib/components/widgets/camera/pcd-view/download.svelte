@@ -8,7 +8,7 @@
 	const { data }: Props = $props()
 
 	const downloadRawData = () => {
-		const file = new File([data], 'pointcloud.pcd', {
+		const file = new File([data as BlobPart], 'pointcloud.pcd', {
 			type: 'pointcloud/pcd',
 		})
 		const url = URL.createObjectURL(file)

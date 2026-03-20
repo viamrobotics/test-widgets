@@ -40,7 +40,7 @@ export const useMapLibreThreeRenderer = (
 			id: 'scene-layer',
 			type: 'custom',
 			renderingMode: '3d',
-			render(_, viewProjectionMatrix) {
+			render(_, { modelViewProjectionMatrix }) {
 				const center = map.getCenter()
 				const mercator = MercatorCoordinate.fromLngLat(center, 0)
 				const mercatorScale = mercator.meterInMercatorCoordinateUnits()
@@ -52,7 +52,7 @@ export const useMapLibreThreeRenderer = (
 					.setPosition(mercator.x, mercator.y, mercator.z)
 
 				cameraSignal.current.projectionMatrix = cameraMatrix
-					.fromArray(viewProjectionMatrix)
+					.fromArray(modelViewProjectionMatrix)
 					.multiply(cameraTransform)
 
 				scene.traverse((object) => {

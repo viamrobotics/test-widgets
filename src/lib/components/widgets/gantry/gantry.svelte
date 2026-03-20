@@ -37,7 +37,6 @@
 
 	const moveMutation = createResourceMutation(client, 'moveToPosition')
 	const quickMoveMutation = createResourceMutation(client, 'moveToPosition')
-	const homeMutation = createResourceMutation(client, 'home')
 	const stopMutation = createResourceMutation(client, 'stop')
 
 	const positionHeadingID = $props.id()
@@ -110,10 +109,8 @@
 						description="Run the homing sequence"
 					>
 						<Home
-							lastError={homeMutation.error}
-							home={() => {
-								homeMutation.mutate([], {})
-							}}
+							{partID}
+							{resourceName}
 						/>
 					</ApiSection>
 				</div>

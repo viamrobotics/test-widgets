@@ -2,7 +2,7 @@
 	import { Badge } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
 
-	import type { NamedResourceStatus } from './resource'
+	import type { NamedResourceStatus } from '$lib/resource'
 
 	interface Props {
 		resource: NamedResourceStatus

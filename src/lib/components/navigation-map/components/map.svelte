@@ -90,20 +90,19 @@
 			<SceneLayer onUpdate={onupdate} />
 		{/snippet}
 
-		<div class="absolute top-2.5 right-12 z-10 flex hidden items-center gap-2 lg:flex">
+		<div class="absolute top-2.5 right-12 z-10 flex items-center gap-2 lg:flex">
 			{#if nav.environment === 'configure'}
 				<Tooltip>
 					<div
 						class="relative"
+						role="tooltip"
 						onpointerenter={() => {
 							didHoverTooltip = true
 							localStorage.setItem('navigation-service-card-tooltip-hovered', 'true')
 						}}
 					>
 						{#if !didHoverTooltip}
-							<div
-								class="bg-success-dark absolute -m-1 h-[28px] w-[28px] animate-ping rounded-full"
-							></div>
+							<div class="bg-success-dark absolute -m-1 h-7 w-7 animate-ping rounded-full"></div>
 						{/if}
 						<div class="relative z-10 rounded-full bg-white">
 							<Icon

@@ -38,13 +38,15 @@
 
 	const { client: clientClass, partID, resourceName, children }: Props = $props()
 
-	const client = createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
-		clientClass,
-		() => partID,
-		() => resourceName
+	const client = $derived(
+		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
+			clientClass,
+			() => partID,
+			() => resourceName
+		)
 	)
 
-	const query = createResourceQuery(client, 'isMoving', { refetchInterval: 500 })
+	const query = $derived(createResourceQuery(client, 'isMoving', { refetchInterval: 500 }))
 </script>
 
 <ApiSection

@@ -7,7 +7,7 @@
 	import { Button, Label, Select } from '@viamrobotics/prime-core'
 	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
-	import { onDestroy, onMount } from 'svelte'
+	import { untrack } from 'svelte'
 
 	import { assertExists } from '$lib/assert'
 	import ContentRect from '$lib/components/content-rect.svelte'
@@ -45,7 +45,7 @@
 		refetch,
 	}: Props = $props()
 
-	let videoElement = $state<HTMLVideoElement>()
+	let videoElement = $state.raw<HTMLVideoElement>()
 	let isStreamLoading = $state(false)
 	let streamError: Error | null
 	let vfcID = 0
@@ -76,20 +76,6 @@
 		}
 		setPipMediaStream?.(mediaStream)
 	}
-
-	// We need to wait to set up video streams until the video element
-	// is mounted. Instead of making videoElement a store that is
-	// possibly undefined, we keep a separate store for mounted state
-	// and only try to set up the video stream if mounted.
-	let mounted = $state(false)
-	onMount(() => {
-		mounted = true
-		return () => {
-			mounted = false
-			// Good practice to clear the srcObject on unmount.
-			setMediaStream(null)
-		}
-	})
 
 	// For live streams, set the media stream when there is a new video track.
 	const client = useRobotClient(() => partID)
@@ -123,29 +109,8 @@
 		canvasCtx?.drawImage(img, 0, 0)
 	}
 
-	$effect(() => {
-		if (!data?.images?.[0]?.image) {
-			return
-		}
-
-		const imageBlob = new Blob([new Uint8Array(data.images[0].image)], {
-			type: data.images[0].mimeType || 'image/jpeg',
-		})
-
-		img.src = URL.createObjectURL(imageBlob)
-		return () => URL.revokeObjectURL(img.src)
-	})
-
-	onMount(() => {
-		img.addEventListener('load', drawImage)
-
-		return () => {
-			img.removeEventListener('load', drawImage)
-		}
-	})
-
 	let streamClient: StreamClient | undefined
-	let resolutionOptions: streamApi.Resolution[] = $state([])
+	let resolutionOptions = $state<streamApi.Resolution[]>([])
 	let selectedResolution: streamApi.Resolution | undefined
 
 	const disableStream = async () => {
@@ -163,23 +128,6 @@
 			lastError = nextError as Error
 		}
 	}
-
-	onDestroy(async () => {
-		await disableStream()
-		setMediaStream(null)
-	})
-
-	$effect(() => {
-		if (lastError) {
-			disableStream()
-				.then(() => {
-					setMediaStream(null)
-				})
-				.catch((nextError: unknown) => {
-					lastError = nextError as Error
-				})
-		}
-	})
 
 	const handleResolutionChange = (event: Event) => {
 		if (event.target instanceof HTMLSelectElement) {
@@ -233,12 +181,53 @@
 	}
 
 	$effect(() => {
-		if (mounted && client.current && !lastError) {
+		if (client.current && !lastError) {
 			void startStream(client.current, resourceName, isLive)
 		}
 	})
 
-	let contentRect = $state<DOMRect>()
+	$effect(() => {
+		return untrack(() => {
+			disableStream().then(() => {
+				setMediaStream(null)
+			})
+		})
+	})
+
+	$effect(() => {
+		if (lastError) {
+			disableStream()
+				.then(() => {
+					setMediaStream(null)
+				})
+				.catch((nextError: unknown) => {
+					lastError = nextError as Error
+				})
+		}
+	})
+
+	$effect(() => {
+		img.addEventListener('load', drawImage)
+
+		return () => {
+			img.removeEventListener('load', drawImage)
+		}
+	})
+
+	$effect(() => {
+		if (!data?.images?.[0]?.image) {
+			return
+		}
+
+		const imageBlob = new Blob([new Uint8Array(data.images[0].image)], {
+			type: data.images[0].mimeType || 'image/jpeg',
+		})
+
+		img.src = URL.createObjectURL(imageBlob)
+		return () => URL.revokeObjectURL(img.src)
+	})
+
+	let contentRect = $state.raw<DOMRect>()
 	const handleResize = (event: CustomEvent<ResizeDetail>) => {
 		contentRect = event.detail.entry.contentRect
 	}
@@ -300,7 +289,7 @@
 	})
 
 	// Errors are null during loading, so keep the latest errors during polling.
-	let lastError = $state<Error>()
+	let lastError = $state.raw<Error>()
 	$effect(() => {
 		if (!isLive && error) {
 			lastError = error

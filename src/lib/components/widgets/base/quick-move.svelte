@@ -26,7 +26,7 @@
 		globalThis.clearTimeout(stopTimeoutID)
 		setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct })
 		if (linearPct === 0 && angularPct === 0) {
-			stopTimeoutID = globalThis.setTimeout(() => {
+			stopTimeoutID = window.setTimeout(() => {
 				setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct })
 			}, 50)
 		}

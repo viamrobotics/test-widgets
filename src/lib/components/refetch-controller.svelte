@@ -52,9 +52,10 @@
 
 	const refetchQueries = async () => {
 		// Clear the timeout to prevent races if refetchQueries is called during a refetch
-		clearTimeout(refetchingStateTimeout)
+		window.clearTimeout(refetchingStateTimeout)
+
 		// This is in a timeout to prevent icon-flashing on very quick queries
-		refetchingStateTimeout = globalThis.setTimeout(() => {
+		refetchingStateTimeout = window.setTimeout(() => {
 			refetchState = 'refetching'
 		}, 250)
 		const refetchCalls = queries.map(async (query) => query.refetch())
@@ -67,8 +68,8 @@
 	let stateNotifyTimeout: number | undefined
 
 	const resetToIdleEventually = () => {
-		globalThis.clearTimeout(stateNotifyTimeout)
-		stateNotifyTimeout = globalThis.setTimeout(() => {
+		window.clearTimeout(stateNotifyTimeout)
+		stateNotifyTimeout = window.setTimeout(() => {
 			refetchState = 'idle'
 		}, refetchNotifyDurationMs)
 	}

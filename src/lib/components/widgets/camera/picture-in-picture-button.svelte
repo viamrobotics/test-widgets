@@ -15,7 +15,7 @@
 	const { resourceName, mediaStream, isShowingPip }: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
-	let lastErr = $state<Error>()
+	let lastErr = $state.raw<Error>()
 
 	const onEnter = () => {
 		$isShowingPip = true
@@ -28,11 +28,11 @@
 		videoElement?.addEventListener('enterpictureinpicture', onEnter)
 		videoElement?.addEventListener('leavepictureinpicture', onLeave)
 
-		return async () => {
+		return () => {
 			videoElement?.removeEventListener('enterpictureinpicture', onEnter)
 			videoElement?.removeEventListener('leavepictureinpicture', onLeave)
 			if ($isShowingPip) {
-				await document.exitPictureInPicture()
+				document.exitPictureInPicture()
 			}
 		}
 	})

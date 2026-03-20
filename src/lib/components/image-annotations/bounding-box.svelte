@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { labelToColor } from '$lib/components/widgets/vision-service/color'
+
 	import type { BoundingBox, Coordinates, ResizeHandleLocation } from './bounding-box-types'
 
-	import { labelToColor } from '../vision-service-view/color'
 	import { getBoundingRect, getModifyKeyForOS } from './annotation-edit-utils'
 	import ResizeHandles from './resize-handles.svelte'
 

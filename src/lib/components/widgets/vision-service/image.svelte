@@ -47,7 +47,7 @@
 			return `data:image/jpeg;base64,${image}`
 		} else if (image !== undefined) {
 			URL.revokeObjectURL(url)
-			url = URL.createObjectURL(new Blob([image], { type: 'image/jpeg' }))
+			url = URL.createObjectURL(new Blob([image as BlobPart], { type: 'image/jpeg' }))
 			return url
 		}
 

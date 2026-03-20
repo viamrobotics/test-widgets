@@ -2,7 +2,8 @@
 	import { MotorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '../mutation-view.svelte'
+	import MutationView from '$lib/components/mutation-view.svelte'
+
 	import QuickMove from './quick-move.svelte'
 
 	interface Props {

@@ -6,7 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Queries from '../queries.svelte'
+	import Queries from '$lib/components/queries.svelte'
+
 	import Position from './position.svelte'
 
 	interface Props {
