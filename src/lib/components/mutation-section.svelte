@@ -4,7 +4,7 @@
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 	import { twMerge } from 'tailwind-merge'
 
-	import ErrorDisplay from './error-display.svelte'
+	import ErrorDisplay from './error.svelte'
 
 	interface Props {
 		title: string

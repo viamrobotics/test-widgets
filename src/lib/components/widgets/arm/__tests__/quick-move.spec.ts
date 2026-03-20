@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../quick-move.svelte'
 
-describe('ArmView quick-move', () => {
+describe('Arm quick-move', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {

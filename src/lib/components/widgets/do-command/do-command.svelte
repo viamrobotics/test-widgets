@@ -8,7 +8,7 @@
 	import { clientForBuiltinResource } from '$lib/builtin'
 	import { getResourceAPI, getResourceKey } from '$lib/resource'
 
-	import ErrorDisplay from '../../error-display.svelte'
+	import ErrorDisplay from '../../error.svelte'
 
 	interface Props {
 		partID: string

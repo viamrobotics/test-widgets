@@ -6,8 +6,8 @@
 	import { resize } from '@svelte-put/resize'
 
 	import ContentRect from './content-rect.svelte'
-	import ErrorDisplay from './error-display.svelte'
-	import LoadingDisplay from './loading-display.svelte'
+	import ErrorDisplay from './error.svelte'
+	import Progress from './progress.svelte'
 
 	interface Props {
 		queries: QueryObserverResult[]
@@ -60,7 +60,7 @@
 		{contentRect}
 		cx={contentCx}
 	>
-		<LoadingDisplay />
+		<Progress />
 	</ContentRect>
 {:else}
 	<div

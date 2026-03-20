@@ -3,7 +3,7 @@
 	import { InputControllerClient, type InputControllerEvent } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
 
 	import type { StandardGamepadEvent } from './standard-gamepad-event'

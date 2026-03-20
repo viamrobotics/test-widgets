@@ -2,7 +2,7 @@
 	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 	import { isEqual, zip } from 'lodash-es'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import Table from '$lib/components/table.svelte'
 
 	import { matchArrayLength } from './match-array-length'

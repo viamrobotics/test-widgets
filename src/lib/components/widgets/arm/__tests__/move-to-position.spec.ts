@@ -9,7 +9,7 @@ import { assertExists } from '$lib/assert'
 
 import Subject from '../move-to-position.svelte'
 
-describe('ArmView move-to-position', () => {
+describe('Arm move-to-position', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	const defaultPose: Pose = {

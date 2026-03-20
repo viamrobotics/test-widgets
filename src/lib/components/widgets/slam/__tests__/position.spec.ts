@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { emptyPosition, position } from '../__fixtures__/position.ts'
 import Subject from '../position.svelte'
 
-describe('SlamView position', () => {
+describe('Slam position', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {

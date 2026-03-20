@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from './error-display.svelte'
+	import ErrorDisplay from './error.svelte'
 
 	interface Props {
 		onStop: () => void

@@ -4,7 +4,7 @@
 	import { Button } from '@viamrobotics/prime-core'
 	import { onMount } from 'svelte'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 
 	interface Props {
 		resourceName: string

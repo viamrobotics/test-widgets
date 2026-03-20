@@ -27,7 +27,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'movement-sensor-view'
+		'movement-sensor'
 	)
 	let showFullReadings = $state(false)
 

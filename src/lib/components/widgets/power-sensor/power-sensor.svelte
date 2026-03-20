@@ -25,7 +25,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'power-sensor-view'
+		'power-sensor'
 	)
 
 	let isGetReadingsEnabled = $state(false)

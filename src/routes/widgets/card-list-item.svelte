@@ -35,7 +35,7 @@
 	import { viewForBuiltinResource } from '$lib/builtin'
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import SectionGroup from '$lib/components/section-group.svelte'
-	import DoCommandView from '$lib/components/widgets/do-command/do-command.svelte'
+	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
 	import {
 		getResourceAPI,
 		getResourceKey,
@@ -174,7 +174,7 @@
 							isDoCommandCollapsed.current = !isDoCommandCollapsed.current
 						}}
 					>
-						<DoCommandView
+						<DoCommandWidget
 							{partID}
 							resource={resource.name}
 						/>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import ErrorDisplay from './error-display.svelte'
+	import ErrorDisplay from './error.svelte'
 
 	interface Props {
 		lastError: Error | null

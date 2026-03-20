@@ -21,7 +21,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'input-controller-view'
+		'input-controller'
 	)
 
 	const isWebgamepad = $derived(resourceName.toLowerCase() === 'webgamepad')

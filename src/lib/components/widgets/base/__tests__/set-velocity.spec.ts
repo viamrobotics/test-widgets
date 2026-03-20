@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../set-velocity.svelte'
 
-describe('BaseView SetVelocity', () => {
+describe('Base SetVelocity', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setVelocity: (linear: Vector3, angular: Vector3) => void
 

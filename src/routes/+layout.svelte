@@ -15,8 +15,8 @@
 	import { resolve } from '$app/paths'
 	import { page } from '$app/state'
 
-	import ControlView from './control-view/control-view.svelte'
 	import { getDialConf, loadRobots } from './robots'
+	import Widgets from './widgets/widgets.svelte'
 	interface Props {
 		children?: Snippet
 	}
@@ -39,7 +39,7 @@
 
 <div class="h-screen w-screen">
 	<ViamProvider {dialConfigs}>
-		<ControlView
+		<Widgets
 			{partID}
 			urlHash={page.url.hash}
 		>
@@ -70,7 +70,7 @@
 					</ul>
 				</nav>
 			</div>
-		</ControlView>
+		</Widgets>
 
 		<SvelteQueryDevtools buttonPosition="bottom-left" />
 	</ViamProvider>

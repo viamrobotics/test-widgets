@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ResourceName } from '@viamrobotics/sdk'
 
-	import DoCommandView from '../do-command/do-command.svelte'
+	import DoCommand from '../do-command/do-command.svelte'
 
 	interface Props {
 		partID: string
@@ -24,7 +24,7 @@
 </div>
 
 {#key genericResourceName}
-	<DoCommandView
+	<DoCommand
 		{partID}
 		resource={genericResourceName}
 	/>

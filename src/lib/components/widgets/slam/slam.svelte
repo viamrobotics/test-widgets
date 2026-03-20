@@ -40,7 +40,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'slam-view',
+		'slam',
 		RefetchIntervals.FIVE_SEC
 	)
 
@@ -67,7 +67,7 @@
 				: refetchInterval.current,
 	}))
 
-	// Although this is the SLAM view, the motion client is heavily
+	// Although this is the SLAM widget, the motion client is heavily
 	// used for calling MoveOnMap and for rendering plans.
 	//
 	// The user must specify the motion service to use, typically

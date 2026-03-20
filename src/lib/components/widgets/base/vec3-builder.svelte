@@ -1,5 +1,5 @@
 <!-- 
-NOTE(zp,2024-06-11) This is specifically designed for BaseView
+NOTE(zp,2024-06-11) This is specifically designed for Base
 
 I'd be wary of using this elsewhere unless the use case & styling is identitcal
 -->

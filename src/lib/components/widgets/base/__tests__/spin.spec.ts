@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../spin.svelte'
 
-describe('BaseView Spin', () => {
+describe('Base Spin', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let spin: (angleDeg: number, degsPerSec: number) => void
 

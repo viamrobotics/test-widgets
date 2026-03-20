@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../go-for.svelte'
 
-describe('MotorView GoFor', () => {
+describe('Motor GoFor', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let goFor: (rpm: number, revolutions: number) => void
 

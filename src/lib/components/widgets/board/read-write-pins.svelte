@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 
 	import AnalogReadWrapper from './analog-read-wrapper.svelte'
 	import AnalogWriteWrapper from './analog-write-wrapper.svelte'

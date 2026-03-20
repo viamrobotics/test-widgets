@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../quick-move.svelte'
 
-describe('BaseView QuickMove', () => {
+describe('Base QuickMove', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setPower: (
 		linear: { x: number; y: number; z: number },

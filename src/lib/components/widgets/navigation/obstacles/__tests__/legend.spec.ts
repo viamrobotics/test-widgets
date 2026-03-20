@@ -9,7 +9,7 @@ import { assertExists } from '../../../../../assert.ts'
 import Subject from '../legend.svelte'
 import { obstacles } from './__fixtures__/obstacles.ts'
 
-describe('NavigationServiceView obstacle legend', () => {
+describe('NavigationService obstacle legend', () => {
 	const [obstacle] = obstacles
 	assertExists(obstacle, 'Obstacle fixture does not exist')
 

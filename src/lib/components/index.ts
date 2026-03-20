@@ -7,13 +7,13 @@ export { default as ArmQuickMoveWidget } from './widgets/arm/quick-move-widget.s
 
 export { default as BaseWidget } from './widgets/base/base.svelte'
 export { default as BaseMoveStraightWidget } from './widgets/base/move-straight-widget.svelte'
-export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-view.svelte'
-export { default as BaseSetPowerWidget } from './widgets/base/set-power-view.svelte'
-export { default as BaseSetVelocityWidget } from './widgets/base/set-velocity-view.svelte'
-export { default as BaseSpinWidget } from './widgets/base/spin-view.svelte'
+export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-widget.svelte'
+export { default as BaseSetPowerWidget } from './widgets/base/set-power-widget.svelte'
+export { default as BaseSetVelocityWidget } from './widgets/base/set-velocity-widget.svelte'
+export { default as BaseSpinWidget } from './widgets/base/spin-widget.svelte'
 
 export { default as BoardWidget } from './widgets/board/board.svelte'
-export { default as BoardReadWritePinsWidget } from './widgets/board/read-write-pins-view.svelte'
+export { default as BoardReadWritePinsWidget } from './widgets/board/read-write-pins-widget.svelte'
 
 export { default as ButtonWidget } from './widgets/button/button.svelte'
 export { default as ButtonPushWidget } from './widgets/button/push.svelte'
@@ -49,9 +49,9 @@ export { default as MLModelServiceWidget } from './widgets/ml-model-service/ml-m
 export { default as MotorGoForWidget } from './widgets/motor/go-for-view.svelte'
 export { default as MotorGoToWidget } from './widgets/motor/go-to-view.svelte'
 export { default as MotorWidget } from './widgets/motor/motor.svelte'
-export { default as MotorQuickMoveWidget } from './widgets/motor/quick-move-view.svelte'
-export { default as MotorSetPowerWidget } from './widgets/motor/set-power-view.svelte'
-export { default as MotorSetRPMWidget } from './widgets/motor/set-rpm-view.svelte'
+export { default as MotorQuickMoveWidget } from './widgets/motor/quick-move-widget.svelte'
+export { default as MotorSetPowerWidget } from './widgets/motor/set-power-widget.svelte'
+export { default as MotorSetRPMWidget } from './widgets/motor/set-rpm-widget.svelte'
 
 export { default as MovementSensorWidget } from './widgets/movement-sensor/movement-sensor.svelte'
 
@@ -61,8 +61,8 @@ export { default as PowerSensorWidget } from './widgets/power-sensor/power-senso
 
 export { default as SensorWidget } from './widgets/sensor/sensor.svelte'
 
-export { default as ServoMoveWidget } from './widgets/servo/move-view.svelte'
-export { default as ServoQuickMoveWidget } from './widgets/servo/quick-move-view.svelte'
+export { default as ServoMoveWidget } from './widgets/servo/move-widget.svelte'
+export { default as ServoQuickMoveWidget } from './widgets/servo/quick-move-widget.svelte'
 export { default as ServoWidget } from './widgets/servo/servo.svelte'
 
 export { default as SlamMap2D } from './slam/map2d/index.svelte'

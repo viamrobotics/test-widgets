@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../quick-move.svelte'
 
-describe('MotorView QuickMove', () => {
+describe('Motor QuickMove', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setPower: (power: number) => void
 

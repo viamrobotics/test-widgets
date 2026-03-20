@@ -19,7 +19,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'sensor-view'
+		'sensor'
 	)
 
 	const client = createResourceClient(

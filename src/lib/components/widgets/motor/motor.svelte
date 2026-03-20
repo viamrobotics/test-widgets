@@ -8,7 +8,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMovingView from '$lib/components/is-moving.svelte'
+	import IsMoving from '$lib/components/is-moving.svelte'
 	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -125,7 +125,7 @@
 						}}
 					/>
 				</ApiSection>
-				<IsMovingView
+				<IsMoving
 					client={MotorClient}
 					{partID}
 					{resourceName}
@@ -172,7 +172,7 @@
 							</ApiSection>
 						{/if}
 					</div>
-				</IsMovingView>
+				</IsMoving>
 			</div>
 		</div>
 	{/snippet}

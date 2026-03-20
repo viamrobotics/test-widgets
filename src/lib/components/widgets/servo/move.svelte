@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {

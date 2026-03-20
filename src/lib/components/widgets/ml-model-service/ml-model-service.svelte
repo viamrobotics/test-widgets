@@ -19,7 +19,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'ml-model-service-view'
+		'ml-model-service'
 	)
 
 	const client = createResourceClient(

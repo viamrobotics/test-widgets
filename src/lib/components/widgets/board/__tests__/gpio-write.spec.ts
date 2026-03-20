@@ -14,7 +14,7 @@ const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		...props,
 	})
 
-describe('BoardView GPIO Write', () => {
+describe('Board GPIO Write', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setState: () => void
 	let setDutyCycle: () => void

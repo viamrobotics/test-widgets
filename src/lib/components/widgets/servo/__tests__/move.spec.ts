@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../move.svelte'
 
-describe('ServoView Move', () => {
+describe('Servo Move', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let moveTo: (angle: number) => void
 

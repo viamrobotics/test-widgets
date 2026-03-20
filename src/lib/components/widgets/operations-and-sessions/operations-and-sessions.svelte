@@ -3,7 +3,7 @@
 	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
 	import { slide } from 'svelte/transition'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 
 	import OperationsTable from './operations-table.svelte'
 	import RttPill from './rtt-pill.svelte'

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ToggleButtons } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 
 	interface Props {
 		numPositions: number

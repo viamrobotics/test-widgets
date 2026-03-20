@@ -13,9 +13,9 @@
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
 
+	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
-	import PCDView from './pcd-view/pcd-view.svelte'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
 
 	interface Props {
@@ -28,7 +28,7 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'camera-view'
+		'camera'
 	)
 	const isShowingPip = writable(false)
 	let isShowingPointcloud = $state(false)
@@ -193,7 +193,7 @@
 					contentCx="h-6"
 				>
 					{#if pointcloudQuery.data}
-						<PCDView data={pointcloudQuery.data} />
+						<PCDWidget data={pointcloudQuery.data} />
 					{/if}
 				</Query>
 			{/if}

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../move-straight.svelte'
 
-describe('BaseView MoveStraight', () => {
+describe('Base MoveStraight', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let moveStraight: (distanceMm: number, mmPerSec: number) => void
 

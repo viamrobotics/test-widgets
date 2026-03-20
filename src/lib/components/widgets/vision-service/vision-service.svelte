@@ -28,14 +28,14 @@
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'vision-service-view'
+		'vision-service'
 	)
 
 	// special casing this for performance reasons
 	const getObjectPointCloudsRefetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
-		'vision-service-view-get-object-point-clouds',
+		'vision-service-get-object-point-clouds',
 		// default of manual refresh
 		false
 	)

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../move-on-map.svelte'
 
-describe('SlamView move on map', () => {
+describe('Slam move on map', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {

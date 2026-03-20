@@ -11,9 +11,9 @@
 
 	import { assertExists } from '$lib/assert'
 	import ContentRect from '$lib/components/content-rect.svelte'
-	import ErrorDisplay from '$lib/components/error-display.svelte'
-	import LoadingDisplay from '$lib/components/loading-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import MutationSection from '$lib/components/mutation-section.svelte'
+	import Progress from '$lib/components/progress.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 
@@ -318,7 +318,7 @@
 		{contentRect}
 		cx="absolute h-64 w-80"
 	>
-		<LoadingDisplay />
+		<Progress />
 	</ContentRect>
 {/if}
 

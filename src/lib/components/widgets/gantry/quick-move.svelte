@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import Table from '$lib/components/table.svelte'
 
 	interface Props {

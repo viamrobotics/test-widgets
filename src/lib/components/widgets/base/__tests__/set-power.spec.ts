@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../set-power.svelte'
 
-describe('BaseView SetPower', () => {
+describe('Base SetPower', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setPower: (linear: Vector3, angular: Vector3) => void
 

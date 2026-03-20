@@ -9,7 +9,7 @@ import { assertExists } from '../../../../../assert.ts'
 import Subject from '../legend.svelte'
 import { waypoints } from './__fixtures__/waypoints.ts'
 
-describe('NavigationServiceView waypoint legend', () => {
+describe('NavigationService waypoint legend', () => {
 	const [waypoint] = waypoints
 	assertExists(waypoint, 'Waypoint fixture does not exist')
 

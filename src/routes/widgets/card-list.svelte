@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import { getResourceKey, type NamedResourceStatus } from '$lib/resource'
 
 	import CardListItem from './card-list-item.svelte'

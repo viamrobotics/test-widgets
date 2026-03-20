@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { matchArrayLength } from '../match-array-length.ts'
 
-describe('GantryView match-array-length', () => {
+describe('Gantry match-array-length', () => {
 	it('truncates the source array if it is longer than the target array', () => {
 		const source = [1, 2, 3, 4]
 		const target = [5, 6]

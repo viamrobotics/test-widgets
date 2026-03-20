@@ -13,7 +13,7 @@ const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		...props,
 	})
 
-describe('BoardView Analog Read', () => {
+describe('Board Analog Read', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let getValue: () => void
 
