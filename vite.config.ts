@@ -1,9 +1,9 @@
 import { sveltekit } from '@sveltejs/kit/vite'
 import tailwindcss from '@tailwindcss/vite'
+import { svelteTesting } from '@testing-library/svelte/vite'
 import { playwright } from '@vitest/browser-playwright'
 import devtoolsJson from 'vite-plugin-devtools-json'
 import { defineConfig } from 'vitest/config'
-import { svelteTesting } from '@testing-library/svelte/vite'
 
 const isCI = Boolean(process.env.CI)
 
