@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Icon } from '@viamrobotics/prime-core'
 	interface Props {
-		children?: import('svelte').Snippet
+		children?: Snippet
 	}
 
 	const { children }: Props = $props()

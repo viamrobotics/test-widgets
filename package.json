@@ -99,6 +99,7 @@
 		"vitest": "^4.1.0",
 		"vitest-browser-svelte": "^2.1.0"
 	},
+	"packageManager": "pnpm@10.14.0",
 	"keywords": [
 		"svelte"
 	]

@@ -98,16 +98,16 @@
 	const setIsActive = () => {
 		globalThis.clearTimeout(isActiveTimeout)
 		isActive = true
-		isActiveTimeout = globalThis.setTimeout(() => {
+		isActiveTimeout = window.setTimeout(() => {
 			isActive = false
 		}, 4000)
 	}
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (id === hash) {
 			setIsActive()
 		} else {
-			globalThis.clearTimeout(isActiveTimeout)
+			window.clearTimeout(isActiveTimeout)
 			isActive = false
 		}
 	})

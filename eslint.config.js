@@ -113,6 +113,7 @@ export default defineConfig(
 			'unicorn/prefer-top-level-await': 'off',
 			'unicorn/prevent-abbreviations': 'off',
 			'unicorn/require-module-specifiers': 'off',
+			'unicorn/prefer-global-this': 'off',
 
 			// TODO
 			// 'unicorn/filename-case': [
