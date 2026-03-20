@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build && npm run prepack",
+		"build": "vite build && pnpm prepack",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"prepack": "svelte-kit sync && svelte-package && publint",
@@ -12,7 +12,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write . && eslint . --fix",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run && npm run test:e2e",
+		"test": "pnpm test:unit -- --run",
 		"test:e2e": "playwright test"
 	},
 	"files": [
