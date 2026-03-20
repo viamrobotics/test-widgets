@@ -68,6 +68,7 @@
 		"@viamrobotics/three": "^0.0.9",
 		"@vitest/browser": "^4.1.0",
 		"@vitest/browser-playwright": "^4.1.0",
+		"@vitest/coverage-v8": "^4.1.0",
 		"eslint": "^10.1.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-perfectionist": "^5.7.0",
