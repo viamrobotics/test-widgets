@@ -1,0 +1,130 @@
+<script lang="ts">
+	import { slide } from 'svelte/transition';
+
+	import { Switch } from '@viamrobotics/prime-core';
+	import { PowerSensorClient } from '@viamrobotics/sdk';
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk';
+
+	import ApiSection from '$lib/components/api-section.svelte';
+	import ConnectionStatus from '$lib/components/connection-status.svelte';
+	import Query from '$lib/components/query.svelte';
+	import ReadingsList from '$lib/components/readings-list.svelte';
+	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
+	import RefetchController from '$lib/components/refetch-controller.svelte';
+	import CurrentReading from './current-reading.svelte';
+	import PowerReading from './power-reading.svelte';
+	import VoltageReading from './voltage-reading.svelte';
+
+	interface Props {
+		partID: string;
+		resourceName: string;
+	}
+
+	const { partID, resourceName }: Props = $props();
+
+	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'power-sensor-view');
+
+	let isGetReadingsEnabled = $state(false);
+
+	const client = createResourceClient(
+		PowerSensorClient,
+		() => partID,
+		() => resourceName
+	);
+
+	const currentQuery = createResourceQuery(client, 'getCurrent', () => ({
+		refetchInterval: $refetchInterval
+	}));
+
+	const voltageQuery = createResourceQuery(client, 'getVoltage', () => ({
+		refetchInterval: $refetchInterval
+	}));
+
+	const powerQuery = createResourceQuery(client, 'getPower', () => ({
+		refetchInterval: $refetchInterval
+	}));
+
+	const readingsQuery = createResourceQuery(client, 'getReadings', () => ({
+		enabled: isGetReadingsEnabled,
+		refetchInterval: $refetchInterval
+	}));
+</script>
+
+<ConnectionStatus {partID}>
+	{#snippet connected()}
+		<div class="p-4 pb-3">
+			<RefetchController
+				{refetchInterval}
+				queries={[currentQuery, voltageQuery, powerQuery, readingsQuery]}
+			/>
+		</div>
+
+		<div class="grid w-full grid-cols-3 divide-x">
+			<ApiSection
+				title="GetCurrent"
+				class="pb-5"
+			>
+				<Query
+					query={currentQuery}
+					contentCx="h-6"
+				>
+					{#if currentQuery.data !== undefined}
+						<CurrentReading data={currentQuery.data} />
+					{/if}
+				</Query>
+			</ApiSection>
+			<ApiSection
+				title="GetVoltage"
+				class="pb-5"
+			>
+				<Query
+					query={voltageQuery}
+					contentCx="h-6"
+				>
+					{#if voltageQuery.data !== undefined}
+						<VoltageReading data={voltageQuery.data} />
+					{/if}
+				</Query>
+			</ApiSection>
+			<ApiSection
+				title="GetPower"
+				class="pb-5"
+			>
+				<Query
+					query={powerQuery}
+					contentCx="h-6"
+				>
+					{#if powerQuery.data !== undefined}
+						<PowerReading data={powerQuery.data} />
+					{/if}
+				</Query>
+			</ApiSection>
+		</div>
+
+		<ApiSection
+			title="GetReadings"
+			description="Get all the measurements and data that this power sensor provides"
+		>
+			<Switch
+				bind:on={isGetReadingsEnabled}
+				cx="text-subtle-2"
+				annotated
+			/>
+			{#if isGetReadingsEnabled}
+				<div
+					transition:slide={{ duration: 150 }}
+					class="pt-2"
+				>
+					<Query
+						query={readingsQuery}
+						contentCx="h-6"
+					>
+						{#if readingsQuery.data !== undefined}
+							<ReadingsList data={readingsQuery.data} />
+						{/if}
+					</Query>
+				</div>
+			{/if}
+		</ApiSection>
+	{/snippet}
+</ConnectionStatus>
