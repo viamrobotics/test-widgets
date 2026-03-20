@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte'
 
-	import ErrorDisplay from './error-display.svelte';
+	import ErrorDisplay from './error-display.svelte'
 
 	interface Props {
-		lastError: Error | null;
+		lastError: Error | null
 
-		titleInput?: Snippet;
-		error?: Snippet;
-		children: Snippet;
+		titleInput?: Snippet
+		error?: Snippet
+		children: Snippet
 	}
 
-	const { lastError, titleInput, error, children }: Props = $props();
+	const { lastError, titleInput, error, children }: Props = $props()
 </script>
 
 <div class="flex flex-col gap-2">

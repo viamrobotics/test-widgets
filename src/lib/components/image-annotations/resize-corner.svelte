@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { ResizeHandleLocation } from './bounding-box-types';
+	import { ResizeHandleLocation } from './bounding-box-types'
 	import {
 		BOX_SIZE,
 		INVISIBLE_BUFFER,
 		ResizeHandleClassMap,
-		WRAPPER_SIZE
-	} from './resize-handle-props';
+		WRAPPER_SIZE,
+	} from './resize-handle-props'
 
 	interface Props {
-		cornerDesignation: ResizeHandleLocation;
-		zoom?: number;
-		onMouseDown: (event: MouseEvent, corner: ResizeHandleLocation) => void;
+		cornerDesignation: ResizeHandleLocation
+		zoom?: number
+		onMouseDown: (event: MouseEvent, corner: ResizeHandleLocation) => void
 	}
 
-	const { cornerDesignation, zoom = 1, onMouseDown }: Props = $props();
+	const { cornerDesignation, zoom = 1, onMouseDown }: Props = $props()
 
-	const wrapperStyle = $derived(ResizeHandleClassMap[cornerDesignation]);
+	const wrapperStyle = $derived(ResizeHandleClassMap[cornerDesignation])
 
 	const handleMouseDown = (event: MouseEvent) => {
-		(event as PointerEvent).stopPropagation();
-		onMouseDown(event, cornerDesignation);
-	};
+		;(event as PointerEvent).stopPropagation()
+		onMouseDown(event, cornerDesignation)
+	}
 </script>
 
 <button

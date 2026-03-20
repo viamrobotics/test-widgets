@@ -26,30 +26,30 @@ import {
 	SwitchClient,
 	VideoClient,
 	VisionClient,
-	WorldStateStoreClient
-} from '@viamrobotics/sdk';
+	WorldStateStoreClient,
+} from '@viamrobotics/sdk'
 
-import ArmView from './components/widgets/arm/arm.svelte';
-import BaseView from './components/widgets/base/base.svelte';
-import BoardView from './components/widgets/board/board.svelte';
-import ButtonView from './components/widgets/button/button.svelte';
-import CameraView from './components/widgets/camera/camera.svelte';
-import DiscoveryView from './components/widgets/discovery/discovery.svelte';
-import EncoderView from './components/widgets/encoder/encoder.svelte';
-import GantryView from './components/widgets/gantry/gantry.svelte';
-import GripperView from './components/widgets/gripper/gripper.svelte';
-import InputControllerView from './components/widgets/input-controller/input-controller.svelte';
-import MlModelServiceView from './components/widgets/ml-model-service/ml-model-service.svelte';
-import MotorView from './components/widgets/motor/motor.svelte';
-import MovementSensorView from './components/widgets/movement-sensor/movement-sensor.svelte';
-import NavigationServiceView from './components/widgets/navigation/navigation.svelte';
-import PowerSensorView from './components/widgets/power-sensor/power-sensor.svelte';
-import SensorView from './components/widgets/sensor/sensor.svelte';
-import ServoView from './components/widgets/servo/servo.svelte';
-import SlamView from './components/widgets/slam/slam.svelte';
-import SwitchView from './components/widgets/switch/switch.svelte';
-import VisionServiceView from './components/widgets/vision-service/vision-service.svelte';
-import { getResourceAPI } from './resource.ts';
+import ArmView from './components/widgets/arm/arm.svelte'
+import BaseView from './components/widgets/base/base.svelte'
+import BoardView from './components/widgets/board/board.svelte'
+import ButtonView from './components/widgets/button/button.svelte'
+import CameraView from './components/widgets/camera/camera.svelte'
+import DiscoveryView from './components/widgets/discovery/discovery.svelte'
+import EncoderView from './components/widgets/encoder/encoder.svelte'
+import GantryView from './components/widgets/gantry/gantry.svelte'
+import GripperView from './components/widgets/gripper/gripper.svelte'
+import InputControllerView from './components/widgets/input-controller/input-controller.svelte'
+import MlModelServiceView from './components/widgets/ml-model-service/ml-model-service.svelte'
+import MotorView from './components/widgets/motor/motor.svelte'
+import MovementSensorView from './components/widgets/movement-sensor/movement-sensor.svelte'
+import NavigationServiceView from './components/widgets/navigation/navigation.svelte'
+import PowerSensorView from './components/widgets/power-sensor/power-sensor.svelte'
+import SensorView from './components/widgets/sensor/sensor.svelte'
+import ServoView from './components/widgets/servo/servo.svelte'
+import SlamView from './components/widgets/slam/slam.svelte'
+import SwitchView from './components/widgets/switch/switch.svelte'
+import VisionServiceView from './components/widgets/vision-service/vision-service.svelte'
+import { getResourceAPI } from './resource.ts'
 
 // The types are nicer to work with as arrays (as opposed to a record of objects) because TS will infer the types.
 // try not to expose this map so that we can easily refactor it.
@@ -89,25 +89,25 @@ const resourceMap =
 		'rdk:service:slam': [SlamClient, SlamView, true],
 		'rdk:service:vision': [VisionClient, VisionServiceView, true],
 		'rdk:service:world_state_store': [WorldStateStoreClient, undefined, true],
-		'rdk:service:video': [VideoClient, undefined, true]
-	} as const;
+		'rdk:service:video': [VideoClient, undefined, true],
+	} as const
 
 export const clientForBuiltinResource = (resource: ResourceName) => {
-	const resAPI = getResourceAPI(resource);
-	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][0] : undefined;
-};
+	const resAPI = getResourceAPI(resource)
+	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][0] : undefined
+}
 
 export const viewForBuiltinResource = (resource: ResourceName) => {
-	const resAPI = getResourceAPI(resource);
-	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][1] : undefined;
-};
+	const resAPI = getResourceAPI(resource)
+	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][1] : undefined
+}
 
 export const showResourceInControlView = (resource: ResourceName) => {
 	if (resource.namespace === 'rdk-internal') {
-		return false;
+		return false
 	}
 
-	const resAPI = getResourceAPI(resource);
+	const resAPI = getResourceAPI(resource)
 	// unknown apis should still get cards & show up in the sidebar
-	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][2] : true;
-};
+	return resAPI in resourceMap ? resourceMap[resAPI as keyof typeof resourceMap][2] : true
+}

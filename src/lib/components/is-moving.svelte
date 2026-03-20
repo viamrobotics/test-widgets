@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-
 	import type {
 		Arm,
 		ArmClient,
@@ -13,13 +11,15 @@
 		Motor,
 		MotorClient,
 		Servo,
-		ServoClient
-	} from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk';
+		ServoClient,
+	} from '@viamrobotics/sdk'
+	import type { Snippet } from 'svelte'
 
-	import ApiSection from './api-section.svelte';
-	import Query from './query.svelte';
-	import StatusPill from './status-pill.svelte';
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+
+	import ApiSection from './api-section.svelte'
+	import Query from './query.svelte'
+	import StatusPill from './status-pill.svelte'
 
 	type Client =
 		| typeof ArmClient
@@ -27,24 +27,24 @@
 		| typeof GantryClient
 		| typeof GripperClient
 		| typeof MotorClient
-		| typeof ServoClient;
+		| typeof ServoClient
 
 	interface Props {
-		client: Client;
-		partID: string;
-		resourceName: string;
-		children?: Snippet;
+		client: Client
+		partID: string
+		resourceName: string
+		children?: Snippet
 	}
 
-	const { client: clientClass, partID, resourceName, children }: Props = $props();
+	const { client: clientClass, partID, resourceName, children }: Props = $props()
 
 	const client = createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
 		clientClass,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const query = createResourceQuery(client, 'isMoving', { refetchInterval: 500 });
+	const query = createResourceQuery(client, 'isMoving', { refetchInterval: 500 })
 </script>
 
 <ApiSection

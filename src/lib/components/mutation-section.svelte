@@ -1,20 +1,20 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { twMerge } from 'tailwind-merge';
+	import type { Snippet } from 'svelte'
 
-	import { Icon, Tooltip } from '@viamrobotics/prime-core';
+	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { twMerge } from 'tailwind-merge'
 
-	import ErrorDisplay from './error-display.svelte';
+	import ErrorDisplay from './error-display.svelte'
 
 	interface Props {
-		title: string;
-		tooltip?: string | undefined;
-		description?: string | undefined;
-		lastError: Error | null;
-		class?: string;
-		titleInput?: Snippet;
-		error?: Snippet;
-		children?: Snippet;
+		title: string
+		tooltip?: string | undefined
+		description?: string | undefined
+		lastError: Error | null
+		class?: string
+		titleInput?: Snippet
+		error?: Snippet
+		children?: Snippet
 	}
 
 	const {
@@ -25,10 +25,10 @@
 		class: className,
 		titleInput,
 		error,
-		children
-	}: Props = $props();
+		children,
+	}: Props = $props()
 
-	const headingID = $props.id();
+	const headingID = $props.id()
 </script>
 
 <section

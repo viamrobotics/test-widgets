@@ -1,36 +1,36 @@
 <script lang="ts">
-	import { TooltipContainer, TooltipTarget, TooltipText } from '@viamrobotics/prime-core';
+	import { TooltipContainer, TooltipTarget, TooltipText } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import ResourceIcon from '$lib/components/resource-icon.svelte';
-	import { getResourceKey, type NamedResourceStatus } from '$lib/resource';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import ResourceIcon from '$lib/components/resource-icon.svelte'
+	import { getResourceKey, type NamedResourceStatus } from '$lib/resource'
 
 	interface Props {
-		isLoading: boolean;
-		error: Error | null;
-		resources: NamedResourceStatus[];
+		isLoading: boolean
+		error: Error | null
+		resources: NamedResourceStatus[]
 	}
 
-	const { isLoading, error, resources }: Props = $props();
+	const { isLoading, error, resources }: Props = $props()
 
-	const truncatedStates = $state<Record<string, boolean>>({});
+	const truncatedStates = $state<Record<string, boolean>>({})
 
 	const observeTruncation = (node: HTMLDivElement, name: string) => {
-		let currentName = name;
+		let currentName = name
 		const check = () => {
-			truncatedStates[currentName] = currentName.length > 0 && node.offsetWidth < node.scrollWidth;
-		};
-		const ro = new ResizeObserver(check);
-		ro.observe(node);
-		check();
+			truncatedStates[currentName] = currentName.length > 0 && node.offsetWidth < node.scrollWidth
+		}
+		const ro = new ResizeObserver(check)
+		ro.observe(node)
+		check()
 		return {
 			destroy: () => ro.disconnect(),
 			update: (newName: string) => {
-				currentName = newName;
-				check();
-			}
-		};
-	};
+				currentName = newName
+				check()
+			},
+		}
+	}
 </script>
 
 <div class="flex flex-col gap-2 overflow-y-auto py-3">

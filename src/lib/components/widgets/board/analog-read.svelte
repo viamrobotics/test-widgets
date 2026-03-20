@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format';
-	import ConfirmingButton from './confirming-button.svelte';
-	import PinSection from './pin-section.svelte';
+	import { formatNumeric } from '$lib/format'
+
+	import ConfirmingButton from './confirming-button.svelte'
+	import PinSection from './pin-section.svelte'
 
 	interface Props {
-		value: number | undefined;
-		getValue: () => void;
+		value: number | undefined
+		getValue: () => void
 	}
 
-	const { value, getValue }: Props = $props();
+	const { value, getValue }: Props = $props()
 
-	const id = $props.id();
-	const sectionId = `${id}-section`;
-	const getButtonId = `${id}-get`;
+	const id = $props.id()
+	const sectionId = `${id}-section`
+	const getButtonId = `${id}-get`
 </script>
 
 <PinSection
@@ -34,8 +35,8 @@
 				class={[
 					'my-auto',
 					{
-						'text-disabled': value === undefined
-					}
+						'text-disabled': value === undefined,
+					},
 				]}
 				for={getButtonId}
 			>

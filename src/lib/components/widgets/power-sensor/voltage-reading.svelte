@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: readonly [number, boolean];
+		data: readonly [number, boolean]
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 
-	const voltage = $derived(data[0]);
-	const isAC = $derived(data[1]);
+	const voltage = $derived(data[0])
+	const isAC = $derived(data[1])
 </script>
 
 <span class="font-roboto-mono flex flex-row gap-2">

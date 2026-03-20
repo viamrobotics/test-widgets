@@ -1,51 +1,51 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { useThrelte } from '@threlte/core';
-	import { HTML } from '@threlte/extras';
-	import { type Intersection, type Points, Raycaster, Vector2, Vector3 } from 'three';
+	import { useThrelte } from '@threlte/core'
+	import { HTML } from '@threlte/extras'
+	import { onMount } from 'svelte'
+	import { type Intersection, type Points, Raycaster, Vector2, Vector3 } from 'three'
 
 	interface Props {
-		points: Points;
+		points: Points
 	}
 
-	const { points }: Props = $props();
+	const { points }: Props = $props()
 
-	const { renderer, size, camera, invalidate } = useThrelte();
-	const raycaster = new Raycaster();
-	raycaster.firstHitOnly = true;
-	raycaster.params.Points.threshold = 0.01;
+	const { renderer, size, camera, invalidate } = useThrelte()
+	const raycaster = new Raycaster()
+	raycaster.firstHitOnly = true
+	raycaster.params.Points.threshold = 0.01
 
-	const origin = new Vector3();
-	const pointer = new Vector2();
+	const origin = new Vector3()
+	const pointer = new Vector2()
 
-	let intersection = $state<Intersection>();
+	let intersection = $state<Intersection>()
 
 	const raycast = (event: PointerEvent | WheelEvent) => {
-		const { width, height } = $size;
+		const { width, height } = $size
 
 		// Standard screen space to NDC space conversion
-		pointer.set((event.offsetX / width) * 2 - 1, -(event.offsetY / height) * 2 + 1);
+		pointer.set((event.offsetX / width) * 2 - 1, -(event.offsetY / height) * 2 + 1)
 
-		raycaster.setFromCamera(pointer, camera.current);
-		intersection = raycaster.intersectObject(points)[0];
-		invalidate();
-	};
+		raycaster.setFromCamera(pointer, camera.current)
+		intersection = raycaster.intersectObject(points)[0]
+		invalidate()
+	}
 
 	const onPointerLeave = () => {
-		intersection = undefined;
-	};
+		intersection = undefined
+	}
 
 	onMount(() => {
-		const canvas = renderer.domElement;
-		canvas.addEventListener('pointermove', raycast, { passive: true });
-		canvas.addEventListener('wheel', raycast, { passive: true });
-		canvas.addEventListener('pointerleave', onPointerLeave, { passive: true });
+		const canvas = renderer.domElement
+		canvas.addEventListener('pointermove', raycast, { passive: true })
+		canvas.addEventListener('wheel', raycast, { passive: true })
+		canvas.addEventListener('pointerleave', onPointerLeave, { passive: true })
 		return () => {
-			canvas.removeEventListener('pointermove', raycast);
-			canvas.removeEventListener('wheel', raycast);
-			canvas.removeEventListener('pointerleave', onPointerLeave);
-		};
-	});
+			canvas.removeEventListener('pointermove', raycast)
+			canvas.removeEventListener('wheel', raycast)
+			canvas.removeEventListener('pointerleave', onPointerLeave)
+		}
+	})
 </script>
 
 {#if intersection}

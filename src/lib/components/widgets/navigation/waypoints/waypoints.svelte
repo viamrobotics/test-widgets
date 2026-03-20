@@ -1,25 +1,25 @@
 <script lang="ts">
-	import type { LngLat } from 'maplibre-gl';
+	import type { Waypoint as WaypointType } from '@viamrobotics/sdk'
+	import type { LngLat } from 'maplibre-gl'
 
-	import { theme } from '@viamrobotics/prime-core/theme';
-	import type { Waypoint as WaypointType } from '@viamrobotics/sdk';
+	import { theme } from '@viamrobotics/prime-core/theme'
 
-	import { MapLibreMarker, useMapLibreEvent } from '$lib/components/maplibre';
+	import { MapLibreMarker, useMapLibreEvent } from '$lib/components/maplibre'
 
 	interface Props {
-		waypoints: WaypointType[];
-		addWayPoint: (_: LngLat) => void;
-		tab: 'obstacles' | 'waypoints';
-		hovered: string | null;
+		waypoints: WaypointType[]
+		addWayPoint: (_: LngLat) => void
+		tab: 'obstacles' | 'waypoints'
+		hovered: string | null
 	}
 
-	const { waypoints, addWayPoint, tab, hovered }: Props = $props();
+	const { waypoints, addWayPoint, tab, hovered }: Props = $props()
 
 	useMapLibreEvent('click', (event) => {
 		if (tab === 'waypoints') {
-			addWayPoint(event.lngLat);
+			addWayPoint(event.lngLat)
 		}
-	});
+	})
 </script>
 
 {#each waypoints as waypoint (waypoint.id)}

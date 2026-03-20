@@ -1,22 +1,22 @@
 export const formatNumeric = (value?: number, decimals = 2) => {
 	if (value === undefined) {
-		return '––';
+		return '––'
 	}
 
 	if (Number.isNaN(value)) {
-		return 'NaN';
+		return 'NaN'
 	}
 
 	if (value === Number.POSITIVE_INFINITY) {
-		return '+∞';
+		return '+∞'
 	}
 
 	if (value === Number.NEGATIVE_INFINITY) {
-		return '-∞';
+		return '-∞'
 	}
 
-	return value.toFixed(decimals);
-};
+	return value.toFixed(decimals)
+}
 
 /**
  * Convert degrees to radians
@@ -24,8 +24,8 @@ export const formatNumeric = (value?: number, decimals = 2) => {
  * @returns Angle in radians
  */
 export const degreesToRadians = (degrees: number): number => {
-	return degrees * (Math.PI / 180);
-};
+	return degrees * (Math.PI / 180)
+}
 
 /**
  * Convert radians to degrees
@@ -33,5 +33,5 @@ export const degreesToRadians = (degrees: number): number => {
  * @returns Angle in degrees
  */
 export const radiansToDegrees = (radians: number): number => {
-	return radians * (180 / Math.PI);
-};
+	return radians * (180 / Math.PI)
+}

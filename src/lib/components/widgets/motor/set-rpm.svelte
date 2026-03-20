@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		setRPM: (_: number) => void;
+		setRPM: (_: number) => void
 	}
 
-	const { setRPM }: Props = $props();
+	const { setRPM }: Props = $props()
 
-	let rpm = $state(20);
+	let rpm = $state(20)
 </script>
 
 <div>
@@ -35,7 +35,7 @@
 			slot="input"
 			value={rpm}
 			on:change={(event) => {
-				rpm = numberValueFromEvent(event) ?? 0;
+				rpm = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>
@@ -44,7 +44,7 @@
 	<Button
 		icon="play-circle-outline"
 		onclick={() => {
-			setRPM(rpm);
+			setRPM(rpm)
 		}}
 	>
 		Execute

@@ -1,56 +1,61 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core';
-	import { EncoderClient, EncoderPositionType, type EncoderProperties } from '@viamrobotics/sdk';
+	import { Button } from '@viamrobotics/prime-core'
+	import { EncoderClient, EncoderPositionType, type EncoderProperties } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import Queries from '$lib/components/queries.svelte';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import Position from './position.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import Queries from '$lib/components/queries.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+
+	import Position from './position.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		EncoderClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'encoder-view');
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'encoder-view'
+	)
 
 	const getPositionArgs = (properties: EncoderProperties | undefined): [EncoderPositionType] => {
 		if (!properties) {
-			return [EncoderPositionType.UNSPECIFIED];
+			return [EncoderPositionType.UNSPECIFIED]
 		}
 
-		const { angleDegreesSupported, ticksCountSupported } = properties;
+		const { angleDegreesSupported, ticksCountSupported } = properties
 
 		if (angleDegreesSupported) {
-			return [EncoderPositionType.ANGLE_DEGREES];
+			return [EncoderPositionType.ANGLE_DEGREES]
 		}
 
 		if (ticksCountSupported) {
-			return [EncoderPositionType.TICKS_COUNT];
+			return [EncoderPositionType.TICKS_COUNT]
 		}
 
-		return [EncoderPositionType.UNSPECIFIED];
-	};
+		return [EncoderPositionType.UNSPECIFIED]
+	}
 
 	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const positionQuery = createResourceQuery(
 		client,
@@ -58,10 +63,10 @@
 		() => getPositionArgs(propertiesQuery.data),
 		() => ({
 			enabled: propertiesQuery.data !== undefined,
-			refetchInterval: $refetchInterval
+			refetchInterval: refetchInterval.current,
 		})
-	);
-	const resetMutation = createResourceMutation(client, 'resetPosition');
+	)
+	const resetMutation = createResourceMutation(client, 'resetPosition')
 </script>
 
 <ConnectionStatus {partID}>
@@ -100,7 +105,7 @@
 					icon="play-circle-outline"
 					class="w-fit"
 					onclick={() => {
-						resetMutation.mutate([], {});
+						resetMutation.mutate([], {})
 					}}
 				>
 					Execute

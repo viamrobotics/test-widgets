@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core';
+	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	interface Props {
-		useRadians: boolean;
-		onToggle: () => void;
+		useRadians: boolean
+		onToggle: () => void
 	}
 
-	const { useRadians, onToggle }: Props = $props();
+	const { useRadians, onToggle }: Props = $props()
 </script>
 
 <Tooltip>

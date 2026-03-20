@@ -1,39 +1,40 @@
 <script lang="ts">
-	import '@fontsource-variable/roboto-mono';
-	import '@fontsource-variable/public-sans';
+	import '@fontsource-variable/roboto-mono'
+	import '@fontsource-variable/public-sans'
+
 	//import '@viamrobotics/prime-core/prime.css';
-	import '../app.css';
+	import '../app.css'
 
-	import type { Snippet } from 'svelte';
-	import { writable } from 'svelte/store';
-	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
+	import type { Snippet } from 'svelte'
 
-	import { Icon } from '@viamrobotics/prime-core';
-	import { ViamProvider } from '@viamrobotics/svelte-sdk';
+	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools'
+	import { Icon } from '@viamrobotics/prime-core'
+	import { ViamProvider } from '@viamrobotics/svelte-sdk'
+	import { writable } from 'svelte/store'
 
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
-	import ControlView from './control-view/control-view.svelte';
+	import { resolve } from '$app/paths'
+	import { page } from '$app/state'
 
-	import { getDialConf, loadRobots } from './robots';
+	import ControlView from './control-view/control-view.svelte'
+	import { getDialConf, loadRobots } from './robots'
 	interface Props {
-		children?: Snippet;
+		children?: Snippet
 	}
 
-	const { children }: Props = $props();
+	const { children }: Props = $props()
 
-	const robots = loadRobots();
+	const robots = loadRobots()
 
-	const part = writable(page.params.name ?? Object.keys(robots).at(0));
+	const part = writable(page.params.name ?? Object.keys(robots).at(0))
 	$effect.pre(() => {
 		if (page.params.name) {
-			part.set(page.params.name);
+			part.set(page.params.name)
 		}
-	});
+	})
 
-	const playgroundRobot = $derived(robots[$part]);
-	const partID = $derived(playgroundRobot?.partId ?? '');
-	const dialConfigs = $derived(playgroundRobot ? { [partID]: getDialConf(playgroundRobot) } : {});
+	const playgroundRobot = $derived(robots[$part])
+	const partID = $derived(playgroundRobot?.partId ?? '')
+	const dialConfigs = $derived(playgroundRobot ? { [partID]: getDialConf(playgroundRobot) } : {})
 </script>
 
 <div class="h-screen w-screen">

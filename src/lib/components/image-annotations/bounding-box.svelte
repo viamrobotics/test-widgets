@@ -1,56 +1,57 @@
 <script lang="ts">
-	import { labelToColor } from '../vision-service-view/color';
-	import { getBoundingRect, getModifyKeyForOS } from './annotation-edit-utils';
-	import type { BoundingBox, Coordinates, ResizeHandleLocation } from './bounding-box-types';
-	import ResizeHandles from './resize-handles.svelte';
+	import type { BoundingBox, Coordinates, ResizeHandleLocation } from './bounding-box-types'
+
+	import { labelToColor } from '../vision-service-view/color'
+	import { getBoundingRect, getModifyKeyForOS } from './annotation-edit-utils'
+	import ResizeHandles from './resize-handles.svelte'
 
 	// opacity represented as hexadecimal
-	const ACTIVE_BG_OPACITY = '70';
-	const INACTIVE_BG_OPACITY = '30';
-	const ACTIVE_BORDER_OPACITY = 'FF';
-	const INACTIVE_BORDER_OPACITY = 'AA';
+	const ACTIVE_BG_OPACITY = '70'
+	const INACTIVE_BG_OPACITY = '30'
+	const ACTIVE_BORDER_OPACITY = 'FF'
+	const INACTIVE_BORDER_OPACITY = 'AA'
 
-	const MODIFY_KEY = getModifyKeyForOS();
+	const MODIFY_KEY = getModifyKeyForOS()
 
 	interface Props {
 		/** whether to display the active (hovered) state */
-		active: boolean;
+		active: boolean
 		/** which corner is currently being manipulated */
-		activeResizeHandle?: ResizeHandleLocation | undefined;
+		activeResizeHandle?: ResizeHandleLocation | undefined
 		/** whether to allow click or hovering behaviors to function */
-		allowInteractivity: boolean;
+		allowInteractivity: boolean
 		/** bounding box size and label information */
-		annotation: BoundingBox;
+		annotation: BoundingBox
 		/** width of drawing container */
-		containerHeight: number;
+		containerHeight: number
 		/** height of drawing container */
-		containerWidth: number;
+		containerWidth: number
 		/** distance box has been dragged in pixels */
-		dragDistance?: Coordinates;
+		dragDistance?: Coordinates
 		/** whether box should be displayed with dashed borders to indicate pending status */
-		isPending: boolean;
+		isPending: boolean
 		/** whether box should box should be editable (can still be hovered) */
-		readonly?: boolean;
+		readonly?: boolean
 		/** whether box has been selected (clicked on) */
-		selected?: boolean;
+		selected?: boolean
 		/** tab index used for tabbing behaviors */
-		tabIndex?: number;
+		tabIndex?: number
 		/** current zoom scale being applied to labeller */
-		zoom: number;
+		zoom: number
 		/** add current box to list of hovered boxes */
-		addToHovered?: (id: string) => void;
+		addToHovered?: (id: string) => void
 		/** called when backspace keyboard key is pressed */
-		onBackspacePress?: (id: string, label: string) => void;
+		onBackspacePress?: (id: string, label: string) => void
 		/** called when hitting copy command */
-		onCopyPress?: () => void;
+		onCopyPress?: () => void
 		/** called when enter keyboard key is pressed */
-		onEnterPress?: (id: string) => void;
+		onEnterPress?: (id: string) => void
 		/** called when escape keyboard key is pressed */
-		onEscapePress?: VoidFunction;
+		onEscapePress?: VoidFunction
 		/** called on mouse down on the box */
-		onMouseDown?: (event: MouseEvent, id: string, corner?: ResizeHandleLocation) => void;
+		onMouseDown?: (event: MouseEvent, id: string, corner?: ResizeHandleLocation) => void
 		/** remove current box to list of hovered boxes */
-		removeFromHovered?: (id: string) => void;
+		removeFromHovered?: (id: string) => void
 	}
 
 	const {
@@ -72,19 +73,19 @@
 		onEnterPress,
 		onEscapePress,
 		onMouseDown,
-		removeFromHovered
-	}: Props = $props();
+		removeFromHovered,
+	}: Props = $props()
 
-	const color = $derived(labelToColor(annotation.label));
+	const color = $derived(labelToColor(annotation.label))
 
-	let factoredXMin = $state(0);
-	let factoredXMax = $state(0);
-	let factoredYMin = $state(0);
-	let factoredYMax = $state(0);
-	let box: HTMLDivElement | undefined = $state();
-	let labelText: HTMLDivElement | undefined = $state();
+	let factoredXMin = $state(0)
+	let factoredXMax = $state(0)
+	let factoredYMin = $state(0)
+	let factoredYMax = $state(0)
+	let box: HTMLDivElement | undefined = $state()
+	let labelText: HTMLDivElement | undefined = $state()
 
-	const drag = $derived(selected ? dragDistance : undefined);
+	const drag = $derived(selected ? dragDistance : undefined)
 
 	$effect.pre(() => {
 		const boundingRect = getBoundingRect(
@@ -93,92 +94,92 @@
 			containerWidth,
 			containerHeight,
 			activeResizeHandle
-		);
+		)
 
-		factoredXMin = boundingRect.xMinNormalized;
-		factoredXMax = boundingRect.xMaxNormalized;
-		factoredYMin = boundingRect.yMinNormalized;
-		factoredYMax = boundingRect.yMaxNormalized;
-	});
+		factoredXMin = boundingRect.xMinNormalized
+		factoredXMax = boundingRect.xMaxNormalized
+		factoredYMin = boundingRect.yMinNormalized
+		factoredYMax = boundingRect.yMaxNormalized
+	})
 
-	const showHighlight = $derived(active || selected);
+	const showHighlight = $derived(active || selected)
 
 	const handleMove = () => {
 		if (allowInteractivity) {
-			addToHovered?.(annotation.id);
+			addToHovered?.(annotation.id)
 		}
-	};
+	}
 
 	const handleLeave = () => {
-		removeFromHovered?.(annotation.id);
-	};
+		removeFromHovered?.(annotation.id)
+	}
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (selected && event[MODIFY_KEY]) {
 			// prevents UX from going into crosshair drawing mode when first pressing CMD/CTRL key
-			event.stopPropagation();
+			event.stopPropagation()
 
 			if (event.code === 'KeyC') {
-				onCopyPress?.();
-				box?.blur();
+				onCopyPress?.()
+				box?.blur()
 			}
 		}
 
 		switch (event.code) {
 			case 'Escape': {
-				event.stopPropagation();
-				onEscapePress?.();
-				break;
+				event.stopPropagation()
+				onEscapePress?.()
+				break
 			}
 			case 'Enter': {
-				event.stopPropagation();
-				onEnterPress?.(annotation.id);
-				break;
+				event.stopPropagation()
+				onEnterPress?.(annotation.id)
+				break
 			}
 			case 'Backspace': {
-				event.stopPropagation();
-				onBackspacePress?.(annotation.id, annotation.label);
-				break;
+				event.stopPropagation()
+				onBackspacePress?.(annotation.id, annotation.label)
+				break
 			}
 		}
-	};
+	}
 
 	$effect(() => {
 		if (selected) {
-			box?.focus();
+			box?.focus()
 		} else {
-			box?.blur();
+			box?.blur()
 		}
-	});
+	})
 
 	const handleMouseDown = (event: MouseEvent) => {
 		if (!readonly && allowInteractivity) {
-			event.stopPropagation();
-			onMouseDown?.(event, annotation.id);
+			event.stopPropagation()
+			onMouseDown?.(event, annotation.id)
 		}
-	};
+	}
 
 	const handleCornerPointerDown = (event: MouseEvent, corner: ResizeHandleLocation) => {
-		event.stopPropagation();
-		onMouseDown?.(event, annotation.id, corner);
-	};
+		event.stopPropagation()
+		onMouseDown?.(event, annotation.id, corner)
+	}
 
 	const zIndex = $derived.by(() => {
-		if (selected) return 30;
-		if (showHighlight) return 20;
-		return 10;
-	});
+		if (selected) return 30
+		if (showHighlight) return 20
+		return 10
+	})
 
-	const labelTextWidth = $derived(labelText?.getBoundingClientRect().width ?? 0);
+	const labelTextWidth = $derived(labelText?.getBoundingClientRect().width ?? 0)
 	const rightAlignText = $derived.by(() => {
 		// check if text needs right align when text is bigger than box
 		if (labelTextWidth < (factoredXMax - factoredXMin) * zoom) {
-			return false;
+			return false
 		}
 
 		// only right align when the distance between the box left edge plus text width exceeds container boundary
-		return labelTextWidth / zoom + factoredXMin > containerWidth;
-	});
+		return labelTextWidth / zoom + factoredXMin > containerWidth
+	})
 </script>
 
 <div

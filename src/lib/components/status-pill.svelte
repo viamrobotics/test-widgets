@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Pill } from '@viamrobotics/prime-core';
+	import { Pill } from '@viamrobotics/prime-core'
 
 	interface Props {
-		isActive: boolean;
-		activeText?: string;
-		inactiveText?: string;
+		isActive: boolean
+		activeText?: string
+		inactiveText?: string
 	}
 
-	const { isActive, activeText = 'Moving...', inactiveText = 'Idle' }: Props = $props();
+	const { isActive, activeText = 'Moving...', inactiveText = 'Idle' }: Props = $props()
 </script>
 
 {#if isActive}

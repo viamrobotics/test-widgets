@@ -1,35 +1,35 @@
 <script lang="ts">
-	import { ServoClient } from '@viamrobotics/sdk';
+	import { ServoClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '../query.svelte';
-	import Move from './move.svelte';
+	import Query from '../query.svelte'
+	import Move from './move.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		ServoClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const positionQuery = createResourceQuery(client, 'getPosition', {
-		refetchInterval: 500
-	});
-	const moveMutation = createResourceMutation(client, 'move');
+		refetchInterval: 500,
+	})
+	const moveMutation = createResourceMutation(client, 'move')
 
 	const moveTo = (angle: number) => {
-		moveMutation.mutate([angle], {});
-	};
+		moveMutation.mutate([angle], {})
+	}
 </script>
 
 <Query query={positionQuery}>

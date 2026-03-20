@@ -12,49 +12,49 @@
   ```
 -->
 <script lang="ts">
-	import { LngLat, Marker } from 'maplibre-gl';
+	import { LngLat, Marker } from 'maplibre-gl'
 
-	import { useMapLibre } from './hooks';
+	import { useMapLibre } from './hooks'
 
 	interface Props {
 		/** The longitude of the marker. */
-		lng?: number;
+		lng?: number
 		/** The latitude of the marker. */
-		lat?: number;
+		lat?: number
 		/** The rotation angle of the marker (clockwise, in degrees) */
-		rotation?: number;
+		rotation?: number
 		/** The relative size of the marker. */
-		scale?: number;
+		scale?: number
 		/** The marker color. */
-		color?: string;
+		color?: string
 		/** The marker icon */
-		element?: HTMLElement;
+		element?: HTMLElement
 	}
 
-	const { lng = 0, lat = 0, rotation = 0, scale = 1, color = '', element }: Props = $props();
+	const { lng = 0, lat = 0, rotation = 0, scale = 1, color = '', element }: Props = $props()
 
-	const { map } = useMapLibre();
+	const { map } = useMapLibre()
 
 	const marker = $derived.by(() => {
-		const value = new Marker(element ? { element, scale, color } : { scale, color });
-		value.setLngLat(new LngLat(0, 0));
-		value.getElement().style.zIndex = '1';
-		return value;
-	});
+		const value = new Marker(element ? { element, scale, color } : { scale, color })
+		value.setLngLat(new LngLat(0, 0))
+		value.getElement().style.zIndex = '1'
+		return value
+	})
 
 	$effect.pre(() => {
-		const currentMarker = marker;
-		currentMarker.addTo(map);
+		const currentMarker = marker
+		currentMarker.addTo(map)
 		return () => {
-			currentMarker.remove();
-		};
-	});
+			currentMarker.remove()
+		}
+	})
 
 	$effect.pre(() => {
-		marker?.setLngLat(new LngLat(lng, lat));
-	});
+		marker?.setLngLat(new LngLat(lng, lat))
+	})
 
 	$effect.pre(() => {
-		marker?.setRotation(rotation);
-	});
+		marker?.setRotation(rotation)
+	})
 </script>

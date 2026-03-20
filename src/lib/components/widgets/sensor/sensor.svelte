@@ -1,32 +1,36 @@
 <script lang="ts">
-	import { SensorClient } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk';
+	import { SensorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Query from '$lib/components/query.svelte';
-	import ReadingsList from '$lib/components/readings-list.svelte';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Query from '$lib/components/query.svelte'
+	import ReadingsList from '$lib/components/readings-list.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'sensor-view');
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'sensor-view'
+	)
 
 	const client = createResourceClient(
 		SensorClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const readingsQuery = createResourceQuery(client, 'getReadings', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 </script>
 
 <ConnectionStatus {partID}>

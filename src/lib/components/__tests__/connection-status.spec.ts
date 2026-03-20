@@ -1,10 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte'
+import { MachineConnectionEvent } from '@viamrobotics/sdk'
+import { describe, expect, it } from 'vitest'
 
-import { MachineConnectionEvent } from '@viamrobotics/sdk';
-
-import Subject from './connection-status.spec.svelte';
-import ErrorSubject from './connection-status-error.spec.svelte';
+import ErrorSubject from './connection-status-error.spec.svelte'
+import Subject from './connection-status.spec.svelte'
 
 // Currently no way to test things because we need a working svelte sdk.
 describe('<ConnectionStatus>', () => {
@@ -12,38 +11,38 @@ describe('<ConnectionStatus>', () => {
 		render(Subject, {
 			props: {
 				partID: 'abc',
-				status: MachineConnectionEvent.DISCONNECTED
-			}
-		});
+				status: MachineConnectionEvent.DISCONNECTED,
+			},
+		})
 
-		expect(screen.getByText(/this machine is offline/iu)).toBeInTheDocument();
-	});
+		expect(screen.getByText(/this machine is offline/iu)).toBeInTheDocument()
+	})
 
 	it('Shows the connecting section when a machine is connecting', () => {
 		render(Subject, {
 			props: {
 				partID: 'abc',
-				status: MachineConnectionEvent.CONNECTING
-			}
-		});
+				status: MachineConnectionEvent.CONNECTING,
+			},
+		})
 
-		expect(screen.getByText(/connecting/iu)).toBeInTheDocument();
-	});
+		expect(screen.getByText(/connecting/iu)).toBeInTheDocument()
+	})
 
 	it('Shows the connected section when a machine is connected', () => {
 		render(Subject, {
 			props: {
 				partID: 'abc',
-				status: MachineConnectionEvent.CONNECTED
-			}
-		});
+				status: MachineConnectionEvent.CONNECTED,
+			},
+		})
 
-		expect(screen.getByText(/connected/iu)).toBeInTheDocument();
-	});
+		expect(screen.getByText(/connected/iu)).toBeInTheDocument()
+	})
 
 	it('Catches errors with the error boundary', () => {
-		render(ErrorSubject);
+		render(ErrorSubject)
 
-		expect(screen.getByText(/something went wrong/iu)).toBeInTheDocument();
-	});
-});
+		expect(screen.getByText(/something went wrong/iu)).toBeInTheDocument()
+	})
+})

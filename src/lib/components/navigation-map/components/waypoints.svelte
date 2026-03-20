@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { MapLibreMarker } from '../../maplibre';
-	import { useNavigationMap } from '../use-navigation-map.svelte';
+	import { MapLibreMarker } from '../../maplibre'
+	import { useNavigationMap } from '../use-navigation-map.svelte'
 
-	const nav = useNavigationMap();
+	const nav = useNavigationMap()
 </script>
 
 {#each nav.waypoints as waypoint (waypoint.id)}

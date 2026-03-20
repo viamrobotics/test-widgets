@@ -4,19 +4,20 @@ NOTE(zp,2024-06-11) This is specifically designed for BaseView
 I'd be wary of using this elsewhere unless the use case & styling is identitcal
 -->
 <script lang="ts">
-	import { Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
-	import type { Vector3 } from '@viamrobotics/sdk';
+	import type { Vector3 } from '@viamrobotics/sdk'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		title: string;
-		titleUnits?: string | undefined;
-		titleTooltip?: string | undefined;
-		vector: Vector3;
-		xTooltip?: string | undefined;
-		yTooltip?: string | undefined;
-		zTooltip?: string | undefined;
+		title: string
+		titleUnits?: string | undefined
+		titleTooltip?: string | undefined
+		vector: Vector3
+		xTooltip?: string | undefined
+		yTooltip?: string | undefined
+		zTooltip?: string | undefined
 	}
 
 	let {
@@ -26,10 +27,10 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 		vector = $bindable(),
 		xTooltip,
 		yTooltip,
-		zTooltip
-	}: Props = $props();
+		zTooltip,
+	}: Props = $props()
 
-	const builderID = $props.id();
+	const builderID = $props.id()
 </script>
 
 <section
@@ -83,7 +84,7 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 				cx="text-default"
 				value={vector.x}
 				on:change={(event) => {
-					vector.x = numberValueFromEvent(event) ?? 0;
+					vector.x = numberValueFromEvent(event) ?? 0
 				}}
 			/>
 		</Label>
@@ -109,7 +110,7 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 				cx="text-default"
 				value={vector.y}
 				on:change={(event) => {
-					vector.y = numberValueFromEvent(event) ?? 0;
+					vector.y = numberValueFromEvent(event) ?? 0
 				}}
 			/>
 		</Label>
@@ -135,7 +136,7 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 				cx="text-default"
 				value={vector.z}
 				on:change={(event) => {
-					vector.z = numberValueFromEvent(event) ?? 0;
+					vector.z = numberValueFromEvent(event) ?? 0
 				}}
 			/>
 		</Label>

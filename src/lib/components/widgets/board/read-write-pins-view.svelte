@@ -1,12 +1,12 @@
 <script lang="ts">
-	import ReadWritePins from './read-write-pins.svelte';
+	import ReadWritePins from './read-write-pins.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 </script>
 
 <ReadWritePins

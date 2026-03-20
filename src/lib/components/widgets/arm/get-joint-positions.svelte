@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { degreesToRadians, formatNumeric } from '$lib/format';
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte';
-	import CopyButton from '$lib/components/copy-button.svelte';
-	import Table from '$lib/components/table.svelte';
+	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '$lib/components/copy-button.svelte'
+	import Table from '$lib/components/table.svelte'
+	import { degreesToRadians, formatNumeric } from '$lib/format'
 
 	interface Props {
-		positions: number[];
+		positions: number[]
 	}
 
-	const { positions }: Props = $props();
+	const { positions }: Props = $props()
 
-	let useRadians = $state(false);
+	let useRadians = $state(false)
 
 	const displayPositions = $derived(
 		positions.map((pos) => (useRadians ? degreesToRadians(pos) : pos))
-	);
+	)
 
-	const copyData = $derived(`[${displayPositions.join(', ')}]`);
+	const copyData = $derived(`[${displayPositions.join(', ')}]`)
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -27,7 +27,7 @@
 			<AngleUnitToggle
 				{useRadians}
 				onToggle={() => {
-					useRadians = !useRadians;
+					useRadians = !useRadians
 				}}
 			/>
 			<CopyButton data={copyData} />

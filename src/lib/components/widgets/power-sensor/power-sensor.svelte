@@ -1,53 +1,57 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { Switch } from '@viamrobotics/prime-core'
+	import { PowerSensorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import { slide } from 'svelte/transition'
 
-	import { Switch } from '@viamrobotics/prime-core';
-	import { PowerSensorClient } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Query from '$lib/components/query.svelte'
+	import ReadingsList from '$lib/components/readings-list.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Query from '$lib/components/query.svelte';
-	import ReadingsList from '$lib/components/readings-list.svelte';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import CurrentReading from './current-reading.svelte';
-	import PowerReading from './power-reading.svelte';
-	import VoltageReading from './voltage-reading.svelte';
+	import CurrentReading from './current-reading.svelte'
+	import PowerReading from './power-reading.svelte'
+	import VoltageReading from './voltage-reading.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'power-sensor-view');
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'power-sensor-view'
+	)
 
-	let isGetReadingsEnabled = $state(false);
+	let isGetReadingsEnabled = $state(false)
 
 	const client = createResourceClient(
 		PowerSensorClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const currentQuery = createResourceQuery(client, 'getCurrent', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const voltageQuery = createResourceQuery(client, 'getVoltage', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const powerQuery = createResourceQuery(client, 'getPower', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const readingsQuery = createResourceQuery(client, 'getReadings', () => ({
 		enabled: isGetReadingsEnabled,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 </script>
 
 <ConnectionStatus {partID}>

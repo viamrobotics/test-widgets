@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { Button, Tooltip } from '@viamrobotics/prime-core';
-	import { robotApi } from '@viamrobotics/sdk';
+	import { Button, Tooltip } from '@viamrobotics/prime-core'
+	import { robotApi } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		operations: robotApi.Operation[];
-		cancelOperation: (id: string) => void;
+		operations: robotApi.Operation[]
+		cancelOperation: (id: string) => void
 	}
 
-	const { operations, cancelOperation }: Props = $props();
+	const { operations, cancelOperation }: Props = $props()
 
 	const getElapsedTimeMs = (startedAt: { seconds: bigint; nanos: number } | undefined): number => {
-		const now = new Date();
+		const now = new Date()
 		const started = startedAt
 			? new Date(Number(startedAt.seconds) * 1000 + startedAt.nanos / 1_000_000)
-			: new Date();
-		return now.getTime() - started.getTime();
-	};
+			: new Date()
+		return now.getTime() - started.getTime()
+	}
 
 	// sort operations by elapsed time in descending order
 	// so that short-lived operations dont result in excessive element-shifting
@@ -25,10 +25,10 @@
 		operations
 			.map((operation) => ({
 				...operation,
-				elapsedTime: getElapsedTimeMs(operation.started)
+				elapsedTime: getElapsedTimeMs(operation.started),
 			}))
 			.toSorted((a, b) => b.elapsedTime - a.elapsedTime)
-	);
+	)
 </script>
 
 {#if formattedOperations.length === 0}

@@ -22,41 +22,40 @@ export const colors = [
 	'#D8B98D',
 	'#6F94E6',
 	'#D2FB50',
-	'#7B2AF5'
-] as const;
+	'#7B2AF5',
+] as const
 
 /**
  * A subset of the above background colors have lightness values high
  * enough to require dark text for accessible contrast.
  */
-export const lightTextColors = ['#0000F5', '#965635', '#463D86', '#7F1786', '#CA3142', '#7B2AF5'];
+export const lightTextColors = ['#0000F5', '#965635', '#463D86', '#7F1786', '#CA3142', '#7B2AF5']
 
-const cache: Record<string, string> = {};
+const cache: Record<string, string> = {}
 
 const uniqueIndexFromString = (str: string): number => {
-	let hash = 0;
+	let hash = 0
 	for (let i = 0; i < str.length; i += 1) {
-		const char = str.codePointAt(i);
+		const char = str.codePointAt(i)
 		if (char) {
-			// eslint-disable-next-line no-bitwise
-			hash = (hash << 5) - hash + char;
+			hash = (hash << 5) - hash + char
 		}
-		hash = Math.trunc(hash);
+		hash = Math.trunc(hash)
 	}
-	return Math.abs(hash) % colors.length;
-};
+	return Math.abs(hash) % colors.length
+}
 
 export const labelToColor = (label: string): string => {
-	const result = cache[label];
+	const result = cache[label]
 
 	if (result) {
-		return result;
+		return result
 	}
 
-	const index = uniqueIndexFromString(label);
-	const color = colors[index] as string;
+	const index = uniqueIndexFromString(label)
+	const color = colors[index] as string
 
-	cache[label] = color;
+	cache[label] = color
 
-	return color;
-};
+	return color
+}

@@ -9,45 +9,45 @@
   Must not contain NaN.
 -->
 <script lang="ts">
-	import { T } from '@threlte/core';
-	import { Line2 } from 'three/examples/jsm/lines/Line2.js';
-	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
-	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+	import { T } from '@threlte/core'
+	import { Line2 } from 'three/examples/jsm/lines/Line2.js'
+	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
+	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 
-	import { renderOrder } from './render-order';
+	import { renderOrder } from './render-order'
 
 	interface Props {
-		path: Float32Array | undefined;
+		path: Float32Array | undefined
 	}
 
-	const { path }: Props = $props();
+	const { path }: Props = $props()
 
 	const updatePath = (xy?: Float32Array) => {
 		if (xy === undefined) {
-			return;
+			return
 		}
 
-		const lineGeometry = new LineGeometry();
-		const xyz: number[] = [];
+		const lineGeometry = new LineGeometry()
+		const xyz: number[] = []
 		for (let i = 0; i < xy.length - 1; i += 2) {
-			const x = xy[i];
-			const y = xy[i + 1];
+			const x = xy[i]
+			const y = xy[i + 1]
 			if (x !== undefined && y !== undefined) {
-				xyz.push(x, y, 0);
+				xyz.push(x, y, 0)
 			}
 		}
 
-		lineGeometry.setPositions(xyz);
+		lineGeometry.setPositions(xyz)
 
-		return lineGeometry;
-	};
+		return lineGeometry
+	}
 
-	let geometry: LineGeometry | undefined = $state();
+	let geometry: LineGeometry | undefined = $state()
 
 	$effect.pre(() => {
-		geometry?.dispose();
-		geometry = updatePath(path);
-	});
+		geometry?.dispose()
+		geometry = updatePath(path)
+	})
 </script>
 
 {#if geometry}

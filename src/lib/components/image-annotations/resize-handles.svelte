@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { ResizeHandleLocation } from './bounding-box-types';
-	import ResizeCorner from './resize-corner.svelte';
-	import ResizeEdge from './resize-edge.svelte';
+	import { ResizeHandleLocation } from './bounding-box-types'
+	import ResizeCorner from './resize-corner.svelte'
+	import ResizeEdge from './resize-edge.svelte'
 
 	interface Props {
-		zoom: number;
-		onMouseDown: (event: MouseEvent, edge: ResizeHandleLocation) => void;
+		zoom: number
+		onMouseDown: (event: MouseEvent, edge: ResizeHandleLocation) => void
 	}
 
-	const { zoom, onMouseDown }: Props = $props();
+	const { zoom, onMouseDown }: Props = $props()
 </script>
 
 <ResizeEdge

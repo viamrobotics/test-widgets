@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { EncoderPositionType } from '@viamrobotics/sdk';
+	import { EncoderPositionType } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		position: number;
-		encoderPositionType: EncoderPositionType;
+		position: number
+		encoderPositionType: EncoderPositionType
 	}
 
-	const { position, encoderPositionType }: Props = $props();
+	const { position, encoderPositionType }: Props = $props()
 </script>
 
 {#if encoderPositionType === EncoderPositionType.ANGLE_DEGREES}

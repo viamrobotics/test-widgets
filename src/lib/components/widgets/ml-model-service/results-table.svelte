@@ -1,19 +1,19 @@
 <script lang="ts">
-	import type { Metadata } from '@viamrobotics/sdk';
+	import type { Metadata } from '@viamrobotics/sdk'
 
-	import TensorRow from './tensor-row.svelte';
+	import TensorRow from './tensor-row.svelte'
 
 	interface Props {
-		metadata: Metadata;
+		metadata: Metadata
 	}
 
-	const { metadata }: Props = $props();
+	const { metadata }: Props = $props()
 
-	const name = $derived(metadata.name);
-	const description = $derived(metadata.description);
-	const type = $derived(metadata.type);
-	const inputInfo = $derived(metadata.inputInfo);
-	const outputInfo = $derived(metadata.outputInfo);
+	const name = $derived(metadata.name)
+	const description = $derived(metadata.description)
+	const type = $derived(metadata.type)
+	const inputInfo = $derived(metadata.inputInfo)
+	const outputInfo = $derived(metadata.outputInfo)
 </script>
 
 <dl class="table-container grid min-w-0! grid-cols-2 text-xs">

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		setPower: (_: number) => void;
+		setPower: (_: number) => void
 	}
 
-	const { setPower }: Props = $props();
+	const { setPower }: Props = $props()
 
-	let power = $state(0.5);
+	let power = $state(0.5)
 </script>
 
 <div>
@@ -37,7 +37,7 @@
 			slot="input"
 			value={power}
 			on:change={(event) => {
-				power = numberValueFromEvent(event) ?? 0;
+				power = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>
@@ -46,7 +46,7 @@
 	<Button
 		icon="play-circle-outline"
 		onclick={() => {
-			setPower(power);
+			setPower(power)
 		}}
 	>
 		Execute

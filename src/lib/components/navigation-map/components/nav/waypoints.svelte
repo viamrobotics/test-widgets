@@ -1,33 +1,33 @@
 <script lang="ts">
-	import type { LngLat } from 'maplibre-gl';
+	import type { LngLat } from 'maplibre-gl'
 
-	import { IconButton } from '@viamrobotics/prime-core';
+	import { IconButton } from '@viamrobotics/prime-core'
 
-	import { useMapLibre, useMapLibreEvent, Waypoint } from '../../../maplibre';
-	import { useNavigationMap } from '../../use-navigation-map.svelte';
+	import { useMapLibre, useMapLibreEvent, Waypoint } from '../../../maplibre'
+	import { useNavigationMap } from '../../use-navigation-map.svelte'
 
 	interface Props {
-		onaddwaypoint: (waypoint: LngLat) => void;
-		ondeletewaypoint: (id: string) => void;
+		onaddwaypoint: (waypoint: LngLat) => void
+		ondeletewaypoint: (id: string) => void
 	}
 
-	const { onaddwaypoint, ondeletewaypoint }: Props = $props();
+	const { onaddwaypoint, ondeletewaypoint }: Props = $props()
 
-	const { map } = useMapLibre();
-	const nav = useNavigationMap();
+	const { map } = useMapLibre()
+	const nav = useNavigationMap()
 
 	const handleDeleteWaypoint = (id: string) => {
-		nav.waypoints = nav.waypoints.filter((waypoint) => waypoint.id !== id);
-		ondeletewaypoint(id);
-	};
+		nav.waypoints = nav.waypoints.filter((waypoint) => waypoint.id !== id)
+		ondeletewaypoint(id)
+	}
 
 	useMapLibreEvent('click', (event) => {
-		const waypoint = new Waypoint(event.lngLat.lng, event.lngLat.lat, crypto.randomUUID());
+		const waypoint = new Waypoint(event.lngLat.lng, event.lngLat.lat, crypto.randomUUID())
 
-		nav.waypoints = [...nav.waypoints, waypoint];
+		nav.waypoints = [...nav.waypoints, waypoint]
 
-		onaddwaypoint(waypoint);
-	});
+		onaddwaypoint(waypoint)
+	})
 </script>
 
 {#if nav.waypoints.length === 0}
@@ -54,7 +54,7 @@
 						zoom: 15,
 						duration: 800,
 						curve: 0.1,
-						center: [waypoint.lng, waypoint.lat]
+						center: [waypoint.lng, waypoint.lat],
 					})}
 			/>
 		</div>

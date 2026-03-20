@@ -1,21 +1,26 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentProps } from 'svelte';
-import { get, writable } from 'svelte/store';
-import type { QueryObserverResult } from '@tanstack/svelte-query';
-import { render, screen, within } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
+import type { QueryObserverResult } from '@tanstack/svelte-query'
+import type { ComponentProps } from 'svelte'
 
-import { RefetchIntervals, RefetchRates } from '../refetch-controller';
-import Subject from '../refetch-controller.svelte';
+import { render, screen, within } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { PersistedState } from 'runed'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import Subject from '../refetch-controller.svelte'
+import {
+	type RefetchInterval,
+	RefetchIntervals,
+	RefetchRates,
+} from '../refetch-interval-store.svelte'
 
 const renderSubject = (props: ComponentProps<typeof Subject>) => {
-	return render(Subject, props);
-};
+	return render(Subject, props)
+}
 
 const createSubjectProps = () => {
-	const refetchInterval = writable(1000);
+	const refetchInterval = new PersistedState<RefetchInterval>('refetch-controller-spec', 1000)
 
-	const queryFetchSpy = vi.fn();
+	const queryFetchSpy = vi.fn()
 	const mockQuery: QueryObserverResult = {
 		data: 'Success',
 		error: null,
@@ -24,71 +29,71 @@ const createSubjectProps = () => {
 		isPending: false,
 		isSuccess: true,
 		status: 'success',
-		refetch: queryFetchSpy.mockResolvedValue({ data: 'Success' })
-	} as unknown as QueryObserverResult;
+		refetch: queryFetchSpy.mockResolvedValue({ data: 'Success' }),
+	} as unknown as QueryObserverResult
 
 	return {
 		props: { queries: [mockQuery], refetchInterval },
-		queryFetchSpy
-	};
-};
+		queryFetchSpy,
+	}
+}
 
 describe('<RefetchController>', () => {
-	let user: ReturnType<typeof userEvent.setup>;
+	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {
-		user = userEvent.setup();
-	});
+		user = userEvent.setup()
+	})
 
 	it('stops refetching when pause is clicked', async () => {
-		const { props } = createSubjectProps();
-		renderSubject(props);
+		const { props } = createSubjectProps()
+		renderSubject(props)
 
-		const pauseButton = screen.getByRole('button', { name: /pause/iu });
-		await user.click(pauseButton);
-		expect(get(props.refetchInterval)).toBe(false);
-	});
+		const pauseButton = screen.getByRole('button', { name: /pause/iu })
+		await user.click(pauseButton)
+		expect(props.refetchInterval.current).toBe(false)
+	})
 
 	it('updates refetchInterval when an option is selected', async () => {
-		const { props } = createSubjectProps();
-		renderSubject({ ...props, allowLive: true });
+		const { props } = createSubjectProps()
+		renderSubject({ ...props, allowLive: true })
 
-		const select = screen.getByRole('combobox');
-		const options = within(select).getAllByRole('option');
+		const select = screen.getByRole('combobox')
+		const options = within(select).getAllByRole('option')
 
-		expect(options[0]).toHaveAccessibleName(RefetchRates.LIVE);
-		expect(options[1]).toHaveAccessibleName(RefetchRates.ONE_SEC);
-		expect(options[2]).toHaveAccessibleName(RefetchRates.FIVE_SEC);
-		expect(options[3]).toHaveAccessibleName(RefetchRates.MANUAL);
+		expect(options[0]).toHaveAccessibleName(RefetchRates.LIVE)
+		expect(options[1]).toHaveAccessibleName(RefetchRates.ONE_SEC)
+		expect(options[2]).toHaveAccessibleName(RefetchRates.FIVE_SEC)
+		expect(options[3]).toHaveAccessibleName(RefetchRates.MANUAL)
 
-		await user.selectOptions(select, RefetchRates.MANUAL);
-		expect(get(props.refetchInterval)).toBe(RefetchIntervals.MANUAL);
-		await user.selectOptions(select, RefetchRates.ONE_SEC);
-		expect(get(props.refetchInterval)).toBe(RefetchIntervals.ONE_SEC);
-		await user.selectOptions(select, RefetchRates.FIVE_SEC);
-		expect(get(props.refetchInterval)).toBe(RefetchIntervals.FIVE_SEC);
-		await user.selectOptions(select, RefetchRates.LIVE);
-		expect(get(props.refetchInterval)).toBe(RefetchIntervals.LIVE);
-	});
+		await user.selectOptions(select, RefetchRates.MANUAL)
+		expect(props.refetchInterval.current).toBe(RefetchIntervals.MANUAL)
+		await user.selectOptions(select, RefetchRates.ONE_SEC)
+		expect(props.refetchInterval.current).toBe(RefetchIntervals.ONE_SEC)
+		await user.selectOptions(select, RefetchRates.FIVE_SEC)
+		expect(props.refetchInterval.current).toBe(RefetchIntervals.FIVE_SEC)
+		await user.selectOptions(select, RefetchRates.LIVE)
+		expect(props.refetchInterval.current).toBe(RefetchIntervals.LIVE)
+	})
 
 	it('does not render a live option unless allowLive is set', () => {
-		const { props } = createSubjectProps();
-		renderSubject(props);
-		expect(screen.queryByText(RefetchRates.LIVE)).not.toBeInTheDocument();
-	});
+		const { props } = createSubjectProps()
+		renderSubject(props)
+		expect(screen.queryByText(RefetchRates.LIVE)).not.toBeInTheDocument()
+	})
 
 	it('refetches the query when the manual refetch button is pressed', async () => {
-		const { props, queryFetchSpy } = createSubjectProps();
-		renderSubject(props);
+		const { props, queryFetchSpy } = createSubjectProps()
+		renderSubject(props)
 
-		const pauseButton = screen.getByRole('button', { name: /pause/iu });
-		await user.click(pauseButton);
-		const refetchButton = screen.getByRole('button', { name: /refetch/iu });
-		const refreshIcon = screen.getByTestId('icon-refresh');
-		expect(refreshIcon).toBeInTheDocument();
-		await user.click(refetchButton);
-		await user.click(refetchButton);
-		await user.click(refetchButton);
-		expect(queryFetchSpy).toHaveBeenNthCalledWith(3);
-	});
-});
+		const pauseButton = screen.getByRole('button', { name: /pause/iu })
+		await user.click(pauseButton)
+		const refetchButton = screen.getByRole('button', { name: /refetch/iu })
+		const refreshIcon = screen.getByTestId('icon-refresh')
+		expect(refreshIcon).toBeInTheDocument()
+		await user.click(refetchButton)
+		await user.click(refetchButton)
+		await user.click(refetchButton)
+		expect(queryFetchSpy).toHaveBeenNthCalledWith(3)
+	})
+})

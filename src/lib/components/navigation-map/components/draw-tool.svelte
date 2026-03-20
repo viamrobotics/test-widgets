@@ -3,118 +3,114 @@
   Renders an in-progress rectangle that represents a drawn area by the user.
 -->
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import type * as THREE from 'three'
+
+	import { T } from '@threlte/core'
+	import { theme } from '@viamrobotics/prime-core/theme'
 	import {
 		LngLat,
 		type MapLayerMouseEvent,
 		type MapLayerTouchEvent,
 		type MapMouseEvent,
-		MercatorCoordinate
-	} from 'maplibre-gl';
-	import type * as THREE from 'three';
-
-	import { theme } from '@viamrobotics/prime-core/theme';
+		MercatorCoordinate,
+	} from 'maplibre-gl'
 
 	import {
 		cartesianToMercator,
 		lngLatToMercator,
 		useMapLibre,
-		useMapLibreEvent
-	} from '../../maplibre';
-	import { useNavigationMap } from '../use-navigation-map.svelte';
+		useMapLibreEvent,
+	} from '../../maplibre'
+	import { useNavigationMap } from '../use-navigation-map.svelte'
 
 	interface Props {
 		/** Fires when a rectangle is drawn. */
-		onUpdate: (payload: { width: number; height: number; center: LngLat }) => void;
+		onUpdate: (payload: { width: number; height: number; center: LngLat }) => void
 	}
 
-	const { onUpdate }: Props = $props();
+	const { onUpdate }: Props = $props()
 
-	const { map } = useMapLibre();
-	const nav = useNavigationMap();
+	const { map } = useMapLibre()
+	const nav = useNavigationMap()
 
-	let downLngLat = $state(new LngLat(0, 0));
-	let downMercator = new MercatorCoordinate(0, 0, 0);
+	let downLngLat = $state(new LngLat(0, 0))
+	let downMercator = new MercatorCoordinate(0, 0, 0)
 
-	let drawing = $state(false);
-	let width = $state(0);
-	let height = $state(0);
+	let drawing = $state(false)
+	let width = $state(0)
+	let height = $state(0)
 
-	const moveSign = $state({ x: 0, y: 0 });
+	const moveSign = $state({ x: 0, y: 0 })
 
 	const toPrecisionLevel = (number: number, decimals: number): number => {
-		const multiplier = 10 ** decimals;
-		return Math.floor(number * multiplier) / multiplier;
-	};
+		const multiplier = 10 ** decimals
+		return Math.floor(number * multiplier) / multiplier
+	}
 
 	const handlePointerDown = (event: MapLayerMouseEvent | MapLayerTouchEvent) => {
-		event.preventDefault();
-		drawing = true;
-		downLngLat = event.lngLat;
-		downMercator = lngLatToMercator(downLngLat);
-	};
+		event.preventDefault()
+		drawing = true
+		downLngLat = event.lngLat
+		downMercator = lngLatToMercator(downLngLat)
+	}
 
 	const handlePointerMove = (event: MapMouseEvent) => {
-		const moveMercator = lngLatToMercator(event.lngLat);
-		const scale = moveMercator.meterInMercatorCoordinateUnits();
+		const moveMercator = lngLatToMercator(event.lngLat)
+		const scale = moveMercator.meterInMercatorCoordinateUnits()
 
-		moveSign.x = Math.sign(moveMercator.x - downMercator.x);
-		moveSign.y = Math.sign(moveMercator.y - downMercator.y);
+		moveSign.x = Math.sign(moveMercator.x - downMercator.x)
+		moveSign.y = Math.sign(moveMercator.y - downMercator.y)
 
-		width = toPrecisionLevel(Math.abs(moveMercator.x - downMercator.x) / scale, 2);
-		height = toPrecisionLevel(Math.abs(moveMercator.y - downMercator.y) / scale, 2);
-	};
+		width = toPrecisionLevel(Math.abs(moveMercator.x - downMercator.x) / scale, 2)
+		height = toPrecisionLevel(Math.abs(moveMercator.y - downMercator.y) / scale, 2)
+	}
 
 	const handlePointerUp = () => {
-		drawing = false;
+		drawing = false
 
-		const scale = downMercator.meterInMercatorCoordinateUnits();
-		const offset = cartesianToMercator(
-			-moveSign.x * (width / 2),
-			-moveSign.y * (height / 2),
-			scale
-		);
+		const scale = downMercator.meterInMercatorCoordinateUnits()
+		const offset = cartesianToMercator(-moveSign.x * (width / 2), -moveSign.y * (height / 2), scale)
 
-		downMercator.x -= offset.x;
-		downMercator.y -= offset.y;
+		downMercator.x -= offset.x
+		downMercator.y -= offset.y
 
-		const center = downMercator.toLngLat();
+		const center = downMercator.toLngLat()
 
-		onUpdate({ width, height, center });
+		onUpdate({ width, height, center })
 
-		width = 0;
-		height = 0;
-	};
+		width = 0
+		height = 0
+	}
 
 	const handleGeometryCreate = (ref: THREE.BufferGeometry) => {
-		ref.rotateX(-Math.PI / 2);
-	};
+		ref.rotateX(-Math.PI / 2)
+	}
 
 	useMapLibreEvent('mousedown', (event) => {
 		if (event.originalEvent.shiftKey) {
-			handlePointerDown(event);
+			handlePointerDown(event)
 		}
-	});
+	})
 
 	const handleKeydown = (event: KeyboardEvent) => {
 		if (event.shiftKey) {
-			map.getCanvas().classList.add('!cursor-crosshair');
+			map.getCanvas().classList.add('!cursor-crosshair')
 		}
-	};
+	}
 
 	const handleKeyup = () => {
-		map.getCanvas().classList.remove('!cursor-crosshair');
-	};
+		map.getCanvas().classList.remove('!cursor-crosshair')
+	}
 
 	$effect.pre(() => {
 		if (drawing) {
-			map.on('mousemove', handlePointerMove);
-			map.on('mouseup', handlePointerUp);
+			map.on('mousemove', handlePointerMove)
+			map.on('mouseup', handlePointerUp)
 		} else {
-			map.off('mousemove', handlePointerMove);
-			map.off('mouseup', handlePointerUp);
+			map.off('mousemove', handlePointerMove)
+			map.off('mouseup', handlePointerUp)
 		}
-	});
+	})
 </script>
 
 <svelte:window

@@ -1,134 +1,134 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { twMerge } from 'tailwind-merge';
+	import type { Vector3 } from '@viamrobotics/sdk'
 
-	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core';
-	import type { Vector3 } from '@viamrobotics/sdk';
+	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
+	import { onMount } from 'svelte'
+	import { twMerge } from 'tailwind-merge'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		setPower: (linear: Vector3, angular: Vector3) => void;
-		isKeyboardEnabled: boolean;
+		setPower: (linear: Vector3, angular: Vector3) => void
+		isKeyboardEnabled: boolean
 	}
 
-	const { setPower, isKeyboardEnabled }: Props = $props();
+	const { setPower, isKeyboardEnabled }: Props = $props()
 
-	let powerPct = $state(0.5);
+	let powerPct = $state(0.5)
 
 	// When setPower commands are sent in quick succession, sometimes
 	// the RDK base model handles the responses out of order. To make
 	// sure the base truly stops, send an extra stop command 50ms
 	// later.
-	let stopTimeoutID = 0;
+	let stopTimeoutID = 0
 
 	const setPowerScalar = (linearPct: number, angularPct: number) => {
-		window.clearTimeout(stopTimeoutID);
-		setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct });
+		globalThis.clearTimeout(stopTimeoutID)
+		setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct })
 		if (linearPct === 0 && angularPct === 0) {
-			stopTimeoutID = window.setTimeout(() => {
-				setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct });
-			}, 50);
+			stopTimeoutID = globalThis.setTimeout(() => {
+				setPower({ x: 0, y: linearPct, z: 0 }, { x: 0, y: 0, z: angularPct })
+			}, 50)
 		}
-	};
+	}
 
 	onMount(() => {
 		return () => {
-			window.clearTimeout(stopTimeoutID);
-		};
-	});
+			globalThis.clearTimeout(stopTimeoutID)
+		}
+	})
 
-	let isPressed = false;
+	let isPressed = false
 	const makeMouseDown = (linearPct: number, angularPct: number) => () => {
-		isPressed = true;
-		setPowerScalar(linearPct, angularPct);
-	};
+		isPressed = true
+		setPowerScalar(linearPct, angularPct)
+	}
 	const mouseEnd = () => {
 		if (isPressed) {
-			setPowerScalar(0, 0);
+			setPowerScalar(0, 0)
 		}
-		isPressed = false;
-	};
+		isPressed = false
+	}
 
 	const buttonCx =
-		'flex gap-2 justify-center items-center w-[60px] border border-light bg-light px-2.5 py-3 hover:border-medium hover:bg-medium active:bg-gray-2 h-fit';
+		'flex gap-2 justify-center items-center w-[60px] border border-light bg-light px-2.5 py-3 hover:border-medium hover:bg-medium active:bg-gray-2 h-fit'
 
 	const keys = {
 		W_KEY: 'w',
 		A_KEY: 'a',
 		S_KEY: 's',
-		D_KEY: 'd'
-	} as const;
+		D_KEY: 'd',
+	} as const
 	const pressedKeys: Record<(typeof keys)[keyof typeof keys], boolean> = $state({
 		[keys.W_KEY]: false,
 		[keys.A_KEY]: false,
 		[keys.S_KEY]: false,
-		[keys.D_KEY]: false
-	});
+		[keys.D_KEY]: false,
+	})
 
 	const normalizeKey = (key: string) => {
 		switch (key.toLowerCase()) {
 			case 'w':
 			case 'arrowup': {
-				return keys.W_KEY;
+				return keys.W_KEY
 			}
 			case 'a':
 			case 'arrowleft': {
-				return keys.A_KEY;
+				return keys.A_KEY
 			}
 			case 's':
 			case 'arrowdown': {
-				return keys.S_KEY;
+				return keys.S_KEY
 			}
 			case 'd':
 			case 'arrowright': {
-				return keys.D_KEY;
+				return keys.D_KEY
 			}
 			default: {
-				return undefined;
+				return undefined
 			}
 		}
-	};
+	}
 
 	const onKeydown = (event: KeyboardEvent) => {
 		if (!isKeyboardEnabled || event.repeat) {
-			return;
+			return
 		}
 
-		const key = normalizeKey(event.key);
+		const key = normalizeKey(event.key)
 		if (!key) {
-			return;
+			return
 		}
 
-		event.stopPropagation();
-		event.preventDefault();
+		event.stopPropagation()
+		event.preventDefault()
 
-		pressedKeys[key] = true;
-		onKeyChange();
-	};
+		pressedKeys[key] = true
+		onKeyChange()
+	}
 
 	const onKeyup = (event: KeyboardEvent) => {
 		if (!isKeyboardEnabled) {
-			return;
+			return
 		}
 
-		const key = normalizeKey(event.key);
+		const key = normalizeKey(event.key)
 		if (!key) {
-			return;
+			return
 		}
 
-		event.stopPropagation();
-		event.preventDefault();
+		event.stopPropagation()
+		event.preventDefault()
 
-		pressedKeys[key] = false;
-		onKeyChange();
-	};
+		pressedKeys[key] = false
+		onKeyChange()
+	}
 
 	const onKeyChange = () => {
-		const linearPct = ((pressedKeys.w ? 1 : 0) - (pressedKeys.s ? 1 : 0)) * powerPct;
-		const angularPct = ((pressedKeys.a ? 1 : 0) - (pressedKeys.d ? 1 : 0)) * powerPct;
-		setPowerScalar(linearPct, angularPct);
-	};
+		const linearPct = ((pressedKeys.w ? 1 : 0) - (pressedKeys.s ? 1 : 0)) * powerPct
+		const angularPct = ((pressedKeys.a ? 1 : 0) - (pressedKeys.d ? 1 : 0)) * powerPct
+		setPowerScalar(linearPct, angularPct)
+	}
 </script>
 
 <svelte:window
@@ -223,7 +223,7 @@
 			on:input={(event) => {
 				// on:input is used instead of on:change because of the on:mousedown handlers and blur order
 				// on:change does not run in time.
-				powerPct = numberValueFromEvent(event) ?? 0;
+				powerPct = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>

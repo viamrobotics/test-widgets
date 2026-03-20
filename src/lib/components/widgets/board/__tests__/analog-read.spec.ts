@@ -1,60 +1,61 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentProps } from 'svelte';
-import { render, screen, within } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
+import type { ComponentProps } from 'svelte'
 
-import Subject from '../analog-read.svelte';
+import { render, screen, within } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import Subject from '../analog-read.svelte'
 
 const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 	render(Subject, {
 		value: undefined,
 		getValue: vi.fn(),
-		...props
-	});
+		...props,
+	})
 
 describe('BoardView Analog Read', () => {
-	let user: ReturnType<typeof userEvent.setup>;
-	let getValue: () => void;
+	let user: ReturnType<typeof userEvent.setup>
+	let getValue: () => void
 
 	beforeEach(() => {
-		user = userEvent.setup();
-		getValue = vi.fn();
-	});
+		user = userEvent.setup()
+		getValue = vi.fn()
+	})
 
 	it('calls getValue', async () => {
 		renderSubject({
-			getValue
-		});
+			getValue,
+		})
 
-		const valueSection = screen.getByRole('region', { name: 'Value' });
+		const valueSection = screen.getByRole('region', { name: 'Value' })
 		const getValueButton = within(valueSection).getByRole('button', {
-			name: /get/iu
-		});
-		await user.click(getValueButton);
+			name: /get/iu,
+		})
+		await user.click(getValueButton)
 
-		expect(getValue).toHaveBeenCalled();
-	});
+		expect(getValue).toHaveBeenCalled()
+	})
 
 	it('displays empty initial value', () => {
-		renderSubject({});
+		renderSubject({})
 		const valueSection = screen.getByRole('region', {
-			name: /value/iu
-		});
-		const valueOutput = within(valueSection).getByRole('status');
-		expect(valueOutput).toBeInTheDocument();
-		expect(valueOutput).toHaveTextContent(/––/iu);
-	});
+			name: /value/iu,
+		})
+		const valueOutput = within(valueSection).getByRole('status')
+		expect(valueOutput).toBeInTheDocument()
+		expect(valueOutput).toHaveTextContent(/––/iu)
+	})
 
 	it('displays value', () => {
 		renderSubject({
-			value: 50
-		});
+			value: 50,
+		})
 
 		const valueSection = screen.getByRole('region', {
-			name: /value/iu
-		});
-		const valueOutput = within(valueSection).getByRole('status');
-		expect(valueOutput).toBeInTheDocument();
-		expect(valueOutput).toHaveTextContent('50');
-	});
-});
+			name: /value/iu,
+		})
+		const valueOutput = within(valueSection).getByRole('status')
+		expect(valueOutput).toBeInTheDocument()
+		expect(valueOutput).toHaveTextContent('50')
+	})
+})

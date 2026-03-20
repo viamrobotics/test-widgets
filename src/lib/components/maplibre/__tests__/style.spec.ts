@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest'
 
 // Mock maplibre-gl module to avoid URL.createObjectURL issues
 vi.mock('maplibre-gl', () => ({
@@ -13,44 +13,44 @@ vi.mock('maplibre-gl', () => ({
 	GeolocateControl: vi.fn(),
 	FullscreenControl: vi.fn(),
 	ScaleControl: vi.fn(),
-	addProtocol: vi.fn()
-}));
+	addProtocol: vi.fn(),
+}))
 
-import { registerGoogleMapsProtocol } from '../plugins/google-maps';
-import { getStyleSpecification } from '../style';
-import { MapProviders } from '../types';
+import { registerGoogleMapsProtocol } from '../plugins/google-maps'
+import { getStyleSpecification } from '../style'
+import { MapProviders } from '../types'
 
 vi.mock('../plugins/google-maps', () => ({
-	registerGoogleMapsProtocol: vi.fn()
-}));
+	registerGoogleMapsProtocol: vi.fn(),
+}))
 
 describe('MapLibre Provider', () => {
 	describe('getStyle', () => {
 		it('should return OpenStreetMap style for open-streets provider', async () => {
-			const style = await getStyleSpecification('open-street');
+			const style = await getStyleSpecification('open-street')
 
-			expect(style.version).toBe(8);
-			expect(style.sources).toHaveProperty('osm');
-			expect(style.sources).toHaveProperty('satellite');
-			expect(style.layers).toHaveLength(2);
-		});
+			expect(style.version).toBe(8)
+			expect(style.sources).toHaveProperty('osm')
+			expect(style.sources).toHaveProperty('satellite')
+			expect(style.layers).toHaveLength(2)
+		})
 
 		it('should return Google Maps style for google-maps provider with valid API key', async () => {
-			vi.mocked(registerGoogleMapsProtocol).mockReturnValue(Promise.resolve(true));
+			vi.mocked(registerGoogleMapsProtocol).mockReturnValue(Promise.resolve(true))
 
-			const style = await getStyleSpecification(MapProviders.googleMaps, 'test_api_key');
+			const style = await getStyleSpecification(MapProviders.googleMaps, 'test_api_key')
 
-			expect(style.version).toBe(8);
-			expect(style.sources).toHaveProperty('google');
-			expect(style.layers).toHaveLength(1);
-		});
+			expect(style.version).toBe(8)
+			expect(style.sources).toHaveProperty('google')
+			expect(style.layers).toHaveLength(1)
+		})
 
 		it('should fallback to OpenStreetMap when Google Maps API key is not configured', async () => {
-			const style = await getStyleSpecification(MapProviders.googleMaps);
+			const style = await getStyleSpecification(MapProviders.googleMaps)
 
-			expect(style.version).toBe(8);
-			expect(style.sources).toHaveProperty('osm');
-			expect(style.sources).toHaveProperty('satellite');
-		});
-	});
-});
+			expect(style.version).toBe(8)
+			expect(style.sources).toHaveProperty('osm')
+			expect(style.sources).toHaveProperty('satellite')
+		})
+	})
+})

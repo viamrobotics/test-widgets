@@ -1,2 +1,2 @@
-export { default as NavigationMap } from './index.svelte';
-export * from './types';
+export { default as NavigationMap } from './index.svelte'
+export * from './types'

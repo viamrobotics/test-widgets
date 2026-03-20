@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: number;
+		data: number
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 </script>
 
 <span class="font-roboto-mono flex flex-row gap-2">

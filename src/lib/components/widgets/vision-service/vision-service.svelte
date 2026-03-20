@@ -1,73 +1,80 @@
 <script lang="ts">
-	import { IconButton, Label, Select, Switch, Tooltip } from '@viamrobotics/prime-core';
-	import { VisionClient } from '@viamrobotics/sdk';
+	import { IconButton, Label, Select, Switch, Tooltip } from '@viamrobotics/prime-core'
+	import { VisionClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceQuery,
-		useResourceNames
-	} from '@viamrobotics/svelte-sdk';
+		useResourceNames,
+	} from '@viamrobotics/svelte-sdk'
 
-	import { useAddImageToDataset } from '$lib/add-image-to-dataset';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Queries from '$lib/components/queries.svelte';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import Image from './image.svelte';
-	import ObjectPointClouds from './object-point-clouds.svelte';
+	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Queries from '$lib/components/queries.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
-	const { addImageToDataset } = useAddImageToDataset();
+	import Image from './image.svelte'
+	import ObjectPointClouds from './object-point-clouds.svelte'
+
+	const { addImageToDataset } = useAddImageToDataset()
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'vision-service-view');
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'vision-service-view'
+	)
 
 	// special casing this for performance reasons
 	const getObjectPointCloudsRefetchInterval = createRefetchIntervalStore(
-		partID,
-		resourceName,
+		() => partID,
+		() => resourceName,
 		'vision-service-view-get-object-point-clouds',
 		// default of manual refresh
 		false
-	);
+	)
 
-	let initialFetchComplete = $state(false);
-	let cameraName = $state('');
-	let showObjectPointClouds = $state(false);
-	let isRemote = $state(false);
+	let initialFetchComplete = $state(false)
+	let cameraName = $state('')
+	let showObjectPointClouds = $state(false)
+	let isRemote = $state(false)
 
-	const cameras = useResourceNames(() => partID, 'camera');
+	const cameras = useResourceNames(() => partID, 'camera')
 
 	$effect.pre(() => {
 		if (cameras.current.length > 0 && !initialFetchComplete) {
-			initialFetchComplete = true;
-			cameraName = cameras.current[0]?.name ?? '';
+			initialFetchComplete = true
+			cameraName = cameras.current[0]?.name ?? ''
 		}
-	});
+	})
 
 	$effect.pre(() => {
 		if (isRemote && cameraName.includes(':')) {
 			// ignore first segment of remote name
-			const [, ...remoteName] = cameraName.split(':');
-			cameraName = remoteName.join(':');
+			const [, ...remoteName] = cameraName.split(':')
+			cameraName = remoteName.join(':')
 		}
-	});
+	})
 
 	const client = createResourceClient(
 		VisionClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
 		// Lower bound of 1Hz for getProperties, higher frequencies are wasteful.
 		refetchInterval:
-			$refetchInterval === false ? false : (Math.max($refetchInterval, 1000) as number | false)
-	}));
+			refetchInterval.current === false
+				? false
+				: (Math.max(refetchInterval.current, 1000) as number | false),
+	}))
 
 	const captureAllQuery = createResourceQuery(
 		client,
@@ -79,30 +86,30 @@
 					returnImage: true,
 					returnClassifications: Boolean(propertiesQuery.data?.classificationsSupported),
 					returnDetections: Boolean(propertiesQuery.data?.detectionsSupported),
-					returnObjectPointClouds: false
-				}
+					returnObjectPointClouds: false,
+				},
 			] as const,
 		() => ({
 			// Lower bound of 20Hz
 			refetchInterval:
-				$refetchInterval === false
+				refetchInterval.current === false
 					? false
-					: (Math.max($refetchInterval, 1000 / 20) as number | false)
+					: (Math.max(refetchInterval.current, 1000 / 20) as number | false),
 		})
-	);
+	)
 
 	const getObjectPointCloudsQuery = createResourceQuery(client, 'getObjectPointClouds', () => ({
 		// Lower bound of 20Hz
 		refetchInterval:
-			$getObjectPointCloudsRefetchInterval === false || !showObjectPointClouds
+			getObjectPointCloudsRefetchInterval.current === false || !showObjectPointClouds
 				? false
-				: (Math.max($getObjectPointCloudsRefetchInterval, 1000 / 20) as number | false)
-	}));
+				: (Math.max(getObjectPointCloudsRefetchInterval.current, 1000 / 20) as number | false),
+	}))
 
 	const onCameraSelect = (event: Event) => {
-		const { value } = event.target as HTMLSelectElement;
-		cameraName = value;
-	};
+		const { value } = event.target as HTMLSelectElement
+		cameraName = value
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -153,7 +160,7 @@
 							icon="camera-outline"
 							label="add image to dataset"
 							on:click={() => {
-								const imgData = captureAllQuery.data?.image?.image;
+								const imgData = captureAllQuery.data?.image?.image
 
 								if (imgData) {
 									addImageToDataset({
@@ -163,8 +170,8 @@
 										componentName: resourceName,
 										methodName: 'captureAllFromCamera',
 										mimeType: 'image/png',
-										dataRequestTimes: [new Date(), new Date()]
-									});
+										dataRequestTimes: [new Date(), new Date()],
+									})
 								}
 							}}
 						/>

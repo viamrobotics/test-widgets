@@ -1,93 +1,94 @@
 <script lang="ts">
-	import { resize } from '@svelte-put/resize';
-	import { Canvas } from '@threlte/core';
-	import { provideFontFamilies } from 'threlte-uikit';
+	import type { cameraApi, Classification, Detection } from '@viamrobotics/sdk'
 
-	import { Progress } from '@viamrobotics/prime-core';
-	import type { cameraApi, Classification, Detection } from '@viamrobotics/sdk';
+	import { resize } from '@svelte-put/resize'
+	import { Canvas } from '@threlte/core'
+	import { Progress } from '@viamrobotics/prime-core'
+	import { provideFontFamilies } from 'threlte-uikit'
 
-	import { useMeasureFps } from '$lib/fps.svelte';
-	import { provideDetectionsContext } from './context.svelte';
-	import { getImageSize, type Size } from './get-image-size';
-	import Legend from './legend.svelte';
-	import Scene from './scene.svelte';
+	import { useMeasureFps } from '$lib/fps.svelte'
+
+	import { provideDetectionsContext } from './context.svelte'
+	import { getImageSize, type Size } from './get-image-size'
+	import Legend from './legend.svelte'
+	import Scene from './scene.svelte'
 
 	interface Props {
 		data?: {
-			detections: Detection[];
-			image: ({ image: Uint8Array } & Exclude<cameraApi.Image, 'image'>) | undefined;
-			classifications: Classification[];
-		};
-		detectionsSupported: boolean;
-		classificationsSupported: boolean;
+			detections: Detection[]
+			image: ({ image: Uint8Array } & Exclude<cameraApi.Image, 'image'>) | undefined
+			classifications: Classification[]
+		}
+		detectionsSupported: boolean
+		classificationsSupported: boolean
 	}
 
-	const { data, detectionsSupported, classificationsSupported }: Props = $props();
+	const { data, detectionsSupported, classificationsSupported }: Props = $props()
 
-	provideDetectionsContext(() => data?.detections ?? []);
+	provideDetectionsContext(() => data?.detections ?? [])
 
-	const img = document.createElement('img');
+	const img = document.createElement('img')
 
-	let src = $state('');
+	let src = $state('')
 
 	const handleImageLoad = () => {
-		setSize();
-	};
+		setSize()
+	}
 
 	$effect(() => {
-		img.addEventListener('load', handleImageLoad);
-		return () => img.removeEventListener('load', handleImageLoad);
-	});
+		img.addEventListener('load', handleImageLoad)
+		return () => img.removeEventListener('load', handleImageLoad)
+	})
 
-	let url = '';
+	let url = ''
 
 	const getImageSrc = (image: string | Uint8Array | undefined) => {
 		if (typeof image === 'string') {
-			return `data:image/jpeg;base64,${image}`;
+			return `data:image/jpeg;base64,${image}`
 		} else if (image !== undefined) {
-			URL.revokeObjectURL(url);
-			url = URL.createObjectURL(new Blob([image], { type: 'image/jpeg' }));
-			return url;
+			URL.revokeObjectURL(url)
+			url = URL.createObjectURL(new Blob([image], { type: 'image/jpeg' }))
+			return url
 		}
 
-		return '';
-	};
+		return ''
+	}
 
 	$effect.pre(() => {
-		img.src = getImageSrc(data?.image?.image);
-		src = img.src;
-	});
+		img.src = getImageSrc(data?.image?.image)
+		src = img.src
+	})
 
 	provideFontFamilies({
 		publicSans: {
 			// This must remain `/static/*` while the frontend directory still exist
-			medium: '/static/fonts/public-sans.json'
-		}
-	});
+			medium: '/static/fonts/public-sans.json',
+		},
+	})
 
-	let container = $state<HTMLElement>();
-	let size = $state<Size>();
+	let container = $state<HTMLElement>()
+	let size = $state<Size>()
 
 	const setSize = () => {
 		if (container) {
-			size = getImageSize(img, container);
+			size = getImageSize(img, container)
 		}
-	};
+	}
 
 	$effect(() => {
-		void container;
-		setSize();
-	});
+		void container
+		setSize()
+	})
 
-	const fps = useMeasureFps();
+	const fps = useMeasureFps()
 
-	let lastSrc = '';
+	let lastSrc = ''
 	$effect(() => {
 		if (src !== lastSrc) {
-			fps.measure();
-			lastSrc = src;
+			fps.measure()
+			lastSrc = src
 		}
-	});
+	})
 </script>
 
 <div

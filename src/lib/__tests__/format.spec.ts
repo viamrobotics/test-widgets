@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest'
 
-import { formatNumeric } from '../format';
+import { formatNumeric } from '../format'
 
 describe('formatNumeric', () => {
 	const testCases = [
@@ -8,55 +8,55 @@ describe('formatNumeric', () => {
 			description: 'returns a number with two decimal places',
 			input: 12.3456,
 			decimal: undefined,
-			expected: '12.35'
+			expected: '12.35',
 		},
 		{
 			description: 'returns a number with four decimal places',
 			input: 12.3456,
 			decimal: 4,
-			expected: '12.3456'
+			expected: '12.3456',
 		},
 		{
 			description: 'returns a number with no decimal places',
 			input: 12.3456,
 			decimal: 0,
-			expected: '12'
-		}
-	];
+			expected: '12',
+		},
+	]
 
 	it.each(testCases)('$description', ({ decimal, expected, input }) => {
-		expect(formatNumeric(input, decimal)).toEqual(expected);
-	});
+		expect(formatNumeric(input, decimal)).toEqual(expected)
+	})
 
 	it('returns –– when the input is undefined', () => {
-		const result = formatNumeric(undefined);
+		const result = formatNumeric(undefined)
 
-		expect(result).toEqual('––');
-	});
+		expect(result).toEqual('––')
+	})
 
 	it('returns NaN when the input is NaN', () => {
-		const result = formatNumeric(Number.NaN);
+		const result = formatNumeric(Number.NaN)
 
-		expect(result).toEqual('NaN');
-	});
+		expect(result).toEqual('NaN')
+	})
 
 	it('returns +∞ when the input is positive infinity', () => {
-		const result = formatNumeric(Number.POSITIVE_INFINITY);
+		const result = formatNumeric(Number.POSITIVE_INFINITY)
 
-		expect(result).toEqual('+∞');
-	});
+		expect(result).toEqual('+∞')
+	})
 
 	it('returns -∞ when the input is negative infinity', () => {
-		const result = formatNumeric(Number.NEGATIVE_INFINITY);
+		const result = formatNumeric(Number.NEGATIVE_INFINITY)
 
-		expect(result).toEqual('-∞');
-	});
+		expect(result).toEqual('-∞')
+	})
 
 	it('throws an error when decimal is negative', () => {
 		const result = () => {
-			formatNumeric(12.3456, -2);
-		};
+			formatNumeric(12.3456, -2)
+		}
 
-		expect(result).toThrowError();
-	});
-});
+		expect(result).toThrowError()
+	})
+})

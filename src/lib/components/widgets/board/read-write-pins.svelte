@@ -1,34 +1,35 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import AnalogReadWrapper from './analog-read-wrapper.svelte';
-	import AnalogWriteWrapper from './analog-write-wrapper.svelte';
-	import { PinModes, type PinSelection, PinTypes } from './board.ts';
-	import GpioReadWrapper from './gpio-read-wrapper.svelte';
-	import GpioWriteWrapper from './gpio-write-wrapper.svelte';
-	import PinSelector from './pin-selector.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+
+	import AnalogReadWrapper from './analog-read-wrapper.svelte'
+	import AnalogWriteWrapper from './analog-write-wrapper.svelte'
+	import { PinModes, type PinSelection, PinTypes } from './board.ts'
+	import GpioReadWrapper from './gpio-read-wrapper.svelte'
+	import GpioWriteWrapper from './gpio-write-wrapper.svelte'
+	import PinSelector from './pin-selector.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	let pinSelection: PinSelection = $state({
 		pin: '',
 		type: PinTypes.GPIO,
-		mode: PinModes.WRITE
-	});
+		mode: PinModes.WRITE,
+	})
 
-	let currentError: Error | null = $state(null);
+	let currentError: Error | null = $state(null)
 
 	const setLastError = (err: Error | null) => {
-		currentError = err;
-	};
+		currentError = err
+	}
 
 	const handleChangedPinSelection = (newVal: PinSelection) => {
-		pinSelection = newVal;
-	};
+		pinSelection = newVal
+	}
 </script>
 
 <div class="flex w-full flex-col gap-6">

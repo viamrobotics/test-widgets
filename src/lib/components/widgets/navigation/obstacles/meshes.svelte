@@ -1,25 +1,26 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
-	import { type BufferGeometry, MathUtils } from 'three';
+	import type { GeoGeometry } from '@viamrobotics/sdk'
 
-	import { CapsuleGeometry } from '@viamrobotics/motion-tools/lib';
-	import type { GeoGeometry } from '@viamrobotics/sdk';
+	import { T } from '@threlte/core'
+	import { CapsuleGeometry } from '@viamrobotics/motion-tools/lib'
+	import { type BufferGeometry, MathUtils } from 'three'
 
-	import { AxesHelper } from '$lib/components/three';
-	import { getColor } from './color';
+	import { AxesHelper } from '$lib/components/three'
+
+	import { getColor } from './color'
 
 	interface Props {
-		obstacles: GeoGeometry[];
-		hovered: string | null;
-		setHovered: (_: string | null) => void;
-		view: '2D' | '3D';
+		obstacles: GeoGeometry[]
+		hovered: string | null
+		setHovered: (_: string | null) => void
+		view: '2D' | '3D'
 	}
 
-	const { obstacles, hovered, setHovered, view }: Props = $props();
+	const { obstacles, hovered, setHovered, view }: Props = $props()
 
 	const oncreate = (ref: BufferGeometry) => {
-		ref.rotateX(-Math.PI / 2);
-	};
+		ref.rotateX(-Math.PI / 2)
+	}
 </script>
 
 {#each obstacles as obstacle, i (i)}
@@ -27,7 +28,7 @@
 		<T.Group
 			userData.lngLat={{
 				lng: obstacle.location.longitude,
-				lat: obstacle.location.latitude
+				lat: obstacle.location.latitude,
 			}}
 		>
 			{#each obstacle.geometries as geometry (geometry.label)}

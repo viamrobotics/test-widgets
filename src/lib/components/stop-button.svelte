@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core';
+	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from './error-display.svelte';
+	import ErrorDisplay from './error-display.svelte'
 
 	interface Props {
-		onStop: () => void;
-		error: Error | null;
+		onStop: () => void
+		error: Error | null
 	}
 
-	const { error, onStop }: Props = $props();
+	const { error, onStop }: Props = $props()
 </script>
 
 <Button

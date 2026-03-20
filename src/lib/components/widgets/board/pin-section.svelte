@@ -1,16 +1,17 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { twMerge } from 'tailwind-merge';
+	import type { Snippet } from 'svelte'
+
+	import { twMerge } from 'tailwind-merge'
 
 	interface Props {
-		title: string;
-		class?: string;
-		children?: Snippet;
+		title: string
+		class?: string
+		children?: Snippet
 	}
 
-	const { title, class: className, children }: Props = $props();
+	const { title, class: className, children }: Props = $props()
 
-	const headingID = $props.id();
+	const headingID = $props.id()
 </script>
 
 <section

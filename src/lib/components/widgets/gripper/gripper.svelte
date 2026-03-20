@@ -1,28 +1,29 @@
 <script lang="ts">
-	import { GripperClient } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk';
+	import { GripperClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import IsMovingView from '$lib/components/is-moving.svelte';
-	import StopButton from '$lib/components/stop-button.svelte';
-	import Grab from './grab.svelte';
-	import Open from './open.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import IsMovingView from '$lib/components/is-moving.svelte'
+	import StopButton from '$lib/components/stop-button.svelte'
+
+	import Grab from './grab.svelte'
+	import Open from './open.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		GripperClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const stopMutation = createResourceMutation(client, 'stop');
+	const stopMutation = createResourceMutation(client, 'stop')
 </script>
 
 <ConnectionStatus {partID}>
@@ -53,7 +54,7 @@
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
-							stopMutation.mutate([]);
+							stopMutation.mutate([])
 						}}
 					/>
 				</ApiSection>

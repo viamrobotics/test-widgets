@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		moveStraight: (distanceMm: number, mmPerSec: number) => void;
+		moveStraight: (distanceMm: number, mmPerSec: number) => void
 	}
 
-	const { moveStraight }: Props = $props();
+	const { moveStraight }: Props = $props()
 
-	let distanceMm = $state(200);
-	let mmPerSec = $state(100);
+	let distanceMm = $state(200)
+	let mmPerSec = $state(100)
 </script>
 
 <div class="flex flex-row gap-4">
@@ -34,7 +34,7 @@
 		<NumericInput
 			value={distanceMm}
 			on:change={(event) => {
-				distanceMm = numberValueFromEvent(event) ?? 0;
+				distanceMm = numberValueFromEvent(event) ?? 0
 			}}
 			slot="input"
 		/>
@@ -59,7 +59,7 @@
 		<NumericInput
 			value={mmPerSec}
 			on:change={(event) => {
-				mmPerSec = numberValueFromEvent(event) ?? 0;
+				mmPerSec = numberValueFromEvent(event) ?? 0
 			}}
 			slot="input"
 		/>
@@ -71,7 +71,7 @@
 	class="mt-auto"
 	icon="play-circle-outline"
 	onclick={() => {
-		moveStraight(distanceMm, mmPerSec);
+		moveStraight(distanceMm, mmPerSec)
 	}}
 >
 	Execute

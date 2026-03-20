@@ -1,71 +1,73 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { Pane, Splitpanes } from 'svelte-splitpanes';
-	import { PersistedState, useResizeObserver } from 'runed';
+	import type { Snippet } from 'svelte'
 
-	import { Button } from '@viamrobotics/prime-core';
-	import { MachineConnectionEvent } from '@viamrobotics/sdk';
-	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk';
+	import { Button } from '@viamrobotics/prime-core'
+	import { MachineConnectionEvent } from '@viamrobotics/sdk'
+	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk'
+	import { PersistedState, useResizeObserver } from 'runed'
+	import { Pane, Splitpanes } from 'svelte-splitpanes'
 
-	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte';
-	import { showResourceInControlView } from '$lib/builtin';
-	import CardList from './card-list.svelte';
-	import { collapseAll, expandAll } from './card-list-item.svelte';
-	import type { NamedResourceStatus } from '$lib/resource';
-	import ResourceList from './resource-list.svelte';
+	import type { NamedResourceStatus } from '$lib/resource'
+
+	import { showResourceInControlView } from '$lib/builtin'
+	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
+
+	import { collapseAll, expandAll } from './card-list-item.svelte'
+	import CardList from './card-list.svelte'
+	import ResourceList from './resource-list.svelte'
 
 	interface Props {
-		partID: string;
-		urlHash: string;
-		hasUnsavedChanges?: boolean;
-		children: Snippet;
+		partID: string
+		urlHash: string
+		hasUnsavedChanges?: boolean
+		children: Snippet
 	}
 
-	const { partID, urlHash, hasUnsavedChanges = false, children }: Props = $props();
+	const { partID, urlHash, hasUnsavedChanges = false, children }: Props = $props()
 
-	const machineStatus = useMachineStatus(() => partID);
-	const connectionStatus = useConnectionStatus(() => partID);
+	const machineStatus = useMachineStatus(() => partID)
+	const connectionStatus = useConnectionStatus(() => partID)
 
 	const isLoading = $derived(
 		connectionStatus.current !== MachineConnectionEvent.CONNECTED || machineStatus.query.isPending
-	);
+	)
 
 	const resources = $derived.by(() => {
 		if (machineStatus.query.error || !machineStatus.current) {
-			return [];
+			return []
 		}
 
-		const namedResources: NamedResourceStatus[] = [];
+		const namedResources: NamedResourceStatus[] = []
 		for (const resource of machineStatus.current.resources) {
 			if (resource.name) {
-				namedResources.push({ ...resource, name: resource.name });
+				namedResources.push({ ...resource, name: resource.name })
 			}
 		}
 
-		return namedResources;
-	});
+		return namedResources
+	})
 
 	const filteredResources = $derived(
 		resources.filter((resource) => showResourceInControlView(resource.name))
-	);
+	)
 
-	let splitpanesDiv = $state.raw<HTMLDivElement>();
-	let horizontal = $state(false);
+	let splitpanesDiv = $state.raw<HTMLDivElement>()
+	let horizontal = $state(false)
 	useResizeObserver(
 		() => splitpanesDiv,
 		([entry]) => {
 			if (entry) {
-				const width = entry.contentRect.width;
-				horizontal = width < 640;
+				const width = entry.contentRect.width
+				horizontal = width < 640
 			}
 		}
-	);
+	)
 
-	const minSidebarPct = 17;
-	const sidebarPct = new PersistedState('sideBarPct', minSidebarPct);
+	const minSidebarPct = 17
+	const sidebarPct = new PersistedState('sideBarPct', minSidebarPct)
 	const onPaneResized = (event: CustomEvent<{ size: number }[]>) => {
-		sidebarPct.current = event.detail[0]?.size ?? minSidebarPct;
-	};
+		sidebarPct.current = event.detail[0]?.size ?? minSidebarPct
+	}
 </script>
 
 <!-- NOTE: `position: relative` ensure absolute children don't overflow -->

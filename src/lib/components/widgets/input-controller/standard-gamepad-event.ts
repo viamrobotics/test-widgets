@@ -6,7 +6,7 @@
  * TODO(ethanlook): Use the exported Threlte StandardGamepadEvent.
  */
 export interface StandardGamepadEvent {
-	type: string;
-	target: string;
-	value: number | { x: number; y: number };
+	type: string
+	target: string
+	value: number | { x: number; y: number }
 }

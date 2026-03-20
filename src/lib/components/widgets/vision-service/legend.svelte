@@ -1,56 +1,56 @@
 <script lang="ts">
-	import { SvelteSet } from 'svelte/reactivity';
+	import type { Classification } from '@viamrobotics/sdk'
 
-	import { Icon } from '@viamrobotics/prime-core';
-	import type { Classification } from '@viamrobotics/sdk';
+	import { Icon } from '@viamrobotics/prime-core'
+	import { SvelteSet } from 'svelte/reactivity'
 
-	import { useDetections } from './context.svelte';
+	import { useDetections } from './context.svelte'
 
 	interface Props {
-		classifications?: Classification[];
-		detectionsSupported: boolean;
-		classificationsSupported: boolean;
+		classifications?: Classification[]
+		detectionsSupported: boolean
+		classificationsSupported: boolean
 	}
 
-	const { classifications = [], detectionsSupported, classificationsSupported }: Props = $props();
+	const { classifications = [], detectionsSupported, classificationsSupported }: Props = $props()
 
-	const context = useDetections();
+	const context = useDetections()
 
-	let hoveredLabel = $state<keyof typeof context.byLabel>();
+	let hoveredLabel = $state<keyof typeof context.byLabel>()
 
-	const expandedLabels = new SvelteSet<string>();
+	const expandedLabels = new SvelteSet<string>()
 
-	let selectedTab = $state<'detections' | 'classifications'>(
+	let selectedTab = $derived<'detections' | 'classifications'>(
 		detectionsSupported ? 'detections' : 'classifications'
-	);
+	)
 
 	const toggleExpand = (label: string) => {
 		if (expandedLabels.has(label)) {
-			expandedLabels.delete(label);
+			expandedLabels.delete(label)
 		} else {
-			expandedLabels.add(label);
+			expandedLabels.add(label)
 		}
-	};
+	}
 
 	$effect.pre(() => {
 		if (hoveredLabel === undefined) {
-			context.hovered.clear();
+			context.hovered.clear()
 		} else {
-			const data = context.byLabel[hoveredLabel];
+			const data = context.byLabel[hoveredLabel]
 
 			if (data) {
 				for (const detection of data.detections) {
-					context.hovered.add(detection.id);
+					context.hovered.add(detection.id)
 				}
 			}
 		}
-	});
+	})
 
 	const compareConfidence = (a: Classification, b: Classification) => {
-		return b.confidence - a.confidence;
-	};
+		return b.confidence - a.confidence
+	}
 
-	const sortedClassifications = $derived(classifications.toSorted(compareConfidence));
+	const sortedClassifications = $derived(classifications.toSorted(compareConfidence))
 </script>
 
 <div class="flex">

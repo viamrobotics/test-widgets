@@ -4,10 +4,10 @@
   Contains a grid and axes, with small grid spaces placed at 1m.
 -->
 <script lang="ts">
-	import { Grid } from '@threlte/extras';
+	import { Grid } from '@threlte/extras'
 
-	import { AxesHelper } from '../../three';
-	import { renderOrder } from './render-order';
+	import { AxesHelper } from '../../three'
+	import { renderOrder } from './render-order'
 </script>
 
 <Grid

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core';
+	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
 
 	interface Props {
-		currentPosition: number;
-		moveTo: (angle: number) => void;
-		lastError: Error | null;
+		currentPosition: number
+		moveTo: (angle: number) => void
+		lastError: Error | null
 	}
 
-	const { currentPosition, moveTo, lastError }: Props = $props();
+	const { currentPosition, moveTo, lastError }: Props = $props()
 </script>
 
 <div class="flex flex-row gap-4 text-xs">

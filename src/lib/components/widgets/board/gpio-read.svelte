@@ -1,35 +1,35 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format';
-	import ConfirmingButton from './confirming-button.svelte';
-	import PinSection from './pin-section.svelte';
+	import { formatNumeric } from '$lib/format'
+
+	import ConfirmingButton from './confirming-button.svelte'
+	import PinSection from './pin-section.svelte'
 
 	interface Props {
-		gpioState: boolean | undefined;
-		pwmDutyCycle: number | undefined;
-		pwmFreq: number | undefined;
-		getState: () => void;
-		getDutyCycle: () => void;
-		getFrequency: () => void;
+		gpioState: boolean | undefined
+		pwmDutyCycle: number | undefined
+		pwmFreq: number | undefined
+		getState: () => void
+		getDutyCycle: () => void
+		getFrequency: () => void
 	}
 
-	const { gpioState, pwmDutyCycle, pwmFreq, getState, getDutyCycle, getFrequency }: Props =
-		$props();
+	const { gpioState, pwmDutyCycle, pwmFreq, getState, getDutyCycle, getFrequency }: Props = $props()
 
-	const id = $props.id();
-	const stateSectionId = `${id}-state-section`;
-	const dutySectionId = `${id}-duty-section`;
-	const freqSectionId = `${id}-freq-section`;
+	const id = $props.id()
+	const stateSectionId = `${id}-state-section`
+	const dutySectionId = `${id}-duty-section`
+	const freqSectionId = `${id}-freq-section`
 
-	const stateButtonId = `${id}-state-pin-get`;
-	const dutyButtonId = `${id}-duty-pin-get`;
-	const freqButtonId = `${id}-freq-pin-get`;
+	const stateButtonId = `${id}-state-pin-get`
+	const dutyButtonId = `${id}-duty-pin-get`
+	const freqButtonId = `${id}-freq-pin-get`
 
 	const formatState = (stateVal: boolean | undefined) => {
 		if (stateVal === undefined) {
-			return '––';
+			return '––'
 		}
-		return stateVal ? 'High' : 'Low';
-	};
+		return stateVal ? 'High' : 'Low'
+	}
 </script>
 
 <PinSection title="Read pin">
@@ -48,8 +48,8 @@
 				class={[
 					'my-auto',
 					{
-						'text-disabled': gpioState === undefined
-					}
+						'text-disabled': gpioState === undefined,
+					},
 				]}
 				for={stateButtonId}
 			>
@@ -82,8 +82,8 @@
 					class={[
 						'my-auto',
 						{
-							'text-disabled': pwmDutyCycle === undefined
-						}
+							'text-disabled': pwmDutyCycle === undefined,
+						},
 					]}
 					for={dutyButtonId}
 				>
@@ -114,8 +114,8 @@
 					class={[
 						'my-auto',
 						{
-							'text-disabled': pwmFreq === undefined
-						}
+							'text-disabled': pwmFreq === undefined,
+						},
 					]}
 					for={freqButtonId}
 				>

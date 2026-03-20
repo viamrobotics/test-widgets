@@ -1,59 +1,60 @@
 <script lang="ts">
-	import { Expandable, Icon } from '@viamrobotics/prime-core';
-	import type { GeometriesInFrame, Geometry } from '@viamrobotics/sdk';
+	import type { GeometriesInFrame, Geometry } from '@viamrobotics/sdk'
+
+	import { Expandable, Icon } from '@viamrobotics/prime-core'
 
 	interface Props {
-		geometries: GeometriesInFrame;
+		geometries: GeometriesInFrame
 	}
 
-	const { geometries }: Props = $props();
+	const { geometries }: Props = $props()
 
 	const formatNumber = (value: number | undefined): string => {
-		if (value === undefined) return '—';
-		return value.toFixed(3);
-	};
+		if (value === undefined) return '—'
+		return value.toFixed(3)
+	}
 
 	const getGeometryLabel = (geometry: Geometry, index: number): string => {
-		const typeCase = geometry.geometryType.case ?? 'unknown';
+		const typeCase = geometry.geometryType.case ?? 'unknown'
 		if (geometry.label) {
-			return `${geometry.label} (${typeCase})`;
+			return `${geometry.label} (${typeCase})`
 		}
-		return `${typeCase} ${index}`;
-	};
+		return `${typeCase} ${index}`
+	}
 
 	const getDimensionsDisplay = (geometry: Geometry): { label: string; value: string[] }[] => {
-		const { geometryType } = geometry;
+		const { geometryType } = geometry
 
 		switch (geometryType.case) {
 			case 'box': {
-				const box = geometryType.value;
+				const box = geometryType.value
 				return [
 					{
 						label: 'Dimensions',
 						value: [
 							`x: ${formatNumber(box.dimsMm?.x)}mm`,
 							`y: ${formatNumber(box.dimsMm?.y)}mm`,
-							`z: ${formatNumber(box.dimsMm?.z)}mm`
-						]
-					}
-				];
+							`z: ${formatNumber(box.dimsMm?.z)}mm`,
+						],
+					},
+				]
 			}
 			case 'sphere': {
-				const sphere = geometryType.value;
-				return [{ label: 'Radius', value: [`${formatNumber(sphere.radiusMm)}mm`] }];
+				const sphere = geometryType.value
+				return [{ label: 'Radius', value: [`${formatNumber(sphere.radiusMm)}mm`] }]
 			}
 			case 'capsule': {
-				const capsule = geometryType.value;
+				const capsule = geometryType.value
 				return [
 					{ label: 'Radius', value: [`${formatNumber(capsule.radiusMm)}mm`] },
-					{ label: 'Length', value: [`${formatNumber(capsule.lengthMm)}mm`] }
-				];
+					{ label: 'Length', value: [`${formatNumber(capsule.lengthMm)}mm`] },
+				]
 			}
 			default: {
-				return [];
+				return []
 			}
 		}
-	};
+	}
 </script>
 
 <div class="flex flex-col gap-1 p-2">

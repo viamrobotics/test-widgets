@@ -1,45 +1,46 @@
 <script lang="ts">
-	import { GantryClient } from '@viamrobotics/sdk';
+	import { GantryClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import IsMovingView from '$lib/components/is-moving.svelte';
-	import Queries from '$lib/components/queries.svelte';
-	import Query from '$lib/components/query.svelte';
-	import StopButton from '$lib/components/stop-button.svelte';
-	import Home from './home.svelte';
-	import MoveToPosition from './move-to-position.svelte';
-	import PositionAndLengths from './position-and-lengths.svelte';
-	import QuickMove from './quick-move.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import IsMovingView from '$lib/components/is-moving.svelte'
+	import Queries from '$lib/components/queries.svelte'
+	import Query from '$lib/components/query.svelte'
+	import StopButton from '$lib/components/stop-button.svelte'
+
+	import Home from './home.svelte'
+	import MoveToPosition from './move-to-position.svelte'
+	import PositionAndLengths from './position-and-lengths.svelte'
+	import QuickMove from './quick-move.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		GantryClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const options = { refetchInterval: 500 };
-	const positionQuery = createResourceQuery(client, 'getPosition', options);
-	const lengthsQuery = createResourceQuery(client, 'getLengths', options);
+	const options = { refetchInterval: 500 }
+	const positionQuery = createResourceQuery(client, 'getPosition', options)
+	const lengthsQuery = createResourceQuery(client, 'getLengths', options)
 
-	const moveMutation = createResourceMutation(client, 'moveToPosition');
-	const quickMoveMutation = createResourceMutation(client, 'moveToPosition');
-	const homeMutation = createResourceMutation(client, 'home');
-	const stopMutation = createResourceMutation(client, 'stop');
+	const moveMutation = createResourceMutation(client, 'moveToPosition')
+	const quickMoveMutation = createResourceMutation(client, 'moveToPosition')
+	const homeMutation = createResourceMutation(client, 'home')
+	const stopMutation = createResourceMutation(client, 'stop')
 
-	const positionHeadingID = $props.id();
+	const positionHeadingID = $props.id()
 </script>
 
 <ConnectionStatus {partID}>
@@ -77,7 +78,7 @@
 								{positions}
 								lastError={moveMutation.error}
 								moveTo={(newPos: number[], speeds: number[]) => {
-									moveMutation.mutate([newPos, speeds], {});
+									moveMutation.mutate([newPos, speeds], {})
 								}}
 							/>
 						{/if}
@@ -98,7 +99,7 @@
 									{positions}
 									lastError={quickMoveMutation.error}
 									moveTo={(newPos: number[], speeds: number[]) => {
-										quickMoveMutation.mutate([newPos, speeds], {});
+										quickMoveMutation.mutate([newPos, speeds], {})
 									}}
 								/>
 							{/if}
@@ -111,7 +112,7 @@
 						<Home
 							lastError={homeMutation.error}
 							home={() => {
-								homeMutation.mutate([], {});
+								homeMutation.mutate([], {})
 							}}
 						/>
 					</ApiSection>
@@ -122,7 +123,7 @@
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
-							stopMutation.mutate([]);
+							stopMutation.mutate([])
 						}}
 					/>
 				</ApiSection>

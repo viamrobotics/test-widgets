@@ -1,24 +1,25 @@
 <script lang="ts">
-	import { Button, Label, NumericInput } from '@viamrobotics/prime-core';
+	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import type { PosePosition } from './pose';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import { numberValueFromEvent } from '$lib/event-handlers'
+
+	import type { PosePosition } from './pose'
 
 	interface Props {
-		destination: PosePosition | undefined;
-		updateDestination: (_: Partial<PosePosition>) => void;
-		moveOnMap: (planDeviationM: number | undefined) => void;
-		stopPlan: () => void;
-		lastError: Error | null;
+		destination: PosePosition | undefined
+		updateDestination: (_: Partial<PosePosition>) => void
+		moveOnMap: (planDeviationM: number | undefined) => void
+		stopPlan: () => void
+		lastError: Error | null
 	}
 
-	const { destination, updateDestination, moveOnMap, stopPlan, lastError }: Props = $props();
+	const { destination, updateDestination, moveOnMap, stopPlan, lastError }: Props = $props()
 
-	const destinationID = $props.id();
+	const destinationID = $props.id()
 
-	let planDeviationM = $state<number>();
+	let planDeviationM = $state<number>()
 </script>
 
 <ApiSection title="MoveOnMap">
@@ -30,7 +31,7 @@
 			placeholder="1"
 			value={planDeviationM}
 			on:change={(event) => {
-				planDeviationM = numberValueFromEvent(event);
+				planDeviationM = numberValueFromEvent(event)
 			}}
 		/>
 	</Label>
@@ -55,8 +56,8 @@
 					value={destination?.x}
 					on:change={(event) => {
 						updateDestination({
-							x: numberValueFromEvent(event) ?? 0
-						});
+							x: numberValueFromEvent(event) ?? 0,
+						})
 					}}
 				/>
 			</Label>
@@ -69,8 +70,8 @@
 					value={destination?.y}
 					on:change={(event) => {
 						updateDestination({
-							y: numberValueFromEvent(event) ?? 0
-						});
+							y: numberValueFromEvent(event) ?? 0,
+						})
 					}}
 				/>
 			</Label>

@@ -1,26 +1,27 @@
-import { getContext, onDestroy, setContext } from 'svelte';
-import { get, type Writable, writable } from 'svelte/store';
 import type {
 	LngLat,
 	Map,
 	MapLayerEventType,
 	MapLayerMouseEvent,
-	MapLayerTouchEvent
-} from 'maplibre-gl';
+	MapLayerTouchEvent,
+} from 'maplibre-gl'
 
-import { type MapProvider, MapProviders } from './types';
+import { getContext, onDestroy, setContext } from 'svelte'
+import { get, type Writable, writable } from 'svelte/store'
 
-const mapContextKey = Symbol('viam-maplibre');
+import { type MapProvider, MapProviders } from './types'
+
+const mapContextKey = Symbol('viam-maplibre')
 
 interface MapContext {
-	map: Writable<Map>;
-	center: Writable<LngLat>;
-	size: Writable<{ width: number; height: number }>;
-	zoom: Writable<number>;
-	maxZoom: Writable<number>;
-	mapProvider: Writable<MapProvider>;
-	apiKey: Writable<string | undefined>;
-	satellite: Writable<boolean>;
+	map: Writable<Map>
+	center: Writable<LngLat>
+	size: Writable<{ width: number; height: number }>
+	zoom: Writable<number>
+	maxZoom: Writable<number>
+	mapProvider: Writable<MapProvider>
+	apiKey: Writable<string | undefined>
+	satellite: Writable<boolean>
 }
 
 export const provideMapContext = (
@@ -39,24 +40,24 @@ export const provideMapContext = (
 		maxZoom: writable(maxZoom),
 		mapProvider: writable(mapProvider),
 		apiKey: writable(apiKey),
-		satellite: writable(satellite)
-	};
+		satellite: writable(satellite),
+	}
 
-	setContext<MapContext>(mapContextKey, context);
+	setContext<MapContext>(mapContextKey, context)
 
-	return context;
-};
+	return context
+}
 
 /**
  * Provides context for a <MapLibre> instance. Must be called within a child of this component.
  */
 export const useMapLibre = () => {
-	const context = getContext<MapContext | undefined>(mapContextKey);
+	const context = getContext<MapContext | undefined>(mapContextKey)
 
 	if (!context) {
 		throw new Error(
 			'useMapLibre is a context sensitive hook that must be used inside a <MapLibre> component.'
-		);
+		)
 	}
 
 	return {
@@ -67,9 +68,9 @@ export const useMapLibre = () => {
 		maxZoom: context.maxZoom,
 		mapProvider: context.mapProvider,
 		apiKey: context.apiKey,
-		satellite: context.satellite
-	};
-};
+		satellite: context.satellite,
+	}
+}
 
 /**
  * Allows attaching events to a <MapLibre> instance. Must be called within a child of this component.
@@ -78,9 +79,9 @@ export const useMapLibreEvent = (
 	event: keyof MapLayerEventType | 'move' | 'resize',
 	listener: (ev: MapLayerMouseEvent | MapLayerTouchEvent) => void
 ) => {
-	const { map } = useMapLibre();
+	const { map } = useMapLibre()
 
-	map.on(event, listener);
+	map.on(event, listener)
 
-	onDestroy(() => map.off(event, listener));
-};
+	onDestroy(() => map.off(event, listener))
+}

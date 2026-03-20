@@ -1,55 +1,57 @@
 <script lang="ts">
-	import type { Pose } from '@viamrobotics/sdk';
-	import { ArmClient } from '@viamrobotics/sdk';
+	import type { Pose } from '@viamrobotics/sdk'
+
+	import { ArmClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import IsMovingView from '$lib/components/is-moving.svelte';
-	import Query from '$lib/components/query.svelte';
-	import StopButton from '$lib/components/stop-button.svelte';
-	import GetJointPositions from './get-joint-positions.svelte';
-	import MoveToJointPositions from './move-to-joint-positions.svelte';
-	import MoveToPosition from './move-to-position.svelte';
-	import QuickMove from './quick-move.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import IsMovingView from '$lib/components/is-moving.svelte'
+	import Query from '$lib/components/query.svelte'
+	import StopButton from '$lib/components/stop-button.svelte'
+
+	import GetJointPositions from './get-joint-positions.svelte'
+	import MoveToJointPositions from './move-to-joint-positions.svelte'
+	import MoveToPosition from './move-to-position.svelte'
+	import QuickMove from './quick-move.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		ArmClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const options = { refetchInterval: 500 };
-	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options);
-	const endPositionQuery = createResourceQuery(client, 'getEndPosition', options);
+	const options = { refetchInterval: 500 }
+	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
+	const endPositionQuery = createResourceQuery(client, 'getEndPosition', options)
 
-	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions');
-	const quickMoveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions');
-	const stopMutation = createResourceMutation(client, 'stop');
-	const moveToPosMutation = createResourceMutation(client, 'moveToPosition');
+	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
+	const quickMoveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
+	const stopMutation = createResourceMutation(client, 'stop')
+	const moveToPosMutation = createResourceMutation(client, 'moveToPosition')
 
 	const moveToJointPositions = (jointPositionsList: number[]) => {
-		moveToJointPosMutation.mutate([jointPositionsList], {});
-	};
+		moveToJointPosMutation.mutate([jointPositionsList], {})
+	}
 
 	const quickMoveToJointPositions = (jointPositionsList: number[]) => {
-		quickMoveToJointPosMutation.mutate([jointPositionsList], {});
-	};
+		quickMoveToJointPosMutation.mutate([jointPositionsList], {})
+	}
 
 	const moveToPosition = (position: Pose) => {
-		moveToPosMutation.mutate([position], {});
-	};
+		moveToPosMutation.mutate([position], {})
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -115,7 +117,7 @@
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
-							stopMutation.mutate([], {});
+							stopMutation.mutate([], {})
 						}}
 					/>
 				</ApiSection>

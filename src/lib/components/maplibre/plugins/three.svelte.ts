@@ -1,8 +1,8 @@
-import { type LngLat, MercatorCoordinate } from 'maplibre-gl';
-import { type BufferGeometry, type Camera, Line, Matrix4, type Scene, Vector3 } from 'three';
+import { type LngLat, MercatorCoordinate } from 'maplibre-gl'
+import { type BufferGeometry, type Camera, Line, Matrix4, type Scene, Vector3 } from 'three'
 
-import { useMapLibre } from '../hooks';
-import { lngLatToCartesian, mercatorToCartesian } from '../math';
+import { useMapLibre } from '../hooks'
+import { lngLatToCartesian, mercatorToCartesian } from '../math'
 
 /**
  *
@@ -26,14 +26,14 @@ export const useMapLibreThreeRenderer = (
 	cameraSignal: { current: Camera },
 	renderFn: (scene: Scene, camera: Camera) => void
 ) => {
-	const { map } = useMapLibre();
-	const cameraTransform = new Matrix4();
-	const cameraMatrix = new Matrix4();
-	const scale = new Matrix4();
+	const { map } = useMapLibre()
+	const cameraTransform = new Matrix4()
+	const cameraMatrix = new Matrix4()
+	const scale = new Matrix4()
 	const rotation = new Matrix4().multiplyMatrices(
 		new Matrix4().makeRotationX(-0.5 * Math.PI),
 		new Matrix4().makeRotationY(Math.PI)
-	);
+	)
 
 	$effect(() => {
 		map.addLayer({
@@ -41,52 +41,52 @@ export const useMapLibreThreeRenderer = (
 			type: 'custom',
 			renderingMode: '3d',
 			render(_, viewProjectionMatrix) {
-				const center = map.getCenter();
-				const mercator = MercatorCoordinate.fromLngLat(center, 0);
-				const mercatorScale = mercator.meterInMercatorCoordinateUnits();
-				const { x: cx, y: cy } = mercatorToCartesian(mercator, mercatorScale);
+				const center = map.getCenter()
+				const mercator = MercatorCoordinate.fromLngLat(center, 0)
+				const mercatorScale = mercator.meterInMercatorCoordinateUnits()
+				const { x: cx, y: cy } = mercatorToCartesian(mercator, mercatorScale)
 
-				scale.makeScale(mercatorScale, mercatorScale, -mercatorScale);
+				scale.makeScale(mercatorScale, mercatorScale, -mercatorScale)
 				cameraTransform
 					.multiplyMatrices(scale, rotation)
-					.setPosition(mercator.x, mercator.y, mercator.z);
+					.setPosition(mercator.x, mercator.y, mercator.z)
 
 				cameraSignal.current.projectionMatrix = cameraMatrix
 					.fromArray(viewProjectionMatrix)
-					.multiply(cameraTransform);
+					.multiply(cameraTransform)
 
 				scene.traverse((object) => {
 					const { lngLat } = object.userData as {
-						lngLat?: LngLat | LngLat[] | undefined;
-					};
+						lngLat?: LngLat | LngLat[] | undefined
+					}
 
 					if (lngLat === undefined) {
-						return;
+						return
 					}
 
 					if (Array.isArray(lngLat)) {
 						if (object instanceof Line) {
-							(object.geometry as BufferGeometry).setFromPoints(
+							;(object.geometry as BufferGeometry).setFromPoints(
 								lngLat.map((value) => {
-									const { x: ox, y: oy } = lngLatToCartesian(value, mercatorScale);
-									return new Vector3(cx - ox, 0, cy - oy);
+									const { x: ox, y: oy } = lngLatToCartesian(value, mercatorScale)
+									return new Vector3(cx - ox, 0, cy - oy)
 								})
-							);
-							object.computeLineDistances();
+							)
+							object.computeLineDistances()
 						}
 					} else {
-						const { x: ox, y: oy } = lngLatToCartesian(lngLat, mercatorScale);
-						object.position.set(cx - ox, 0, cy - oy);
+						const { x: ox, y: oy } = lngLatToCartesian(lngLat, mercatorScale)
+						object.position.set(cx - ox, 0, cy - oy)
 					}
-				});
+				})
 
-				renderFn(scene, cameraSignal.current);
-				map.triggerRepaint();
-			}
-		});
+				renderFn(scene, cameraSignal.current)
+				map.triggerRepaint()
+			},
+		})
 
 		return () => {
-			map.removeLayer('scene-layer');
-		};
-	});
-};
+			map.removeLayer('scene-layer')
+		}
+	})
+}

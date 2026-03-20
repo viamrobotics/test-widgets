@@ -1,43 +1,43 @@
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte';
-	import CopyButton from '$lib/components/copy-button.svelte';
-	import Table from '$lib/components/table.svelte';
+	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '$lib/components/copy-button.svelte'
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import Table from '$lib/components/table.svelte'
+	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
 	interface Props {
-		positions: number[];
-		moveToJointPositions: (jointPositions: number[]) => void;
-		lastError: Error | null;
+		positions: number[]
+		moveToJointPositions: (jointPositions: number[]) => void
+		lastError: Error | null
 	}
 
-	const { positions, moveToJointPositions, lastError }: Props = $props();
+	const { positions, moveToJointPositions, lastError }: Props = $props()
 
-	let desiredPositions = $state([...positions]);
-	let useRadians = $state(false);
+	let desiredPositions = $state([...positions])
+	let useRadians = $state(false)
 
 	const resetToZero = () => {
-		desiredPositions = [...desiredPositions].fill(0);
-	};
+		desiredPositions = [...desiredPositions].fill(0)
+	}
 
 	const resetToCurrent = () => {
-		desiredPositions = [...positions];
-	};
+		desiredPositions = [...positions]
+	}
 
 	const displayPositions = $derived(
 		desiredPositions.map((pos) => (useRadians ? degreesToRadians(pos) : pos))
-	);
+	)
 
-	const copyData = $derived(`[${displayPositions.join(', ')}]`);
+	const copyData = $derived(`[${displayPositions.join(', ')}]`)
 
 	const handleJointInputChange = (index: number, inputValue: number) => {
 		// default is degrees, so if user has toggle to radians, convert back to degrees before setting
 		// (we only convert to radians when displaying)
-		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue;
-	};
+		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
+	}
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -48,7 +48,7 @@
 			<AngleUnitToggle
 				{useRadians}
 				onToggle={() => {
-					useRadians = !useRadians;
+					useRadians = !useRadians
 				}}
 			/>
 			<CopyButton data={copyData} />
@@ -63,7 +63,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each { length: positions.length }, index (index)}
+			{#each { length: positions.length }, index}
 				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
 				<tr>
 					<th> {index} </th>
@@ -72,8 +72,8 @@
 							cx="max-w-[76px]"
 							{value}
 							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0;
-								handleJointInputChange(index, inputValue);
+								const inputValue = numberValueFromEvent(event) ?? 0
+								handleJointInputChange(index, inputValue)
 							}}
 						/>
 					</th>

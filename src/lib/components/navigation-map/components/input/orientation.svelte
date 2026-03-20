@@ -3,32 +3,31 @@
 An editable 2d rotation input, presented to the user in degrees
 -->
 <script lang="ts">
-	import { MathUtils } from 'three';
-
-	import { Label, SliderInput } from '@viamrobotics/prime-core';
+	import { Label, SliderInput } from '@viamrobotics/prime-core'
+	import { MathUtils } from 'three'
 
 	interface Props {
 		/** The rotation in radians */
-		th: number;
+		th: number
 		/** Fires when orientation changes with the new value in radians */
-		oninput?: (th: number) => void;
+		oninput?: (th: number) => void
 	}
 
-	const { th, oninput = undefined }: Props = $props();
+	const { th, oninput = undefined }: Props = $props()
 
-	let input = $state<HTMLInputElement>();
+	let input = $state<HTMLInputElement>()
 
 	const handleInput = () => {
 		if (!input) {
-			return;
+			return
 		}
 
-		const value = input.valueAsNumber;
+		const value = input.valueAsNumber
 
 		if (!Number.isNaN(value)) {
-			oninput?.(MathUtils.degToRad(value));
+			oninput?.(MathUtils.degToRad(value))
 		}
-	};
+	}
 </script>
 
 <div class="w-1/2">

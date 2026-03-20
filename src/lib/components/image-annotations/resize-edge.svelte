@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { ResizeHandleLocation } from './bounding-box-types';
-	import { ResizeHandleClassMap } from './resize-handle-props';
+	import { ResizeHandleLocation } from './bounding-box-types'
+	import { ResizeHandleClassMap } from './resize-handle-props'
 
 	interface Props {
-		edgeDesignation: ResizeHandleLocation;
-		zoom?: number;
-		onMouseDown: (event: MouseEvent, edge: ResizeHandleLocation) => void;
+		edgeDesignation: ResizeHandleLocation
+		zoom?: number
+		onMouseDown: (event: MouseEvent, edge: ResizeHandleLocation) => void
 	}
 
-	const { edgeDesignation, zoom = 1, onMouseDown }: Props = $props();
+	const { edgeDesignation, zoom = 1, onMouseDown }: Props = $props()
 
-	const wrapperStyle = $derived(ResizeHandleClassMap[edgeDesignation]);
+	const wrapperStyle = $derived(ResizeHandleClassMap[edgeDesignation])
 
 	const handleMouseDown = (event: MouseEvent) => {
-		(event as PointerEvent).stopPropagation();
-		onMouseDown(event, edgeDesignation);
-	};
+		;(event as PointerEvent).stopPropagation()
+		onMouseDown(event, edgeDesignation)
+	}
 
 	const scale = $derived.by(() => {
 		switch (edgeDesignation) {
 			case ResizeHandleLocation.L:
 			case ResizeHandleLocation.R: {
-				return `${1 / zoom} 1`;
+				return `${1 / zoom} 1`
 			}
 			case ResizeHandleLocation.T:
 			case ResizeHandleLocation.B: {
-				return `1 ${1 / zoom}`;
+				return `1 ${1 / zoom}`
 			}
 			default: {
-				return '';
+				return ''
 			}
 		}
-	});
+	})
 </script>
 
 <button

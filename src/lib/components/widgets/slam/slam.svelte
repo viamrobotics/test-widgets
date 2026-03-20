@@ -1,85 +1,89 @@
 <script lang="ts">
-	import { Vector2, type Vector3 } from 'three';
-
-	import { Input, Label } from '@viamrobotics/prime-core';
+	import { Input, Label } from '@viamrobotics/prime-core'
 	import {
 		motionApi,
 		MotionClient,
 		MotionConfiguration,
 		slamApi,
-		SlamClient
-	} from '@viamrobotics/sdk';
+		SlamClient,
+	} from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
+	import { Vector2, type Vector3 } from 'three'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Queries from '$lib/components/queries.svelte';
-	import Query from '$lib/components/query.svelte';
-	import { createRefetchIntervalStore, RefetchIntervals } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import SlamMap2D from '$lib/components/slam/map2d/index.svelte';
-	import MoveOnMap from './move-on-map.svelte';
-	import type { PosePosition } from './pose';
-	import Position from './position.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Queries from '$lib/components/queries.svelte'
+	import Query from '$lib/components/query.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import {
+		createRefetchIntervalStore,
+		RefetchIntervals,
+	} from '$lib/components/refetch-interval-store.svelte'
+	import SlamMap2D from '$lib/components/slam/map2d/index.svelte'
+
+	import type { PosePosition } from './pose'
+
+	import MoveOnMap from './move-on-map.svelte'
+	import Position from './position.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const refetchInterval = createRefetchIntervalStore(
-		partID,
-		resourceName,
+		() => partID,
+		() => resourceName,
 		'slam-view',
 		RefetchIntervals.FIVE_SEC
-	);
+	)
 
 	const slamClient = createResourceClient(
 		SlamClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const propertiesQuery = createResourceQuery(slamClient, 'getProperties', {
-		refetchInterval: false
-	});
+		refetchInterval: false,
+	})
 
 	const positionQuery = createResourceQuery(slamClient, 'getPosition', () => ({
 		enabled: propertiesQuery.data?.cloudSlam === false,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const pointCloudMapQuery = createResourceQuery(slamClient, 'getPointCloudMap', () => ({
 		enabled: propertiesQuery.data?.cloudSlam === false,
 		refetchInterval:
 			propertiesQuery.data?.mappingMode === slamApi.MappingMode.LOCALIZE_ONLY
 				? false
-				: $refetchInterval
-	}));
+				: refetchInterval.current,
+	}))
 
 	// Although this is the SLAM view, the motion client is heavily
 	// used for calling MoveOnMap and for rendering plans.
 	//
 	// The user must specify the motion service to use, typically
 	// "builtin".
-	let motionName = $state('');
+	let motionName = $state('')
 
 	const motionClient = createResourceClient(
 		MotionClient,
 		() => partID,
 		() => motionName || 'builtin'
-	);
+	)
 
-	const moveOnMapMutation = createResourceMutation(motionClient, 'moveOnMap');
-	const stopPlanMutation = createResourceMutation(motionClient, 'stopPlan');
+	const moveOnMapMutation = createResourceMutation(motionClient, 'moveOnMap')
+	const stopPlanMutation = createResourceMutation(motionClient, 'stopPlan')
 
-	let baseName = $state('');
+	let baseName = $state('')
 
 	const base = $derived({
 		name: baseName,
@@ -87,8 +91,8 @@
 		type: 'component',
 		subtype: 'base',
 		localName: '',
-		remotePath: []
-	});
+		remotePath: [],
+	})
 
 	// The map doesn't show an error or loading state for rendering the motion plan
 	// so wire up the createResourceQuery here and thread down the plan if it exists
@@ -98,9 +102,9 @@
 		() => [base.name, true] as const,
 		() => ({
 			enabled: baseName !== undefined,
-			refetchInterval: $refetchInterval
+			refetchInterval: refetchInterval.current,
 		})
-	);
+	)
 
 	const motionPath = $derived(
 		planQuery.data?.currentPlanWithStatus?.status?.state === motionApi.PlanState.IN_PROGRESS
@@ -111,27 +115,27 @@
 						.flatMap((pose) => (pose ? [pose.x / 1000, pose.y / 1000] : []))
 				)
 			: undefined
-	);
+	)
 
 	// User chosen destination for MoveOnMap.
-	let destination = $state<PosePosition>();
+	let destination = $state<PosePosition>()
 	const updateDestination = (next: Partial<PosePosition>) => {
 		destination = {
 			x: 0,
 			y: 0,
 			z: 0,
 			...destination,
-			...next
-		};
-	};
+			...next,
+		}
+	}
 	const handleClick = (value: Vector3) => {
-		const roundedX = Number.parseFloat(value.x.toFixed(5));
-		const roundedY = Number.parseFloat(value.y.toFixed(5));
+		const roundedX = Number.parseFloat(value.x.toFixed(5))
+		const roundedY = Number.parseFloat(value.y.toFixed(5))
 		updateDestination({
 			x: roundedX,
-			y: roundedY
-		});
-	};
+			y: roundedY,
+		})
+	}
 
 	// MoveOnMap goes to the user chosen position, but it maintains
 	// the current orientation of the base.
@@ -139,11 +143,11 @@
 		oX: positionQuery.data?.pose?.oX ?? 0,
 		oY: positionQuery.data?.pose?.oY ?? 0,
 		oZ: positionQuery.data?.pose?.oZ ?? 1,
-		theta: positionQuery.data?.pose?.theta ?? 0
-	});
+		theta: positionQuery.data?.pose?.theta ?? 0,
+	})
 	const moveOnMap = (planDeviationM: number | undefined) => {
 		if (!destination) {
-			return;
+			return
 		}
 
 		const motionConfiguration: [MotionConfiguration] | [] =
@@ -151,25 +155,25 @@
 				? []
 				: [
 						new MotionConfiguration({
-							planDeviationM
-						})
-					];
+							planDeviationM,
+						}),
+					]
 		moveOnMapMutation.mutate([
 			{
 				// The motion client expects mm
 				x: destination.x * 1000,
 				y: destination.y * 1000,
 				z: destination.z * 1000,
-				...currentOrientation
+				...currentOrientation,
 			},
 			base.name,
 			slamClient.current?.name ?? '',
-			...motionConfiguration
-		]);
-	};
+			...motionConfiguration,
+		])
+	}
 	const stopPlan = () => {
-		stopPlanMutation.mutate([base.name]);
-	};
+		stopPlanMutation.mutate([base.name])
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -247,7 +251,7 @@
 									// Position is returned in millimeters, but the map uses meters
 									x: positionQuery.data.pose.x / 1000,
 									y: positionQuery.data.pose.y / 1000,
-									theta: positionQuery.data.pose.theta
+									theta: positionQuery.data.pose.theta,
 								}}
 								{motionPath}
 								destination={destination ? new Vector2(destination.x, destination.y) : undefined}

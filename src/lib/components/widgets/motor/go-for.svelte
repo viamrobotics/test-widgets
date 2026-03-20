@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		goFor: (rpm: number, revolutions: number) => void;
+		goFor: (rpm: number, revolutions: number) => void
 	}
 
-	const { goFor }: Props = $props();
+	const { goFor }: Props = $props()
 
-	let revolutions = $state(1);
-	let rpm = $state(10);
+	let revolutions = $state(1)
+	let rpm = $state(10)
 </script>
 
 <div class="flex flex-row gap-4">
@@ -39,7 +39,7 @@
 			slot="input"
 			value={rpm}
 			on:change={(event) => {
-				rpm = numberValueFromEvent(event) ?? 0;
+				rpm = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>
@@ -65,7 +65,7 @@
 			slot="input"
 			value={revolutions}
 			on:change={(event) => {
-				revolutions = numberValueFromEvent(event) ?? 0;
+				revolutions = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>

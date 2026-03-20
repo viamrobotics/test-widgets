@@ -1,47 +1,47 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { useThrelte } from '@threlte/core';
-	import { useInteractivity } from '@threlte/extras';
-	import { Vector2 } from 'three';
-	import { Container, Text } from 'threlte-uikit';
+	import { useThrelte } from '@threlte/core'
+	import { useInteractivity } from '@threlte/extras'
+	import { onMount } from 'svelte'
+	import { Vector2 } from 'three'
+	import { Container, Text } from 'threlte-uikit'
 
-	import { lightTextColors } from './color';
-	import { type Detection, useDetections } from './context.svelte';
+	import { lightTextColors } from './color'
+	import { type Detection, useDetections } from './context.svelte'
 
-	const { size } = useThrelte();
+	const { size } = useThrelte()
 
 	interface Props {
-		detection: Detection;
-		factor?: number;
+		detection: Detection
+		factor?: number
 	}
 
-	const { detection, factor = 0 }: Props = $props();
+	const { detection, factor = 0 }: Props = $props()
 
 	const normalizedDeviceCoordsToPixel = (
 		ndcCoords: Vector2,
 		canvasWidth: number,
 		canvasHeight: number
 	) => {
-		const screenX = (ndcCoords.x + 1) / 2;
-		const screenY = (ndcCoords.y + 1) / 2;
-		const pixelX = Math.round(screenX * canvasWidth);
-		const pixelY = Math.round((1 - screenY) * canvasHeight);
-		return new Vector2(pixelX, pixelY);
-	};
+		const screenX = (ndcCoords.x + 1) / 2
+		const screenY = (ndcCoords.y + 1) / 2
+		const pixelX = Math.round(screenX * canvasWidth)
+		const pixelY = Math.round((1 - screenY) * canvasHeight)
+		return new Vector2(pixelX, pixelY)
+	}
 
-	const { pointer } = useInteractivity();
-	const context = useDetections();
+	const { pointer } = useInteractivity()
+	const context = useDetections()
 
-	const factoredxMin = $derived(Number(detection.xMin) * factor);
-	const factoredxMax = $derived(Number(detection.xMax) * factor);
-	const factoredyMin = $derived(Number(detection.yMin) * factor);
-	const factoredyMax = $derived(Number(detection.yMax) * factor);
+	const factoredxMin = $derived(Number(detection.xMin) * factor)
+	const factoredxMax = $derived(Number(detection.xMax) * factor)
+	const factoredyMin = $derived(Number(detection.yMin) * factor)
+	const factoredyMax = $derived(Number(detection.yMax) * factor)
 
 	/**
 	 * Check preexisting mouse coords for hover state
 	 */
 	$effect.pre(() => {
-		const pixelCoords = normalizedDeviceCoordsToPixel($pointer, $size.width, $size.height);
+		const pixelCoords = normalizedDeviceCoordsToPixel($pointer, $size.width, $size.height)
 
 		if (
 			factoredxMin < pixelCoords.x &&
@@ -49,23 +49,23 @@
 			factoredyMin < pixelCoords.y &&
 			factoredyMax > pixelCoords.y
 		) {
-			context.hovered.add(detection.id);
+			context.hovered.add(detection.id)
 		} else {
-			context.hovered.delete(detection.id);
+			context.hovered.delete(detection.id)
 		}
-	});
+	})
 
-	const hovering = $derived(context.hovered.has(detection.id));
+	const hovering = $derived(context.hovered.has(detection.id))
 
 	// These are ballparking, but seem good enough for nearly all cases
-	const isDetectionNearTop = $derived(factoredyMin < 30);
-	const isDetectionNearRight = $derived(factoredxMin > $size.width * 0.66);
+	const isDetectionNearTop = $derived(factoredyMin < 30)
+	const isDetectionNearRight = $derived(factoredxMin > $size.width * 0.66)
 
 	onMount(() => {
 		return () => {
-			context.hovered.delete(detection.id);
-		};
-	});
+			context.hovered.delete(detection.id)
+		}
+	})
 </script>
 
 <Container

@@ -1,59 +1,59 @@
 <script lang="ts">
-	import { isEqual, zip } from 'lodash-es';
+	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { isEqual, zip } from 'lodash-es'
 
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import Table from '$lib/components/table.svelte'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import Table from '$lib/components/table.svelte';
-	import { matchArrayLength } from './match-array-length';
+	import { matchArrayLength } from './match-array-length'
 
 	interface Props {
-		positions: number[];
-		moveTo: (newPos: number[], speeds: number[]) => void;
-		lastError: Error | null;
+		positions: number[]
+		moveTo: (newPos: number[], speeds: number[]) => void
+		lastError: Error | null
 	}
 
-	const { positions, moveTo, lastError }: Props = $props();
+	const { positions, moveTo, lastError }: Props = $props()
 
-	let desiredSpeeds: number[] = $state([]);
+	let desiredSpeeds: number[] = $state([])
 
 	$effect(() => {
-		const nextDesiredSpeeds = matchArrayLength(desiredSpeeds, positions, 50);
+		const nextDesiredSpeeds = matchArrayLength(desiredSpeeds, positions, 50)
 
 		if (!isEqual(nextDesiredSpeeds, desiredSpeeds)) {
-			desiredSpeeds = nextDesiredSpeeds;
+			desiredSpeeds = nextDesiredSpeeds
 		}
-	});
+	})
 
-	let desiredPositions: number[] = $state([]);
+	let desiredPositions: number[] = $state([])
 
 	$effect(() => {
-		const nextDesiredPositions = matchArrayLength(desiredPositions, positions, 0);
+		const nextDesiredPositions = matchArrayLength(desiredPositions, positions, 0)
 
 		if (!isEqual(nextDesiredPositions, desiredPositions)) {
-			desiredPositions = nextDesiredPositions;
+			desiredPositions = nextDesiredPositions
 		}
-	});
+	})
 
 	const onChangePos = (index: number, event: Event) => {
-		const target = event.target as HTMLInputElement;
-		desiredPositions[index] = target.valueAsNumber;
-	};
+		const target = event.target as HTMLInputElement
+		desiredPositions[index] = target.valueAsNumber
+	}
 	const onChangeSpeed = (index: number, event: Event) => {
-		const target = event.target as HTMLInputElement;
-		desiredSpeeds[index] = target.valueAsNumber;
-	};
+		const target = event.target as HTMLInputElement
+		desiredSpeeds[index] = target.valueAsNumber
+	}
 	const resetToZero = () => {
-		desiredSpeeds = matchArrayLength([], positions, 50);
-		desiredPositions = matchArrayLength([], positions, 0);
-	};
+		desiredSpeeds = matchArrayLength([], positions, 50)
+		desiredPositions = matchArrayLength([], positions, 0)
+	}
 	const resetToCurrent = () => {
-		desiredPositions = positions;
-	};
+		desiredPositions = positions
+	}
 
-	const id = $props.id();
-	const moveToHeadingID = `${id}-move-to-heading`;
-	const speedHeadingID = `${id}-speed-heading`;
+	const id = $props.id()
+	const moveToHeadingID = `${id}-move-to-heading`
+	const speedHeadingID = `${id}-speed-heading`
 </script>
 
 <div class="flex flex-col gap-4">

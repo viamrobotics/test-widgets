@@ -1,6 +1,6 @@
-import { SlamPosition } from '@viamrobotics/sdk';
+import { SlamPosition } from '@viamrobotics/sdk'
 
-export const emptyPosition: SlamPosition = new SlamPosition();
+export const emptyPosition: SlamPosition = new SlamPosition()
 
 export const position: SlamPosition = new SlamPosition({
 	pose: {
@@ -10,6 +10,6 @@ export const position: SlamPosition = new SlamPosition({
 		oX: 4,
 		oY: 5,
 		oZ: 6,
-		theta: 7
-	}
-});
+		theta: 7,
+	},
+})

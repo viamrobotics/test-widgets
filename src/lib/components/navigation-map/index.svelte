@@ -15,43 +15,43 @@
   ```
 -->
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { LngLat, Map as MapType } from 'maplibre-gl';
+	import type { LngLat, Map as MapType } from 'maplibre-gl'
+	import type { Snippet } from 'svelte'
 
-	import { type GeoPose, type MapProvider, MapProviders, type Waypoint } from '../maplibre/types';
-	import Map from './components/map.svelte';
-	import { NavigationTab, type NavigationTabType, type Obstacle, type Path } from './types';
-	import { provideNavigationMapContext } from './use-navigation-map.svelte';
+	import { type GeoPose, type MapProvider, MapProviders, type Waypoint } from '../maplibre/types'
+	import Map from './components/map.svelte'
+	import { NavigationTab, type NavigationTabType, type Obstacle, type Path } from './types'
+	import { provideNavigationMapContext } from './use-navigation-map.svelte'
 
 	interface Props {
 		/** The map environment. "debug" assumes the robot is on and connected. */
-		environment?: 'debug' | 'configure';
+		environment?: 'debug' | 'configure'
 		/** The waypoints to render on the map. */
-		waypoints?: Waypoint[];
+		waypoints?: Waypoint[]
 		/** The obstacles to render on the map. */
-		obstacles?: Obstacle[];
+		obstacles?: Obstacle[]
 		/** The paths to render on the map. */
-		paths?: Path[];
+		paths?: Path[]
 		/** The initial tab to show. */
-		tab?: NavigationTabType;
+		tab?: NavigationTabType
 		/** A reference to the maplibre map, once created. */
-		map?: MapType;
+		map?: MapType
 		/** The visible set of tabs. */
-		tabs?: NavigationTabType[];
+		tabs?: NavigationTabType[]
 		/** The pose (Lng,Lat) and rotation of a base. */
-		baseGeoPose?: GeoPose;
+		baseGeoPose?: GeoPose
 		/** The map provider to use. */
-		mapProvider?: MapProvider;
+		mapProvider?: MapProvider
 		/** The API key for the map provider. */
-		mapProviderKey?: string;
+		mapProviderKey?: string
 		/** The current tab to show. */
-		currentTab?: Snippet;
+		currentTab?: Snippet
 		/** Fires when the obstacles are updated. */
-		onupdate: (obstacles: Obstacle[]) => void;
+		onupdate: (obstacles: Obstacle[]) => void
 		/** Fires when a waypoint is added. */
-		onaddwaypoint: (waypoint: LngLat) => void;
+		onaddwaypoint: (waypoint: LngLat) => void
 		/** Fires when a waypoint is deleted. */
-		ondeletewaypoint: (id: string) => void;
+		ondeletewaypoint: (id: string) => void
 	}
 
 	let {
@@ -68,8 +68,8 @@
 		currentTab,
 		onupdate,
 		onaddwaypoint,
-		ondeletewaypoint
-	}: Props = $props();
+		ondeletewaypoint,
+	}: Props = $props()
 
 	const context = provideNavigationMapContext(
 		() => tab,
@@ -77,11 +77,11 @@
 		() => waypoints,
 		() => paths,
 		() => environment
-	);
+	)
 
 	$effect(() => {
-		context.obstacles = obstacles;
-	});
+		context.obstacles = obstacles
+	})
 </script>
 
 <Map

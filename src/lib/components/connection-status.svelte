@@ -1,19 +1,19 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { twMerge } from 'tailwind-merge';
+	import type { Snippet } from 'svelte'
 
-	import { Progress } from '@viamrobotics/prime-core';
-	import { MachineConnectionEvent } from '@viamrobotics/sdk';
-	import { useConnectionStatus } from '@viamrobotics/svelte-sdk';
+	import { Progress } from '@viamrobotics/prime-core'
+	import { MachineConnectionEvent } from '@viamrobotics/sdk'
+	import { useConnectionStatus } from '@viamrobotics/svelte-sdk'
+	import { twMerge } from 'tailwind-merge'
 
 	interface Props {
-		partID: string;
-		connectingClass?: string;
-		disconnectedClass?: string;
-		status?: MachineConnectionEvent;
-		connected?: Snippet;
-		connecting?: Snippet;
-		disconnected?: Snippet;
+		partID: string
+		connectingClass?: string
+		disconnectedClass?: string
+		status?: MachineConnectionEvent
+		connected?: Snippet
+		connecting?: Snippet
+		disconnected?: Snippet
 	}
 
 	const {
@@ -23,13 +23,13 @@
 		status,
 		connected,
 		connecting,
-		disconnected
-	}: Props = $props();
+		disconnected,
+	}: Props = $props()
 
-	const connectionStatus = useConnectionStatus(() => partID);
-	const currentStatus = $derived(status ?? connectionStatus.current);
+	const connectionStatus = useConnectionStatus(() => partID)
+	const currentStatus = $derived(status ?? connectionStatus.current)
 
-	let isErrorExpanded = $state(false);
+	let isErrorExpanded = $state(false)
 </script>
 
 <svelte:boundary>
@@ -74,7 +74,7 @@
 			<button
 				class="text-disabled text-xs hover:underline"
 				onclick={() => {
-					isErrorExpanded = !isErrorExpanded;
+					isErrorExpanded = !isErrorExpanded
 				}}>{isErrorExpanded ? 'Hide' : 'Show'} error</button
 			>
 			{#if isErrorExpanded}

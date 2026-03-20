@@ -1,27 +1,27 @@
 <script lang="ts">
-	import type { Map } from 'maplibre-gl';
+	import type { Waypoint } from '@viamrobotics/sdk'
+	import type { Map } from 'maplibre-gl'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core';
-	import type { Waypoint } from '@viamrobotics/sdk';
+	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
 
 	interface Props {
-		map?: Map | undefined;
-		waypoints: Waypoint[];
-		hovered: string | null;
-		onEnter: (id: string) => void;
-		onLeave: () => void;
-		onRemove: (id: string) => void;
+		map?: Map | undefined
+		waypoints: Waypoint[]
+		hovered: string | null
+		onEnter: (id: string) => void
+		onLeave: () => void
+		onRemove: (id: string) => void
 	}
 
-	const { map, waypoints, hovered, onEnter, onLeave, onRemove }: Props = $props();
+	const { map, waypoints, hovered, onEnter, onLeave, onRemove }: Props = $props()
 
 	const flyTo = (lng: number, lat: number) => {
 		map?.flyTo({
 			center: [lng, lat],
 			zoom: 20,
-			speed: 2
-		});
-	};
+			speed: 2,
+		})
+	}
 </script>
 
 {#each waypoints as waypoint, index (waypoint.id)}
@@ -44,12 +44,12 @@
 						label="Focus waypoint {index + 1}"
 						on:click={(event) => {
 							if (!waypoint.location) {
-								return;
+								return
 							}
 
-							event.stopPropagation();
+							event.stopPropagation()
 
-							flyTo(waypoint.location.longitude, waypoint.location.latitude);
+							flyTo(waypoint.location.longitude, waypoint.location.latitude)
 						}}
 					/>
 

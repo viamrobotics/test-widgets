@@ -1,53 +1,53 @@
 <script lang="ts">
-	import { Button, IconButton, Tooltip } from '@viamrobotics/prime-core';
-	import type { appRobotApi } from '@viamrobotics/sdk';
+	import type { appRobotApi } from '@viamrobotics/sdk'
 
-	import { sortObjectKeys } from '$lib/sort';
+	import { Button, IconButton, Tooltip } from '@viamrobotics/prime-core'
 
-	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview';
-	import { parseComponentConfig, transformComponentConfig } from './transform-component-config';
+	import { sortObjectKeys } from '$lib/sort'
+
+	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
+
+	import { parseComponentConfig, transformComponentConfig } from './transform-component-config'
 
 	interface Props {
-		data: appRobotApi.ComponentConfig[];
+		data: appRobotApi.ComponentConfig[]
 		/** A map of generated component preview IDs to component previews. */
-		previews: ComponentPreviews;
+		previews: ComponentPreviews
 		/** A snippet for creating component previews. Requires a `preview` DoCommand to be implemented. */
-		componentPreview?: ComponentPreviewSnippet | undefined;
-		onAddComponent?: ((component: appRobotApi.ComponentConfig) => void) | undefined;
+		componentPreview?: ComponentPreviewSnippet | undefined
+		onAddComponent?: ((component: appRobotApi.ComponentConfig) => void) | undefined
 	}
 
 	const {
 		data,
 		previews,
 		onAddComponent = undefined,
-		componentPreview = undefined
-	}: Props = $props();
+		componentPreview = undefined,
+	}: Props = $props()
 
 	const sortedData = $derived(
 		data
 			.toSorted(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB))
 			.map((value) => sortObjectKeys(transformComponentConfig(value)))
-	);
+	)
 
 	const copyToClipboard = async () => {
 		try {
-			const resourcesStr = JSON.stringify(data, null, 2);
-			await window.navigator.clipboard.writeText(resourcesStr);
+			const resourcesStr = JSON.stringify(data, null, 2)
+			await globalThis.navigator.clipboard.writeText(resourcesStr)
 		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error('failed to copy resources to clipboard', error);
+			console.error('failed to copy resources to clipboard', error)
 		}
-	};
+	}
 
 	const copyAttributes = async (value: Record<string, unknown>) => {
 		try {
-			const attributesStr = JSON.stringify(value.attributes ?? {}, null, 2);
-			await window.navigator.clipboard.writeText(attributesStr);
+			const attributesStr = JSON.stringify(value.attributes ?? {}, null, 2)
+			await globalThis.navigator.clipboard.writeText(attributesStr)
 		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error('failed to copy attributes to clipboard', error);
+			console.error('failed to copy attributes to clipboard', error)
 		}
-	};
+	}
 </script>
 
 {#if sortedData.length === 0}

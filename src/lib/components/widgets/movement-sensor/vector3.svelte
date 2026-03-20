@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { Vector3 } from '@viamrobotics/sdk';
+	import type { Vector3 } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: Vector3;
+		data: Vector3
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 </script>
 
 <dl class="flex flex-col gap-2">

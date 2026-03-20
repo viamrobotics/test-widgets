@@ -1,13 +1,15 @@
 <script lang="ts">
-	import { twMerge } from 'tailwind-merge';
+	import type { Snippet } from 'svelte'
+
+	import { twMerge } from 'tailwind-merge'
 
 	interface Props {
-		contentRect: DOMRect | undefined;
-		cx?: string;
-		children?: import('svelte').Snippet;
+		contentRect: DOMRect | undefined
+		cx?: string
+		children?: Snippet
 	}
 
-	const { contentRect, cx = '', children }: Props = $props();
+	const { contentRect, cx = '', children }: Props = $props()
 </script>
 
 <div

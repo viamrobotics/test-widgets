@@ -1,8 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { appRobotApi } from '@viamrobotics/sdk'
+import { describe, expect, it } from 'vitest'
 
-import { appRobotApi } from '@viamrobotics/sdk';
-
-import * as Subject from '../transform-component-config.ts';
+import * as Subject from '../transform-component-config.ts'
 
 describe('transformComponentConfig', () => {
 	it('should return a non-transformed config when no qualified api or model', () => {
@@ -11,17 +10,17 @@ describe('transformComponentConfig', () => {
 				api: 'not-qualified',
 				model: 'my-model',
 				namespace: 'my-namespace',
-				type: 'my-type'
+				type: 'my-type',
 			})
-		);
+		)
 
 		expect(result).toEqual({
 			api: 'not-qualified',
 			model: 'my-model',
 			namespace: 'my-namespace',
-			type: 'my-type'
-		});
-	});
+			type: 'my-type',
+		})
+	})
 
 	it('should return a non-transformed config when no qualified api', () => {
 		const result = Subject.transformComponentConfig(
@@ -29,17 +28,17 @@ describe('transformComponentConfig', () => {
 				api: 'not-qualified',
 				model: 'my:qualified:model',
 				namespace: 'my-namespace',
-				type: 'my-type'
+				type: 'my-type',
 			})
-		);
+		)
 
 		expect(result).toEqual({
 			api: 'not-qualified',
 			model: 'my:qualified:model',
 			namespace: 'my-namespace',
-			type: 'my-type'
-		});
-	});
+			type: 'my-type',
+		})
+	})
 
 	it('should return a non-transformed config when no qualified model', () => {
 		const result = Subject.transformComponentConfig(
@@ -47,17 +46,17 @@ describe('transformComponentConfig', () => {
 				api: 'my:qualified:api',
 				model: 'my-model',
 				namespace: 'my-namespace',
-				type: 'my-type'
+				type: 'my-type',
 			})
-		);
+		)
 
 		expect(result).toEqual({
 			api: 'my:qualified:api',
 			model: 'my-model',
 			namespace: 'my-namespace',
-			type: 'my-type'
-		});
-	});
+			type: 'my-type',
+		})
+	})
 
 	it('should return a transformed config', () => {
 		const result = Subject.transformComponentConfig(
@@ -65,16 +64,16 @@ describe('transformComponentConfig', () => {
 				api: 'my:qualified:api',
 				model: 'my:qualified:model',
 				namespace: 'my-namespace',
-				type: 'my-type'
+				type: 'my-type',
 			})
-		);
+		)
 
 		expect(result).toEqual({
 			api: 'my:qualified:api',
-			model: 'my:qualified:model'
-		});
-	});
-});
+			model: 'my:qualified:model',
+		})
+	})
+})
 
 describe('parseComponentConfig', () => {
 	it('should return a config', () => {
@@ -82,14 +81,14 @@ describe('parseComponentConfig', () => {
 			api: 'not-qualified',
 			model: 'my-model',
 			namespace: 'my-namespace',
-			type: 'my-type'
-		});
+			type: 'my-type',
+		})
 
 		expect(result.toJson()).toEqual({
 			api: 'not-qualified',
 			model: 'my-model',
 			namespace: 'my-namespace',
-			type: 'my-type'
-		});
-	});
-});
+			type: 'my-type',
+		})
+	})
+})

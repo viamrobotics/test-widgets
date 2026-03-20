@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { twMerge } from 'tailwind-merge';
+	import { twMerge } from 'tailwind-merge'
 
 	interface Props {
-		lastError: Error | null | undefined;
-		id?: string;
-		class?: string;
+		lastError: Error | null | undefined
+		id?: string
+		class?: string
 	}
 
-	const defaultId = $props.id();
+	const defaultId = $props.id()
 
-	const { lastError, id = `error_${defaultId}`, class: className = '' }: Props = $props();
+	const { lastError, id = `error_${defaultId}`, class: className = '' }: Props = $props()
 
-	const errorName = $derived(lastError?.name);
-	const errorMessage = $derived(lastError?.message);
+	const errorName = $derived(lastError?.name)
+	const errorMessage = $derived(lastError?.message)
 </script>
 
 {#if errorName && errorMessage}

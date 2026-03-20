@@ -1,19 +1,19 @@
 <script lang="ts">
-	import type { QueryObserverResult } from '@tanstack/svelte-query';
+	import type { QueryObserverResult } from '@tanstack/svelte-query'
+	import type { CameraClient } from '@viamrobotics/sdk'
 
-	import { Button } from '@viamrobotics/prime-core';
-	import type { CameraClient } from '@viamrobotics/sdk';
+	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
 
 	interface Props {
-		name: string;
-		getImage: () => Promise<QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>>;
+		name: string
+		getImage: () => Promise<QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>>
 	}
 
-	const { name, getImage }: Props = $props();
+	const { name, getImage }: Props = $props()
 
-	let lastError: Error | null | undefined = $state();
+	let lastError: Error | null | undefined = $state()
 
 	// en-CA for iso formatting (better for filename sorting)
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -23,39 +23,39 @@
 		hour: '2-digit',
 		minute: '2-digit',
 		second: '2-digit',
-		hour12: false
-	});
+		hour12: false,
+	})
 
 	// Formats as 2024-06-27_12_30_45 to get filename sorting.
 	// Intl.DateTimeFormat puts spaces in the resulting string when hours are included
 	// (bad for filenames))
 	// This should not change much so it is simple enough to live within this component
 	const getDateString = () => {
-		return dateFormatter.format(new Date()).split(', ').join('_');
-	};
+		return dateFormatter.format(new Date()).split(', ').join('_')
+	}
 
 	const handleExport = async () => {
-		const exportFilename = `${name}-${getDateString()}.jpeg`;
-		const image = await getImage();
+		const exportFilename = `${name}-${getDateString()}.jpeg`
+		const image = await getImage()
 		if (image.error) {
-			lastError = image.error;
-			return;
+			lastError = image.error
+			return
 		}
 
-		lastError = null;
+		lastError = null
 		if (image.data?.images?.[0]?.image) {
 			const imageBlob = new Blob([new Uint8Array(image.data.images[0].image)], {
-				type: image.data.images[0].mimeType || 'image/jpeg'
-			});
+				type: image.data.images[0].mimeType || 'image/jpeg',
+			})
 
-			const link = document.createElement('a');
-			const dataUrl = URL.createObjectURL(imageBlob);
-			link.href = dataUrl;
-			link.download = exportFilename;
-			link.click();
-			URL.revokeObjectURL(dataUrl);
+			const link = document.createElement('a')
+			const dataUrl = URL.createObjectURL(imageBlob)
+			link.href = dataUrl
+			link.download = exportFilename
+			link.click()
+			URL.revokeObjectURL(dataUrl)
 		}
-	};
+	}
 </script>
 
 <Button

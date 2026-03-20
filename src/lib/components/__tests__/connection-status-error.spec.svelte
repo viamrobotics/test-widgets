@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { MachineConnectionEvent } from '@viamrobotics/sdk';
+	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 
-	import ConnectionStatus from '../connection-status.svelte';
+	import ConnectionStatus from '../connection-status.svelte'
 
 	const throwError = (): string => {
-		throw new Error('bad news bears');
-	};
+		throw new Error('bad news bears')
+	}
 </script>
 
 <ConnectionStatus

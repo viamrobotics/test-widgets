@@ -1,57 +1,57 @@
 <script lang="ts">
-	import { LngLat, LngLatBounds, Map } from 'maplibre-gl';
+	import type { GeoGeometry, Geometry } from '@viamrobotics/sdk'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core';
-	import type { GeoGeometry, Geometry } from '@viamrobotics/sdk';
+	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { LngLat, LngLatBounds, Map } from 'maplibre-gl'
 
-	import { getColor } from './color';
+	import { getColor } from './color'
 
 	interface Props {
-		map?: Map | undefined;
-		obstacles: GeoGeometry[];
-		hovered: string | null;
-		onEnter: (id: string) => void;
-		onLeave: () => void;
+		map?: Map | undefined
+		obstacles: GeoGeometry[]
+		hovered: string | null
+		onEnter: (id: string) => void
+		onLeave: () => void
 	}
 
-	const { map, obstacles, hovered, onEnter, onLeave }: Props = $props();
+	const { map, obstacles, hovered, onEnter, onLeave }: Props = $props()
 
 	const getBoundingRadius = (geometry: Geometry) => {
 		switch (geometry.geometryType.case) {
 			case 'box': {
 				if (geometry.geometryType.value.dimsMm) {
-					const { x, y, z } = geometry.geometryType.value.dimsMm;
-					return (Math.max(x, y, z) / 1000) * 1.1;
+					const { x, y, z } = geometry.geometryType.value.dimsMm
+					return (Math.max(x, y, z) / 1000) * 1.1
 				}
-				break;
+				break
 			}
 			case 'sphere': {
-				return (geometry.geometryType.value.radiusMm / 1000) * 1.1;
+				return (geometry.geometryType.value.radiusMm / 1000) * 1.1
 			}
 			case 'capsule': {
-				return (geometry.geometryType.value.lengthMm / 1000) * 1.1;
+				return (geometry.geometryType.value.lengthMm / 1000) * 1.1
 			}
 		}
 
-		return 0 as never;
-	};
+		return 0 as never
+	}
 
 	const panToGeometry = (obstacle: GeoGeometry, geometry: Geometry) => {
 		if (!obstacle.location) {
-			return;
+			return
 		}
 
-		const lngLat = new LngLat(obstacle.location.longitude, obstacle.location.latitude);
+		const lngLat = new LngLat(obstacle.location.longitude, obstacle.location.latitude)
 
-		const radius = getBoundingRadius(geometry);
-		const bounds = LngLatBounds.fromLngLat(lngLat, radius);
+		const radius = getBoundingRadius(geometry)
+		const bounds = LngLatBounds.fromLngLat(lngLat, radius)
 
 		map?.fitBounds(bounds, {
 			padding: 100,
 			duration: 800,
-			curve: 0.1
-		});
-	};
+			curve: 0.1,
+		})
+	}
 </script>
 
 {#each obstacles as obstacle, i (i)}
@@ -76,8 +76,8 @@
 								icon="image-filter-center-focus"
 								label="Focus {geometry.label}"
 								on:click={(event) => {
-									event.stopPropagation();
-									panToGeometry(obstacle, geometry);
+									event.stopPropagation()
+									panToGeometry(obstacle, geometry)
 								}}
 							/>
 

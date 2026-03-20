@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { Icon } from '@viamrobotics/prime-core';
+	import { Icon } from '@viamrobotics/prime-core'
 
 	interface Props {
-		data: string;
-		ariaLabel?: string;
+		data: string
+		ariaLabel?: string
 	}
 
-	const { data, ariaLabel = 'Copy to clipboard' }: Props = $props();
+	const { data, ariaLabel = 'Copy to clipboard' }: Props = $props()
 
-	let showCopySuccess = $state(false);
+	let showCopySuccess = $state(false)
 
 	const handleCopyClick = (event: Event) => {
-		event.stopPropagation();
-		event.preventDefault();
-		copyToClipboard(data);
-		showCopySuccess = true;
+		event.stopPropagation()
+		event.preventDefault()
+		copyToClipboard(data)
+		showCopySuccess = true
 		setTimeout(() => {
-			showCopySuccess = false;
-		}, 750);
-	};
+			showCopySuccess = false
+		}, 750)
+	}
 
 	export const copyToClipboard = (copiedData: string) => {
-		void window.navigator.clipboard.writeText(copiedData);
-	};
+		void globalThis.navigator.clipboard.writeText(copiedData)
+	}
 </script>
 
 <button

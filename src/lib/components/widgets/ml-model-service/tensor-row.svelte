@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { TensorInfo } from '@viamrobotics/sdk';
+	import type { TensorInfo } from '@viamrobotics/sdk'
 
 	interface Props {
-		type: 'input' | 'output';
-		tensor: TensorInfo;
-		index: number;
+		type: 'input' | 'output'
+		tensor: TensorInfo
+		index: number
 	}
 
-	const { type, tensor, index }: Props = $props();
+	const { type, tensor, index }: Props = $props()
 </script>
 
 <div class="border-b-light grid grid-cols-2 border-b">

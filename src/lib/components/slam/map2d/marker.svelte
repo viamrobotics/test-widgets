@@ -7,24 +7,24 @@
 	lang="ts"
 	module
 >
-	import { TextureLoader } from 'three';
+	import { TextureLoader } from 'three'
 
-	const textureLoader = new TextureLoader();
+	const textureLoader = new TextureLoader()
 </script>
 
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T } from '@threlte/core'
 
-	import { renderOrder } from './render-order';
+	import { renderOrder } from './render-order'
 
 	interface Props {
-		name: string;
-		url: string;
-		rotation?: number;
-		[key: string]: unknown;
+		name: string
+		url: string
+		rotation?: number
+		[key: string]: unknown
 	}
 
-	const { name, url, rotation = 0, ...rest }: Props = $props();
+	const { name, url, rotation = 0, ...rest }: Props = $props()
 </script>
 
 <T.Sprite

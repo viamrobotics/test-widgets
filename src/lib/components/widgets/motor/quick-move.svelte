@@ -1,27 +1,27 @@
 <script lang="ts">
-	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core';
+	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		setPower: (_: number) => void;
+		setPower: (_: number) => void
 	}
 
-	const { setPower }: Props = $props();
+	const { setPower }: Props = $props()
 
-	let powerPct = $state(0.5);
+	let powerPct = $state(0.5)
 
-	let isPressed = false;
+	let isPressed = false
 	const move = (forward: boolean) => {
-		isPressed = true;
-		setPower((forward ? 1 : -1) * powerPct);
-	};
+		isPressed = true
+		setPower((forward ? 1 : -1) * powerPct)
+	}
 	const stop = () => {
 		if (isPressed) {
-			setPower(0);
+			setPower(0)
 		}
-		isPressed = false;
-	};
+		isPressed = false
+	}
 </script>
 
 <Label cx="max-w-[282px]">
@@ -35,7 +35,7 @@
 		on:input={(event) => {
 			// on:input is used instead of on:change because of the on:mousedown handlers and blur order
 			// on:change does not run in time.
-			powerPct = numberValueFromEvent(event) ?? 0;
+			powerPct = numberValueFromEvent(event) ?? 0
 		}}
 	/>
 </Label>
@@ -45,7 +45,7 @@
 		<!-- NOTE(zp,2024-06-04) these are not prime buttons because prime does not provide on:mousedown or on:mouseup -->
 		<button
 			onmousedown={() => {
-				move(true);
+				move(true)
 			}}
 			onmouseup={stop}
 			onmouseleave={stop}
@@ -61,7 +61,7 @@
 		</button>
 		<button
 			onmousedown={() => {
-				move(false);
+				move(false)
 			}}
 			onmouseup={stop}
 			onmouseleave={stop}

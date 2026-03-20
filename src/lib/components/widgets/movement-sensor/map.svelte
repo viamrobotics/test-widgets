@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MovementSensorPosition } from '@viamrobotics/sdk';
+	import type { MovementSensorPosition } from '@viamrobotics/sdk'
 
 	import {
 		DirectionalMarker,
@@ -8,19 +8,20 @@
 		MapLibreMarker,
 		MapProviders,
 		NavigationControls,
-		SatelliteControls
-	} from '$lib/components/maplibre';
-	import { safeReadCoordinate } from './safe-read-coordinate';
+		SatelliteControls,
+	} from '$lib/components/maplibre'
+
+	import { safeReadCoordinate } from './safe-read-coordinate'
 
 	interface Props {
-		coordinate: MovementSensorPosition['coordinate'];
-		rotation: number | undefined;
+		coordinate: MovementSensorPosition['coordinate']
+		rotation: number | undefined
 	}
 
-	const { coordinate, rotation }: Props = $props();
+	const { coordinate, rotation }: Props = $props()
 
-	const lat = $derived(safeReadCoordinate(coordinate?.latitude));
-	const lng = $derived(safeReadCoordinate(coordinate?.longitude));
+	const lat = $derived(safeReadCoordinate(coordinate?.latitude))
+	const lng = $derived(safeReadCoordinate(coordinate?.longitude))
 </script>
 
 <div class="relative h-[300px] w-full lg:h-auto lg:w-1/2">

@@ -1,10 +1,10 @@
-import type { StyleSpecification } from 'maplibre-gl';
+import type { StyleSpecification } from 'maplibre-gl'
 
-import { registerGoogleMapsProtocol } from './plugins/google-maps';
-import { type MapProvider, MapProviders } from './types';
-import { DEFAULT_MAX_ZOOM } from './zoom';
+import { registerGoogleMapsProtocol } from './plugins/google-maps'
+import { type MapProvider, MapProviders } from './types'
+import { DEFAULT_MAX_ZOOM } from './zoom'
 
-const tileSize = 256;
+const tileSize = 256
 
 export const getGoogleMapsStyle = (
 	apiKey: string,
@@ -19,20 +19,20 @@ export const getGoogleMapsStyle = (
 				tiles: [`google://${mapType}/{z}/{x}/{y}?key=${apiKey}`],
 				tileSize,
 				attribution: '&copy; Google Maps',
-				maxzoom
-			}
+				maxzoom,
+			},
 		},
 		layers: [
 			{
 				id: 'google',
 				type: 'raster',
-				source: 'google'
-			}
-		]
-	};
+				source: 'google',
+			},
+		],
+	}
 
-	return style;
-};
+	return style
+}
 
 const getOpenStreetMapStyle = (maxzoom: number): StyleSpecification => ({
 	version: 8,
@@ -42,34 +42,34 @@ const getOpenStreetMapStyle = (maxzoom: number): StyleSpecification => ({
 			tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
 			tileSize,
 			attribution: '&copy; OpenStreetMap Contributors',
-			maxzoom
+			maxzoom,
 		},
 		satellite: {
 			type: 'raster',
 			tiles: [
-				'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'
+				'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
 			],
 			tileSize,
 			attribution: '&copy; USGS National Map Services',
-			maxzoom
-		}
+			maxzoom,
+		},
 	},
 	layers: [
 		{
 			id: 'osm',
 			type: 'raster',
-			source: 'osm'
+			source: 'osm',
 		},
 		{
 			id: 'satellite',
 			type: 'raster',
 			source: 'satellite',
 			layout: {
-				visibility: 'none'
-			}
-		}
-	]
-});
+				visibility: 'none',
+			},
+		},
+	],
+})
 
 export const getStyleSpecification = async (
 	provider: MapProvider,
@@ -80,27 +80,27 @@ export const getStyleSpecification = async (
 	switch (provider) {
 		case MapProviders.googleMaps: {
 			if (!apiKey) {
-				console.warn('Google Maps API key is required, falling back to OpenStreetMap');
-				return getOpenStreetMapStyle(maxZoom);
+				console.warn('Google Maps API key is required, falling back to OpenStreetMap')
+				return getOpenStreetMapStyle(maxZoom)
 			}
 
 			try {
-				const success = await registerGoogleMapsProtocol(apiKey);
+				const success = await registerGoogleMapsProtocol(apiKey)
 				if (!success) {
-					console.warn('Google Maps protocol registration failed, falling back to OpenStreetMap');
-					return getOpenStreetMapStyle(maxZoom);
+					console.warn('Google Maps protocol registration failed, falling back to OpenStreetMap')
+					return getOpenStreetMapStyle(maxZoom)
 				}
 
-				const mapType = satelliteMode ? 'satellite' : 'roadmap';
-				return getGoogleMapsStyle(apiKey, maxZoom, mapType);
+				const mapType = satelliteMode ? 'satellite' : 'roadmap'
+				return getGoogleMapsStyle(apiKey, maxZoom, mapType)
 			} catch (error) {
-				console.error('Failed to create Google Maps style, falling back to OpenStreetMap:', error);
-				return getOpenStreetMapStyle(maxZoom);
+				console.error('Failed to create Google Maps style, falling back to OpenStreetMap:', error)
+				return getOpenStreetMapStyle(maxZoom)
 			}
 		}
 
 		case MapProviders.openStreet: {
-			return getOpenStreetMapStyle(maxZoom);
+			return getOpenStreetMapStyle(maxZoom)
 		}
 	}
-};
+}

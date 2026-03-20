@@ -1,22 +1,22 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { LngLat } from 'maplibre-gl';
+	import type { LngLat } from 'maplibre-gl'
+	import type { Snippet } from 'svelte'
 
-	import { NavigationTab, type Obstacle } from '../../types';
-	import { useNavigationMap } from '../../use-navigation-map.svelte';
-	import ObstaclesTab from './obstacles.svelte';
-	import WaypointsTab from './waypoints.svelte';
+	import { NavigationTab, type Obstacle } from '../../types'
+	import { useNavigationMap } from '../../use-navigation-map.svelte'
+	import ObstaclesTab from './obstacles.svelte'
+	import WaypointsTab from './waypoints.svelte'
 
 	interface Props {
-		onupdate: (obstacles: Obstacle[]) => void;
-		onaddwaypoint: (waypoint: LngLat) => void;
-		ondeletewaypoint: (id: string) => void;
-		children?: Snippet;
+		onupdate: (obstacles: Obstacle[]) => void
+		onaddwaypoint: (waypoint: LngLat) => void
+		ondeletewaypoint: (id: string) => void
+		children?: Snippet
 	}
 
-	const { onupdate, onaddwaypoint, ondeletewaypoint, children }: Props = $props();
+	const { onupdate, onaddwaypoint, ondeletewaypoint, children }: Props = $props()
 
-	const nav = useNavigationMap();
+	const nav = useNavigationMap()
 </script>
 
 <nav class="py-4 pl-4 sm:h-full sm:w-[350px]">
@@ -27,10 +27,10 @@
 				<button
 					class={[
 						'border-b px-4 py-1 text-sm tracking-normal capitalize',
-						selected ? 'border-black font-bold text-gray-600' : 'text-gray-600'
+						selected ? 'border-black font-bold text-gray-600' : 'text-gray-600',
 					]}
 					onclick={() => {
-						nav.tab = tabTitle;
+						nav.tab = tabTitle
 					}}
 				>
 					{tabTitle}

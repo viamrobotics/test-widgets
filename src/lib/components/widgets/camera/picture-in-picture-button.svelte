@@ -1,59 +1,59 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from 'svelte/store'
 
-	import { Button } from '@viamrobotics/prime-core';
+	import { Button } from '@viamrobotics/prime-core'
+	import { onMount } from 'svelte'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
 
 	interface Props {
-		resourceName: string;
-		mediaStream: MediaStream | null;
-		isShowingPip: Writable<boolean>;
+		resourceName: string
+		mediaStream: MediaStream | null
+		isShowingPip: Writable<boolean>
 	}
 
-	const { resourceName, mediaStream, isShowingPip }: Props = $props();
+	const { resourceName, mediaStream, isShowingPip }: Props = $props()
 
-	let videoElement = $state.raw<HTMLVideoElement>();
-	let lastErr = $state<Error>();
+	let videoElement = $state.raw<HTMLVideoElement>()
+	let lastErr = $state<Error>()
 
 	const onEnter = () => {
-		$isShowingPip = true;
-	};
+		$isShowingPip = true
+	}
 	const onLeave = () => {
-		$isShowingPip = false;
-	};
+		$isShowingPip = false
+	}
 
 	onMount(() => {
-		videoElement?.addEventListener('enterpictureinpicture', onEnter);
-		videoElement?.addEventListener('leavepictureinpicture', onLeave);
+		videoElement?.addEventListener('enterpictureinpicture', onEnter)
+		videoElement?.addEventListener('leavepictureinpicture', onLeave)
 
 		return async () => {
-			videoElement?.removeEventListener('enterpictureinpicture', onEnter);
-			videoElement?.removeEventListener('leavepictureinpicture', onLeave);
+			videoElement?.removeEventListener('enterpictureinpicture', onEnter)
+			videoElement?.removeEventListener('leavepictureinpicture', onLeave)
 			if ($isShowingPip) {
-				await document.exitPictureInPicture();
+				await document.exitPictureInPicture()
 			}
-		};
-	});
+		}
+	})
 
 	$effect.pre(() => {
 		if (videoElement) {
-			videoElement.srcObject = mediaStream;
+			videoElement.srcObject = mediaStream
 		}
-	});
+	})
 
 	const togglePictureInPicture = async () => {
-		lastErr = undefined;
+		lastErr = undefined
 
 		try {
 			await ($isShowingPip
 				? document.exitPictureInPicture()
-				: videoElement?.requestPictureInPicture());
+				: videoElement?.requestPictureInPicture())
 		} catch (error) {
-			lastErr = error as Error;
+			lastErr = error as Error
 		}
-	};
+	}
 </script>
 
 <Button

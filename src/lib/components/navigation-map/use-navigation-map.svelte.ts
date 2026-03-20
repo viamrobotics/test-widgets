@@ -1,23 +1,23 @@
-import { getContext, setContext } from 'svelte';
+import { getContext, setContext } from 'svelte'
 
-import type { Waypoint } from '../maplibre/types';
-import type { NavigationTabType, Obstacle, Path } from './types';
+import type { Waypoint } from '../maplibre/types'
+import type { NavigationTabType, Obstacle, Path } from './types'
 
-const CONTEXT_KEY = 'navigation-map-context';
+const CONTEXT_KEY = 'navigation-map-context'
 
-export type Environments = 'debug' | 'configure';
+export type Environments = 'debug' | 'configure'
 
 export interface NavigationMapContext {
-	tab: NavigationTabType;
-	tabs: NavigationTabType[];
-	waypoints: Waypoint[];
-	obstacles: Obstacle[];
-	paths: Path[];
-	environment: Environments;
-	hovered: string | undefined;
-	selected: string | undefined;
-	view: '2D' | '3D';
-	boundingRadius: Record<string, number>;
+	tab: NavigationTabType
+	tabs: NavigationTabType[]
+	waypoints: Waypoint[]
+	obstacles: Obstacle[]
+	paths: Path[]
+	environment: Environments
+	hovered: string | undefined
+	selected: string | undefined
+	view: '2D' | '3D'
+	boundingRadius: Record<string, number>
 }
 
 export const provideNavigationMapContext = (
@@ -27,80 +27,80 @@ export const provideNavigationMapContext = (
 	paths: () => Path[],
 	environment: () => Environments
 ) => {
-	let obstacles = $state<Obstacle[]>([]);
-	let currentTab = $state(tab());
-	let hovered = $state<string>();
-	let selected = $state<string>();
-	let view = $state<'2D' | '3D'>('2D');
-	let boundingRadius = $state<Record<string, number>>({});
+	let obstacles = $state<Obstacle[]>([])
+	let currentTab = $state(tab())
+	let hovered = $state<string>()
+	let selected = $state<string>()
+	let view = $state<'2D' | '3D'>('2D')
+	let boundingRadius = $state<Record<string, number>>({})
 
 	const context: NavigationMapContext = {
 		get tab() {
-			return currentTab;
+			return currentTab
 		},
 		set tab(value: NavigationTabType) {
-			currentTab = value;
+			currentTab = value
 		},
 
 		get tabs() {
-			return tabs();
+			return tabs()
 		},
 		get waypoints() {
-			return waypoints();
+			return waypoints()
 		},
 		get paths() {
-			return paths();
+			return paths()
 		},
 		get environment() {
-			return environment();
+			return environment()
 		},
 
 		get hovered() {
-			return hovered;
+			return hovered
 		},
 		set hovered(value: string | undefined) {
-			hovered = value;
+			hovered = value
 		},
 
 		get selected() {
-			return selected;
+			return selected
 		},
 		set selected(value: string | undefined) {
-			selected = value;
+			selected = value
 		},
 
 		get obstacles() {
-			return obstacles;
+			return obstacles
 		},
 		set obstacles(value: Obstacle[]) {
-			obstacles = value;
+			obstacles = value
 		},
 
 		get view() {
-			return view;
+			return view
 		},
 		set view(value: '2D' | '3D') {
-			view = value;
+			view = value
 		},
 
 		get boundingRadius() {
-			return boundingRadius;
+			return boundingRadius
 		},
 		set boundingRadius(value: Record<string, number>) {
-			boundingRadius = value;
-		}
-	};
-
-	setContext<NavigationMapContext>(CONTEXT_KEY, context);
-
-	return context;
-};
-
-export const useNavigationMap = () => {
-	const context = getContext<NavigationMapContext>(CONTEXT_KEY);
-	if (!context) {
-		throw new Error('NavigationMapContext not found');
+			boundingRadius = value
+		},
 	}
 
-	return context;
-};
+	setContext<NavigationMapContext>(CONTEXT_KEY, context)
+
+	return context
+}
+
+export const useNavigationMap = () => {
+	const context = getContext<NavigationMapContext>(CONTEXT_KEY)
+	if (!context) {
+		throw new Error('NavigationMapContext not found')
+	}
+
+	return context
+}

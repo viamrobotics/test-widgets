@@ -1,9 +1,8 @@
-import isPlainObject from 'lodash-es/isPlainObject';
+import isPlainObject from 'lodash-es/isPlainObject'
 
-export const compareAlphaNum = (a: string, b: string) =>
-	a.localeCompare(b, 'en', { numeric: true });
+export const compareAlphaNum = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true })
 
-type SortObject = Record<string, unknown>;
+type SortObject = Record<string, unknown>
 
 /**
  * Sorts the keys of a given object in alphanumeric order.
@@ -26,20 +25,19 @@ export const sortObjectKeys = <T extends SortObject>(
 	unorderedObj: T,
 	compareFn?: (a: string, b: string) => number
 ): T => {
-	const sortedObj: SortObject = {};
+	const sortedObj: SortObject = {}
 
-	for (const key of Object.keys(unorderedObj).sort(compareFn ?? compareAlphaNum)) {
-		const value = unorderedObj[key];
+	for (const key of Object.keys(unorderedObj).toSorted(compareFn ?? compareAlphaNum)) {
+		const value = unorderedObj[key]
 		if (Array.isArray(value)) {
 			sortedObj[key] = value.map((element) =>
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				isPlainObject(element) ? sortObjectKeys(element, compareFn) : element
-			);
-			continue;
+			)
+			continue
 		}
 
-		sortedObj[key] = isPlainObject(value) ? sortObjectKeys(value as T, compareFn) : value;
+		sortedObj[key] = isPlainObject(value) ? sortObjectKeys(value as T, compareFn) : value
 	}
 
-	return sortedObj as T;
-};
+	return sortedObj as T
+}

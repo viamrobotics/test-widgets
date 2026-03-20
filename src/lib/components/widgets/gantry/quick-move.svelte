@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core';
+	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import Table from '$lib/components/table.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import Table from '$lib/components/table.svelte'
 
 	interface Props {
-		positions: number[];
-		moveTo: (newPos: number[], speeds: number[]) => void;
-		lastError: Error | null;
+		positions: number[]
+		moveTo: (newPos: number[], speeds: number[]) => void
+		lastError: Error | null
 	}
 
-	const { positions, moveTo, lastError }: Props = $props();
+	const { positions, moveTo, lastError }: Props = $props()
 
 	// mm/s
-	const quickMoveSpeed = 50;
+	const quickMoveSpeed = 50
 
 	const quickMove = (index: number, increment: number) => {
 		const clonedPositions = positions.map((position, positionIndex) =>
 			positionIndex === index ? position + increment : position
-		);
+		)
 		moveTo(
 			clonedPositions,
 			Array.from<number>({ length: clonedPositions.length }).fill(quickMoveSpeed)
-		);
-	};
+		)
+	}
 </script>
 
 <Table>

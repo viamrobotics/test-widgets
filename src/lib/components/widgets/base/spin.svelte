@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		spin: (angleDeg: number, degsPerSec: number) => void;
+		spin: (angleDeg: number, degsPerSec: number) => void
 	}
 
-	const { spin }: Props = $props();
+	const { spin }: Props = $props()
 
-	let angle = $state(90);
-	let degsPerSec = $state(45);
+	let angle = $state(90)
+	let degsPerSec = $state(45)
 </script>
 
 <div class="flex flex-row gap-4">
@@ -32,7 +32,7 @@
 			slot="input"
 			value={angle}
 			on:change={(event) => {
-				angle = numberValueFromEvent(event) ?? 0;
+				angle = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>
@@ -60,7 +60,7 @@
 			slot="input"
 			value={degsPerSec}
 			on:change={(event) => {
-				degsPerSec = numberValueFromEvent(event) ?? 0;
+				degsPerSec = numberValueFromEvent(event) ?? 0
 			}}
 		/>
 	</Label>
@@ -70,7 +70,7 @@
 	class="mt-auto"
 	icon="play-circle-outline"
 	onclick={() => {
-		spin(angle, degsPerSec);
+		spin(angle, degsPerSec)
 	}}
 >
 	Execute

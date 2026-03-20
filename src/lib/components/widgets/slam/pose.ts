@@ -1,3 +1,3 @@
-import type { Pose } from '@viamrobotics/sdk';
+import type { Pose } from '@viamrobotics/sdk'
 
-export type PosePosition = Pick<Pose, 'x' | 'y' | 'z'>;
+export type PosePosition = Pick<Pose, 'x' | 'y' | 'z'>

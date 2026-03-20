@@ -1,26 +1,26 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { LngLat } from 'maplibre-gl';
+	import type { Snippet } from 'svelte'
 
-	import { SliderInput } from '@viamrobotics/prime-core';
+	import { SliderInput } from '@viamrobotics/prime-core'
+	import { LngLat } from 'maplibre-gl'
 
 	interface Props {
 		/** The label for the Lat,Lng, pair. Defaults to Latitude, Longitude. */
-		label?: string;
+		label?: string
 		/** Whether the inputs are readonly. */
-		readonly?: boolean;
+		readonly?: boolean
 		/** The longitude value. */
-		lng?: number;
+		lng?: number
 		/** The latitude value. */
-		lat?: number;
-		children?: Snippet;
-		oninput: (lngLat: LngLat) => void;
+		lat?: number
+		children?: Snippet
+		oninput: (lngLat: LngLat) => void
 	}
 
-	const { label, readonly = false, lng, lat, oninput, children }: Props = $props();
+	const { label, readonly = false, lng, lat, oninput, children }: Props = $props()
 
-	let latInput = $state.raw<HTMLInputElement>();
-	let lngInput = $state.raw<HTMLInputElement>();
+	let latInput = $state.raw<HTMLInputElement>()
+	let lngInput = $state.raw<HTMLInputElement>()
 </script>
 
 <div class="flex items-end gap-1.5">

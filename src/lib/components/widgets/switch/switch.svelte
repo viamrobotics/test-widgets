@@ -1,42 +1,43 @@
 <script lang="ts">
-	import { SwitchClient } from '@viamrobotics/sdk';
+	import { SwitchClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Queries from '$lib/components/queries.svelte';
-	import Position from './position.svelte';
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Queries from '$lib/components/queries.svelte'
+
+	import Position from './position.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		SwitchClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const positionQuery = createResourceQuery(client, 'getPosition', {
-		refetchInterval: 500
-	});
+		refetchInterval: 500,
+	})
 
 	const numPositionsQuery = createResourceQuery(client, 'getNumberOfPositions', {
-		refetchInterval: 500
-	});
+		refetchInterval: 500,
+	})
 
-	const setPositionMutation = createResourceMutation(client, 'setPosition');
+	const setPositionMutation = createResourceMutation(client, 'setPosition')
 
 	const onSelect = async (position: number) => {
-		await setPositionMutation.mutateAsync([position]);
-		await positionQuery.refetch();
-	};
+		await setPositionMutation.mutateAsync([position])
+		await positionQuery.refetch()
+	}
 </script>
 
 <ConnectionStatus {partID}>

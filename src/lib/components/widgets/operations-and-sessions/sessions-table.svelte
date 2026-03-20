@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { robotApi } from '@viamrobotics/sdk';
+	import { robotApi } from '@viamrobotics/sdk'
 
 	interface Props {
-		sessions: robotApi.Session[];
-		ourSessionId: string | undefined;
+		sessions: robotApi.Session[]
+		ourSessionId: string | undefined
 	}
 
-	const { sessions, ourSessionId }: Props = $props();
+	const { sessions, ourSessionId }: Props = $props()
 
 	const sessionTypeToString = (type: robotApi.PeerConnectionType | undefined) => {
 		switch (type) {
 			case robotApi.PeerConnectionType.GRPC: {
-				return 'gRPC';
+				return 'gRPC'
 			}
 			case robotApi.PeerConnectionType.WEBRTC: {
-				return 'WebRTC';
+				return 'WebRTC'
 			}
 			default: {
-				return 'Unknown';
+				return 'Unknown'
 			}
 		}
-	};
+	}
 	// sort sessions by id (because the api returns them in a random order)
 	const flattenedSessions = $derived(
 		sessions
@@ -29,10 +29,10 @@
 				type: session.peerConnectionInfo?.type,
 				typeString: sessionTypeToString(session.peerConnectionInfo?.type),
 				remoteAddress: session.peerConnectionInfo?.remoteAddress,
-				localAddress: session.peerConnectionInfo?.localAddress
+				localAddress: session.peerConnectionInfo?.localAddress,
 			}))
-			.sort((a, b) => a.id.localeCompare(b.id))
-	);
+			.toSorted((a, b) => a.id.localeCompare(b.id))
+	)
 </script>
 
 {#if flattenedSessions.length === 0}

@@ -1,87 +1,87 @@
 <script lang="ts">
-	import { LngLat, LngLatBounds } from 'maplibre-gl';
+	import { IconButton, Label, TextInput, Tooltip } from '@viamrobotics/prime-core'
+	import { LngLat, LngLatBounds } from 'maplibre-gl'
 
-	import { IconButton, Label, TextInput, Tooltip } from '@viamrobotics/prime-core';
+	import type { Geometry, Obstacle } from '../../types'
 
-	import { LngLatInput, useMapLibre } from '../../../maplibre';
-	import type { Geometry, Obstacle } from '../../types';
-	import { useNavigationMap } from '../../use-navigation-map.svelte';
-	import GeometryInputs from '../input/geometry.svelte';
-	import OrientationInput from '../input/orientation.svelte';
-	import ObstaclesLegend from './obstacles-legend.svelte';
+	import { LngLatInput, useMapLibre } from '../../../maplibre'
+	import { useNavigationMap } from '../../use-navigation-map.svelte'
+	import GeometryInputs from '../input/geometry.svelte'
+	import OrientationInput from '../input/orientation.svelte'
+	import ObstaclesLegend from './obstacles-legend.svelte'
 
 	interface Props {
-		onupdate: (obstacles: Obstacle[]) => void;
+		onupdate: (obstacles: Obstacle[]) => void
 	}
 
-	const { onupdate }: Props = $props();
+	const { onupdate }: Props = $props()
 
-	const { map } = useMapLibre();
-	const nav = useNavigationMap();
+	const { map } = useMapLibre()
+	const nav = useNavigationMap()
 
 	const handleSelect = (selection: { name: string; location: LngLat }) => {
-		const radius = nav.boundingRadius[selection.name];
-		const lngLat = new LngLat(selection.location.lng, selection.location.lat);
-		const bounds = LngLatBounds.fromLngLat(lngLat, radius);
+		const radius = nav.boundingRadius[selection.name]
+		const lngLat = new LngLat(selection.location.lng, selection.location.lat)
+		const bounds = LngLatBounds.fromLngLat(lngLat, radius)
 		map.fitBounds(bounds, {
 			padding: 100,
 			duration: 800,
-			curve: 0.1
-		});
-	};
+			curve: 0.1,
+		})
+	}
 
 	const handleLngLatInput = (name: string) => (lngLat: LngLat) => {
-		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name);
-		const obstacle = nav.obstacles[index];
+		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name)
+		const obstacle = nav.obstacles[index]
 		if (obstacle) {
-			obstacle.location = lngLat;
-			nav.obstacles[index] = obstacle;
-			onupdate(nav.obstacles);
+			obstacle.location = lngLat
+			nav.obstacles[index] = obstacle
+			onupdate(nav.obstacles)
 		}
-	};
+	}
 
 	const handleDeleteObstacle = (name: string) => () => {
-		nav.obstacles = nav.obstacles.filter((obstacle) => obstacle.name !== name);
-		nav.hovered = undefined;
-		nav.selected = undefined;
-		onupdate(nav.obstacles);
-	};
+		nav.obstacles = nav.obstacles.filter((obstacle) => obstacle.name !== name)
+		nav.hovered = undefined
+		nav.selected = undefined
+		onupdate(nav.obstacles)
+	}
 
 	const handleGeometryInput = (name: string, geoIndex: number) => (geometry: Geometry) => {
-		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name);
-		const obstacle = nav.obstacles[index];
+		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name)
+		const obstacle = nav.obstacles[index]
 		if (obstacle) {
-			obstacle.geometries[geoIndex] = geometry;
-			nav.obstacles[index] = obstacle;
-			onupdate(nav.obstacles);
+			obstacle.geometries[geoIndex] = geometry
+			nav.obstacles[index] = obstacle
+			onupdate(nav.obstacles)
 		}
-	};
+	}
 
 	const handleOrientationInput = (name: string, geoIndex: number) => (value: number) => {
-		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name);
-		const obstacle = nav.obstacles[index];
-		const geometry = obstacle?.geometries[geoIndex];
+		const index = nav.obstacles.findIndex((obstacle) => obstacle.name === name)
+		const obstacle = nav.obstacles[index]
+		const geometry = obstacle?.geometries[geoIndex]
 		if (geometry) {
-			geometry.pose.orientationVector.th = value;
-			obstacle.geometries[geoIndex] = geometry;
-			nav.obstacles[index] = obstacle;
-			onupdate(nav.obstacles);
+			geometry.pose.orientationVector.th = value
+			obstacle.geometries[geoIndex] = geometry
+			nav.obstacles[index] = obstacle
+			onupdate(nav.obstacles)
 		}
-	};
+	}
 
 	const handleKeydown = (event: KeyboardEvent) => {
 		if (event.key === 'Backspace' && nav.selected && document.activeElement?.tagName !== 'INPUT') {
-			nav.obstacles = nav.obstacles.filter((obstacle) => obstacle.name !== nav.selected);
-			nav.hovered = undefined;
-			nav.selected = undefined;
-			onupdate(nav.obstacles);
+			nav.obstacles = nav.obstacles.filter((obstacle) => obstacle.name !== nav.selected)
+			nav.hovered = undefined
+			nav.selected = undefined
+			onupdate(nav.obstacles)
 		}
-	};
+	}
 
 	const selectedObstacle = $derived(
 		nav.obstacles.find((obstacle) => obstacle.name === nav.selected)
-	);
-	const debugMode = $derived(nav.environment === 'debug');
+	)
+	const debugMode = $derived(nav.environment === 'debug')
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -107,7 +107,7 @@
 		<button
 			class="w-full text-left"
 			onclick={() => {
-				nav.selected = nav.selected === name ? undefined : name;
+				nav.selected = nav.selected === name ? undefined : name
 			}}
 		>
 			<div class="flex items-center justify-between gap-1.5">
@@ -128,8 +128,8 @@
 						icon="image-filter-center-focus"
 						label="Focus {name}"
 						on:click={(event) => {
-							event.stopPropagation();
-							handleSelect({ name, location });
+							event.stopPropagation()
+							handleSelect({ name, location })
 						}}
 					/>
 					<Tooltip
@@ -172,7 +172,7 @@
 	<li
 		class="group sticky bottom-0 z-10 bg-white pt-4"
 		onmouseenter={() => {
-			nav.hovered = selectedObstacle.name;
+			nav.hovered = selectedObstacle.name
 		}}
 	>
 		<div class="flex items-end gap-1.5 pb-2">

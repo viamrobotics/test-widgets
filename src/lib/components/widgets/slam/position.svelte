@@ -1,14 +1,15 @@
 <script lang="ts">
-	import { Button, Label } from '@viamrobotics/prime-core';
-	import type { SlamPosition } from '@viamrobotics/sdk';
+	import type { SlamPosition } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { Button, Label } from '@viamrobotics/prime-core'
+
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		position: SlamPosition;
+		position: SlamPosition
 	}
 
-	const { position }: Props = $props();
+	const { position }: Props = $props()
 
 	// Position is returned in millimeters, but we display meters
 	const pose = $derived(
@@ -20,14 +21,14 @@
 					theta: position.pose.theta,
 					x: position.pose.x / 1000,
 					y: position.pose.y / 1000,
-					z: position.pose.z / 1000
+					z: position.pose.z / 1000,
 				}
 			: undefined
-	);
+	)
 
 	const copyToClipboard = async () => {
-		await window.navigator.clipboard.writeText(JSON.stringify(pose));
-	};
+		await globalThis.navigator.clipboard.writeText(JSON.stringify(pose))
+	}
 </script>
 
 <div class="flex flex-col gap-4">

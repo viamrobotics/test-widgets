@@ -1,24 +1,25 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core';
-	import type { MovementSensorAccuracy } from '@viamrobotics/sdk';
+	import type { MovementSensorAccuracy } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: MovementSensorAccuracy;
+		data: MovementSensorAccuracy
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 
 	const PositionNmeaGgaFixes = {
 		INVALID: 0,
 		GPS: 1,
 		DG: 2,
 		RTK: 4,
-		FRTK: 5
-	};
+		FRTK: 5,
+	}
 
-	const nmeaFix = $derived(data.positionNmeaGgaFix);
+	const nmeaFix = $derived(data.positionNmeaGgaFix)
 </script>
 
 <dl class="flex flex-col gap-2">

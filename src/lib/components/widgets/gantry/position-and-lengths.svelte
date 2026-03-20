@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format';
-	import Table from '$lib/components/table.svelte';
+	import Table from '$lib/components/table.svelte'
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		positions: number[];
-		lengths: number[];
+		positions: number[]
+		lengths: number[]
 	}
 
-	const { positions, lengths }: Props = $props();
+	const { positions, lengths }: Props = $props()
 
-	const maxLength = $derived(Math.max(positions.length, lengths.length));
+	const maxLength = $derived(Math.max(positions.length, lengths.length))
 </script>
 
 <Table>

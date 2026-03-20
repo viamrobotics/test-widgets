@@ -4,26 +4,26 @@
 A group of sections in a card. For example, "test" or "do command"
 -->
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { slide } from 'svelte/transition';
+	import type { Snippet } from 'svelte'
 
-	import { Icon } from '@viamrobotics/prime-core';
+	import { Icon } from '@viamrobotics/prime-core'
+	import { slide } from 'svelte/transition'
 
 	interface Props {
 		/** Title for the group. */
-		title: string;
+		title: string
 		/** Collapsed state. */
-		isCollapsed: boolean;
+		isCollapsed: boolean
 		/** Toggle collapsed state. */
-		toggleIsCollapsed: () => void;
-		children?: Snippet;
+		toggleIsCollapsed: () => void
+		children?: Snippet
 	}
 
-	const { title, isCollapsed, toggleIsCollapsed, children }: Props = $props();
+	const { title, isCollapsed, toggleIsCollapsed, children }: Props = $props()
 
-	const id = $props.id();
-	const collapseID = `section-group-collapse-${id}`;
-	const headingID = `section-group-heading-${id}`;
+	const id = $props.id()
+	const collapseID = `section-group-collapse-${id}`
+	const headingID = `section-group-heading-${id}`
 </script>
 
 <section

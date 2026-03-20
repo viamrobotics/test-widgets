@@ -1,13 +1,14 @@
 <script lang="ts">
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Push from './push.svelte';
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+
+	import Push from './push.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 </script>
 
 <ConnectionStatus {partID}>

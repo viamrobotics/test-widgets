@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { MachineConnectionEvent } from '@viamrobotics/sdk';
+	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 
-	import ConnectionStatus from '../connection-status.svelte';
+	import ConnectionStatus from '../connection-status.svelte'
 
 	interface Props {
-		partID: string;
-		status: MachineConnectionEvent;
+		partID: string
+		status: MachineConnectionEvent
 	}
 
-	const { partID, status }: Props = $props();
+	const { partID, status }: Props = $props()
 </script>
 
 <ConnectionStatus

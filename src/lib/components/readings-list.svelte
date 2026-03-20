@@ -1,28 +1,26 @@
 <script lang="ts">
-	import { truncate } from 'lodash-es';
+	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { truncate } from 'lodash-es'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core';
-
-	import { sortObjectKeys } from '$lib/sort';
+	import { sortObjectKeys } from '$lib/sort'
 
 	interface Props {
-		data: Record<string, unknown>;
+		data: Record<string, unknown>
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 
-	const sortedData = $derived(Object.entries(sortObjectKeys(data)));
+	const sortedData = $derived(Object.entries(sortObjectKeys(data)))
 
 	// TODO(zp) Bring the CopyToClipboard component into the svelte sdk or prime-core so that we can use it here
 	const copyToClipboard = async () => {
 		try {
-			const readingsStr = JSON.stringify(data, null, 2);
-			await window.navigator.clipboard.writeText(readingsStr);
+			const readingsStr = JSON.stringify(data, null, 2)
+			await globalThis.navigator.clipboard.writeText(readingsStr)
 		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error('failed to copy reading to clipboard', error);
+			console.error('failed to copy reading to clipboard', error)
 		}
-	};
+	}
 </script>
 
 {#if sortedData.length === 0}

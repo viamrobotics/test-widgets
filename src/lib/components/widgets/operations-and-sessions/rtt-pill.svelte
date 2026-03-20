@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { Badge } from '@viamrobotics/prime-core';
+	import { Badge } from '@viamrobotics/prime-core'
 
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		rtt: number;
+		rtt: number
 	}
 
-	const { rtt }: Props = $props();
+	const { rtt }: Props = $props()
 
 	const getBadgeVariant = (currentRtt: number) => {
 		if (currentRtt < 50) {
-			return 'success';
+			return 'success'
 		}
 		if (currentRtt < 500) {
-			return 'warning';
+			return 'warning'
 		}
-		return 'danger';
-	};
+		return 'danger'
+	}
 </script>
 
 <Badge

@@ -1,52 +1,52 @@
 <script lang="ts">
-	import { PersistedState } from 'runed';
+	import { Button } from '@viamrobotics/prime-core'
+	import { JsonEditor } from '@viamrobotics/prime-editor'
+	import { MLModelClient, ResourceName, Struct } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { PersistedState } from 'runed'
 
-	import { Button } from '@viamrobotics/prime-core';
-	import { JsonEditor } from '@viamrobotics/prime-editor';
-	import { MLModelClient, ResourceName, Struct } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk';
+	import { clientForBuiltinResource } from '$lib/builtin'
+	import { getResourceAPI, getResourceKey } from '$lib/resource'
 
-	import { clientForBuiltinResource } from '$lib/builtin';
-	import { getResourceAPI, getResourceKey } from '$lib/resource';
-	import ErrorDisplay from '../../error-display.svelte';
+	import ErrorDisplay from '../../error-display.svelte'
 
 	interface Props {
-		partID: string;
-		resource: ResourceName;
+		partID: string
+		resource: ResourceName
 	}
 
-	const { partID, resource }: Props = $props();
+	const { partID, resource }: Props = $props()
 
-	type DoCommandable = Extract<ReturnType<typeof clientForBuiltinResource>, MLModelClient>;
+	type DoCommandable = Extract<ReturnType<typeof clientForBuiltinResource>, MLModelClient>
 
-	const resourceClientType = clientForBuiltinResource(resource) as DoCommandable;
+	const resourceClientType = clientForBuiltinResource(resource) as DoCommandable
 
 	const client = createResourceClient(
 		resourceClientType,
 		() => partID,
 		() => resource.name
-	);
+	)
 
-	const doCommandMutation = createResourceMutation(client, 'doCommand');
+	const doCommandMutation = createResourceMutation(client, 'doCommand')
 
-	let lastErr = $state<Error | null>();
+	let lastErr = $state<Error | null>()
 
-	const uid = $props.id();
+	const uid = $props.id()
 
-	const input = new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}');
+	const input = new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}')
 
-	let output = $state('');
+	let output = $state('')
 
 	const execute = async () => {
 		try {
-			const parsedInput = Struct.fromJsonString(input.current ?? '{}');
-			const data = await doCommandMutation.mutateAsync([parsedInput]);
-			output = JSON.stringify(data, null, 2);
-			lastErr = null;
+			const parsedInput = Struct.fromJsonString(input.current ?? '{}')
+			const data = await doCommandMutation.mutateAsync([parsedInput])
+			output = JSON.stringify(data, null, 2)
+			lastErr = null
 		} catch (error) {
-			lastErr = error as Error;
+			lastErr = error as Error
 		}
-	};
+	}
 </script>
 
 {#if doCommandMutation}
@@ -57,7 +57,7 @@
 				label="input"
 				initialValue={input.current ?? '{}'}
 				onChange={(nextInput: string) => {
-					input.current = nextInput;
+					input.current = nextInput
 				}}
 				cx="h-56 overflow-y-auto"
 				errorMessageID={lastErr ? uid : undefined}

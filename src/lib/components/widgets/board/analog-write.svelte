@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { Label, NumericInput } from '@viamrobotics/prime-core';
+	import { Label, NumericInput } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
-	import ConfirmingButton from './confirming-button.svelte';
-	import PinSection from './pin-section.svelte';
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
-	let value = $state(0);
+	import ConfirmingButton from './confirming-button.svelte'
+	import PinSection from './pin-section.svelte'
+
+	let value = $state(0)
 
 	interface Props {
-		setValue: (value: number) => void;
+		setValue: (value: number) => void
 	}
 
-	const { setValue }: Props = $props();
+	const { setValue }: Props = $props()
 </script>
 
 <PinSection
@@ -29,7 +30,7 @@
 				cx="max-w-[124px]"
 				{value}
 				on:input={(event) => {
-					value = numberValueFromEvent(event) ?? 0;
+					value = numberValueFromEvent(event) ?? 0
 				}}
 			/>
 		</Label>

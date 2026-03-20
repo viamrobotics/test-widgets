@@ -1,24 +1,25 @@
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core';
-	import type { Pose } from '@viamrobotics/sdk';
+	import type { Pose } from '@viamrobotics/sdk'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte';
-	import CopyButton from '$lib/components/copy-button.svelte';
-	import Table from '$lib/components/table.svelte';
+	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+
+	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '$lib/components/copy-button.svelte'
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import Table from '$lib/components/table.svelte'
+	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
 	interface Props {
-		endPosition: Pose;
-		moveToPosition: (position: Pose) => void;
-		lastError: Error | null;
+		endPosition: Pose
+		moveToPosition: (position: Pose) => void
+		lastError: Error | null
 	}
 
-	const { endPosition, moveToPosition, lastError }: Props = $props();
+	const { endPosition, moveToPosition, lastError }: Props = $props()
 
-	let desiredPosition = $state({ ...endPosition });
-	let useRadians = $state(false);
+	let desiredPosition = $state({ ...endPosition })
+	let useRadians = $state(false)
 
 	const resetToZero = () => {
 		desiredPosition = {
@@ -28,13 +29,13 @@
 			oX: 0,
 			oY: 0,
 			oZ: 0,
-			theta: 0
-		};
-	};
+			theta: 0,
+		}
+	}
 
 	const resetToCurrent = () => {
-		desiredPosition = { ...endPosition };
-	};
+		desiredPosition = { ...endPosition }
+	}
 
 	const displayPosition = $derived({
 		x: desiredPosition.x,
@@ -43,20 +44,20 @@
 		oX: desiredPosition.oX,
 		oY: desiredPosition.oY,
 		oZ: desiredPosition.oZ,
-		theta: useRadians ? degreesToRadians(desiredPosition.theta) : desiredPosition.theta
-	});
+		theta: useRadians ? degreesToRadians(desiredPosition.theta) : desiredPosition.theta,
+	})
 
 	const copyData = $derived(
 		`{x: ${displayPosition.x}, y: ${displayPosition.y}, z: ${displayPosition.z}, o_x: ${displayPosition.oX}, o_y: ${displayPosition.oY}, o_z: ${displayPosition.oZ}, theta: ${displayPosition.theta}}`
-	);
+	)
 
 	const handleAngleInputChange = (key: keyof Pose, inputValue: number) => {
 		if (key === 'theta') {
-			desiredPosition[key] = useRadians ? radiansToDegrees(inputValue) : inputValue;
+			desiredPosition[key] = useRadians ? radiansToDegrees(inputValue) : inputValue
 		} else {
-			desiredPosition[key] = inputValue;
+			desiredPosition[key] = inputValue
 		}
-	};
+	}
 
 	const positionLabels: Record<keyof Pose, string> = {
 		x: 'X',
@@ -65,9 +66,9 @@
 		oX: 'OX',
 		oY: 'OY',
 		oZ: 'OZ',
-		theta: 'θ'
-	} as const;
-	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][];
+		theta: 'θ',
+	} as const
+	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][]
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -78,7 +79,7 @@
 			<AngleUnitToggle
 				{useRadians}
 				onToggle={() => {
-					useRadians = !useRadians;
+					useRadians = !useRadians
 				}}
 			/>
 			<CopyButton data={copyData} />
@@ -102,8 +103,8 @@
 							cx="max-w-[76px]"
 							{value}
 							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0;
-								handleAngleInputChange(key, inputValue);
+								const inputValue = numberValueFromEvent(event) ?? 0
+								handleAngleInputChange(key, inputValue)
 							}}
 						/>
 					</th>

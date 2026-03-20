@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { Canvas } from '@threlte/core';
-	import { View } from '@threlte/extras';
+	import type { PointCloudObject } from '@viamrobotics/sdk'
 
-	import type { PointCloudObject } from '@viamrobotics/sdk';
+	import { Canvas } from '@threlte/core'
+	import { View } from '@threlte/extras'
 
-	import GeometryDetails from './geometry-details.svelte';
-	import ObjectPointCloudScene from './object-point-cloud-scene.svelte';
+	import GeometryDetails from './geometry-details.svelte'
+	import ObjectPointCloudScene from './object-point-cloud-scene.svelte'
 
 	interface Props {
-		objects: PointCloudObject[];
+		objects: PointCloudObject[]
 	}
 
-	const { objects }: Props = $props();
+	const { objects }: Props = $props()
 
 	const hashPointCloud = (data: Uint8Array): string => {
-		const len = data.length;
-		if (len === 0) return '0';
+		const len = data.length
+		if (len === 0) return '0'
 
 		// Sample bytes from start, middle, and end
 		const samples = [
@@ -23,41 +23,41 @@
 			data[Math.floor(len / 4)],
 			data[Math.floor(len / 2)],
 			data[Math.floor((3 * len) / 4)],
-			data[len - 1]
-		];
+			data[len - 1],
+		]
 
-		return `${len}-${samples.join('-')}`;
-	};
-
-	interface Item {
-		id: string;
-		object: PointCloudObject;
-		dom: HTMLElement | undefined;
+		return `${len}-${samples.join('-')}`
 	}
 
-	const items: Item[] = $state([]);
+	interface Item {
+		id: string
+		object: PointCloudObject
+		dom: HTMLElement | undefined
+	}
+
+	const items: Item[] = $state([])
 
 	$effect.pre(() => {
-		const itemsToRemove = new Set(items.map((item) => item.id));
+		const itemsToRemove = new Set(items.map((item) => item.id))
 		for (const object of objects) {
-			const id = hashPointCloud(new Uint8Array(object.pointCloud));
-			const existingItem = items.find((item) => item.id === id);
+			const id = hashPointCloud(new Uint8Array(object.pointCloud))
+			const existingItem = items.find((item) => item.id === id)
 			if (existingItem) {
-				existingItem.object = object;
+				existingItem.object = object
 			} else {
-				items.push({ id, object, dom: undefined });
+				items.push({ id, object, dom: undefined })
 			}
 
-			itemsToRemove.delete(id);
+			itemsToRemove.delete(id)
 		}
 
 		for (const id of itemsToRemove) {
-			const index = items.findIndex((item) => item.id === id);
+			const index = items.findIndex((item) => item.id === id)
 			if (index !== -1) {
-				items.splice(index, 1);
+				items.splice(index, 1)
 			}
 		}
-	});
+	})
 </script>
 
 <div class="relative h-[600px] max-h-[80vh] bg-white">

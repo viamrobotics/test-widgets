@@ -1,4 +1,4 @@
-import type { GeoGeometry } from '@viamrobotics/sdk';
+import type { GeoGeometry } from '@viamrobotics/sdk'
 
 export const obstacles: GeoGeometry[] = [
 	{
@@ -9,12 +9,12 @@ export const obstacles: GeoGeometry[] = [
 				geometryType: {
 					case: 'sphere',
 					value: {
-						radiusMm: 2000
-					}
+						radiusMm: 2000,
+					},
 				},
-				label: 'sphere'
-			}
-		]
+				label: 'sphere',
+			},
+		],
 	},
 	{
 		location: { latitude: 3, longitude: 4 },
@@ -23,11 +23,11 @@ export const obstacles: GeoGeometry[] = [
 				center: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 },
 				geometryType: {
 					case: 'capsule',
-					value: { radiusMm: 500, lengthMm: 5000 }
+					value: { radiusMm: 500, lengthMm: 5000 },
 				},
-				label: 'capsule'
-			}
-		]
+				label: 'capsule',
+			},
+		],
 	},
 	{
 		location: { latitude: 5, longitude: 6 },
@@ -36,11 +36,11 @@ export const obstacles: GeoGeometry[] = [
 				center: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 },
 				geometryType: {
 					case: 'box',
-					value: { dimsMm: { x: 50_000, y: 50_000, z: 50_000 } }
+					value: { dimsMm: { x: 50_000, y: 50_000, z: 50_000 } },
 				},
-				label: 'box'
-			}
-		]
+				label: 'box',
+			},
+		],
 	},
 	{
 		location: { latitude: 7, longitude: 8 },
@@ -49,10 +49,10 @@ export const obstacles: GeoGeometry[] = [
 				center: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 },
 				geometryType: {
 					case: 'capsule',
-					value: { radiusMm: 50_000, lengthMm: 300_000 }
+					value: { radiusMm: 50_000, lengthMm: 300_000 },
 				},
-				label: 'myCamera_transientObstacle'
-			}
-		]
-	}
-];
+				label: 'myCamera_transientObstacle',
+			},
+		],
+	},
+]

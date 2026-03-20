@@ -1,51 +1,51 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { Icon } from '@viamrobotics/prime-core'
+	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
+	import { slide } from 'svelte/transition'
 
-	import { Icon } from '@viamrobotics/prime-core';
-	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import OperationsTable from './operations-table.svelte';
-	import RttPill from './rtt-pill.svelte';
-	import SessionsTable from './sessions-table.svelte';
+	import OperationsTable from './operations-table.svelte'
+	import RttPill from './rtt-pill.svelte'
+	import SessionsTable from './sessions-table.svelte'
 
 	interface Props {
-		partID: string;
+		partID: string
 	}
 
-	const { partID }: Props = $props();
+	const { partID }: Props = $props()
 
-	let isCollapsed = $state(true);
+	let isCollapsed = $state(true)
 
-	const client = useRobotClient(() => partID);
+	const client = useRobotClient(() => partID)
 	const operationsQuery = createRobotQuery(client, 'getOperations', () => ({
-		refetchInterval: 1000
-	}));
-	const cancelOperationMutation = createRobotMutation(client, 'cancelOperation');
+		refetchInterval: 1000,
+	}))
+	const cancelOperationMutation = createRobotMutation(client, 'cancelOperation')
 	// only enabled if not collapsed
 	const sessionsQuery = createRobotQuery(client, 'getSessions', () => ({
 		refetchInterval: 1000,
-		enabled: !isCollapsed
-	}));
+		enabled: !isCollapsed,
+	}))
 
-	let rtt = $state(0);
-	let then = Date.now();
+	let rtt = $state(0)
+	let then = Date.now()
 
 	$effect.pre(() => {
 		if (operationsQuery.isRefetching) {
-			then = Date.now();
+			then = Date.now()
 		} else if (operationsQuery.isSuccess) {
-			rtt = Date.now() - then;
+			rtt = Date.now() - then
 		}
-	});
+	})
 
-	const operations = $derived(operationsQuery.data ?? []);
+	const operations = $derived(operationsQuery.data ?? [])
 
-	const cancelOperation = (id: string) => cancelOperationMutation.mutate([id]);
+	const cancelOperation = (id: string) => cancelOperationMutation.mutate([id])
 
-	const id = $props.id();
-	const collapseID = `${id}-ops-sessions-collapse`;
-	const headingID = `${id}-ops-sessions-heading`;
+	const id = $props.id()
+	const collapseID = `${id}-ops-sessions-collapse`
+	const headingID = `${id}-ops-sessions-heading`
 </script>
 
 <!-- z-10 is enough to ensure it is above the 'maplibre Google Maps' floating element-->

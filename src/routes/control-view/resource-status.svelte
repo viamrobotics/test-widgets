@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { Badge } from '@viamrobotics/prime-core';
-	import { robotApi } from '@viamrobotics/sdk';
+	import { Badge } from '@viamrobotics/prime-core'
+	import { robotApi } from '@viamrobotics/sdk'
 
-	import type { NamedResourceStatus } from './resource';
+	import type { NamedResourceStatus } from './resource'
 
 	interface Props {
-		resource: NamedResourceStatus;
+		resource: NamedResourceStatus
 	}
 
-	const { resource }: Props = $props();
+	const { resource }: Props = $props()
 
 	const STATUS_MAP: Record<
 		number,
@@ -16,27 +16,27 @@
 	> = {
 		[robotApi.ResourceStatus_State.UNHEALTHY]: {
 			label: 'Failed',
-			variant: 'danger'
+			variant: 'danger',
 		},
 		[robotApi.ResourceStatus_State.UNCONFIGURED]: {
 			label: 'Unconfigured',
-			variant: 'danger'
+			variant: 'danger',
 		},
 		[robotApi.ResourceStatus_State.REMOVING]: {
 			label: 'Removing...',
-			variant: 'warning'
+			variant: 'warning',
 		},
 		[robotApi.ResourceStatus_State.CONFIGURING]: {
 			label: 'Configuring...',
-			variant: 'inactive'
+			variant: 'inactive',
 		},
 		[robotApi.ResourceStatus_State.READY]: {
 			label: 'Ready',
-			variant: 'success'
-		}
-	};
+			variant: 'success',
+		},
+	}
 
-	const badgeProps = $derived(STATUS_MAP[resource.state]);
+	const badgeProps = $derived(STATUS_MAP[resource.state])
 </script>
 
 {#if badgeProps}

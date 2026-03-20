@@ -1,16 +1,17 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import CardListItem from './card-list-item.svelte';
-	import NullState from './null-state.svelte';
-	import { getResourceKey, type NamedResourceStatus } from '$lib/resource';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import { getResourceKey, type NamedResourceStatus } from '$lib/resource'
+
+	import CardListItem from './card-list-item.svelte'
+	import NullState from './null-state.svelte'
 
 	interface Props {
-		partID: string;
-		isLoading: boolean;
-		error: Error | undefined;
-		resources: NamedResourceStatus[];
-		urlHash: string;
-		hasUnsavedChanges?: boolean;
+		partID: string
+		isLoading: boolean
+		error: Error | undefined
+		resources: NamedResourceStatus[]
+		urlHash: string
+		hasUnsavedChanges?: boolean
 	}
 
 	const {
@@ -19,8 +20,8 @@
 		error,
 		resources,
 		urlHash,
-		hasUnsavedChanges = false
-	}: Props = $props();
+		hasUnsavedChanges = false,
+	}: Props = $props()
 </script>
 
 <div class="p-6">

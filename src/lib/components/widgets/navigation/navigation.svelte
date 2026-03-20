@@ -1,65 +1,70 @@
 <script lang="ts">
-	import type { LngLat, Map as MaplLibreMap } from 'maplibre-gl';
-	import { PersistedState } from 'runed';
+	import type { LngLat, Map as MaplLibreMap } from 'maplibre-gl'
 
-	import { Tab, TabsBar, ToggleButtons } from '@viamrobotics/prime-core';
-	import { GeoGeometry, navigationApi, NavigationClient } from '@viamrobotics/sdk';
+	import { Tab, TabsBar, ToggleButtons } from '@viamrobotics/prime-core'
+	import { GeoGeometry, navigationApi, NavigationClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
+	import { PersistedState } from 'runed'
 
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import {
 		CenterControls,
 		MapLibre,
 		MapProviders,
 		NavigationControls,
-		SatelliteControls
-	} from '$lib/components/maplibre';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import DirectionalMarker from './directional-marker.svelte';
-	import ObstaclesLegend from './obstacles/legend.svelte';
-	import Obstacles from './obstacles/obstacles.svelte';
-	import WaypointsLegend from './waypoints/legend.svelte';
-	import Waypoints from './waypoints/waypoints.svelte';
+		SatelliteControls,
+	} from '$lib/components/maplibre'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+
+	import DirectionalMarker from './directional-marker.svelte'
+	import ObstaclesLegend from './obstacles/legend.svelte'
+	import Obstacles from './obstacles/obstacles.svelte'
+	import WaypointsLegend from './waypoints/legend.svelte'
+	import Waypoints from './waypoints/waypoints.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'navigation-view');
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'navigation-view'
+	)
 
 	const client = createResourceClient(
 		NavigationClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const locationQuery = createResourceQuery(client, 'getLocation', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const waypointsQuery = createResourceQuery(client, 'getWayPoints', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const obstaclesQuery = createResourceQuery(client, 'getObstacles', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const getModeQuery = createResourceQuery(client, 'getMode', {
-		refetchInterval: 10_000
-	});
+		refetchInterval: 10_000,
+	})
 
-	const addWaypointMutation = createResourceMutation(client, 'addWayPoint');
-	const removeWaypointMutation = createResourceMutation(client, 'removeWayPoint');
-	const setModeMutation = createResourceMutation(client, 'setMode');
+	const addWaypointMutation = createResourceMutation(client, 'addWayPoint')
+	const removeWaypointMutation = createResourceMutation(client, 'removeWayPoint')
+	const setModeMutation = createResourceMutation(client, 'setMode')
 
 	/**
 	 * Explore mode is hidden due to being slated for removal.
@@ -71,60 +76,60 @@
 			[navigationApi.Mode.UNSPECIFIED]: '',
 			[navigationApi.Mode.EXPLORE]: '',
 			[navigationApi.Mode.MANUAL]: 'Manual',
-			[navigationApi.Mode.WAYPOINT]: 'Waypoint'
+			[navigationApi.Mode.WAYPOINT]: 'Waypoint',
 		}[getModeQuery.data ?? 0] ?? ''
-	);
+	)
 
 	const handleModeChange = async (event: CustomEvent<string>) => {
 		const nextMode =
 			{
 				'': navigationApi.Mode.UNSPECIFIED,
 				Manual: navigationApi.Mode.MANUAL,
-				Waypoint: navigationApi.Mode.WAYPOINT
-			}[event.detail] ?? navigationApi.Mode.UNSPECIFIED;
+				Waypoint: navigationApi.Mode.WAYPOINT,
+			}[event.detail] ?? navigationApi.Mode.UNSPECIFIED
 
-		await setModeMutation.mutateAsync([nextMode]);
-		await getModeQuery.refetch();
-	};
+		await setModeMutation.mutateAsync([nextMode])
+		await getModeQuery.refetch()
+	}
 
-	const waypoints = $derived(waypointsQuery.data ?? []);
+	const waypoints = $derived(waypointsQuery.data ?? [])
 	const obstacles = $derived<GeoGeometry[]>(
 		(obstaclesQuery.data ?? []).map((obstacle, index) => ({
 			location: obstacle.location,
 			geometries: obstacle.geometries.map((geometry) => ({
 				center: geometry.center,
 				geometryType: geometry.geometryType,
-				label: geometry.label === '' ? `Obstacle ${(index + 1).toString()}` : geometry.label
-			}))
+				label: geometry.label === '' ? `Obstacle ${(index + 1).toString()}` : geometry.label,
+			})),
 		}))
-	);
+	)
 
 	const tab = new PersistedState<'obstacles' | 'waypoints'>(
 		'navigation-service-test-card-tab',
 		'obstacles'
-	);
-	let view = $state<'2D' | '3D'>('2D');
-	let hovered = $state<string | null>(null);
+	)
+	let view = $state<'2D' | '3D'>('2D')
+	let hovered = $state<string | null>(null)
 
 	const handleViewSelect = ({ detail }: CustomEvent<string>) => {
-		view = detail as '2D' | '3D';
-	};
+		view = detail as '2D' | '3D'
+	}
 
 	const setHovered = (next?: string | null) => {
-		hovered = next ?? null;
-	};
+		hovered = next ?? null
+	}
 
-	let map = $state.raw<MaplLibreMap>();
+	let map = $state.raw<MaplLibreMap>()
 
 	const addWayPoint = async (lngLat: LngLat) => {
 		const location = {
 			latitude: lngLat.lat,
-			longitude: lngLat.lng
-		};
+			longitude: lngLat.lng,
+		}
 
-		await addWaypointMutation.mutateAsync([location]);
-		await waypointsQuery.refetch();
-	};
+		await addWaypointMutation.mutateAsync([location])
+		await waypointsQuery.refetch()
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -179,8 +184,8 @@
 							onEnter={setHovered}
 							onLeave={setHovered}
 							onRemove={async (id) => {
-								await removeWaypointMutation.mutateAsync([id]);
-								await waypointsQuery.refetch();
+								await removeWaypointMutation.mutateAsync([id])
+								await waypointsQuery.refetch()
 							}}
 						/>
 					{/if}

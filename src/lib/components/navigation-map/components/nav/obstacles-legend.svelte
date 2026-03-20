@@ -1,5 +1,5 @@
 <script>
-	import Key from './key.svelte';
+	import Key from './key.svelte'
 </script>
 
 <p>Getting started:</p>

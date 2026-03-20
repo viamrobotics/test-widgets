@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { Input, Label, ToggleButtons } from '@viamrobotics/prime-core';
+	import { Input, Label, ToggleButtons } from '@viamrobotics/prime-core'
 
-	import { PinModes, type PinSelection, PinTypes } from './board.ts';
+	import { PinModes, type PinSelection, PinTypes } from './board.ts'
 
 	interface Props {
 		// NOTE(zp,2024-06-25) This was done instead of a bind:value to simplify unit-testing
-		value: PinSelection;
-		onChange: (newVal: PinSelection) => void;
+		value: PinSelection
+		onChange: (newVal: PinSelection) => void
 	}
 
-	const { value, onChange }: Props = $props();
+	const { value, onChange }: Props = $props()
 
 	const changePin = (event: Event) => {
-		const { value: newPinValue } = event.target as HTMLInputElement;
-		onChange({ ...value, pin: newPinValue });
-	};
+		const { value: newPinValue } = event.target as HTMLInputElement
+		onChange({ ...value, pin: newPinValue })
+	}
 
 	const changeType = (event: CustomEvent<string>) => {
 		onChange({
 			...value,
-			type: event.detail === PinTypes.GPIO ? PinTypes.GPIO : PinTypes.ANALOG
-		});
-	};
+			type: event.detail === PinTypes.GPIO ? PinTypes.GPIO : PinTypes.ANALOG,
+		})
+	}
 
 	const changeMode = (event: CustomEvent<string>) => {
 		onChange({
 			...value,
-			mode: event.detail === PinModes.READ ? PinModes.READ : PinModes.WRITE
-		});
-	};
+			mode: event.detail === PinModes.READ ? PinModes.READ : PinModes.WRITE,
+		})
+	}
 </script>
 
 <div class="flex flex-col gap-4">

@@ -1,184 +1,184 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T } from '@threlte/core'
+	import { AxesHelper, CapsuleGeometry } from '@viamrobotics/motion-tools/lib'
+	import { theme } from '@viamrobotics/prime-core/theme'
 	import {
 		LngLat,
 		type MapLayerMouseEvent,
 		type MapLayerTouchEvent,
-		type MapMouseEvent
-	} from 'maplibre-gl';
-	import * as THREE from 'three';
+		type MapMouseEvent,
+	} from 'maplibre-gl'
+	import * as THREE from 'three'
 
-	import { AxesHelper, CapsuleGeometry } from '@viamrobotics/motion-tools/lib';
-	import { theme } from '@viamrobotics/prime-core/theme';
+	import type { Obstacle } from '../types'
 
-	import { useMapLibre, useMapLibreEvent } from '../../maplibre';
-	import type { Obstacle } from '../types';
-	import { useNavigationMap } from '../use-navigation-map.svelte';
+	import { useMapLibre, useMapLibreEvent } from '../../maplibre'
+	import { useNavigationMap } from '../use-navigation-map.svelte'
 
 	interface Props {
 		/** The obstacle name. */
-		name: string;
+		name: string
 		/** Fired when obstacles are created, destroyed, or edited. */
-		onupdate: (payload: Obstacle) => void;
+		onupdate: (payload: Obstacle) => void
 	}
 
-	const { name, onupdate }: Props = $props();
+	const { name, onupdate }: Props = $props()
 
-	const { map } = useMapLibre();
-	const nav = useNavigationMap();
+	const { map } = useMapLibre()
+	const nav = useNavigationMap()
 
-	let pointerdownTheta = 0;
-	let pointerdownRadius = 0;
-	let pointerdownLength = 0;
-	let pointerdownWidth = 0;
-	let pointerdownHeight = 0;
+	let pointerdownTheta = 0
+	let pointerdownRadius = 0
+	let pointerdownLength = 0
+	let pointerdownWidth = 0
+	let pointerdownHeight = 0
 
-	let draggingObstacle = $state(false);
+	let draggingObstacle = $state(false)
 
-	const pointermove = new THREE.Vector2();
-	const pointerdown = new THREE.Vector2();
+	const pointermove = new THREE.Vector2()
+	const pointerdown = new THREE.Vector2()
 
-	const debugMode = $derived(nav.environment === 'debug');
-	const obstacle = $derived(nav.obstacles.find((item) => item.name === name));
+	const debugMode = $derived(nav.environment === 'debug')
+	const obstacle = $derived(nav.obstacles.find((item) => item.name === name))
 
 	const handleGeometryCreate = (ref: THREE.BufferGeometry) => {
-		ref.rotateX(-Math.PI / 2);
-	};
+		ref.rotateX(-Math.PI / 2)
+	}
 
 	const handlePointerDown = () => {
-		nav.selected = name;
+		nav.selected = name
 
 		if (debugMode) {
-			return;
+			return
 		}
 
-		map.dragPan.disable();
-		draggingObstacle = true;
-	};
+		map.dragPan.disable()
+		draggingObstacle = true
+	}
 
 	const handleMapPointerDown = (event: MapLayerMouseEvent | MapLayerTouchEvent) => {
 		if (debugMode) {
-			return;
+			return
 		}
 
-		const ev = event.originalEvent;
-		const isManipulating = ev.metaKey || ev.ctrlKey || ev.altKey;
+		const ev = event.originalEvent
+		const isManipulating = ev.metaKey || ev.ctrlKey || ev.altKey
 
 		if (isManipulating) {
-			event.preventDefault();
-			map.getCanvas().classList.add('!cursor-ns-resize');
+			event.preventDefault()
+			map.getCanvas().classList.add('!cursor-ns-resize')
 		}
 
-		pointerdown.set(event.point.x, event.point.y);
+		pointerdown.set(event.point.x, event.point.y)
 
-		const geometry = obstacle?.geometries[0];
+		const geometry = obstacle?.geometries[0]
 		if (!geometry) {
-			return;
+			return
 		}
 
-		pointerdownTheta = geometry.pose.orientationVector.th;
+		pointerdownTheta = geometry.pose.orientationVector.th
 
 		switch (geometry.type) {
 			case 'sphere': {
-				pointerdownRadius = geometry.radius;
-				break;
+				pointerdownRadius = geometry.radius
+				break
 			}
 			case 'box': {
-				pointerdownLength = geometry.length;
-				pointerdownWidth = geometry.width;
-				pointerdownHeight = geometry.height;
-				break;
+				pointerdownLength = geometry.length
+				pointerdownWidth = geometry.width
+				pointerdownHeight = geometry.height
+				break
 			}
 			case 'capsule': {
-				pointerdownRadius = geometry.radius;
-				pointerdownLength = geometry.length;
-				break;
+				pointerdownRadius = geometry.radius
+				pointerdownLength = geometry.length
+				break
 			}
 		}
-	};
+	}
 
 	const handlePointerMove = (event: MapMouseEvent) => {
 		if (nav.selected === null) {
-			return;
+			return
 		}
 
 		if (!obstacle) {
-			return;
+			return
 		}
 
-		const geometry = obstacle.geometries[0];
+		const geometry = obstacle.geometries[0]
 		if (!geometry) {
-			return;
+			return
 		}
 
 		// Rotate
 		if (event.originalEvent.metaKey || event.originalEvent.ctrlKey) {
-			pointermove.set(event.point.x, event.point.y);
-			pointermove.sub(pointerdown);
+			pointermove.set(event.point.x, event.point.y)
+			pointermove.sub(pointerdown)
 
-			geometry.pose.orientationVector.th = pointerdownTheta + pointermove.y / 10;
+			geometry.pose.orientationVector.th = pointerdownTheta + pointermove.y / 10
 
 			onupdate({
 				...obstacle,
-				geometries: [geometry]
-			});
+				geometries: [geometry],
+			})
 
 			// Scale
 		} else if (event.originalEvent.altKey) {
-			pointermove.set(event.point.x, event.point.y);
-			pointermove.sub(pointerdown);
+			pointermove.set(event.point.x, event.point.y)
+			pointermove.sub(pointerdown)
 
-			const { y } = pointermove;
+			const { y } = pointermove
 
 			switch (geometry.type) {
 				case 'sphere': {
-					geometry.radius = Math.max(0, pointerdownRadius - y);
-					break;
+					geometry.radius = Math.max(0, pointerdownRadius - y)
+					break
 				}
 				case 'box': {
-					geometry.length = Math.max(0, pointerdownLength - y);
-					geometry.width = Math.max(0, pointerdownWidth - y);
-					geometry.height = Math.max(0, pointerdownHeight - y);
-					break;
+					geometry.length = Math.max(0, pointerdownLength - y)
+					geometry.width = Math.max(0, pointerdownWidth - y)
+					geometry.height = Math.max(0, pointerdownHeight - y)
+					break
 				}
 				case 'capsule': {
-					geometry.radius = Math.max(0, pointerdownRadius - y);
-					geometry.length = Math.max(0, pointerdownLength - y);
-					break;
+					geometry.radius = Math.max(0, pointerdownRadius - y)
+					geometry.length = Math.max(0, pointerdownLength - y)
+					break
 				}
 			}
 
 			onupdate({
 				...obstacle,
-				geometries: [geometry]
-			});
+				geometries: [geometry],
+			})
 
 			// Transform
 		} else {
 			onupdate({
 				...obstacle,
-				location: new LngLat(event.lngLat.lng, event.lngLat.lat)
-			});
+				location: new LngLat(event.lngLat.lng, event.lngLat.lat),
+			})
 		}
-	};
+	}
 
 	const handlePointerUp = () => {
-		draggingObstacle = false;
-		map.dragPan.enable();
-		map.getCanvas().classList.remove('!cursor-ns-resize');
-	};
+		draggingObstacle = false
+		map.dragPan.enable()
+		map.getCanvas().classList.remove('!cursor-ns-resize')
+	}
 
-	const active = $derived(nav.hovered === name || nav.selected === name);
+	const active = $derived(nav.hovered === name || nav.selected === name)
 
 	$effect.pre(() => {
 		if (draggingObstacle) {
-			map.on('mousemove', handlePointerMove);
+			map.on('mousemove', handlePointerMove)
 		} else {
-			map.off('mousemove', handlePointerMove);
+			map.off('mousemove', handlePointerMove)
 		}
-	});
+	})
 
-	useMapLibreEvent('mousedown', handleMapPointerDown);
+	useMapLibreEvent('mousedown', handleMapPointerDown)
 </script>
 
 <svelte:window onpointerup={handlePointerUp} />

@@ -1,86 +1,90 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { Switch } from '@viamrobotics/prime-core'
+	import { MovementSensorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import { slide } from 'svelte/transition'
 
-	import { Switch } from '@viamrobotics/prime-core';
-	import { MovementSensorClient } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk';
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Query from '$lib/components/query.svelte'
+	import ReadingsList from '$lib/components/readings-list.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Query from '$lib/components/query.svelte';
-	import ReadingsList from '$lib/components/readings-list.svelte';
-	import { createRefetchIntervalStore } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import Accuracy from './accuracy.svelte';
-	import CompassHeading from './compass-heading.svelte';
-	import Map from './map.svelte';
-	import Orientation from './orientation.svelte';
-	import Position from './position.svelte';
-	import Vector3 from './vector3.svelte';
+	import Accuracy from './accuracy.svelte'
+	import CompassHeading from './compass-heading.svelte'
+	import Map from './map.svelte'
+	import Orientation from './orientation.svelte'
+	import Position from './position.svelte'
+	import Vector3 from './vector3.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
-	const refetchInterval = createRefetchIntervalStore(partID, resourceName, 'movement-sensor-view');
-	let showFullReadings = $state(false);
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'movement-sensor-view'
+	)
+	let showFullReadings = $state(false)
 
 	const onSetShowFullReadings = (event: CustomEvent<boolean>) => {
-		showFullReadings = event.detail;
-	};
+		showFullReadings = event.detail
+	}
 
 	const client = createResourceClient(
 		MovementSensorClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const positionQuery = createResourceQuery(client, 'getPosition', () => ({
 		enabled: propertiesQuery.data?.positionSupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const orientationQuery = createResourceQuery(client, 'getOrientation', () => ({
 		enabled: propertiesQuery.data?.orientationSupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const compassHeadingQuery = createResourceQuery(client, 'getCompassHeading', () => ({
 		enabled: propertiesQuery.data?.compassHeadingSupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const angularVelocityQuery = createResourceQuery(client, 'getAngularVelocity', () => ({
 		enabled: propertiesQuery.data?.angularVelocitySupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const linearVelocityQuery = createResourceQuery(client, 'getLinearVelocity', () => ({
 		enabled: propertiesQuery.data?.linearVelocitySupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const linearAccelerationQuery = createResourceQuery(client, 'getLinearAcceleration', () => ({
 		enabled: propertiesQuery.data?.linearAccelerationSupported === true,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const accuracyQuery = createResourceQuery(client, 'getAccuracy', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
 	const readingsQuery = createResourceQuery(client, 'getReadings', () => ({
 		enabled: showFullReadings,
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
-	const headingID = $props.id();
+	const headingID = $props.id()
 </script>
 
 <ConnectionStatus {partID}>

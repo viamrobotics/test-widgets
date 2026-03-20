@@ -1,76 +1,77 @@
 <script lang="ts">
-	import { MotorClient } from '@viamrobotics/sdk';
+	import { MotorClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import { formatNumeric } from '$lib/format';
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import IsMovingView from '$lib/components/is-moving.svelte';
-	import MutationSection from '$lib/components/mutation-section.svelte';
-	import Query from '$lib/components/query.svelte';
-	import StopButton from '$lib/components/stop-button.svelte';
-	import GoFor from './go-for.svelte';
-	import GoTo from './go-to.svelte';
-	import QuickMove from './quick-move.svelte';
-	import SetPower from './set-power.svelte';
-	import SetRPM from './set-rpm.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import IsMovingView from '$lib/components/is-moving.svelte'
+	import MutationSection from '$lib/components/mutation-section.svelte'
+	import Query from '$lib/components/query.svelte'
+	import StopButton from '$lib/components/stop-button.svelte'
+	import { formatNumeric } from '$lib/format'
+
+	import GoFor from './go-for.svelte'
+	import GoTo from './go-to.svelte'
+	import QuickMove from './quick-move.svelte'
+	import SetPower from './set-power.svelte'
+	import SetRPM from './set-rpm.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		MotorClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const propertiesQuery = createResourceQuery(client, 'getProperties', {
-		refetchInterval: false
-	});
+		refetchInterval: false,
+	})
 
 	const isPoweredQuery = createResourceQuery(client, 'isPowered', {
-		refetchInterval: 500
-	});
+		refetchInterval: 500,
+	})
 
 	const positionQuery = createResourceQuery(client, 'getPosition', () => ({
 		enabled: propertiesQuery.data?.positionReporting === true,
-		refetchInterval: 500
-	}));
+		refetchInterval: 500,
+	}))
 
-	const setPowerMutation = createResourceMutation(client, 'setPower');
-	const quickSetPowerMutation = createResourceMutation(client, 'setPower');
-	const setRPMMutation = createResourceMutation(client, 'setRPM');
-	const goForMutation = createResourceMutation(client, 'goFor');
-	const goToMutation = createResourceMutation(client, 'goTo');
-	const stopMutation = createResourceMutation(client, 'stop');
+	const setPowerMutation = createResourceMutation(client, 'setPower')
+	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+	const setRPMMutation = createResourceMutation(client, 'setRPM')
+	const goForMutation = createResourceMutation(client, 'goFor')
+	const goToMutation = createResourceMutation(client, 'goTo')
+	const stopMutation = createResourceMutation(client, 'stop')
 
 	const setPower = (val: number) => {
-		setPowerMutation.mutate([val], {});
-	};
+		setPowerMutation.mutate([val], {})
+	}
 
 	const quickSetPower = (val: number) => {
-		quickSetPowerMutation.mutate([val], {});
-	};
+		quickSetPowerMutation.mutate([val], {})
+	}
 
 	const setRPM = (val: number) => {
-		setRPMMutation.mutate([val], {});
-	};
+		setRPMMutation.mutate([val], {})
+	}
 
 	const goFor = (rpm: number, revolutions: number) => {
-		goForMutation.mutate([rpm, revolutions], {});
-	};
+		goForMutation.mutate([rpm, revolutions], {})
+	}
 
 	const goTo = (rpm: number, pos: number) => {
-		goToMutation.mutate([rpm, pos], {});
-	};
+		goToMutation.mutate([rpm, pos], {})
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -120,7 +121,7 @@
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
-							stopMutation.mutate([]);
+							stopMutation.mutate([])
 						}}
 					/>
 				</ApiSection>

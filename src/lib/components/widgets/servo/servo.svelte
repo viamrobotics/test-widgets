@@ -1,48 +1,49 @@
 <script lang="ts">
-	import { ServoClient } from '@viamrobotics/sdk';
+	import { ServoClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
 
-	import { formatNumeric } from '$lib/format';
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import IsMovingView from '$lib/components/is-moving.svelte';
-	import Query from '$lib/components/query.svelte';
-	import StopButton from '$lib/components/stop-button.svelte';
-	import Move from './move.svelte';
-	import QuickMove from './quick-move.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import IsMovingView from '$lib/components/is-moving.svelte'
+	import Query from '$lib/components/query.svelte'
+	import StopButton from '$lib/components/stop-button.svelte'
+	import { formatNumeric } from '$lib/format'
+
+	import Move from './move.svelte'
+	import QuickMove from './quick-move.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		ServoClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const positionQuery = createResourceQuery(client, 'getPosition', {
-		refetchInterval: 500
-	});
+		refetchInterval: 500,
+	})
 
-	const moveMutation = createResourceMutation(client, 'move');
-	const quickMoveMutation = createResourceMutation(client, 'move');
-	const stopMutation = createResourceMutation(client, 'stop');
+	const moveMutation = createResourceMutation(client, 'move')
+	const quickMoveMutation = createResourceMutation(client, 'move')
+	const stopMutation = createResourceMutation(client, 'stop')
 
 	const moveTo = (angle: number) => {
-		moveMutation.mutate([angle], {});
-	};
+		moveMutation.mutate([angle], {})
+	}
 
 	const quickMoveTo = (angle: number) => {
-		quickMoveMutation.mutate([angle], {});
-	};
+		quickMoveMutation.mutate([angle], {})
+	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -95,7 +96,7 @@
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
-							stopMutation.mutate([]);
+							stopMutation.mutate([])
 						}}
 					/>
 				</ApiSection>

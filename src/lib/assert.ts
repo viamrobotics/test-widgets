@@ -2,8 +2,8 @@
 
 export class AssertionError extends Error {
 	constructor(message: string) {
-		super(message);
-		this.name = 'AssertionError';
+		super(message)
+		this.name = 'AssertionError'
 	}
 }
 
@@ -21,6 +21,6 @@ export const assertExists: <T>(value: T, message: string) => asserts value is No
 	message
 ) => {
 	if (value === null || value === undefined) {
-		throw new AssertionError(message);
+		throw new AssertionError(message)
 	}
-};
+}

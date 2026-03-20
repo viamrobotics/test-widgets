@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { Icon } from '@viamrobotics/prime-core';
+	import { Icon } from '@viamrobotics/prime-core'
 
 	interface Props {
-		type: string;
+		type: string
 	}
 
-	const { type }: Props = $props();
+	const { type }: Props = $props()
 
 	const getIconName = (resourceType: string) => {
 		if (resourceType === 'component') {
-			return 'viam-component' as const;
+			return 'viam-component' as const
 		}
 
-		return resourceType === 'service' ? ('viam-service' as const) : undefined;
-	};
+		return resourceType === 'service' ? ('viam-service' as const) : undefined
+	}
 
-	const iconName = $derived(getIconName(type));
+	const iconName = $derived(getIconName(type))
 </script>
 
 <!-- 'check' is just a placeholder when there's not an iconName -->
@@ -25,7 +25,7 @@
 		'shrink-0',
 		'text-gray-6',
 		{
-			'opacity-0': !iconName
-		}
+			'opacity-0': !iconName,
+		},
 	]}
 />

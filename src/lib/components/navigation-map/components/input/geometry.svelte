@@ -1,88 +1,89 @@
 <script lang="ts">
-	import { ToggleButtons, VectorInput } from '@viamrobotics/prime-core';
+	import { ToggleButtons, VectorInput } from '@viamrobotics/prime-core'
 
-	import { createGeometry } from '../../lib/create-geometry';
-	import type { Geometry, Shapes } from '../../types';
+	import type { Geometry, Shapes } from '../../types'
+
+	import { createGeometry } from '../../lib/create-geometry'
 
 	interface Props {
 		/** The geometry to edit. */
-		geometry: Geometry;
-		oninput: (geometry: Geometry) => void;
+		geometry: Geometry
+		oninput: (geometry: Geometry) => void
 	}
 
-	const { geometry, oninput }: Props = $props();
+	const { geometry, oninput }: Props = $props()
 
 	const getNormalizedSize = () => {
 		switch (geometry.type) {
 			case 'box': {
-				return geometry.length > geometry.height ? geometry.length / 2 : geometry.height / 2;
+				return geometry.length > geometry.height ? geometry.length / 2 : geometry.height / 2
 			}
 			case 'sphere': {
-				return geometry.radius;
+				return geometry.radius
 			}
 			case 'capsule': {
-				return geometry.length;
+				return geometry.length
 			}
 		}
-	};
+	}
 
 	const handleShapeSelect = ({ detail }: CustomEvent<string>) => {
-		const currentSize = getNormalizedSize();
-		const currentRotation = geometry.pose.orientationVector.th;
-		const nextType = detail.toLowerCase() as Shapes;
-		oninput(createGeometry(nextType, currentSize, currentRotation));
-	};
+		const currentSize = getNormalizedSize()
+		const currentRotation = geometry.pose.orientationVector.th
+		const nextType = detail.toLowerCase() as Shapes
+		oninput(createGeometry(nextType, currentSize, currentRotation))
+	}
 
 	const handleDimensionsInput = (event: CustomEvent<Record<string, number>>) => {
-		const nextGeometry = { ...geometry };
+		const nextGeometry = { ...geometry }
 
 		switch (nextGeometry.type) {
 			case 'box': {
-				const length = event.detail['Length (m)'];
-				const width = event.detail['Width (m)'];
-				const height = event.detail['Height (m)'];
+				const length = event.detail['Length (m)']
+				const width = event.detail['Width (m)']
+				const height = event.detail['Height (m)']
 
 				if (length !== undefined) {
-					nextGeometry.length = length;
+					nextGeometry.length = length
 				}
 				if (width !== undefined) {
-					nextGeometry.width = width;
+					nextGeometry.width = width
 				}
 				if (height !== undefined) {
-					nextGeometry.height = height;
+					nextGeometry.height = height
 				}
-				break;
+				break
 			}
 			case 'sphere': {
-				const radius = event.detail['Radius (m)'];
+				const radius = event.detail['Radius (m)']
 
 				if (radius !== undefined) {
-					nextGeometry.radius = radius;
+					nextGeometry.radius = radius
 				}
-				break;
+				break
 			}
 			case 'capsule': {
-				const radius = event.detail['Radius (m)'];
-				const length = event.detail['Length (m)'];
+				const radius = event.detail['Radius (m)']
+				const length = event.detail['Length (m)']
 
 				if (radius !== undefined) {
-					nextGeometry.radius = radius;
+					nextGeometry.radius = radius
 				}
 				if (length !== undefined) {
-					nextGeometry.length = length;
+					nextGeometry.length = length
 				}
-				break;
+				break
 			}
 		}
 
-		oninput(nextGeometry);
-	};
+		oninput(nextGeometry)
+	}
 
 	const shapeMap = {
 		box: 'Box',
 		sphere: 'Sphere',
-		capsule: 'Capsule'
-	};
+		capsule: 'Capsule',
+	}
 </script>
 
 <div class="my-2 flex flex-col gap-2">
@@ -102,7 +103,7 @@
 			values={{
 				'Length (m)': geometry.length,
 				'Width (m)': geometry.width,
-				'Height (m)': geometry.height
+				'Height (m)': geometry.height,
 			}}
 			on:input={handleDimensionsInput}
 		/>

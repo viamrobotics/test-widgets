@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
-	import type { ColorRepresentation } from 'three';
+	import type { ColorRepresentation } from 'three'
 
-	import type { Path } from '../types';
+	import { T } from '@threlte/core'
+
+	import type { Path } from '../types'
 
 	interface Props {
-		path: Path;
-		color: ColorRepresentation;
+		path: Path
+		color: ColorRepresentation
 	}
 
-	const { path, color }: Props = $props();
+	const { path, color }: Props = $props()
 </script>
 
 {#each path as loc, index (index)}

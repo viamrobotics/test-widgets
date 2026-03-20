@@ -3,5 +3,5 @@ export const renderOrder = {
 	axes: 1,
 	points: 2,
 	motionPath: 3,
-	markers: 4
-} as const;
+	markers: 4,
+} as const

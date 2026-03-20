@@ -16,34 +16,28 @@
   ```
 -->
 <script lang="ts">
-	import { Canvas } from '@threlte/core';
-	import type { Vector2, Vector3 } from 'three';
+	import type { Vector2, Vector3 } from 'three'
 
-	import Legend from './legend.svelte';
-	import Scene from './scene.svelte';
+	import { Canvas } from '@threlte/core'
+
+	import Legend from './legend.svelte'
+	import Scene from './scene.svelte'
 
 	interface Props {
 		/** A buffer representing a .pcd file */
-		pointcloud?: Uint8Array | undefined;
+		pointcloud?: Uint8Array | undefined
 		/** The pose of the base of the robot */
-		basePose?: { x: number; y: number; theta: number } | undefined;
+		basePose?: { x: number; y: number; theta: number } | undefined
 		/** A user-specificed robot destination */
-		destination?: Vector2 | undefined;
+		destination?: Vector2 | undefined
 		/** Whether or not scene helpers should be rendered */
-		helpers?: boolean;
+		helpers?: boolean
 		/** An optional motion path */
-		motionPath?: Float32Array | undefined;
-		onClick: (value: Vector3) => void;
+		motionPath?: Float32Array | undefined
+		onClick: (value: Vector3) => void
 	}
 
-	const {
-		pointcloud,
-		basePose,
-		destination,
-		helpers = true,
-		motionPath,
-		onClick
-	}: Props = $props();
+	const { pointcloud, basePose, destination, helpers = true, motionPath, onClick }: Props = $props()
 </script>
 
 <div class="relative h-full w-full">

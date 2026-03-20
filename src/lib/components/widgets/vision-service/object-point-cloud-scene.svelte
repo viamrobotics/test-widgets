@@ -1,56 +1,56 @@
 <script lang="ts">
-	import { T, useThrelte } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
-	import { Color } from 'three';
-	import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { PCDLoader } from 'three/examples/jsm/loaders/PCDLoader.js';
+	import type { PointCloudObject } from '@viamrobotics/sdk'
+	import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls.js'
 
-	import type { PointCloudObject } from '@viamrobotics/sdk';
+	import { T, useThrelte } from '@threlte/core'
+	import { OrbitControls } from '@threlte/extras'
+	import { Color } from 'three'
+	import { PCDLoader } from 'three/examples/jsm/loaders/PCDLoader.js'
 
 	interface Props {
-		object: PointCloudObject;
+		object: PointCloudObject
 	}
 
-	const { object }: Props = $props();
+	const { object }: Props = $props()
 
-	const { scene, invalidate } = useThrelte();
-	scene.background = new Color(0xe0_e0_e0);
+	const { scene, invalidate } = useThrelte()
+	scene.background = new Color(0xe0_e0_e0)
 
-	const loader = new PCDLoader();
+	const loader = new PCDLoader()
 
-	let controlsRef = $state<OrbitControlsType>();
+	let controlsRef = $state<OrbitControlsType>()
 
 	const points = $derived.by(() => {
-		const dataCopy = new Uint8Array(object.pointCloud);
-		return loader.parse(dataCopy.buffer);
-	});
+		const dataCopy = new Uint8Array(object.pointCloud)
+		return loader.parse(dataCopy.buffer)
+	})
 
 	const boundingInfo = $derived.by(() => {
-		if (!points) return undefined;
+		if (!points) return undefined
 
-		points.geometry.computeBoundingSphere();
-		const sphere = points.geometry.boundingSphere;
-		if (!sphere) return undefined;
+		points.geometry.computeBoundingSphere()
+		const sphere = points.geometry.boundingSphere
+		if (!sphere) return undefined
 
 		return {
 			center: sphere.center.clone(),
-			distance: sphere.radius * 2.5
-		};
-	});
+			distance: sphere.radius * 2.5,
+		}
+	})
 
 	const cameraPosition = $derived.by((): [number, number, number] => {
-		if (!boundingInfo) return [0, 0, 2];
-		const { center, distance } = boundingInfo;
-		return [center.x, center.y, center.z + distance];
-	});
+		if (!boundingInfo) return [0, 0, 2]
+		const { center, distance } = boundingInfo
+		return [center.x, center.y, center.z + distance]
+	})
 
 	$effect(() => {
 		if (controlsRef && boundingInfo) {
-			controlsRef.target.copy(boundingInfo.center);
-			controlsRef.update();
-			invalidate();
+			controlsRef.target.copy(boundingInfo.center)
+			controlsRef.update()
+			invalidate()
 		}
-	});
+	})
 </script>
 
 <T.PerspectiveCamera

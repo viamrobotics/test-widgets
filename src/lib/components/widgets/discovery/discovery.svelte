@@ -1,109 +1,113 @@
 <script lang="ts">
-	import { isEqual } from 'lodash-es';
-
-	import { appRobotApi, DiscoveryClient, Struct } from '@viamrobotics/sdk';
+	import { appRobotApi, DiscoveryClient, Struct } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
-		createResourceQuery
-	} from '@viamrobotics/svelte-sdk';
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
+	import { isEqual } from 'lodash-es'
 
-	import ApiSection from '$lib/components/api-section.svelte';
-	import ConnectionStatus from '$lib/components/connection-status.svelte';
-	import Query from '$lib/components/query.svelte';
-	import { createRefetchIntervalStore, RefetchIntervals } from '$lib/components/refetch-controller';
-	import RefetchController from '$lib/components/refetch-controller.svelte';
-	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview';
-	import ResourcesList from './resources-list.svelte';
+	import ApiSection from '$lib/components/api-section.svelte'
+	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import Query from '$lib/components/query.svelte'
+	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import {
+		createRefetchIntervalStore,
+		RefetchIntervals,
+	} from '$lib/components/refetch-interval-store.svelte'
+
+	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
+
+	import ResourcesList from './resources-list.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 		/**  A handler for adding a component to the robot. */
-		onAddComponent?: ((component: appRobotApi.ComponentConfig) => void) | undefined;
+		onAddComponent?: ((component: appRobotApi.ComponentConfig) => void) | undefined
 		/** A snippet for creating component previews. Requires a `preview` DoCommand to be implemented. */
-		componentPreview?: ComponentPreviewSnippet;
+		componentPreview?: ComponentPreviewSnippet
 	}
 
-	const { partID, resourceName, onAddComponent, componentPreview }: Props = $props();
+	const { partID, resourceName, onAddComponent, componentPreview }: Props = $props()
 
 	const refetchInterval = createRefetchIntervalStore(
-		partID,
-		resourceName,
+		() => partID,
+		() => resourceName,
 		'discovery-card',
 		RefetchIntervals.MANUAL
-	);
+	)
 
-	const previews = $state<ComponentPreviews>({});
-	let discoveries = $state.raw<appRobotApi.ComponentConfig[]>([]);
-	let discoveriesUpdated = $state(false);
+	const previews = $state<ComponentPreviews>({})
+	let discoveries = $state.raw<appRobotApi.ComponentConfig[]>([])
+	let discoveriesUpdated = $state(false)
 
 	const client = createResourceClient(
 		DiscoveryClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
 	const discoveryQuery = createResourceQuery(client, 'discoverResources', () => ({
-		refetchInterval: $refetchInterval
-	}));
+		refetchInterval: refetchInterval.current,
+	}))
 
-	const doCommandMutation = createResourceMutation(client, 'doCommand');
+	const doCommandMutation = createResourceMutation(client, 'doCommand')
 
 	const makeDoCommandMutation = async (component: appRobotApi.ComponentConfig) => {
 		const parsedInput = Struct.fromJson({
 			command: 'preview',
-			attributes: component.attributes?.toJson() ?? {}
-		});
+			attributes: component.attributes?.toJson() ?? {},
+		})
 
 		try {
-			const result = await doCommandMutation.mutateAsync([parsedInput]);
+			const result = await doCommandMutation.mutateAsync([parsedInput])
 
 			const data = JSON.parse(JSON.stringify(result) ?? '{}') as {
-				preview: string;
-			};
+				preview: string
+			}
 			previews[component.name] = {
 				component,
 				preview: data.preview,
-				loading: false
-			};
+				loading: false,
+			}
 		} catch {
 			previews[component.name] = {
 				component,
 				preview: undefined,
-				loading: false
-			};
+				loading: false,
+			}
 		}
-	};
+	}
 
 	const makeDoCommandMutations = async (components: appRobotApi.ComponentConfig[]) => {
-		const [currentComponent, ...remainingComponents] = components;
+		const [currentComponent, ...remainingComponents] = components
 		if (currentComponent === undefined) {
-			return;
+			return
 		}
 
-		await makeDoCommandMutation(currentComponent);
+		await makeDoCommandMutation(currentComponent)
 
 		if (remainingComponents.length > 0) {
-			await makeDoCommandMutations(remainingComponents);
+			await makeDoCommandMutations(remainingComponents)
 		}
-	};
+	}
 
 	$effect(() => {
 		if (discoveryQuery.isFetching) {
-			discoveriesUpdated = true;
+			discoveriesUpdated = true
 		}
-	});
+	})
 
 	$effect(() => {
 		if (discoveryQuery.isSuccess) {
 			if (isEqual(discoveries, discoveryQuery.data)) {
-				discoveriesUpdated = false;
+				discoveriesUpdated = false
 			} else {
-				discoveries = discoveryQuery.data;
+				discoveries = discoveryQuery.data
 			}
 		}
-	});
+	})
 
 	$effect(() => {
 		if (discoveries && discoveriesUpdated && componentPreview !== undefined) {
@@ -111,13 +115,13 @@
 				previews[discovery.name] = {
 					component: discovery,
 					preview: undefined,
-					loading: true
-				};
+					loading: true,
+				}
 			}
 
-			void makeDoCommandMutations(discoveries);
+			void makeDoCommandMutations(discoveries)
 		}
-	});
+	})
 </script>
 
 <ConnectionStatus {partID}>

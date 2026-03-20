@@ -1,31 +1,31 @@
 <script lang="ts">
-	import { GripperClient } from '@viamrobotics/sdk';
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk';
+	import { Button } from '@viamrobotics/prime-core'
+	import { GripperClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import { Button } from '@viamrobotics/prime-core';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
 
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import ClosedGripperSvg from './closed-gripper-svg.svelte';
+	import ClosedGripperSvg from './closed-gripper-svg.svelte'
 
 	interface Props {
-		partID: string;
-		resourceName: string;
+		partID: string
+		resourceName: string
 	}
 
-	const { partID, resourceName }: Props = $props();
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		GripperClient,
 		() => partID,
 		() => resourceName
-	);
+	)
 
-	const grabMutation = createResourceMutation(client, 'grab');
+	const grabMutation = createResourceMutation(client, 'grab')
 </script>
 
 <Button
 	onclick={() => {
-		grabMutation.mutate([], {});
+		grabMutation.mutate([], {})
 	}}
 	class="w-20 p-3 py-3"
 >

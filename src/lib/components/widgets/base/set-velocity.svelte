@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core';
-	import type { Vector3 } from '@viamrobotics/sdk';
+	import type { Vector3 } from '@viamrobotics/sdk'
 
-	import Vec3Builder from './vec3-builder.svelte';
+	import { Button } from '@viamrobotics/prime-core'
+
+	import Vec3Builder from './vec3-builder.svelte'
 
 	interface Props {
-		setVelocity: (linear: Vector3, angular: Vector3) => void;
+		setVelocity: (linear: Vector3, angular: Vector3) => void
 	}
 
-	const { setVelocity }: Props = $props();
+	const { setVelocity }: Props = $props()
 
-	let linearVelocity = $state<Vector3>({ x: 0, y: 50, z: 0 });
-	let angularVelocity = $state<Vector3>({ x: 0, y: 0, z: 15 });
+	let linearVelocity = $state<Vector3>({ x: 0, y: 50, z: 0 })
+	let angularVelocity = $state<Vector3>({ x: 0, y: 0, z: 15 })
 </script>
 
 <div class="flex flex-row gap-4">
@@ -33,7 +34,7 @@
 	class="mt-auto"
 	icon="play-circle-outline"
 	onclick={() => {
-		setVelocity(linearVelocity, angularVelocity);
+		setVelocity(linearVelocity, angularVelocity)
 	}}
 >
 	Execute

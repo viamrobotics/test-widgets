@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core';
+	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { numberValueFromEvent } from '$lib/event-handlers';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		currentPosition: number;
-		moveTo: (angle: number) => void;
-		lastError: Error | null;
+		currentPosition: number
+		moveTo: (angle: number) => void
+		lastError: Error | null
 	}
 
-	const { currentPosition, moveTo, lastError }: Props = $props();
+	const { currentPosition, moveTo, lastError }: Props = $props()
 
-	let desiredAngle = $state(0);
+	let desiredAngle = $state(0)
 
-	const desiredAngleErrorID = $props.id();
+	const desiredAngleErrorID = $props.id()
 </script>
 
 <div class="flex flex-col gap-5">
@@ -44,7 +44,7 @@
 				type="integer"
 				value={desiredAngle}
 				on:change={(event) => {
-					desiredAngle = numberValueFromEvent(event) ?? 0;
+					desiredAngle = numberValueFromEvent(event) ?? 0
 				}}
 				step={1}
 				aria-errormessage={desiredAngleErrorID}
@@ -76,14 +76,14 @@
 		<div class="flex flex-row gap-2">
 			<Button
 				onclick={() => {
-					desiredAngle = 0;
+					desiredAngle = 0
 				}}
 			>
 				Zero
 			</Button>
 			<Button
 				onclick={() => {
-					desiredAngle = currentPosition;
+					desiredAngle = currentPosition
 				}}
 			>
 				Current position

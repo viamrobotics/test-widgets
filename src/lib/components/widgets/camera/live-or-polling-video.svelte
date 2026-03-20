@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import * as Sentry from '@sentry/svelte';
-	import type { ResizeDetail } from '@svelte-put/resize';
-	import { resize } from '@svelte-put/resize';
-	import { createMutation, type QueryObserverResult } from '@tanstack/svelte-query';
+	import type { ResizeDetail } from '@svelte-put/resize'
 
-	import { Button, Label, Select } from '@viamrobotics/prime-core';
-	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk';
-	import { useRobotClient } from '@viamrobotics/svelte-sdk';
+	import * as Sentry from '@sentry/svelte'
+	import { resize } from '@svelte-put/resize'
+	import { createMutation, type QueryObserverResult } from '@tanstack/svelte-query'
+	import { Button, Label, Select } from '@viamrobotics/prime-core'
+	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
+	import { useRobotClient } from '@viamrobotics/svelte-sdk'
+	import { onDestroy, onMount } from 'svelte'
 
-	import { assertExists } from '$lib/assert';
-	import { formatNumeric } from '$lib/format';
-	import { useMeasureFps } from '$lib/fps.svelte';
-	import ContentRect from '$lib/components/content-rect.svelte';
-	import ErrorDisplay from '$lib/components/error-display.svelte';
-	import LoadingDisplay from '$lib/components/loading-display.svelte';
-	import MutationSection from '$lib/components/mutation-section.svelte';
+	import { assertExists } from '$lib/assert'
+	import ContentRect from '$lib/components/content-rect.svelte'
+	import ErrorDisplay from '$lib/components/error-display.svelte'
+	import LoadingDisplay from '$lib/components/loading-display.svelte'
+	import MutationSection from '$lib/components/mutation-section.svelte'
+	import { formatNumeric } from '$lib/format'
+	import { useMeasureFps } from '$lib/fps.svelte'
 
 	interface Props {
-		resourceName: string;
-		partID: string;
-		showResolutionOptions?: boolean;
-		isLive: boolean;
-		data: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['data'];
-		error?: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['error'];
-		isLoading: boolean;
-		videoClass?: string;
-		showMousePositionTooltip?: boolean;
-		setMediaStream?: ((mediaStream: MediaStream | null) => void) | undefined;
-		refetch: () => Promise<unknown>;
+		resourceName: string
+		partID: string
+		showResolutionOptions?: boolean
+		isLive: boolean
+		data: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['data']
+		error?: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['error']
+		isLoading: boolean
+		videoClass?: string
+		showMousePositionTooltip?: boolean
+		setMediaStream?: ((mediaStream: MediaStream | null) => void) | undefined
+		refetch: () => Promise<unknown>
 	}
 
 	const {
@@ -42,14 +42,14 @@
 		videoClass = '',
 		showMousePositionTooltip = false,
 		setMediaStream: setPipMediaStream,
-		refetch
-	}: Props = $props();
+		refetch,
+	}: Props = $props()
 
-	let videoElement = $state<HTMLVideoElement>();
-	let isStreamLoading = $state(false);
-	let streamError: Error | null;
-	let vfcID = 0;
-	let liveStreamStart: DOMHighResTimeStamp | undefined;
+	let videoElement = $state<HTMLVideoElement>()
+	let isStreamLoading = $state(false)
+	let streamError: Error | null
+	let vfcID = 0
+	let liveStreamStart: DOMHighResTimeStamp | undefined
 
 	const setMediaStream = (mediaStream: MediaStream | null) => {
 		if (videoElement) {
@@ -58,7 +58,7 @@
 			// Firefox only added this a few versions ago, so this guard can be removed eventually.
 			// https://caniuse.com/?search=cancelvideoframecallback
 			if (typeof videoElement.cancelVideoFrameCallback === 'function') {
-				videoElement.cancelVideoFrameCallback(vfcID);
+				videoElement.cancelVideoFrameCallback(vfcID)
 			}
 			if (typeof videoElement.requestVideoFrameCallback === 'function' && mediaStream !== null) {
 				vfcID = videoElement.requestVideoFrameCallback((now) => {
@@ -67,32 +67,32 @@
 							'control.camera.timeToVideoFrame',
 							now - liveStreamStart,
 							'millisecond'
-						);
+						)
 					}
-					isStreamLoading = false;
-				});
+					isStreamLoading = false
+				})
 			}
-			videoElement.srcObject = mediaStream;
+			videoElement.srcObject = mediaStream
 		}
-		setPipMediaStream?.(mediaStream);
-	};
+		setPipMediaStream?.(mediaStream)
+	}
 
 	// We need to wait to set up video streams until the video element
 	// is mounted. Instead of making videoElement a store that is
 	// possibly undefined, we keep a separate store for mounted state
 	// and only try to set up the video stream if mounted.
-	let mounted = $state(false);
+	let mounted = $state(false)
 	onMount(() => {
-		mounted = true;
+		mounted = true
 		return () => {
-			mounted = false;
+			mounted = false
 			// Good practice to clear the srcObject on unmount.
-			setMediaStream(null);
-		};
-	});
+			setMediaStream(null)
+		}
+	})
 
 	// For live streams, set the media stream when there is a new video track.
-	const client = useRobotClient(() => partID);
+	const client = useRobotClient(() => partID)
 
 	const handleTrack = (event: unknown) => {
 		if (liveStreamStart) {
@@ -100,93 +100,93 @@
 				'control.camera.timeToTrack',
 				performance.now() - liveStreamStart,
 				'millisecond'
-			);
+			)
 		}
-		const [eventStream] = (event as { streams: MediaStream[] }).streams;
+		const [eventStream] = (event as { streams: MediaStream[] }).streams
 
 		if (!eventStream || eventStream.id !== resourceName) {
-			return;
+			return
 		}
 
-		setMediaStream(eventStream);
-	};
+		setMediaStream(eventStream)
+	}
 
 	// For polling, create the query and render the result to an image
 	// tag. Then draw the image onto a canvas. Finally, capture the
 	// canvas in a media stream
-	const img = document.createElement('img');
-	const canvas = document.createElement('canvas');
-	const canvasCtx = canvas.getContext('2d');
+	const img = document.createElement('img')
+	const canvas = document.createElement('canvas')
+	const canvasCtx = canvas.getContext('2d')
 	const drawImage = () => {
-		canvas.width = img.naturalWidth;
-		canvas.height = img.naturalHeight;
-		canvasCtx?.drawImage(img, 0, 0);
-	};
+		canvas.width = img.naturalWidth
+		canvas.height = img.naturalHeight
+		canvasCtx?.drawImage(img, 0, 0)
+	}
 
 	$effect(() => {
 		if (!data?.images?.[0]?.image) {
-			return;
+			return
 		}
 
 		const imageBlob = new Blob([new Uint8Array(data.images[0].image)], {
-			type: data.images[0].mimeType || 'image/jpeg'
-		});
+			type: data.images[0].mimeType || 'image/jpeg',
+		})
 
-		img.src = URL.createObjectURL(imageBlob);
-		return () => URL.revokeObjectURL(img.src);
-	});
+		img.src = URL.createObjectURL(imageBlob)
+		return () => URL.revokeObjectURL(img.src)
+	})
 
 	onMount(() => {
-		img.addEventListener('load', drawImage);
+		img.addEventListener('load', drawImage)
 
 		return () => {
-			img.removeEventListener('load', drawImage);
-		};
-	});
+			img.removeEventListener('load', drawImage)
+		}
+	})
 
-	let streamClient: StreamClient | undefined;
-	let resolutionOptions: streamApi.Resolution[] = $state([]);
-	let selectedResolution: streamApi.Resolution | undefined;
+	let streamClient: StreamClient | undefined
+	let resolutionOptions: streamApi.Resolution[] = $state([])
+	let selectedResolution: streamApi.Resolution | undefined
 
 	const disableStream = async () => {
 		try {
-			isStreamLoading = false;
-			streamError = null;
-			const last = streamClient;
-			streamClient = undefined;
-			last?.off('track', handleTrack);
-			await last?.remove(resourceName);
-			resolutionOptions = [];
-			selectedResolution = undefined;
-			liveStreamStart = undefined;
+			isStreamLoading = false
+			streamError = null
+			const last = streamClient
+			streamClient = undefined
+			last?.off('track', handleTrack)
+			await last?.remove(resourceName)
+			resolutionOptions = []
+			selectedResolution = undefined
+			liveStreamStart = undefined
 		} catch (nextError: unknown) {
-			lastError = nextError as Error;
+			lastError = nextError as Error
 		}
-	};
+	}
 
 	onDestroy(async () => {
-		await disableStream();
-		setMediaStream(null);
-	});
+		await disableStream()
+		setMediaStream(null)
+	})
 
 	$effect(() => {
 		if (lastError) {
 			disableStream()
 				.then(() => {
-					setMediaStream(null);
+					setMediaStream(null)
 				})
 				.catch((nextError: unknown) => {
-					lastError = nextError as Error;
-				});
+					lastError = nextError as Error
+				})
 		}
-	});
+	})
 
 	const handleResolutionChange = (event: Event) => {
 		if (event.target instanceof HTMLSelectElement) {
-			const [width, height] = event.target.value.split('x').map(Number) as [number, number];
-			selectedResolution = new streamApi.Resolution({ width, height });
+			const [width, height] = event.target.value.split('x').map(Number) as [number, number]
+			selectedResolution = new streamApi.Resolution({ width, height })
 		}
-	};
+	}
 
 	// NOTE(ELP): I don't know that this will be used anywhere else, so I'm
 	// opting to leave it here for now. This could be moved to a shared
@@ -194,122 +194,122 @@
 	const mutationOptions = $derived({
 		mutationKey: [partID, resourceName, 'setOptions'],
 		mutationFn: async (resolution?: streamApi.Resolution) => {
-			assertExists(streamClient, 'Expected stream client');
+			assertExists(streamClient, 'Expected stream client')
 			if (resolution) {
-				return streamClient.setOptions(resourceName, resolution.width, resolution.height);
+				return streamClient.setOptions(resourceName, resolution.width, resolution.height)
 			}
-			return streamClient.resetOptions(resourceName);
-		}
-	});
+			return streamClient.resetOptions(resourceName)
+		},
+	})
 
-	const resolutionMutation = createMutation(() => mutationOptions);
+	const resolutionMutation = createMutation(() => mutationOptions)
 
 	const startStream = async (robotClient: RobotClient, name: string, live: boolean) => {
 		try {
-			await disableStream();
+			await disableStream()
 			// Don't setMediaStream(null) here or else the PiP thrashes.
 
 			if (live) {
 				// Live streams
 
-				isStreamLoading = true;
-				liveStreamStart = performance.now();
-				streamClient = new StreamClient(robotClient);
-				streamClient.on('track', handleTrack);
-				await streamClient.getStream(name);
-				resolutionOptions = await streamClient.getOptions(name);
-				selectedResolution = resolutionOptions[0];
+				isStreamLoading = true
+				liveStreamStart = performance.now()
+				streamClient = new StreamClient(robotClient)
+				streamClient.on('track', handleTrack)
+				await streamClient.getStream(name)
+				resolutionOptions = await streamClient.getOptions(name)
+				selectedResolution = resolutionOptions[0]
 			} else {
 				// Polling
 
 				// Trigger a refetch on initial change.
-				await refetch();
+				await refetch()
 
-				setMediaStream(canvas.captureStream());
+				setMediaStream(canvas.captureStream())
 			}
 		} catch (nextError) {
-			streamError = nextError as Error;
+			streamError = nextError as Error
 		}
-	};
+	}
 
 	$effect(() => {
 		if (mounted && client.current && !lastError) {
-			void startStream(client.current, resourceName, isLive);
+			void startStream(client.current, resourceName, isLive)
 		}
-	});
+	})
 
-	let contentRect = $state<DOMRect>();
+	let contentRect = $state<DOMRect>()
 	const handleResize = (event: CustomEvent<ResizeDetail>) => {
-		contentRect = event.detail.entry.contentRect;
-	};
+		contentRect = event.detail.entry.contentRect
+	}
 
-	let hoverTooltipOpen = $state(false);
-	let mouseHoverImagePosition = $state({ pctX: 0, pctY: 0, absX: 0, absY: 0 });
-	let mouseHoverClientPosition = $state({ x: 0, y: 0 });
+	let hoverTooltipOpen = $state(false)
+	let mouseHoverImagePosition = $state({ pctX: 0, pctY: 0, absX: 0, absY: 0 })
+	let mouseHoverClientPosition = $state({ x: 0, y: 0 })
 
 	const handleMouseMoveWithinVideo = (event: MouseEvent | WheelEvent) => {
 		if (!videoElement || !contentRect || !showMousePositionTooltip) {
-			return;
+			return
 		}
 
-		mouseHoverClientPosition = { x: event.clientX, y: event.clientY };
+		mouseHoverClientPosition = { x: event.clientX, y: event.clientY }
 
-		const rect = videoElement.getBoundingClientRect();
-		const dx = event.pageX - (rect.x ?? 0);
-		const dy = event.pageY - (rect.y ?? 0);
+		const rect = videoElement.getBoundingClientRect()
+		const dx = event.pageX - (rect.x ?? 0)
+		const dy = event.pageY - (rect.y ?? 0)
 
-		let pctX = dx / (rect.width ?? 1);
-		let pctY = dy / (rect.height ?? 1);
+		let pctX = dx / (rect.width ?? 1)
+		let pctY = dy / (rect.height ?? 1)
 
-		pctX = Math.min(Math.max(pctX, 0), 1);
-		pctY = Math.min(Math.max(pctY, 0), 1);
+		pctX = Math.min(Math.max(pctX, 0), 1)
+		pctY = Math.min(Math.max(pctY, 0), 1)
 
-		let absX = 0;
-		let absY = 0;
+		let absX = 0
+		let absY = 0
 
 		if (isLive && selectedResolution) {
-			absX = pctX * selectedResolution.width;
-			absY = pctY * selectedResolution.height;
+			absX = pctX * selectedResolution.width
+			absY = pctY * selectedResolution.height
 		} else {
-			absX = pctX * canvas.width;
-			absY = pctY * canvas.height;
+			absX = pctX * canvas.width
+			absY = pctY * canvas.height
 		}
-		mouseHoverImagePosition = { pctX, pctY, absX, absY };
-	};
+		mouseHoverImagePosition = { pctX, pctY, absX, absY }
+	}
 	const handleMouseEnterVideo = () => {
 		if (showMousePositionTooltip) {
-			hoverTooltipOpen = true;
+			hoverTooltipOpen = true
 		}
-	};
+	}
 	const handleMouseLeaveVideo = () => {
-		hoverTooltipOpen = false;
-	};
+		hoverTooltipOpen = false
+	}
 
-	const fps = useMeasureFps();
+	const fps = useMeasureFps()
 
 	$effect(() => {
-		let id: number | undefined;
+		let id: number | undefined
 
 		const measure = (now: DOMHighResTimeStamp) => {
-			fps.measure(now);
-			id = videoElement?.requestVideoFrameCallback?.(measure);
-		};
+			fps.measure(now)
+			id = videoElement?.requestVideoFrameCallback?.(measure)
+		}
 
-		id = videoElement?.requestVideoFrameCallback?.(measure);
-		return () => id && videoElement?.cancelVideoFrameCallback(id);
-	});
+		id = videoElement?.requestVideoFrameCallback?.(measure)
+		return () => id && videoElement?.cancelVideoFrameCallback(id)
+	})
 
 	// Errors are null during loading, so keep the latest errors during polling.
-	let lastError = $state<Error>();
+	let lastError = $state<Error>()
 	$effect(() => {
 		if (!isLive && error) {
-			lastError = error;
+			lastError = error
 		} else if (isLive && streamError) {
-			lastError = streamError;
+			lastError = streamError
 		} else {
-			lastError = undefined;
+			lastError = undefined
 		}
-	});
+	})
 </script>
 
 <!-- This breaks out of using the <Query> component
@@ -407,7 +407,7 @@
 			<div class="flex flex-row items-end gap-2">
 				<Button
 					onclick={() => {
-						resolutionMutation.mutate(undefined);
+						resolutionMutation.mutate(undefined)
 					}}
 				>
 					Reset
@@ -418,7 +418,7 @@
 					disabled={resolutionOptions.length === 0}
 					onclick={() => {
 						if (selectedResolution) {
-							resolutionMutation.mutate(selectedResolution);
+							resolutionMutation.mutate(selectedResolution)
 						}
 					}}
 				>

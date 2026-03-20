@@ -1,4 +1,4 @@
-import { Detection } from '@viamrobotics/sdk';
+import { Detection } from '@viamrobotics/sdk'
 
 export const detection: Detection = new Detection({
 	xMin: 5n,
@@ -6,5 +6,5 @@ export const detection: Detection = new Detection({
 	xMax: 10n,
 	yMax: 10n,
 	confidence: 0.5,
-	className: 'Wagyu'
-});
+	className: 'Wagyu',
+})

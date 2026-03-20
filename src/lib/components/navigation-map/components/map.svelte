@@ -1,8 +1,10 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { LngLat, Map } from 'maplibre-gl';
+	import type { LngLat, Map } from 'maplibre-gl'
+	import type { Snippet } from 'svelte'
 
-	import { Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core';
+	import { Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
+
+	import type { Obstacle } from '../types'
 
 	import {
 		CenterControls,
@@ -12,31 +14,30 @@
 		type MapProvider,
 		MapProviders,
 		NavigationControls,
-		SatelliteControls
-	} from '../../maplibre';
-	import type { Obstacle } from '../types';
-	import { useNavigationMap } from '../use-navigation-map.svelte';
-	import Nav from './nav/index.svelte';
-	import ObstaclesLegend from './nav/obstacles-legend.svelte';
-	import RobotMarker from './robot-marker.svelte';
-	import SceneLayer from './scene-layer.svelte';
-	import Waypoints from './waypoints.svelte';
+		SatelliteControls,
+	} from '../../maplibre'
+	import { useNavigationMap } from '../use-navigation-map.svelte'
+	import Nav from './nav/index.svelte'
+	import ObstaclesLegend from './nav/obstacles-legend.svelte'
+	import RobotMarker from './robot-marker.svelte'
+	import SceneLayer from './scene-layer.svelte'
+	import Waypoints from './waypoints.svelte'
 
-	const minPitch = 0;
-	const maxPitch = 60;
+	const minPitch = 0
+	const maxPitch = 60
 
 	interface Props {
 		/** The Geo-pose of a robot base. */
-		baseGeoPose?: GeoPose;
+		baseGeoPose?: GeoPose
 		/** The map provider to use. */
-		mapProvider?: MapProvider;
+		mapProvider?: MapProvider
 		/** The API key for the map provider. */
-		mapProviderKey?: string;
-		map?: Map;
-		tab?: Snippet;
-		onupdate: (obstacles: Obstacle[]) => void;
-		onaddwaypoint: (waypoint: LngLat) => void;
-		ondeletewaypoint: (id: string) => void;
+		mapProviderKey?: string
+		map?: Map
+		tab?: Snippet
+		onupdate: (obstacles: Obstacle[]) => void
+		onaddwaypoint: (waypoint: LngLat) => void
+		ondeletewaypoint: (id: string) => void
 	}
 
 	let {
@@ -47,20 +48,20 @@
 		onupdate,
 		onaddwaypoint,
 		ondeletewaypoint,
-		tab
-	}: Props = $props();
+		tab,
+	}: Props = $props()
 
-	const nav = useNavigationMap();
+	const nav = useNavigationMap()
 
 	const handleViewSelect = ({ detail }: CustomEvent<string>) => {
-		nav.view = detail as '2D' | '3D';
-	};
+		nav.view = detail as '2D' | '3D'
+	}
 
 	let didHoverTooltip = $state(
 		Boolean(localStorage.getItem('navigation-service-card-tooltip-hovered'))
-	);
+	)
 
-	const currentTab = $derived(tab);
+	const currentTab = $derived(tab)
 </script>
 
 <div class="relative h-full w-full items-stretch lg:flex">
@@ -95,8 +96,8 @@
 					<div
 						class="relative"
 						onpointerenter={() => {
-							didHoverTooltip = true;
-							localStorage.setItem('navigation-service-card-tooltip-hovered', 'true');
+							didHoverTooltip = true
+							localStorage.setItem('navigation-service-card-tooltip-hovered', 'true')
 						}}
 					>
 						{#if !didHoverTooltip}

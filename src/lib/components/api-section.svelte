@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { twMerge } from 'tailwind-merge';
+	import type { Snippet } from 'svelte'
+	import type { HTMLAttributes } from 'svelte/elements'
 
-	import { Icon, Tooltip } from '@viamrobotics/prime-core';
+	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { twMerge } from 'tailwind-merge'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
-		title?: string | undefined;
-		tooltip?: string | undefined;
-		description?: string | undefined;
-		bottomText?: string | undefined;
-		class?: string;
-		children?: Snippet;
+		title?: string | undefined
+		tooltip?: string | undefined
+		description?: string | undefined
+		bottomText?: string | undefined
+		class?: string
+		children?: Snippet
 	}
 
 	const {
@@ -22,9 +22,9 @@
 		class: className = '',
 		children,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 
-	const headingID = $props.id();
+	const headingID = $props.id()
 </script>
 
 <section

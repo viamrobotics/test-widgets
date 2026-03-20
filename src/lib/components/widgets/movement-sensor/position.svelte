@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { MovementSensorPosition } from '@viamrobotics/sdk';
+	import type { MovementSensorPosition } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format';
+	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: MovementSensorPosition;
+		data: MovementSensorPosition
 	}
 
-	const { data }: Props = $props();
+	const { data }: Props = $props()
 </script>
 
 <dl class="flex flex-col gap-2 font-mono">

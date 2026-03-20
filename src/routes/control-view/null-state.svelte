@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { Icon } from '@viamrobotics/prime-core';
+	import { Icon } from '@viamrobotics/prime-core'
 	interface Props {
-		children?: import('svelte').Snippet;
+		children?: import('svelte').Snippet
 	}
 
-	const { children }: Props = $props();
+	const { children }: Props = $props()
 </script>
 
 <div
