@@ -1,12 +1,30 @@
-import devtoolsJson from 'vite-plugin-devtools-json';
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
-import { sveltekit } from '@sveltejs/kit/vite';
+import { sveltekit } from '@sveltejs/kit/vite'
+import tailwindcss from '@tailwindcss/vite'
+import { svelteTesting } from '@testing-library/svelte/vite'
+import { playwright } from '@vitest/browser-playwright'
+import devtoolsJson from 'vite-plugin-devtools-json'
+import { defineConfig } from 'vitest/config'
+
+const isCI = Boolean(process.env.CI)
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
+	server: {
+		port: 6173,
+	},
+	plugins: [
+		tailwindcss(),
+		sveltekit(),
+		svelteTesting({
+			// disable browser resolution condition
+			resolveBrowser: false,
+		}),
+		devtoolsJson(),
+	],
 	test: {
+		mockReset: true,
+		restoreMocks: true,
+		unstubGlobals: true,
+		reporters: isCI ? ['dot'] : ['default'],
 		expect: { requireAssertions: true },
 		projects: [
 			{
@@ -16,22 +34,11 @@ export default defineConfig({
 					browser: {
 						enabled: true,
 						provider: playwright(),
-						instances: [{ browser: 'chromium', headless: true }]
+						instances: [{ browser: 'chromium', headless: true }],
 					},
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
-				}
+					include: ['src/**/*.svelte.spec.ts', 'src/**/*.spec.ts'],
+				},
 			},
-
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'server',
-					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
-				}
-			}
-		]
-	}
-});
+		],
+	},
+})

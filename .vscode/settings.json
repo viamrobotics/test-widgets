@@ -1,4 +1,12 @@
 {
+	"eslint.validate": ["javascript", "javascriptreact", "svelte", "typescript", "typescriptreact"],
+	"prettier.documentSelectors": ["**/*.svelte"],
+	"prettier.singleQuote": true,
+	"prettier.jsxSingleQuote": true,
+	"prettier.singleAttributePerLine": true,
+	"[svelte]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
 	"files.associations": {
 		"*.css": "tailwindcss"
 	}
