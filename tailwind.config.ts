@@ -1,6 +1,5 @@
 import type { Config } from 'tailwindcss'
 
-import { plugins } from '@viamrobotics/prime-core/plugins'
 import { theme } from '@viamrobotics/prime-core/theme'
 
 export default {
@@ -9,5 +8,4 @@ export default {
 		'./node_modules/@viamrobotics/prime-core/**/*.{ts,svelte}',
 	],
 	theme,
-	plugins,
 } satisfies Config
