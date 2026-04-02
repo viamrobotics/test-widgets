@@ -91,7 +91,7 @@ importers:
         version: 0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0)
       '@viamrobotics/prime-editor':
         specifier: ^0.0.2
-        version: 0.0.2(@codemirror/lang-json@6.0.2)(@codemirror/merge@6.12.1)(@codemirror/state@6.6.0)(@codemirror/view@6.40.0)(@viamrobotics/prime-core@0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0))(classnames@2.5.1)(codemirror@6.0.2)(lodash-es@4.17.23)(svelte@5.54.0)
+        version: 0.0.2(@codemirror/lang-json@6.0.2)(@codemirror/merge@6.12.1)(@codemirror/state@6.6.0)(@codemirror/view@6.40.0)(@viamrobotics/prime-core@0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0))(classnames@2.5.1)(codemirror@6.0.2)(lodash-es@4.18.1)(svelte@5.54.0)
       '@viamrobotics/sdk':
         specifier: ^0.67.0
         version: 0.67.0
@@ -129,8 +129,8 @@ importers:
         specifier: ^17.4.0
         version: 17.4.0
       lodash-es:
-        specifier: ^4.17.23
-        version: 4.17.23
+        specifier: ^4.18.1
+        version: 4.18.1
       maplibre-gl:
         specifier: ^5.21.0
         version: 5.21.0
@@ -318,8 +318,8 @@ packages:
   '@codemirror/lang-json@6.0.2':
     resolution: {integrity: sha512-x2OtO+AvwEHrEwR0FyyPtfDUiloG3rnVTSZV1W8UteaLL8/MajQd8DpvUb2YVzC+/T18aSDv0H9mu+xw0EStoQ==}
 
-  '@codemirror/language@6.12.2':
-    resolution: {integrity: sha512-jEPmz2nGGDxhRTg3lTpzmIyGKxz3Gp3SJES4b0nAuE5SWQoKdT5GoQ69cwMmFd+wvFUhYirtDTr0/DRHpQAyWg==}
+  '@codemirror/language@6.12.3':
+    resolution: {integrity: sha512-QwCZW6Tt1siP37Jet9Tb02Zs81TQt6qQrZR2H+eGMcFsL1zMrk2/b9CLC7/9ieP1fjIUMgviLWMmgiHoJrj+ZA==}
 
   '@codemirror/lint@6.9.5':
     resolution: {integrity: sha512-GElsbU9G7QT9xXhpUg1zWGmftA/7jamh+7+ydKRuT0ORpWS3wOSP0yT1FOlIZa7mIJjpVPipErsyvVqB9cfTFA==}
@@ -931,8 +931,8 @@ packages:
       svelte: ^5.46.4
       vite: ^8.0.0-beta.7 || ^8.0.0
 
-  '@swc/helpers@0.5.19':
-    resolution: {integrity: sha512-QamiFeIK3txNjgUTNppE6MiG3p7TdninpZu0E0PbqVh1a9FNLT2FRhisaa4NcaX52XVhA5l7Pk58Ft7Sqi/2sA==}
+  '@swc/helpers@0.5.20':
+    resolution: {integrity: sha512-2egEBHUMasdypIzrprsu8g+OEVd7Vp2MM3a2eVlM/cyFYto0nGz5BX5BTgh/ShZZI9ed+ozEq+Ngt+rgmUs8tw==}
 
   '@tailwindcss/node@4.2.2':
     resolution: {integrity: sha512-pXS+wJ2gZpVXqFaUEjojq7jzMpTGf8rU6ipJz5ovJV6PUGmlJ+jvIwGrzdHdQ80Sg+wmQxUFuoW1UAAwHNEdFA==}
@@ -2242,6 +2242,9 @@ packages:
   lodash-es@4.17.23:
     resolution: {integrity: sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==}
 
+  lodash-es@4.18.1:
+    resolution: {integrity: sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==}
+
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
 
@@ -3378,24 +3381,24 @@ snapshots:
 
   '@codemirror/autocomplete@6.20.1':
     dependencies:
-      '@codemirror/language': 6.12.2
+      '@codemirror/language': 6.12.3
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.40.0
       '@lezer/common': 1.5.1
 
   '@codemirror/commands@6.10.3':
     dependencies:
-      '@codemirror/language': 6.12.2
+      '@codemirror/language': 6.12.3
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.40.0
       '@lezer/common': 1.5.1
 
   '@codemirror/lang-json@6.0.2':
     dependencies:
-      '@codemirror/language': 6.12.2
+      '@codemirror/language': 6.12.3
       '@lezer/json': 1.0.3
 
-  '@codemirror/language@6.12.2':
+  '@codemirror/language@6.12.3':
     dependencies:
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.40.0
@@ -3412,7 +3415,7 @@ snapshots:
 
   '@codemirror/merge@6.12.1':
     dependencies:
-      '@codemirror/language': 6.12.2
+      '@codemirror/language': 6.12.3
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.40.0
       '@lezer/highlight': 1.2.3
@@ -3629,7 +3632,7 @@ snapshots:
 
   '@internationalized/date@3.12.0':
     dependencies:
-      '@swc/helpers': 0.5.19
+      '@swc/helpers': 0.5.20
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -3937,7 +3940,7 @@ snapshots:
       vite: 8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)
       vitefu: 1.1.2(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2))
 
-  '@swc/helpers@0.5.19':
+  '@swc/helpers@0.5.20':
     dependencies:
       tslib: 2.8.1
 
@@ -4310,13 +4313,13 @@ snapshots:
       '@zag-js/date-picker': 1.18.3(@internationalized/date@3.12.0)
       '@zag-js/svelte': 1.18.3(svelte@5.54.0)
       highlight.js: 11.11.1
-      lodash-es: 4.17.23
+      lodash-es: 4.18.1
       nanoid: 5.1.7
       svelte: 5.54.0
     transitivePeerDependencies:
       - '@internationalized/date'
 
-  '@viamrobotics/prime-editor@0.0.2(@codemirror/lang-json@6.0.2)(@codemirror/merge@6.12.1)(@codemirror/state@6.6.0)(@codemirror/view@6.40.0)(@viamrobotics/prime-core@0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0))(classnames@2.5.1)(codemirror@6.0.2)(lodash-es@4.17.23)(svelte@5.54.0)':
+  '@viamrobotics/prime-editor@0.0.2(@codemirror/lang-json@6.0.2)(@codemirror/merge@6.12.1)(@codemirror/state@6.6.0)(@codemirror/view@6.40.0)(@viamrobotics/prime-core@0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0))(classnames@2.5.1)(codemirror@6.0.2)(lodash-es@4.18.1)(svelte@5.54.0)':
     dependencies:
       '@codemirror/lang-json': 6.0.2
       '@codemirror/merge': 6.12.1
@@ -4325,7 +4328,7 @@ snapshots:
       '@viamrobotics/prime-core': 0.1.16(@internationalized/date@3.12.0)(svelte@5.54.0)
       classnames: 2.5.1
       codemirror: 6.0.2
-      lodash-es: 4.17.23
+      lodash-es: 4.18.1
       svelte: 5.54.0
 
   '@viamrobotics/sdk@0.67.0':
@@ -4763,7 +4766,7 @@ snapshots:
     dependencies:
       '@codemirror/autocomplete': 6.20.1
       '@codemirror/commands': 6.10.3
-      '@codemirror/language': 6.12.2
+      '@codemirror/language': 6.12.3
       '@codemirror/lint': 6.9.5
       '@codemirror/search': 6.6.0
       '@codemirror/state': 6.6.0
@@ -5351,6 +5354,8 @@ snapshots:
       p-locate: 5.0.0
 
   lodash-es@4.17.23: {}
+
+  lodash-es@4.18.1: {}
 
   lodash.startcase@4.4.0: {}
 
