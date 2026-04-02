@@ -110,14 +110,7 @@
 		...rest
 	}: Props = $props()
 
-	const context = provideMapContext(() => ({
-		center,
-		zoom,
-		maxZoom,
-		mapProvider,
-		mapProviderKey,
-		satellite,
-	}))
+	const context = provideMapContext(center, zoom, maxZoom, mapProvider, mapProviderKey, satellite)
 
 	let container = $state.raw<HTMLDivElement>()
 	let created = $state(false)

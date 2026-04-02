@@ -1,9 +1,3 @@
-if (!('createObjectURL' in globalThis.URL)) {
-	throw new Error(
-		'<MapLibre> requires the window.URL.createObjectURL method. If in a testing environment, this must be mocked or stubbed.'
-	)
-}
-
 export { default as CenterControls } from './controls/center.svelte'
 export { default as FollowControls } from './controls/follow.svelte'
 export { default as NavigationControls } from './controls/navigation.svelte'

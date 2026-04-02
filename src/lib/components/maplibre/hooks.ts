@@ -7,41 +7,31 @@ import type {
 } from 'maplibre-gl'
 
 import { getContext, onDestroy, setContext } from 'svelte'
+import { get, type Writable, writable } from 'svelte/store'
 
 import { type MapProvider, MapProviders } from './types'
 
 const mapContextKey = Symbol('viam-maplibre')
 
 interface MapContext {
-	map: { current: Map }
-	center: { current: LngLat }
-	size: { current: { width: number; height: number } }
-	zoom: { current: number }
-	maxZoom: { current: number }
-	mapProvider: { current: MapProvider }
-	apiKey: { current: string | undefined }
-	satellite: { current: boolean }
+	map: Writable<Map>
+	center: Writable<LngLat>
+	size: Writable<{ width: number; height: number }>
+	zoom: Writable<number>
+	maxZoom: Writable<number>
+	mapProvider: Writable<MapProvider>
+	apiKey: Writable<string | undefined>
+	satellite: Writable<boolean>
 }
 
 export const provideMapContext = (
-	options: () => {
-		center: LngLat
-		zoom: number
-		maxZoom: number
-		mapProvider?: MapProvider | undefined
-		apiKey?: string | undefined
-		satellite?: boolean
-	}
+	center: LngLat,
+	zoom: number,
+	maxZoom: number,
+	mapProvider: MapProvider = MapProviders.openStreet,
+	apiKey: string | undefined = undefined,
+	satellite = false
 ) => {
-	const {
-		center,
-		zoom,
-		maxZoom,
-		mapProvider = MapProviders.openStreet,
-		apiKey,
-		satellite = false,
-	} = $derived(options())
-
 	const context: MapContext = {
 		map: writable<Map>(),
 		center: writable(center),
@@ -61,7 +51,7 @@ export const provideMapContext = (
 /**
  * Provides context for a <MapLibre> instance. Must be called within a child of this component.
  */
-export const useMapLibre = (): MapContext => {
+export const useMapLibre = () => {
 	const context = getContext<MapContext | undefined>(mapContextKey)
 
 	if (!context) {
@@ -70,7 +60,16 @@ export const useMapLibre = (): MapContext => {
 		)
 	}
 
-	return context
+	return {
+		map: get(context.map),
+		mapCenter: context.center,
+		mapSize: context.size,
+		mapZoom: context.zoom,
+		maxZoom: context.maxZoom,
+		mapProvider: context.mapProvider,
+		apiKey: context.apiKey,
+		satellite: context.satellite,
+	}
 }
 
 /**
