@@ -14,6 +14,7 @@
 		type MapMouseEvent,
 		MercatorCoordinate,
 	} from 'maplibre-gl'
+	import { fromStore } from 'svelte/store'
 
 	import {
 		cartesianToMercator,
@@ -30,7 +31,8 @@
 
 	const { onUpdate }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	let downLngLat = $state(new LngLat(0, 0))
@@ -94,21 +96,26 @@
 
 	const handleKeydown = (event: KeyboardEvent) => {
 		if (event.shiftKey) {
-			map.getCanvas().classList.add('!cursor-crosshair')
+			map.current.getCanvas().classList.add('!cursor-crosshair')
 		}
 	}
 
 	const handleKeyup = () => {
-		map.getCanvas().classList.remove('!cursor-crosshair')
+		map.current.getCanvas().classList.remove('!cursor-crosshair')
 	}
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (drawing) {
-			map.on('mousemove', handlePointerMove)
-			map.on('mouseup', handlePointerUp)
+			map.current.on('mousemove', handlePointerMove)
+			map.current.on('mouseup', handlePointerUp)
 		} else {
-			map.off('mousemove', handlePointerMove)
-			map.off('mouseup', handlePointerUp)
+			map.current.off('mousemove', handlePointerMove)
+			map.current.off('mouseup', handlePointerUp)
+		}
+
+		return () => {
+			map.current.off('mousemove', handlePointerMove)
+			map.current.off('mouseup', handlePointerUp)
 		}
 	})
 </script>

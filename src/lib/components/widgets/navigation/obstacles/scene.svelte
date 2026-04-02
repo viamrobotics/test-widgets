@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, useThrelte } from '@threlte/core'
 	import { interactivity } from '@threlte/extras'
+	import { fromStore } from 'svelte/store'
 	import { Camera, type Intersection, Plane, Vector3 } from 'three'
 
 	import {
@@ -16,7 +17,8 @@
 
 	const { view, children }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const { scene, camera, renderer } = $state(useThrelte())
 
 	camera.set(new Camera())
@@ -24,7 +26,7 @@
 	const { pointer, compute } = useMapLibreThreeRaycast(camera)
 
 	interactivity({
-		target: map.getCanvas(),
+		target: map.current.getCanvas(),
 		filter: (hits: Intersection[]) => {
 			// Only return the first hit
 			return hits.slice(0, 1)

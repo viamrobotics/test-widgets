@@ -2,6 +2,7 @@
 	import type { LngLat } from 'maplibre-gl'
 
 	import { IconButton } from '@viamrobotics/prime-core'
+	import { fromStore } from 'svelte/store'
 
 	import { useMapLibre, useMapLibreEvent, Waypoint } from '../../../maplibre'
 	import { useNavigationMap } from '../../use-navigation-map.svelte'
@@ -13,7 +14,8 @@
 
 	const { onaddwaypoint, ondeletewaypoint }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	const handleDeleteWaypoint = (id: string) => {
@@ -50,7 +52,7 @@
 				icon="image-filter-center-focus"
 				label="Focus waypoint {index}"
 				on:click={() =>
-					map.flyTo({
+					map.current.flyTo({
 						zoom: 15,
 						duration: 800,
 						curve: 0.1,

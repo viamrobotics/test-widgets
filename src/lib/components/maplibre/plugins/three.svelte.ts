@@ -1,7 +1,8 @@
 import { type LngLat, MercatorCoordinate } from 'maplibre-gl'
+import { fromStore } from 'svelte/store'
 import { type BufferGeometry, type Camera, Line, Matrix4, type Scene, Vector3 } from 'three'
 
-import { useMapLibre } from '../hooks'
+import { useMapLibre } from '../hooks.svelte'
 import { lngLatToCartesian, mercatorToCartesian } from '../math'
 
 /**
@@ -26,7 +27,8 @@ export const useMapLibreThreeRenderer = (
 	cameraSignal: { current: Camera },
 	renderFn: (scene: Scene, camera: Camera) => void
 ) => {
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const cameraTransform = new Matrix4()
 	const cameraMatrix = new Matrix4()
 	const scale = new Matrix4()
@@ -36,12 +38,12 @@ export const useMapLibreThreeRenderer = (
 	)
 
 	$effect(() => {
-		map.addLayer({
+		map.current.addLayer({
 			id: 'scene-layer',
 			type: 'custom',
 			renderingMode: '3d',
 			render(_, { modelViewProjectionMatrix }) {
-				const center = map.getCenter()
+				const center = map.current.getCenter()
 				const mercator = MercatorCoordinate.fromLngLat(center, 0)
 				const mercatorScale = mercator.meterInMercatorCoordinateUnits()
 				const { x: cx, y: cy } = mercatorToCartesian(mercator, mercatorScale)
@@ -81,12 +83,12 @@ export const useMapLibreThreeRenderer = (
 				})
 
 				renderFn(scene, cameraSignal.current)
-				map.triggerRepaint()
+				map.current.triggerRepaint()
 			},
 		})
 
 		return () => {
-			map.removeLayer('scene-layer')
+			map.current.removeLayer('scene-layer')
 		}
 	})
 }
