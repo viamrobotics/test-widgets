@@ -26,7 +26,7 @@
 	import { LngLat, Map, type MapOptions } from 'maplibre-gl'
 	import { onMount, type Snippet, tick } from 'svelte'
 
-	import { provideMapContext } from './hooks'
+	import { provideMapContext } from './hooks.svelte'
 	import { getStyleSpecification } from './style'
 	import { type MapProvider, MapProviders } from './types'
 	import { DEFAULT_MAX_ZOOM } from './zoom'
@@ -110,7 +110,14 @@
 		...rest
 	}: Props = $props()
 
-	const context = provideMapContext(center, zoom, maxZoom, mapProvider, mapProviderKey, satellite)
+	const context = provideMapContext(() => ({
+		center,
+		zoom,
+		maxZoom,
+		mapProvider,
+		mapProviderKey,
+		satellite,
+	}))
 
 	let container = $state.raw<HTMLDivElement>()
 	let created = $state(false)

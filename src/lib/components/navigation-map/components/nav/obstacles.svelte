@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { IconButton, Label, TextInput, Tooltip } from '@viamrobotics/prime-core'
 	import { LngLat, LngLatBounds } from 'maplibre-gl'
+	import { fromStore } from 'svelte/store'
 
 	import type { Geometry, Obstacle } from '../../types'
 
@@ -16,14 +17,15 @@
 
 	const { onupdate }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	const handleSelect = (selection: { name: string; location: LngLat }) => {
 		const radius = nav.boundingRadius[selection.name]
 		const lngLat = new LngLat(selection.location.lng, selection.location.lat)
 		const bounds = LngLatBounds.fromLngLat(lngLat, radius)
-		map.fitBounds(bounds, {
+		map.current.fitBounds(bounds, {
 			padding: 100,
 			duration: 800,
 			curve: 0.1,
@@ -98,7 +100,7 @@
 
 {#each nav.obstacles as { name, location, geometries, color, label }, index (index)}
 	<li
-		class="group border-b-medium flex min-h-[30px] items-center border-b pl-2 leading-[1] last:border-b-0"
+		class="group border-b-medium flex min-h-7.5 items-center border-b pl-2 leading-none last:border-b-0"
 		class:pb-3={debugMode}
 		class:pt-1={debugMode}
 		class:bg-light={nav.selected === name}

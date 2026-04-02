@@ -4,7 +4,7 @@
 
 <p>Getting started:</p>
 
-<ul class="flex !list-disc flex-col gap-2 pt-2">
+<ul class="flex list-disc! flex-col gap-2 pt-2">
 	<li class="ml-4">
 		Hold <Key>shift</Key> + drag on the map to draw an obstacle.
 	</li>

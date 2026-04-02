@@ -1,27 +1,29 @@
 import type { MapMouseEvent } from 'maplibre-gl'
 
-import { onMount } from 'svelte'
+import { fromStore } from 'svelte/store'
 import { type Camera, Matrix4, type Raycaster, Vector2, Vector3 } from 'three'
 
-import { useMapLibre } from '../hooks'
+import { useMapLibre } from '../hooks.svelte'
 
 /**
  * Provides raycasting against THREE objects projected on to a maplibre map.
  */
 export const useMapLibreThreeRaycast = (cameraSignal: { current: Camera }) => {
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
+
 	const pointer = new Vector2()
 
 	const handleMouseMove = (event: MapMouseEvent) => {
 		pointer.set(
-			(event.point.x / map.transform.width) * 2 - 1,
-			-(event.point.y / map.transform.height) * 2 + 1
+			(event.point.x / map.current.transform.width) * 2 - 1,
+			-(event.point.y / map.current.transform.height) * 2 + 1
 		)
 	}
 
-	onMount(() => {
-		map.on('mousemove', handleMouseMove)
-		return () => map.off('mousemove', handleMouseMove)
+	$effect(() => {
+		map.current.on('mousemove', handleMouseMove)
+		return () => map.current.off('mousemove', handleMouseMove)
 	})
 
 	const cameraPosition = new Vector3()

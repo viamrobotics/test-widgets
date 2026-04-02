@@ -16,6 +16,7 @@
 
 	const { positions, moveToJointPositions, lastError }: Props = $props()
 
+	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
 	let useRadians = $state(false)
 

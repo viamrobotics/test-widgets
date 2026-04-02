@@ -13,8 +13,9 @@
 -->
 <script lang="ts">
 	import { LngLat, Marker } from 'maplibre-gl'
+	import { fromStore } from 'svelte/store'
 
-	import { useMapLibre } from './hooks'
+	import { useMapLibre } from './hooks.svelte'
 
 	interface Props {
 		/** The longitude of the marker. */
@@ -33,7 +34,8 @@
 
 	const { lng = 0, lat = 0, rotation = 0, scale = 1, color = '', element }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 
 	const marker = $derived.by(() => {
 		const value = new Marker(element ? { element, scale, color } : { scale, color })
@@ -44,7 +46,7 @@
 
 	$effect.pre(() => {
 		const currentMarker = marker
-		currentMarker.addTo(map)
+		currentMarker.addTo(map.current)
 		return () => {
 			currentMarker.remove()
 		}

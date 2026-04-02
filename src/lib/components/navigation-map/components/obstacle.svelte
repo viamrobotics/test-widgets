@@ -8,7 +8,8 @@
 		type MapLayerTouchEvent,
 		type MapMouseEvent,
 	} from 'maplibre-gl'
-	import * as THREE from 'three'
+	import { fromStore } from 'svelte/store'
+	import { type BufferGeometry, Vector2 } from 'three'
 
 	import type { Obstacle } from '../types'
 
@@ -24,7 +25,8 @@
 
 	const { name, onupdate }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	let pointerdownTheta = 0
@@ -35,13 +37,13 @@
 
 	let draggingObstacle = $state(false)
 
-	const pointermove = new THREE.Vector2()
-	const pointerdown = new THREE.Vector2()
+	const pointermove = new Vector2()
+	const pointerdown = new Vector2()
 
 	const debugMode = $derived(nav.environment === 'debug')
 	const obstacle = $derived(nav.obstacles.find((item) => item.name === name))
 
-	const handleGeometryCreate = (ref: THREE.BufferGeometry) => {
+	const handleGeometryCreate = (ref: BufferGeometry) => {
 		ref.rotateX(-Math.PI / 2)
 	}
 
@@ -52,7 +54,7 @@
 			return
 		}
 
-		map.dragPan.disable()
+		map.current.dragPan.disable()
 		draggingObstacle = true
 	}
 
@@ -66,7 +68,7 @@
 
 		if (isManipulating) {
 			event.preventDefault()
-			map.getCanvas().classList.add('!cursor-ns-resize')
+			map.current.getCanvas().classList.add('!cursor-ns-resize')
 		}
 
 		pointerdown.set(event.point.x, event.point.y)
@@ -164,17 +166,21 @@
 
 	const handlePointerUp = () => {
 		draggingObstacle = false
-		map.dragPan.enable()
-		map.getCanvas().classList.remove('!cursor-ns-resize')
+		map.current.dragPan.enable()
+		map.current.getCanvas().classList.remove('!cursor-ns-resize')
 	}
 
 	const active = $derived(nav.hovered === name || nav.selected === name)
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (draggingObstacle) {
-			map.on('mousemove', handlePointerMove)
+			map.current.on('mousemove', handlePointerMove)
 		} else {
-			map.off('mousemove', handlePointerMove)
+			map.current.off('mousemove', handlePointerMove)
+		}
+
+		return () => {
+			map.current.off('mousemove', handlePointerMove)
 		}
 	})
 
