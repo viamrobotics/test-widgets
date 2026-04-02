@@ -1,8 +1,6 @@
 <script lang="ts">
-	import '@fontsource-variable/roboto-mono'
-	import '@fontsource-variable/public-sans'
+	import '@viamrobotics/tailwind-config/fonts'
 
-	//import '@viamrobotics/prime-core/prime.css';
 	import '../app.css'
 
 	import type { Snippet } from 'svelte'

@@ -12,6 +12,22 @@ export default defineConfig({
 		port: 6173,
 	},
 	plugins: [
+		{
+			name: 'fix-prime-core-theme',
+			enforce: 'pre',
+			transform(code, id) {
+				if (!id.includes('prime-core')) return
+				if (!code.includes('theme(')) return
+				return code
+					.replaceAll('theme(borderColor.light)', '#e4e4e6')
+					.replaceAll(
+						'theme(fontFamily.public-sans)',
+						"'Public Sans Variable', 'Public Sans', sans-serif"
+					)
+					.replaceAll('theme(backgroundColor.light)', '#f7f7f8')
+					.replaceAll('theme(backgroundColor.ghost-light)', 'rgba(0, 0, 0, 0.04)')
+			},
+		},
 		tailwindcss(),
 		sveltekit(),
 		svelteTesting({
