@@ -18,6 +18,7 @@
 
 	const { endPosition, moveToPosition, lastError }: Props = $props()
 
+	// svelte-ignore state_referenced_locally
 	let desiredPosition = $state({ ...endPosition })
 	let useRadians = $state(false)
 

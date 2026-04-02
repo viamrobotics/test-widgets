@@ -4,8 +4,9 @@
 -->
 <script lang="ts">
 	import { Button, Icon } from '@viamrobotics/prime-core'
+	import { fromStore } from 'svelte/store'
 
-	import { useMapLibre } from '../hooks'
+	import { useMapLibre } from '../hooks.svelte'
 
 	interface Props {
 		/** The map point to follow */
@@ -17,13 +18,14 @@
 
 	let { lng, lat, onChange, following = $bindable(false) }: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 
 	let rafID = 0
 
 	const follow = () => {
 		if (lng && lat && following) {
-			map.setCenter([lng, lat])
+			map.current.setCenter([lng, lat])
 			rafID = requestAnimationFrame(follow)
 		}
 	}
@@ -40,13 +42,13 @@
 	})
 
 	$effect(() => {
-		map.on('wheel', stop)
-		map.on('mousedown', stop)
+		map.current.on('wheel', stop)
+		map.current.on('mousedown', stop)
 
 		return () => {
 			cancelAnimationFrame(rafID)
-			map.off('wheel', stop)
-			map.off('mousedown', stop)
+			map.current.off('wheel', stop)
+			map.current.off('mousedown', stop)
 		}
 	})
 

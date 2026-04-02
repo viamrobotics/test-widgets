@@ -5,37 +5,40 @@
 <script lang="ts">
 	import { persisted } from '@viamrobotics/prime-core'
 	import { LngLat } from 'maplibre-gl'
+	import { fromStore } from 'svelte/store'
 
-	import { useMapLibre, useMapLibreEvent } from '../hooks'
+	import { useMapLibre, useMapLibreEvent } from '../hooks.svelte'
 	import LngLatInput from '../lnglat-input.svelte'
 
-	const { map, mapCenter } = useMapLibre()
+	const { center, ...context } = useMapLibre()
+	const map = fromStore(context.map)
+
 	const lastPosition = persisted<{ center: LngLat; zoom: number }>(
 		'viam-blocks-navigation-map-center',
 		{
-			center: map.getCenter(),
-			zoom: map.getZoom(),
+			center: map.current.getCenter(),
+			zoom: map.current.getZoom(),
 		}
 	)
 
 	if ($lastPosition) {
-		map.jumpTo({ center: $lastPosition.center, zoom: $lastPosition.zoom })
+		map.current.jumpTo({ center: $lastPosition.center, zoom: $lastPosition.zoom })
 	}
 
 	const handleInput = (center: LngLat) => {
-		map.jumpTo({ center })
+		map.current.jumpTo({ center })
 	}
 
 	useMapLibreEvent('move', () => {
 		lastPosition.set({
-			center: map.getCenter(),
-			zoom: map.getZoom(),
+			center: map.current.getCenter(),
+			zoom: map.current.getZoom(),
 		})
 	})
 </script>
 
 <LngLatInput
-	lng={$mapCenter.lng}
-	lat={$mapCenter.lat}
+	lng={$center.lng}
+	lat={$center.lat}
 	oninput={handleInput}
 />

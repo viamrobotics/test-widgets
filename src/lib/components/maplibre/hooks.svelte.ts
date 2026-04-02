@@ -6,8 +6,8 @@ import type {
 	MapLayerTouchEvent,
 } from 'maplibre-gl'
 
-import { getContext, onDestroy, setContext } from 'svelte'
-import { get, type Writable, writable } from 'svelte/store'
+import { getContext, setContext } from 'svelte'
+import { fromStore, type Writable, writable } from 'svelte/store'
 
 import { type MapProvider, MapProviders } from './types'
 
@@ -25,13 +25,24 @@ interface MapContext {
 }
 
 export const provideMapContext = (
-	center: LngLat,
-	zoom: number,
-	maxZoom: number,
-	mapProvider: MapProvider = MapProviders.openStreet,
-	apiKey: string | undefined = undefined,
-	satellite = false
+	options: () => {
+		center: LngLat
+		zoom: number
+		maxZoom: number
+		mapProvider?: MapProvider
+		apiKey?: string | undefined
+		satellite?: boolean
+	}
 ) => {
+	const {
+		center,
+		zoom,
+		maxZoom,
+		mapProvider = MapProviders.openStreet,
+		apiKey,
+		satellite = false,
+	} = $derived(options())
+
 	const context: MapContext = {
 		map: writable<Map>(),
 		center: writable(center),
@@ -43,6 +54,25 @@ export const provideMapContext = (
 		satellite: writable(satellite),
 	}
 
+	$effect(() => {
+		context.center.set(center)
+	})
+	$effect(() => {
+		context.zoom.set(zoom)
+	})
+	$effect(() => {
+		context.maxZoom.set(maxZoom)
+	})
+	$effect(() => {
+		context.mapProvider.set(mapProvider)
+	})
+	$effect(() => {
+		context.apiKey.set(apiKey)
+	})
+	$effect(() => {
+		context.satellite.set(satellite)
+	})
+
 	setContext<MapContext>(mapContextKey, context)
 
 	return context
@@ -51,7 +81,7 @@ export const provideMapContext = (
 /**
  * Provides context for a <MapLibre> instance. Must be called within a child of this component.
  */
-export const useMapLibre = () => {
+export const useMapLibre = (): MapContext => {
 	const context = getContext<MapContext | undefined>(mapContextKey)
 
 	if (!context) {
@@ -60,16 +90,7 @@ export const useMapLibre = () => {
 		)
 	}
 
-	return {
-		map: get(context.map),
-		mapCenter: context.center,
-		mapSize: context.size,
-		mapZoom: context.zoom,
-		maxZoom: context.maxZoom,
-		mapProvider: context.mapProvider,
-		apiKey: context.apiKey,
-		satellite: context.satellite,
-	}
+	return context
 }
 
 /**
@@ -79,9 +100,14 @@ export const useMapLibreEvent = (
 	event: keyof MapLayerEventType | 'move' | 'resize',
 	listener: (ev: MapLayerMouseEvent | MapLayerTouchEvent) => void
 ) => {
-	const { map } = useMapLibre()
+	const context = useMapLibre()
 
-	map.on(event, listener)
+	const map = fromStore(context.map)
 
-	onDestroy(() => map.off(event, listener))
+	$effect(() => {
+		map.current.on(event, listener)
+		return () => {
+			map.current.off(event, listener)
+		}
+	})
 }

@@ -1,5 +1,6 @@
 import { useThrelte } from '@threlte/core'
 import { interactivity } from '@threlte/extras'
+import { fromStore } from 'svelte/store'
 
 import { useMapLibre, useMapLibreThreeRaycast } from '../../maplibre'
 /**
@@ -9,11 +10,12 @@ import { useMapLibre, useMapLibreThreeRaycast } from '../../maplibre'
  */
 export const interactivityPlugin = () => {
 	const { camera } = useThrelte()
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const { pointer, compute } = useMapLibreThreeRaycast(camera)
 
 	interactivity({
-		target: map.getCanvas(),
+		target: map.current.getCanvas(),
 		filter: (hits) => {
 			// Only return the first hit
 			return hits.slice(0, 1)

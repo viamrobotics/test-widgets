@@ -19,7 +19,7 @@
 	const nav = useNavigationMap()
 </script>
 
-<nav class="py-4 pl-4 sm:h-full sm:w-[350px]">
+<nav class="py-4 pl-4 sm:h-full sm:w-87.5">
 	<ol class="mb-2 flex flex-wrap items-center">
 		{#each nav.tabs as tabTitle (tabTitle)}
 			{@const selected = nav.tab === tabTitle}

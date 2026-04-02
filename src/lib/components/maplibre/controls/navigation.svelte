@@ -15,8 +15,9 @@
 -->
 <script lang="ts">
 	import { type ControlPosition, NavigationControl } from 'maplibre-gl'
+	import { fromStore } from 'svelte/store'
 
-	import { useMapLibre } from '../hooks'
+	import { useMapLibre } from '../hooks.svelte'
 
 	interface Props {
 		position?: ControlPosition
@@ -32,7 +33,8 @@
 		visualizePitch = true,
 	}: Props = $props()
 
-	const { map } = useMapLibre()
+	const context = useMapLibre()
+	const map = fromStore(context.map)
 	const control = new NavigationControl()
 
 	$effect(() => {
@@ -48,10 +50,10 @@
 	})
 
 	$effect(() => {
-		map.addControl(control, position)
+		map.current.addControl(control, position)
 
 		return () => {
-			map.removeControl(control)
+			map.current.removeControl(control)
 		}
 	})
 </script>

@@ -11,6 +11,6 @@
 <!-- 
   @component Represents a keyboard key.
 -->
-<span class="text-default rounded-[4px] bg-gray-200 px-1 py-0.5 font-semibold">
+<span class="text-default rounded-sm bg-gray-200 px-1 py-0.5 font-semibold">
 	{@render children?.()}
 </span>
