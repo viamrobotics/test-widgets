@@ -33,8 +33,8 @@ export { default as EncoderWidget } from './widgets/encoder/encoder.svelte'
 
 export { default as GantryWidget } from './widgets/gantry/gantry.svelte'
 export { default as GantryHomeWidget } from './widgets/gantry/home.svelte'
-export { default as GantryMoveToPositionWidget } from './widgets/gantry/move-to-position.svelte'
-export { default as GantryQuickMoveWidget } from './widgets/gantry/quick-move.svelte'
+export { default as GantryMoveToPositionWidget } from './widgets/gantry/move-to-position-widget.svelte'
+export { default as GantryQuickMoveWidget } from './widgets/gantry/quick-move-widget.svelte'
 
 export { default as GenericWidget } from './widgets/generic/generic.svelte'
 
