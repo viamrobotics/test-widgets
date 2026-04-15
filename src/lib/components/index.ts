@@ -115,4 +115,3 @@ export {
 	cartesianToMercator,
 	cartesianToLngLat,
 } from './maplibre'
-
