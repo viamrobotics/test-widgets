@@ -8,7 +8,6 @@
 	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools'
 	import { Icon } from '@viamrobotics/prime-core'
 	import { ViamProvider } from '@viamrobotics/svelte-sdk'
-	import { writable } from 'svelte/store'
 
 	import { resolve } from '$app/paths'
 	import { page } from '$app/state'
@@ -23,14 +22,8 @@
 
 	const robots = loadRobots()
 
-	const part = writable(page.params.name ?? Object.keys(robots).at(0))
-	$effect.pre(() => {
-		if (page.params.name) {
-			part.set(page.params.name)
-		}
-	})
-
-	const playgroundRobot = $derived(robots[$part])
+	const part = $derived(page.params.name ?? Object.keys(robots).at(0) ?? '')
+	const playgroundRobot = $derived(robots[part])
 	const partID = $derived(playgroundRobot?.partId ?? '')
 	const dialConfigs = $derived(playgroundRobot ? { [partID]: getDialConf(playgroundRobot) } : {})
 </script>
