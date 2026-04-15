@@ -15,13 +15,12 @@ export interface Detection extends DetectionPb {
  * Adds ids to detections.
  */
 export const addIdsToDetections = (detections: DetectionPb[]): Detection[] => {
-	for (const detection of detections as Detection[]) {
-		detection.id = MathUtils.generateUUID()
-		detection.confidence = Math.round(detection.confidence * 100)
-		detection.color = labelToColor(detection.className)
-	}
-
-	return detections as Detection[]
+	return detections.map((detection) => ({
+		...detection,
+		id: MathUtils.generateUUID(),
+		confidence: Math.round(detection.confidence * 100),
+		color: labelToColor(detection.className),
+	}))
 }
 
 interface DetectionGroup {
