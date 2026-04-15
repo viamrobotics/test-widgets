@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
+	import { Button, Progress } from '@viamrobotics/prime-core'
 	import { JsonEditor } from '@viamrobotics/prime-editor'
 	import { MLModelClient, ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
@@ -31,7 +31,7 @@
 
 	const doCommandMutation = $derived(createResourceMutation(client, 'doCommand'))
 
-	let lastErr = $state<Error>()
+	let lastErr = $state<Error | null>()
 
 	const uid = $props.id()
 
@@ -41,10 +41,12 @@
 
 	const execute = async () => {
 		try {
+			lastErr = null
+			output = ''
 			const parsedInput = Struct.fromJsonString(input.current ?? '{}')
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
-			lastErr = undefined
+			lastErr = null
 		} catch (error) {
 			lastErr = error as Error
 		}
@@ -72,7 +74,15 @@
 		>
 
 		<div class="flex w-[45%] flex-col gap-2 border-l py-2">
-			<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
+			<div class="flex flex-row items-center">
+				<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
+				{#if doCommandMutation.isPending}
+					<Progress
+						size="medium"
+						variant="dark"
+					/>
+				{/if}
+			</div>
 			{#if !lastErr}
 				<JsonEditor
 					label="output"

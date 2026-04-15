@@ -27,17 +27,17 @@
 		refetchInterval: 500,
 	})
 
-	// TODO: switch to using optimistic update mutation client from svelte SDK when available APP-15498
-	let currentPosition = $derived(positionQuery.data ?? 0)
-
 	const numPositionsQuery = createResourceQuery(client, 'getNumberOfPositions', {
 		refetchInterval: 500,
 	})
 
-	const setPositionMutation = createResourceMutation(client, 'setPosition')
+	const setPositionMutation = createResourceMutation(
+		client,
+		'setPosition',
+		() => positionQuery.queryKey
+	)
 
 	const onSelect = async (position: number) => {
-		currentPosition = position
 		await setPositionMutation.mutateAsync([position])
 		await positionQuery.refetch()
 	}
@@ -51,7 +51,7 @@
 		<Position
 			numPositions={numPositionsQuery.data[0]}
 			labels={numPositionsQuery.data[1]}
-			{currentPosition}
+			currentPosition={positionQuery.data}
 			{onSelect}
 			lastError={setPositionMutation.error}
 		/>

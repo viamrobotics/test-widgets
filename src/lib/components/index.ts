@@ -116,11 +116,3 @@ export {
 	cartesianToLngLat,
 } from './maplibre'
 
-export { default as BoundingBoxLabeler } from './image-annotations/bounding-box-labeler.svelte'
-
-export {
-	ZOOM_MIN,
-	ZOOM_MAX,
-	INVERT_Y_FLOAT_DISTANCE,
-	INVERT_X_FLOAT_DISTANCE,
-} from './image-annotations/labeler-constants'
