@@ -69,7 +69,6 @@
 </script>
 
 <Container
-	name="Detection {detection.id}"
 	positionType="absolute"
 	positionLeft={factoredxMin}
 	positionTop={factoredyMin}

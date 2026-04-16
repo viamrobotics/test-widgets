@@ -1,9 +1,8 @@
 <script lang="ts">
-	import type { ResizeDetail } from '@svelte-put/resize'
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { Snippet } from 'svelte'
 
-	import { resize } from '@svelte-put/resize'
+	import { useResizeObserver } from 'runed'
 
 	import ContentRect from './content-rect.svelte'
 	import ErrorDisplay from './error.svelte'
@@ -17,10 +16,15 @@
 
 	const { queries, contentCx = '', children }: Props = $props()
 
-	let contentRect = $state<DOMRect>()
-	const handleResize = (event: CustomEvent<ResizeDetail>) => {
-		contentRect = event.detail.entry.contentRect
-	}
+	let el = $state.raw<HTMLDivElement>()
+	let contentRect = $state.raw<DOMRect>()
+
+	useResizeObserver(
+		() => el,
+		([entry]) => {
+			contentRect = entry.contentRect
+		}
+	)
 
 	let errors = $state.raw<Error[]>([])
 	let data = $state.raw<unknown[]>([])
@@ -65,8 +69,7 @@
 {:else}
 	<div
 		class="w-full"
-		use:resize
-		onresized={handleResize}
+		bind:this={el}
 	>
 		{@render children?.({ data })}
 	</div>
