@@ -12,36 +12,41 @@
 	{@render children?.()}
 </table>
 
-<style lang="postcss">
-	/* 
-    NOTE(zp, 2024-06-10) Admittedly, this is a bit dangerous; 
-    However, it does let us use standard html <table> tags like tr, th and tbody which has ergonomic advantages
-
-    If this is giving us trouble, please feel no hesitation about deleting this
-  */
-
-	/* (:global is a svelte directive specifically for this purpose with slots.)*/
-
-	@reference "tailwindcss";
-	@reference "@viamrobotics/tailwind-config";
-
+<style>
 	.customTable {
-		@apply w-full table-auto;
+		width: 100%;
+		table-layout: auto;
 	}
 	.customTable :global(thead) {
-		@apply border-light bg-light border;
+		border: 1px solid #e4e4e6;
+		background-color: #f7f7f8;
 	}
 	.customTable :global(thead th) {
-		@apply border-light text-subtle-1 border px-2.5 py-1 text-xs font-normal whitespace-nowrap;
+		border: 1px solid #e4e4e6;
+		color: #4e4f52;
+		padding: 0.25rem 0.625rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+		font-weight: 400;
+		white-space: nowrap;
 	}
 	.customTable :global(thead th abbr) {
-		@apply text-disabled;
+		color: #9c9ca4;
 	}
-
 	.customTable :global(tbody) {
-		@apply border-light border;
+		border: 1px solid #e4e4e6;
 	}
 	.customTable :global(tbody th) {
-		@apply border-light font-roboto-mono text-default h-10 gap-2 border px-1.5 text-center text-xs font-normal;
+		border: 1px solid #e4e4e6;
+		font-family: 'Roboto Mono Variable', 'Roboto Mono', ui-monospace, monospace;
+		color: #282829;
+		height: 2.5rem;
+		gap: 0.5rem;
+		padding-left: 0.375rem;
+		padding-right: 0.375rem;
+		text-align: center;
+		font-size: 0.75rem;
+		line-height: 1rem;
+		font-weight: 400;
 	}
 </style>
