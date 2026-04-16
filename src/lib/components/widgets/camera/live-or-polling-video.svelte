@@ -185,11 +185,13 @@
 	})
 
 	$effect(() => {
-		return untrack(() => {
-			disableStream().then(() => {
-				setMediaStream(null)
+		return () => {
+			untrack(() => {
+				disableStream().then(() => {
+					setMediaStream(null)
+				})
 			})
-		})
+		}
 	})
 
 	$effect(() => {

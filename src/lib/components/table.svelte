@@ -22,7 +22,8 @@
 
 	/* (:global is a svelte directive specifically for this purpose with slots.)*/
 
-	@reference "../../app.css";
+	@reference "tailwindcss";
+	@reference "@viamrobotics/tailwind-config";
 
 	.customTable {
 		@apply w-full table-auto;
