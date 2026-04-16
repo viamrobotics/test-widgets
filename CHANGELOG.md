@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.1.3
+
+### Patch Changes
+
+- 59630a3: Set correct peer dependencies
+
 ## 0.1.2
 
 ### Patch Changes
