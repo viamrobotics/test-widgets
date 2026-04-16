@@ -191,37 +191,38 @@
 	})
 
 	$effect(() => {
-		return () => untrack(() => {
-			// If PiP is active for this resource, hand off stream control to the
-			// PipManager (which lives higher in the tree and won't unmount) instead
-			// of tearing everything down.
-			if (pip.isShowingPip(resourceName)) {
-				if (isLive && streamClient) {
-					// Transfer the StreamClient so PipManager can clean it up when PiP ends.
-					pip.handoffLive({ resourceName, streamClient })
-					// Detach the track listener and clear local ref but do NOT call
-					// streamClient.remove() — the MediaStream must stay alive for PiP.
-					streamClient.off('track', handleTrack)
-					streamClient = undefined
-					isStreamLoading = false
-					liveStreamStart = undefined
-				} else if (!isLive && client.current) {
-					// Hand off background polling so PipManager keeps the canvas updated.
-					const bgClient = new CameraClient(client.current, resourceName)
-					const interval = typeof pollInterval === 'number' ? pollInterval : 1000
-					pip.handoffPolling({
-						resourceName,
-						canvas,
-						robotClient: bgClient,
-						pollIntervalMs: interval,
+		return () =>
+			untrack(() => {
+				// If PiP is active for this resource, hand off stream control to the
+				// PipManager (which lives higher in the tree and won't unmount) instead
+				// of tearing everything down.
+				if (pip.isShowingPip(resourceName)) {
+					if (isLive && streamClient) {
+						// Transfer the StreamClient so PipManager can clean it up when PiP ends.
+						pip.handoffLive({ resourceName, streamClient })
+						// Detach the track listener and clear local ref but do NOT call
+						// streamClient.remove() — the MediaStream must stay alive for PiP.
+						streamClient.off('track', handleTrack)
+						streamClient = undefined
+						isStreamLoading = false
+						liveStreamStart = undefined
+					} else if (!isLive && client.current) {
+						// Hand off background polling so PipManager keeps the canvas updated.
+						const bgClient = new CameraClient(client.current, resourceName)
+						const interval = typeof pollInterval === 'number' ? pollInterval : 1000
+						pip.handoffPolling({
+							resourceName,
+							canvas,
+							robotClient: bgClient,
+							pollIntervalMs: interval,
+						})
+					}
+				} else {
+					disableStream().then(() => {
+						setMediaStream(null)
 					})
 				}
-			} else {
-				disableStream().then(() => {
-					setMediaStream(null)
-				})
-			}
-		})
+			})
 	})
 
 	$effect(() => {

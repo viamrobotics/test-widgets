@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import '@viamrobotics/tailwind-config';
-@source "../node_modules/@viamrobotics/prime-core/src/lib";
+@source '../node_modules/@viamrobotics/prime-core/src/lib';
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
