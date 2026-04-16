@@ -147,6 +147,13 @@ export function createPipContext(): PipContext {
 					const stream = streamRegistry.get(resourceName) ?? null
 					if (videoEl.srcObject !== stream) {
 						videoEl.srcObject = stream
+						// Wait for the new stream's metadata to load before requesting PiP,
+						// otherwise the browser throws InvalidStateError.
+						if (videoEl.readyState < 1 /* HAVE_METADATA */) {
+							await new Promise<void>((resolve) => {
+								videoEl!.addEventListener('loadedmetadata', () => resolve(), { once: true })
+							})
+						}
 					}
 					await videoEl.requestPictureInPicture()
 				}
