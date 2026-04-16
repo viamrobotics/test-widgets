@@ -16,6 +16,16 @@
 	$effect(() => {
 		pip._onVideoElement(videoElement)
 	})
+
+	$effect(() => {
+		if (!videoElement) return
+		videoElement.addEventListener('enterpictureinpicture', pip._onEnterPip)
+		videoElement.addEventListener('leavepictureinpicture', pip._onLeavePip)
+		return () => {
+			videoElement?.removeEventListener('enterpictureinpicture', pip._onEnterPip)
+			videoElement?.removeEventListener('leavepictureinpicture', pip._onLeavePip)
+		}
+	})
 </script>
 
 <!-- Visually hidden but always present — required for PiP to work. -->
@@ -27,7 +37,6 @@
 	controls={false}
 	playsinline
 	aria-hidden="true"
-	onenterpictureinpicture={pip._onEnterPip}
-	onleavepictureinpicture={pip._onLeavePip}
+
 >
 </video>
