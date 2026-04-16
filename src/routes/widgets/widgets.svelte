@@ -9,9 +9,8 @@
 
 	import type { NamedResourceStatus } from '$lib/resource'
 
+	import { providePip } from '$lib'
 	import { showResourceInControlView } from '$lib/builtin'
-	import { createPipContext } from '$lib/components/widgets/camera/pip-context.svelte'
-	import PipManager from '$lib/components/widgets/camera/pip-manager.svelte'
 	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
 
 	import { collapseAll, expandAll } from './card-list-item.svelte'
@@ -27,8 +26,7 @@
 
 	const { partID, urlHash, hasUnsavedChanges = false, children }: Props = $props()
 
-	// Create context once at this level so it outlives individual camera cards.
-	createPipContext()
+	providePip(() => partID)
 
 	const machineStatus = useMachineStatus(() => partID)
 	const connectionStatus = useConnectionStatus(() => partID)
@@ -88,10 +86,6 @@
 	}
 </script>
 
-<!-- Always-mounted PiP video element — must be outside any {#if} blocks. -->
-<PipManager />
-
-<!-- NOTE: `position: relative` ensure absolute children don't overflow -->
 <div
 	bind:this={splitpanesDiv}
 	class="h-full overflow-hidden"

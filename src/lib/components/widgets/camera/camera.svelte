@@ -16,7 +16,6 @@
 	import ExportScreenshot from './export-screenshot.svelte'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
-	import { usePipContext } from './pip-context.svelte'
 
 	interface Props {
 		partID: string
@@ -24,8 +23,6 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const pip = usePipContext()
 
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
@@ -48,7 +45,6 @@
 	const imageQuery = createResourceQuery(client, 'getImages', () => ({
 		enabled: refetchInterval.current !== RefetchIntervals.LIVE,
 		refetchInterval: refetchInterval.current,
-		refetchIntervalInBackground: pip.isShowingPip(resourceName),
 	}))
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
@@ -96,7 +92,6 @@
 					{resourceName}
 					showResolutionOptions
 					isLive={refetchInterval.current === RefetchIntervals.LIVE}
-					pollInterval={refetchInterval.current}
 					data={imageQuery.data}
 					error={imageQuery.error}
 					isLoading={imageQuery.isLoading}
@@ -142,7 +137,10 @@
 					</Button>
 				{/if}
 				{#if !isFirefox}
-					<PictureInPictureButton {resourceName} />
+					<PictureInPictureButton
+						{resourceName}
+						rate={refetchInterval.current}
+					/>
 				{/if}
 				<Label>
 					Mouse Position Tooltip

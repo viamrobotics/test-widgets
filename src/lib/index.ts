@@ -3,4 +3,7 @@ export {
 	type ImageData,
 	useAddImageToDataset,
 } from './add-image-to-dataset'
+
 export * from './components'
+
+export { providePip, usePip } from './pip/context.svelte'
