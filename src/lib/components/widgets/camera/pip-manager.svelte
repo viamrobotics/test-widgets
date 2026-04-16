@@ -37,6 +37,5 @@
 	controls={false}
 	playsinline
 	aria-hidden="true"
-
 >
 </video>
