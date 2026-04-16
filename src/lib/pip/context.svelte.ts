@@ -8,11 +8,13 @@ import { getContext, setContext } from 'svelte'
 
 const PIP_KEY = Symbol('pip-context')
 
-export interface PipContext {
+interface PipContext {
 	/** Called by PictureInPictureButton to start or stop PiP. */
 	toggle(resourceName: string): Promise<void>
 
 	setRate(rate: 'live' | number | false): void
+
+	error: Error | undefined
 
 	/** Whether the PictureInPicture is active */
 	readyState: 'inactive' | 'loading' | 'active'
@@ -32,8 +34,11 @@ export function providePip(partID: () => string): PipContext {
 
 	const canvas = document.createElement('canvas')
 	const canvasCtx = canvas.getContext('2d')
+	const canvasStream = canvas.captureStream()
+
 	const img = document.createElement('img')
 
+	let error = $state<Error>()
 	let readyState = $state<'inactive' | 'loading' | 'active'>('inactive')
 	let rate = $state<'live' | number | false>('live')
 	let activeName = $state<string>()
@@ -55,23 +60,20 @@ export function providePip(partID: () => string): PipContext {
 	)
 
 	const mediaStream = $derived<MediaStream | null>(
-		(rate === 'live' ? streamClient?.mediaStream : canvas.captureStream()) ?? null
+		(rate === 'live' ? streamClient?.mediaStream : canvasStream) ?? null
 	)
 
 	$effect(() => {
-		const onEnter = () => (readyState = 'active')
-		const onLeave = () => (readyState = 'inactive')
-
-		video.srcObject = mediaStream
-
 		document.body.append(video)
-		video.addEventListener('enterpictureinpicture', onEnter)
-		video.addEventListener('leavepictureinpicture', onLeave)
-
 		return () => {
-			video.removeEventListener('enterpictureinpicture', onEnter)
-			video.removeEventListener('leavepictureinpicture', onLeave)
 			video.remove()
+		}
+	})
+
+	$effect(() => {
+		video.srcObject = mediaStream
+		return () => {
+			video.srcObject = null
 		}
 	})
 
@@ -106,30 +108,54 @@ export function providePip(partID: () => string): PipContext {
 		}
 	})
 
+	const toggle = async () => {
+		if (
+			activeName === undefined &&
+			readyState === 'active' &&
+			document.pictureInPictureElement === video
+		) {
+			try {
+				await document.exitPictureInPicture()
+				readyState = 'inactive'
+				error = undefined
+			} catch (nextError) {
+				error = nextError as Error
+			}
+			return
+		}
+
+		readyState = 'loading'
+
+		// Wait for the new stream's metadata to load before requesting PiP,
+		// otherwise the browser throws InvalidStateError.
+		if (video.readyState < 1 /* HAVE_METADATA */) {
+			await new Promise<void>((resolve) => {
+				video!.addEventListener('loadedmetadata', () => resolve(), { once: true })
+			})
+		}
+
+		try {
+			await video.requestPictureInPicture()
+			readyState = 'active'
+			error = undefined
+		} catch (nextError) {
+			error = nextError as Error
+		}
+	}
+
 	const context: PipContext = {
 		async toggle(resourceName) {
-			activeName = resourceName
+			activeName = activeName === resourceName ? undefined : resourceName
 
-			if (readyState === 'active' && document.pictureInPictureElement === video) {
-				await document.exitPictureInPicture()
-				activeName = undefined
-				return
-			}
-
-			// Wait for the new stream's metadata to load before requesting PiP,
-			// otherwise the browser throws InvalidStateError.
-			if (video.readyState < 1 /* HAVE_METADATA */) {
-				readyState = 'loading'
-				await new Promise<void>((resolve) => {
-					video!.addEventListener('loadedmetadata', () => resolve(), { once: true })
-				})
-			}
-
-			await video.requestPictureInPicture()
+			await toggle()
 		},
 
 		setRate(newRate) {
 			rate = newRate
+		},
+
+		get error() {
+			return error
 		},
 
 		get readyState() {
@@ -150,7 +176,7 @@ export function usePip(): PipContext {
 	const ctx = getContext<PipContext | undefined>(PIP_KEY)
 
 	if (!ctx) {
-		throw new Error('usePipContext must be called within a <PipProvider')
+		throw new Error('usePipContext must be called after providePip()')
 	}
 
 	return ctx

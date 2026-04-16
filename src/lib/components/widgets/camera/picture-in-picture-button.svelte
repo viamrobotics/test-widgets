@@ -14,25 +14,16 @@
 
 	const pip = usePip()
 
-	let lastErr = $state.raw<Error>()
-
-	const togglePictureInPicture = async () => {
-		lastErr = undefined
-		try {
-			await pip.toggle(resourceName)
-		} catch (error) {
-			lastErr = error as Error
-		}
-	}
-
 	$effect(() => {
-		pip.setRate(rate)
+		if (resourceName === pip.resourceName) {
+			pip.setRate(rate)
+		}
 	})
 </script>
 
 <Button
 	icon="picture-in-picture-top-right"
-	onclick={togglePictureInPicture}
+	onclick={() => pip.toggle(resourceName)}
 	progress={pip.readyState === 'loading' ? 'indeterminate' : undefined}
 >
 	Toggle picture-in-picture
@@ -40,5 +31,5 @@
 
 <ErrorDisplay
 	class="max-w-50"
-	lastError={lastErr}
+	lastError={pip.error}
 />
