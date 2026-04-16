@@ -1,54 +1,24 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
-	import { onMount } from 'svelte'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 
+	import { usePipContext } from './pip-context.svelte'
+
 	interface Props {
 		resourceName: string
-		mediaStream: MediaStream | null
-		isShowingPip: boolean
 	}
 
-	let { resourceName, mediaStream, isShowingPip = $bindable(false) }: Props = $props()
+	const { resourceName }: Props = $props()
 
-	let videoElement = $state.raw<HTMLVideoElement>()
+	const pip = usePipContext()
+
 	let lastErr = $state.raw<Error>()
-
-	const onEnter = () => {
-		isShowingPip = true
-	}
-
-	const onLeave = () => {
-		isShowingPip = false
-	}
-
-	onMount(() => {
-		videoElement?.addEventListener('enterpictureinpicture', onEnter)
-		videoElement?.addEventListener('leavepictureinpicture', onLeave)
-
-		return () => {
-			videoElement?.removeEventListener('enterpictureinpicture', onEnter)
-			videoElement?.removeEventListener('leavepictureinpicture', onLeave)
-			if (isShowingPip) {
-				document.exitPictureInPicture()
-			}
-		}
-	})
-
-	$effect.pre(() => {
-		if (videoElement) {
-			videoElement.srcObject = mediaStream
-		}
-	})
 
 	const togglePictureInPicture = async () => {
 		lastErr = undefined
-
 		try {
-			await (isShowingPip
-				? document.exitPictureInPicture()
-				: videoElement?.requestPictureInPicture())
+			await pip.togglePip(resourceName)
 		} catch (error) {
 			lastErr = error as Error
 		}
@@ -61,18 +31,6 @@
 >
 	Toggle picture-in-picture
 </Button>
-
-<!-- Display a fixed video element on the page but essentially hide it.
-  There must always be a video element visible for PiP. -->
-<video
-	class="fixed right-0 bottom-0 h-px w-px opacity-[0.01]"
-	bind:this={videoElement}
-	muted
-	autoplay
-	controls={false}
-	playsinline
-	aria-label={`${resourceName} picture-in-picture stream`}
-></video>
 
 <ErrorDisplay
 	class="max-w-50"
