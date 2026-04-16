@@ -2,7 +2,6 @@
 	import { Button, Label, Switch, ToggleButtons } from '@viamrobotics/prime-core'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-	import { writable } from 'svelte/store'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
@@ -30,7 +29,7 @@
 		() => resourceName,
 		'camera'
 	)
-	const isShowingPip = writable(false)
+	const isShowingPip = $state(false)
 	let isShowingPointcloud = $state(false)
 
 	const { addImageToDataset } = useAddImageToDataset()
@@ -47,7 +46,7 @@
 	const imageQuery = createResourceQuery(client, 'getImages', () => ({
 		enabled: refetchInterval.current !== RefetchIntervals.LIVE,
 		refetchInterval: refetchInterval.current,
-		refetchIntervalInBackground: $isShowingPip,
+		refetchIntervalInBackground: isShowingPip,
 	}))
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({

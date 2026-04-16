@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store'
-
 	import { Button } from '@viamrobotics/prime-core'
 	import { onMount } from 'svelte'
 
@@ -9,19 +7,20 @@
 	interface Props {
 		resourceName: string
 		mediaStream: MediaStream | null
-		isShowingPip: Writable<boolean>
+		isShowingPip: boolean
 	}
 
-	const { resourceName, mediaStream, isShowingPip }: Props = $props()
+	let { resourceName, mediaStream, isShowingPip = $bindable(false) }: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
 	let lastErr = $state.raw<Error>()
 
 	const onEnter = () => {
-		$isShowingPip = true
+		isShowingPip = true
 	}
+
 	const onLeave = () => {
-		$isShowingPip = false
+		isShowingPip = false
 	}
 
 	onMount(() => {
@@ -31,7 +30,7 @@
 		return () => {
 			videoElement?.removeEventListener('enterpictureinpicture', onEnter)
 			videoElement?.removeEventListener('leavepictureinpicture', onLeave)
-			if ($isShowingPip) {
+			if (isShowingPip) {
 				document.exitPictureInPicture()
 			}
 		}
@@ -47,7 +46,7 @@
 		lastErr = undefined
 
 		try {
-			await ($isShowingPip
+			await (isShowingPip
 				? document.exitPictureInPicture()
 				: videoElement?.requestPictureInPicture())
 		} catch (error) {

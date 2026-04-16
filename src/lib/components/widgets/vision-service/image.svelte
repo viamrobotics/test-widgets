@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { cameraApi, Classification, Detection } from '@viamrobotics/sdk'
 
-	import { resize } from '@svelte-put/resize'
 	import { Canvas } from '@threlte/core'
 	import { Progress } from '@viamrobotics/prime-core'
+	import { useResizeObserver } from 'runed'
 	import { provideFontFamilies } from 'threlte-uikit'
 
 	import { useMeasureFps } from '$lib/fps.svelte'
@@ -69,6 +69,13 @@
 	let container = $state<HTMLElement>()
 	let size = $state<Size>()
 
+	useResizeObserver(
+		() => container,
+		() => {
+			setSize()
+		}
+	)
+
 	const setSize = () => {
 		if (container) {
 			size = getImageSize(img, container)
@@ -94,8 +101,6 @@
 <div
 	class="flex h-full min-h-0 w-full min-w-0 gap-2 py-2 pl-2"
 	bind:this={container}
-	use:resize
-	onresize={setSize}
 >
 	{#if !size}
 		<div class="grid w-full place-content-center">

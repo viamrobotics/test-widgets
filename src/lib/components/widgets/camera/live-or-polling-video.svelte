@@ -1,12 +1,10 @@
 <script lang="ts">
-	import type { ResizeDetail } from '@svelte-put/resize'
-
 	import * as Sentry from '@sentry/svelte'
-	import { resize } from '@svelte-put/resize'
 	import { createMutation, type QueryObserverResult } from '@tanstack/svelte-query'
 	import { Button, Label, Select } from '@viamrobotics/prime-core'
 	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
+	import { useResizeObserver } from 'runed'
 	import { untrack } from 'svelte'
 
 	import { assertExists } from '$lib/assert'
@@ -228,9 +226,12 @@
 	})
 
 	let contentRect = $state.raw<DOMRect>()
-	const handleResize = (event: CustomEvent<ResizeDetail>) => {
-		contentRect = event.detail.entry.contentRect
-	}
+	useResizeObserver(
+		() => videoElement,
+		([entry]) => {
+			contentRect = entry.contentRect
+		}
+	)
 
 	let hoverTooltipOpen = $state(false)
 	let mouseHoverImagePosition = $state({ pctX: 0, pctY: 0, absX: 0, absY: 0 })
@@ -340,8 +341,6 @@
 		controls={false}
 		playsinline
 		aria-label={`${resourceName} stream`}
-		use:resize
-		onresized={handleResize}
 	>
 	</video>
 </div>

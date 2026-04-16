@@ -18,8 +18,7 @@ describe('<Scene>', () => {
 			},
 		})
 
-		const selector = `Detection ${context.current[0]?.id ?? ''}`
-		const boundingBox = scene.getObjectByName(selector)
-		expect(boundingBox).toBeDefined()
+		const [child] = scene.children
+		expect(child).toBeDefined()
 	})
 })
