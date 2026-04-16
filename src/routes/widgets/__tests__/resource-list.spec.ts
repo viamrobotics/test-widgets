@@ -12,6 +12,9 @@ describe('Sidebar ResourceList', () => {
 			isLoading: false,
 			error: null,
 			resources: [],
+			singleCardMode: false,
+			selectedResourceKey: undefined,
+			onselect: () => {},
 			...props,
 		})
 

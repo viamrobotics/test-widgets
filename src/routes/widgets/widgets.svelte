@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Button } from '@viamrobotics/prime-core'
+	import { Button, Switch } from '@viamrobotics/prime-core'
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk'
 	import { PersistedState, useResizeObserver } from 'runed'
@@ -63,6 +63,17 @@
 		}
 	)
 
+	let singleCardMode = $state(false)
+	let selectedResourceKey = $state<string>()
+
+	const displayedResources = $derived(
+		singleCardMode && selectedResourceKey
+			? filteredResources.filter(
+					(r) => `${r.name.namespace}:${r.name.type}:${r.name.subtype}/${r.name.name}` === selectedResourceKey
+				)
+			: filteredResources
+	)
+
 	const minSidebarPct = 17
 	const sidebarPct = new PersistedState('sideBarPct', minSidebarPct)
 	const onPaneResized = (event: CustomEvent<{ size: number }[]>) => {
@@ -90,10 +101,21 @@
 				<nav class="border-light bg-extralight flex h-full flex-col divide-y border-b sm:border-r">
 					{@render children()}
 
+					<div class="flex items-center gap-2 px-4 py-2">
+						<Switch
+							on={singleCardMode}
+							on:change={() => (singleCardMode = !singleCardMode)}
+						/>
+						<span class="text-xs">Single card mode</span>
+					</div>
+
 					<ResourceList
 						{isLoading}
+						{singleCardMode}
+						{selectedResourceKey}
 						error={machineStatus.query.error ?? null}
 						resources={filteredResources}
+						onselect={(key) => (selectedResourceKey = key)}
 					/>
 				</nav>
 			</div>
@@ -106,7 +128,7 @@
 				class="flex h-full w-full grow flex-col sm:relative sm:overflow-y-auto sm:overscroll-contain sm:scroll-smooth sm:motion-reduce:scroll-auto"
 			>
 				<div class="mt-6 ml-6 flex w-full flex-row items-start justify-start gap-3">
-					{#if filteredResources.length > 0}
+					{#if displayedResources.length > 0}
 						<Button
 							onclick={collapseAll}
 							class="btn btn-default"
@@ -125,7 +147,7 @@
 					{isLoading}
 					{hasUnsavedChanges}
 					error={machineStatus.query.error ?? undefined}
-					resources={filteredResources}
+					resources={displayedResources}
 				/>
 
 				<OperationsAndSessionsView {partID} />
