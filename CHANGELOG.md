@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.1.4
+
+### Patch Changes
+
+- 965d9fa: Fix live or polling video effect cleanup
+
 ## 0.1.3
 
 ### Patch Changes
