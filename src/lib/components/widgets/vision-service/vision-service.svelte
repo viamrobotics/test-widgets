@@ -134,7 +134,10 @@
 						</Select>
 					</Label>
 				</div>
-				<Label position="top">
+				<Label
+					cx="w-fit"
+					position="top"
+				>
 					Is remote?
 					<Switch
 						slot="input"
