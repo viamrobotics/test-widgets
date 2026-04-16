@@ -69,7 +69,9 @@
 	const displayedResources = $derived(
 		singleCardMode && selectedResourceKey
 			? filteredResources.filter(
-					(r) => `${r.name.namespace}:${r.name.type}:${r.name.subtype}/${r.name.name}` === selectedResourceKey
+					(r) =>
+						`${r.name.namespace}:${r.name.type}:${r.name.subtype}/${r.name.name}` ===
+						selectedResourceKey
 				)
 			: filteredResources
 	)
