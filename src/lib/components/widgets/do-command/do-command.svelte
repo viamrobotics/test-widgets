@@ -5,7 +5,7 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
 
-	import { clientForBuiltinResource } from '$lib/builtin'
+	import { clientForBuiltinResource } from '$lib/client-map'
 	import { getResourceAPI, getResourceKey } from '$lib/resource'
 
 	import ErrorDisplay from '../../error.svelte'

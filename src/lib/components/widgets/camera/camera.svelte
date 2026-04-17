@@ -29,7 +29,6 @@
 		() => resourceName,
 		'camera'
 	)
-	const isShowingPip = $state(false)
 	let isShowingPointcloud = $state(false)
 
 	const { addImageToDataset } = useAddImageToDataset()
@@ -46,7 +45,6 @@
 	const imageQuery = createResourceQuery(client, 'getImages', () => ({
 		enabled: refetchInterval.current !== RefetchIntervals.LIVE,
 		refetchInterval: refetchInterval.current,
-		refetchIntervalInBackground: isShowingPip,
 	}))
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
@@ -69,11 +67,6 @@
 	// Firefox has native support for picture-in-picture and does not need
 	// to be requested separately. Don't show a "toggle pip" button in Firefox.
 	const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
-
-	let mediaStream = $state<MediaStream | null>(null)
-	const setMediaStream = (next: MediaStream | null) => {
-		mediaStream = next
-	}
 
 	let mousePostionTooltip = $state<'On' | 'Off'>('Off')
 	const setMousePostionTooltip = (event: CustomEvent<string>) => {
@@ -103,7 +96,6 @@
 					error={imageQuery.error}
 					isLoading={imageQuery.isLoading}
 					refetch={imageQuery.refetch}
-					{setMediaStream}
 					showMousePositionTooltip={mousePostionTooltip === 'On'}
 				/>
 			</div>
@@ -146,9 +138,8 @@
 				{/if}
 				{#if !isFirefox}
 					<PictureInPictureButton
-						{mediaStream}
 						{resourceName}
-						{isShowingPip}
+						rate={refetchInterval.current}
 					/>
 				{/if}
 				<Label>
