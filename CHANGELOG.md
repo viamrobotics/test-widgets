@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.1.6
+
+### Patch Changes
+
+- a79f186: [APP-15834] Keep picture-in-picture active across resource switches
+
 ## 0.1.5
 
 ### Patch Changes
