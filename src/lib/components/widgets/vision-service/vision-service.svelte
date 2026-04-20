@@ -106,10 +106,16 @@
 				: (Math.max(getObjectPointCloudsRefetchInterval.current, 1000 / 20) as number | false),
 	}))
 
+	const captureAllSlow = useSlowRequest(() => captureAllQuery.isFetching)
+	const propertiesSlow = useSlowRequest(() => propertiesQuery.isFetching)
+	const objectPointCloudsSlow = useSlowRequest(() => getObjectPointCloudsQuery.isFetching)
+
 	const onCameraSelect = (event: Event) => {
 		const { value } = event.target as HTMLSelectElement
 		cameraName = value
 	}
+
+	const detectionsSlow = $derived(captureAllSlow || propertiesSlow)
 </script>
 
 <ConnectionStatus {partID}>
@@ -183,6 +189,10 @@
 				{/if}
 			</div>
 
+			{#if detectionsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
+
 			<Queries
 				queries={[propertiesQuery, captureAllQuery]}
 				contentCx="p-4 h-14"
@@ -212,6 +222,10 @@
 					queries={[getObjectPointCloudsQuery]}
 				/>
 			</div>
+
+			{#if showObjectPointClouds && objectPointCloudsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
 
 			{#if showObjectPointClouds}
 				<Queries
