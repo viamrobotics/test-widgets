@@ -42,7 +42,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each displayPositions as pos, index (pos)}
+			<!-- joint ids are just the index in the list of values, we need to use pos and index -->
+			{#each displayPositions as pos, index ([pos, index])}
 				<tr>
 					<th> {index} </th>
 					<th> {formatNumeric(pos)} </th>
