@@ -15,6 +15,7 @@
 
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'
+	import { useSlowRequest } from './use-slow-request.svelte.ts'
 
 	const { addImageToDataset } = useAddImageToDataset()
 
@@ -115,7 +116,7 @@
 		cameraName = value
 	}
 
-	const detectionsSlow = $derived(captureAllSlow || propertiesSlow)
+	const detectionsSlow = $derived(captureAllSlow.isSlow || propertiesSlow.isSlow)
 </script>
 
 <ConnectionStatus {partID}>
@@ -229,7 +230,7 @@
 					queries={[getObjectPointCloudsQuery]}
 					contentCx="p-4 h-14"
 				>
-					{#if objectPointCloudsSlow}
+					{#if objectPointCloudsSlow.isSlow}
 						<p class="text-subtle-2 text-xs italic">
 							This request is taking a long time to complete.
 						</p>
