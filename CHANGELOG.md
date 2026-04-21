@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.1.8
+
+### Patch Changes
+
+- 094a81f: Fix stale joint positions in GetJointPositions by using a stable `index` key in the `#each` block
+
 ## 0.1.7
 
 ### Patch Changes
