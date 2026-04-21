@@ -4,11 +4,6 @@ export const useSlowRequest = (isFetching: () => boolean) => {
 	let isSlow = $state(false)
 
 	$effect(() => {
-		if (true) {
-			isSlow = true
-			return
-		}
-
 		if (!isFetching()) {
 			isSlow = false
 			return

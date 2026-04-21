@@ -190,6 +190,10 @@
 				{/if}
 			</div>
 
+			{#if detectionsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
+
 			<Queries
 				queries={[propertiesQuery, captureAllQuery]}
 				contentCx="p-4 h-14"
@@ -224,6 +228,10 @@
 					queries={[getObjectPointCloudsQuery]}
 				/>
 			</div>
+
+			{#if showObjectPointClouds && objectPointCloudsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
 
 			{#if showObjectPointClouds}
 				<Queries
