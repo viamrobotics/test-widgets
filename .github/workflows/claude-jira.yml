@@ -67,7 +67,12 @@ jobs:
       task_complexity: ${{ github.event.client_payload.task_complexity || inputs.task_complexity || 'small' }}
       assignee: ${{ github.event.client_payload.assignee || inputs.assignee || '' }}
       assignee_email: ${{ github.event.client_payload.assignee_email || inputs.assignee_email || '' }}
-      install_command: corepack enable && pnpm install
+      install_command: |
+        NODE22_BIN=$(ls -d /opt/hostedtoolcache/node/22.*/x64/bin | tail -1)
+        echo "$NODE22_BIN" >> "$GITHUB_PATH"
+        export PATH="$NODE22_BIN:$PATH"
+        corepack enable
+        pnpm install
       jira_base_url: ${{ vars.JIRA_BASE_URL }}
       jira_user_email: ${{ vars.JIRA_USER_EMAIL }}
       allowed_tools: 'Edit,Read,Write,Glob,Grep,Bash(pnpm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse *),Bash(git fetch *),Bash(gh pr create*),Bash(gh pr edit*),Bash(gh pr view*),Bash(gh pr diff*)'
