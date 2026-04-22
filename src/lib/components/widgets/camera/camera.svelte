@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Label, Switch, ToggleButtons } from '@viamrobotics/prime-core'
+	import { Button, Label, Select, Switch, ToggleButtons } from '@viamrobotics/prime-core'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
@@ -14,6 +14,7 @@
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
+	import { getSourceNames } from './get-source-names'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
 
@@ -30,6 +31,9 @@
 		'camera'
 	)
 	let isShowingPointcloud = $state(false)
+	let selectedSource = $state('')
+	let sourceNames = $state<string[]>([])
+	let sourcesDiscovered = $state(false)
 
 	const { addImageToDataset } = useAddImageToDataset()
 	const setIsShowingPointcloud = (event: CustomEvent<boolean>) => {
@@ -42,10 +46,31 @@
 		() => resourceName
 	)
 
-	const imageQuery = createResourceQuery(client, 'getImages', () => ({
-		enabled: refetchInterval.current !== RefetchIntervals.LIVE,
+	const sourcesQuery = createResourceQuery(client, 'getImages', () => ({
+		enabled: refetchInterval.current !== RefetchIntervals.LIVE && !sourcesDiscovered,
 		refetchInterval: refetchInterval.current,
 	}))
+
+	$effect(() => {
+		if (!sourcesDiscovered && sourcesQuery.data?.images) {
+			const names = getSourceNames(sourcesQuery.data.images)
+			if (names.length > 0) {
+				sourceNames = names
+				selectedSource = names[0]!
+				sourcesDiscovered = true
+			}
+		}
+	})
+
+	const imageQuery = createResourceQuery(
+		client,
+		'getImages',
+		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
+		() => ({
+			enabled: refetchInterval.current !== RefetchIntervals.LIVE,
+			refetchInterval: refetchInterval.current,
+		})
+	)
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
 		enabled: isShowingPointcloud,
@@ -59,14 +84,24 @@
 	// A separate, disabled query for exporting a screenshot
 	// since this button should work regardless of refetch
 	// interval and not affect the image feed.
-	const exportScreenshotQuery = createResourceQuery(client, 'getImages', {
-		enabled: false,
-		refetchInterval: false,
-	})
+	const exportScreenshotQuery = createResourceQuery(
+		client,
+		'getImages',
+		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
+		{
+			enabled: false,
+			refetchInterval: false,
+		}
+	)
 
 	// Firefox has native support for picture-in-picture and does not need
 	// to be requested separately. Don't show a "toggle pip" button in Firefox.
 	const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
+
+	const onSourceSelect = (event: Event) => {
+		const { value } = event.target as HTMLSelectElement
+		selectedSource = value
+	}
 
 	let mousePostionTooltip = $state<'On' | 'Off'>('Off')
 	const setMousePostionTooltip = (event: CustomEvent<string>) => {
@@ -84,6 +119,24 @@
 				allowLive
 				queries={[imageQuery, pointcloudQuery]}
 			/>
+			{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
+				<Label>
+					Source
+					<Select
+						on:change={onSourceSelect}
+						slot="input"
+					>
+						{#each sourceNames as name (name)}
+							<option
+								selected={selectedSource === name}
+								value={name}
+							>
+								{name}
+							</option>
+						{/each}
+					</Select>
+				</Label>
+			{/if}
 		</div>
 		<div class="flex h-full w-full gap-4 p-4">
 			<div class="grow">
