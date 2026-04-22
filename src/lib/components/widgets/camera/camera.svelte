@@ -113,14 +113,14 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex gap-2 p-4 pb-3">
+		<div class="flex gap-4 p-4 pb-3">
 			<RefetchController
 				{refetchInterval}
 				allowLive
 				queries={[imageQuery, pointcloudQuery]}
 			/>
 			{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-				<Label>
+				<Label position="left">
 					Source
 					<Select
 						on:change={onSourceSelect}
