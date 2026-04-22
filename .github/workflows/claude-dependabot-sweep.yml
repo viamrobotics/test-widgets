@@ -19,7 +19,7 @@ jobs:
     # viamrobotics/claude-ci-workflows@v1.17.3
     uses: viamrobotics/claude-ci-workflows/.github/workflows/claude-dependabot-sweep.yml@3ad96b0ccbb5ee0d7e2cde98653fae0c453e68bb
     with:
-      install_command: pnpm install
+      install_command: corepack enable && pnpm install
       allowed_tools: 'Edit,Read,Write,Glob,Grep,Bash(pnpm install*),Bash(pnpm add*),Bash(pnpm update*),Bash(pnpm outdated*),Bash(pnpm ls*),Bash(pnpm why*),Bash(pnpm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse *),Bash(git fetch *),Bash(gh pr create*),Bash(gh pr view*),Bash(gh issue comment*),Bash(gh issue view*)'
       extra_system_prompt: |
         ### Updating JavaScript/TypeScript dependencies (pnpm)
