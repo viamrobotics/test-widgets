@@ -13,9 +13,6 @@ describe('<Scene>', () => {
 
 		const { scene } = render(Subject, {
 			context: new Map([[DETECTIONS_CONTEXT_KEY, context]]),
-			props: {
-				src: '',
-			},
 		})
 
 		const [child] = scene.children
