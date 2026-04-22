@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { useThrelte } from '@threlte/core'
-	import { useInteractivity } from '@threlte/extras'
-	import { onMount } from 'svelte'
-	import { Vector2 } from 'three'
 	import { Container, Text } from 'threlte-uikit'
 
 	import { lightTextColors } from './color'
@@ -17,19 +14,6 @@
 
 	const { detection, factor = 0 }: Props = $props()
 
-	const normalizedDeviceCoordsToPixel = (
-		ndcCoords: Vector2,
-		canvasWidth: number,
-		canvasHeight: number
-	) => {
-		const screenX = (ndcCoords.x + 1) / 2
-		const screenY = (ndcCoords.y + 1) / 2
-		const pixelX = Math.round(screenX * canvasWidth)
-		const pixelY = Math.round((1 - screenY) * canvasHeight)
-		return new Vector2(pixelX, pixelY)
-	}
-
-	const { pointer } = useInteractivity()
 	const context = useDetections()
 
 	const factoredxMin = $derived(Number(detection.xMin) * factor)
@@ -37,46 +21,32 @@
 	const factoredyMin = $derived(Number(detection.yMin) * factor)
 	const factoredyMax = $derived(Number(detection.yMax) * factor)
 
-	/**
-	 * Check preexisting mouse coords for hover state
-	 */
-	$effect.pre(() => {
-		const pixelCoords = normalizedDeviceCoordsToPixel($pointer, $size.width, $size.height)
-
-		if (
-			factoredxMin < pixelCoords.x &&
-			factoredxMax > pixelCoords.x &&
-			factoredyMin < pixelCoords.y &&
-			factoredyMax > pixelCoords.y
-		) {
-			context.hovered.add(detection.id)
-		} else {
-			context.hovered.delete(detection.id)
-		}
-	})
-
-	const hovering = $derived(context.hovered.has(detection.id))
+	let hovering = $state(false)
 
 	// These are ballparking, but seem good enough for nearly all cases
 	const isDetectionNearTop = $derived(factoredyMin < 30)
 	const isDetectionNearRight = $derived(factoredxMin > $size.width * 0.66)
-
-	onMount(() => {
-		return () => {
-			context.hovered.delete(detection.id)
-		}
-	})
 </script>
 
 <Container
 	positionType="absolute"
 	positionLeft={factoredxMin}
 	positionTop={factoredyMin}
-	borderColor={hovering ? detection.color : '#aaa'}
+	borderColor="#aaa"
+	hover={{
+		borderColor: detection.color,
+	}}
 	borderWidth={2}
 	width={factoredxMax - factoredxMin}
 	height={factoredyMax - factoredyMin}
-	onpointerleave={() => context.hovered.delete(detection.id)}
+	onpointerenter={() => {
+		context.hovered.add(detection.id)
+		hovering = true
+	}}
+	onpointerleave={() => {
+		context.hovered.delete(detection.id)
+		hovering = false
+	}}
 >
 	{#if hovering}
 		<Text

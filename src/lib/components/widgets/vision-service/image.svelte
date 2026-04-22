@@ -120,10 +120,6 @@
 				{fps.current.toFixed(1)}fps
 			</div>
 			<img
-				class="absolute top-0 left-0 h-full w-full"
-			
-				{src}
-			/>
 				class="absolute top-0 left-0"
 				alt=""
 				{src}
