@@ -16,7 +16,7 @@
 	interface Props {
 		data?: {
 			detections: Detection[]
-			image: ({ image: Uint8Array } & Exclude<cameraApi.Image, 'image'>) | undefined
+			image: ({ image: Uint8Array } & Omit<cameraApi.Image, 'image'>) | undefined
 			classifications: Classification[]
 		}
 		detectionsSupported: boolean
