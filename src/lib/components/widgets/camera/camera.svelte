@@ -123,16 +123,12 @@
 				<Label position="left">
 					Source
 					<Select
+						value={selectedSource}
 						on:change={onSourceSelect}
 						slot="input"
 					>
 						{#each sourceNames as name (name)}
-							<option
-								selected={selectedSource === name}
-								value={name}
-							>
-								{name}
-							</option>
+							<option value={name}>{name}</option>
 						{/each}
 					</Select>
 				</Label>
