@@ -4,11 +4,7 @@ import { getSourceNames } from '../get-source-names'
 
 describe('getSourceNames', () => {
 	it('returns unique source names from images', () => {
-		const images = [
-			{ sourceName: 'color' },
-			{ sourceName: 'depth' },
-			{ sourceName: 'color' },
-		]
+		const images = [{ sourceName: 'color' }, { sourceName: 'depth' }, { sourceName: 'color' }]
 		expect(getSourceNames(images)).toEqual(['color', 'depth'])
 	})
 
