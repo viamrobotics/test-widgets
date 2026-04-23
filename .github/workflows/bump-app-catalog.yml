@@ -51,7 +51,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: app/package.json
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: app/pnpm-lock.yaml
 
       - name: Bump @viamrobotics/test-widgets in pnpm-workspace.yaml
@@ -84,7 +84,7 @@ jobs:
         run: |
           FILTERS=""
           while IFS= read -r pkgjson; do
-            if jq -e '(.dependencies // {}) + (.devDependencies // {}) + (.peerDependencies // {}) | has("playwright")' "$pkgjson" > /dev/null; then
+            if jq -e '(.dependencies // {}) + (.devDependencies // {}) + (.peerDependencies // {}) | has("@playwright/test")' "$pkgjson" > /dev/null; then
               NAME=$(jq -r .name "$pkgjson")
               FILTERS="$FILTERS --filter $NAME"
             fi
@@ -116,8 +116,8 @@ jobs:
           branch: bump/test-widgets-${{ env.VERSION }}
           delete-branch: true
           base: main
-          commit-message: 'chore: bump test-widgets to ${{ env.VERSION }}'
-          title: 'chore: bump test-widgets to ${{ env.VERSION }}'
+          commit-message: "chore: bump test-widgets to ${{ env.VERSION }}"
+          title: "chore: bump test-widgets to ${{ env.VERSION }}"
           body: |
             Automated bump of `@viamrobotics/test-widgets` to `${{ env.VERSION }}` following a release in [viamrobotics/test-widgets](https://github.com/viamrobotics/test-widgets/releases/tag/v${{ env.VERSION }}).
 
