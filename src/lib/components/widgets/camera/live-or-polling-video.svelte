@@ -25,7 +25,6 @@
 		isLoading: boolean
 		videoClass?: string
 		showMousePositionTooltip?: boolean
-		setMediaStream?: ((mediaStream: MediaStream | null) => void) | undefined
 		refetch: () => Promise<unknown>
 	}
 
@@ -39,7 +38,6 @@
 		isLoading,
 		videoClass = '',
 		showMousePositionTooltip = false,
-		setMediaStream: setPipMediaStream,
 		refetch,
 	}: Props = $props()
 
@@ -72,7 +70,6 @@
 			}
 			videoElement.srcObject = mediaStream
 		}
-		setPipMediaStream?.(mediaStream)
 	}
 
 	// For live streams, set the media stream when there is a new video track.
@@ -185,13 +182,12 @@
 	})
 
 	$effect(() => {
-		return () => {
+		return () =>
 			untrack(() => {
 				disableStream().then(() => {
 					setMediaStream(null)
 				})
 			})
-		}
 	})
 
 	$effect(() => {

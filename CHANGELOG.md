@@ -1,5 +1,30 @@
 # @viamrobotics/test-widgets
 
+## 0.1.9
+
+### Patch Changes
+
+- 2e3da38: Add Claude workflows and auto-bump workflow for `app`
+- 4906f00: Fix: incorrect sizing for bounding boxes in vision service card
+
+## 0.1.8
+
+### Patch Changes
+
+- 094a81f: Fix stale joint positions in GetJointPositions by using a stable `index` key in the `#each` block
+
+## 0.1.7
+
+### Patch Changes
+
+- 8eee8e6: Fix joint position key
+
+## 0.1.6
+
+### Patch Changes
+
+- a79f186: [APP-15834] Keep picture-in-picture active across resource switches
+
 ## 0.1.5
 
 ### Patch Changes

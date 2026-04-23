@@ -16,7 +16,7 @@
 	interface Props {
 		data?: {
 			detections: Detection[]
-			image: ({ image: Uint8Array } & Exclude<cameraApi.Image, 'image'>) | undefined
+			image: ({ image: Uint8Array } & Omit<cameraApi.Image, 'image'>) | undefined
 			classifications: Classification[]
 		}
 		detectionsSupported: boolean
@@ -62,7 +62,9 @@
 	provideFontFamilies({
 		publicSans: {
 			// This must remain `/static/*` while the frontend directory still exist
+			light: '/static/fonts/public-sans.json',
 			medium: '/static/fonts/public-sans.json',
+			'extra-light': '/static/fonts/public-sans.json',
 		},
 	})
 
@@ -108,7 +110,7 @@
 		</div>
 	{:else}
 		<div
-			class="relative max-h-full min-h-0 max-w-full"
+			class="border-light relative max-h-full min-h-0 max-w-full border"
 			style:width={`${size.width.toString()}px`}
 			style:height={`${size.height.toString()}px`}
 		>
@@ -117,11 +119,13 @@
 			>
 				{fps.current.toFixed(1)}fps
 			</div>
+			<img
+				class="absolute top-0 left-0"
+				alt=""
+				{src}
+			/>
 			<Canvas>
-				<Scene
-					{src}
-					factor={size.factor}
-				/>
+				<Scene factor={size.factor} />
 			</Canvas>
 		</div>
 		<div
