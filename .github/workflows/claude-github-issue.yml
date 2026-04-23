@@ -21,7 +21,10 @@ jobs:
         (
           github.event_name == 'issues' &&
           contains(github.event.issue.body, '@claude') &&
-          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+          (
+            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association) ||
+            github.event.issue.user.login == 'github-actions[bot]'
+          )
         ) ||
         (
           github.event_name == 'issue_comment' &&
@@ -49,7 +52,7 @@ jobs:
         commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git
         log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse
         *),Bash(git fetch *),Bash(gh pr create*),Bash(gh pr edit*),Bash(gh pr
-        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*)'
+        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*),Bash(gh run view*),Bash(gh run list*)'
       extra_prompt: |
         - If the issue is unclear, missing critical detail, or you need a decision from the reporter before you can proceed, DO NOT open a PR. Instead, post ONE comment on the issue using `gh issue comment ${{ github.event.issue.number }}` that:
           - Opens by tagging the reporter with `@${{ github.event.issue.user.login }}`
