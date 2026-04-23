@@ -32,7 +32,6 @@
 	)
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
-	let sourceNames = $state<string[]>([])
 	let sourcesDiscovered = $state(false)
 
 	const { addImageToDataset } = useAddImageToDataset()
@@ -51,14 +50,14 @@
 		refetchInterval: refetchInterval.current,
 	}))
 
+	const sourceNames = $derived(
+		sourcesQuery.data?.images ? getSourceNames(sourcesQuery.data.images) : []
+	)
+
 	$effect(() => {
-		if (!sourcesDiscovered && sourcesQuery.data?.images) {
-			const names = getSourceNames(sourcesQuery.data.images)
-			if (names.length > 0) {
-				sourceNames = names
-				selectedSource = names[0]!
-				sourcesDiscovered = true
-			}
+		if (!sourcesDiscovered && sourceNames.length > 0) {
+			selectedSource = sourceNames[0]!
+			sourcesDiscovered = true
 		}
 	})
 
