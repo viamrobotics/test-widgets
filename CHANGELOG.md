@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.1.10
+
+### Patch Changes
+
+- 9641fbb: Show slow loading indicator for vision service widget
+
 ## 0.1.9
 
 ### Patch Changes
