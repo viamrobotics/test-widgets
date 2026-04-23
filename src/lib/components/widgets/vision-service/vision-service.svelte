@@ -15,6 +15,7 @@
 
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'
+	import { useSlowRequest } from './use-slow-request.svelte.ts'
 
 	const { addImageToDataset } = useAddImageToDataset()
 
@@ -106,10 +107,16 @@
 				: (Math.max(getObjectPointCloudsRefetchInterval.current, 1000 / 20) as number | false),
 	}))
 
+	const captureAllSlow = useSlowRequest(() => captureAllQuery.isFetching)
+	const propertiesSlow = useSlowRequest(() => propertiesQuery.isFetching)
+	const objectPointCloudsSlow = useSlowRequest(() => getObjectPointCloudsQuery.isFetching)
+
 	const onCameraSelect = (event: Event) => {
 		const { value } = event.target as HTMLSelectElement
 		cameraName = value
 	}
+
+	const detectionsSlow = $derived(captureAllSlow.isSlow || propertiesSlow.isSlow)
 </script>
 
 <ConnectionStatus {partID}>
@@ -183,10 +190,19 @@
 				{/if}
 			</div>
 
+			{#if detectionsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
+
 			<Queries
 				queries={[propertiesQuery, captureAllQuery]}
 				contentCx="p-4 h-14"
 			>
+				{#if detectionsSlow}
+					<p class="text-subtle-2 text-xs italic">
+						This request is taking a long time to complete.
+					</p>
+				{/if}
 				{#if captureAllQuery.data}
 					<Image
 						data={captureAllQuery.data}
@@ -213,11 +229,20 @@
 				/>
 			</div>
 
+			{#if showObjectPointClouds && objectPointCloudsSlow}
+				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
+			{/if}
+
 			{#if showObjectPointClouds}
 				<Queries
 					queries={[getObjectPointCloudsQuery]}
 					contentCx="p-4 h-14"
 				>
+					{#if objectPointCloudsSlow.isSlow}
+						<p class="text-subtle-2 text-xs italic">
+							This request is taking a long time to complete.
+						</p>
+					{/if}
 					{#if getObjectPointCloudsQuery.data !== undefined}
 						<ObjectPointClouds objects={getObjectPointCloudsQuery.data} />
 					{/if}
