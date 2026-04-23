@@ -2,7 +2,7 @@ name: Main
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -29,8 +29,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22.22.1
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Update npm
         run: npm install -g npm@latest
@@ -90,7 +90,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: app/package.json
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: app/pnpm-lock.yaml
 
       - name: Bump @viamrobotics/test-widgets in pnpm-workspace.yaml
@@ -103,13 +103,29 @@ jobs:
         working-directory: app
         run: pnpm install
 
-      - name: Type check workspaces
+      - name: Determine workspaces that depend on test-widgets
+        id: affected
         working-directory: app
-        run: pnpm -r --if-present check
+        run: |
+          FILTERS=""
+          while IFS= read -r pkgjson; do
+            if jq -e '(.dependencies // {}) + (.devDependencies // {}) + (.peerDependencies // {}) | has("@viamrobotics/test-widgets")' "$pkgjson" > /dev/null; then
+              NAME=$(jq -r .name "$pkgjson")
+              FILTERS="$FILTERS --filter $NAME"
+            fi
+          done < <(find . -name package.json -not -path '*/node_modules/*')
+          echo "Affected packages:$FILTERS"
+          echo "filters=$FILTERS" >> "$GITHUB_OUTPUT"
 
-      - name: Run tests
+      - name: Type check affected workspaces
+        if: steps.affected.outputs.filters != ''
         working-directory: app
-        run: pnpm test
+        run: pnpm${{ steps.affected.outputs.filters }} --if-present check
+
+      - name: Run tests in affected workspaces
+        if: steps.affected.outputs.filters != ''
+        working-directory: app
+        run: pnpm${{ steps.affected.outputs.filters }} --if-present test
 
       - name: Open bump PR
         uses: peter-evans/create-pull-request@v8
@@ -119,8 +135,8 @@ jobs:
           branch: bump/test-widgets-${{ env.VERSION }}
           delete-branch: true
           base: main
-          commit-message: 'chore: bump test-widgets to ${{ env.VERSION }}'
-          title: 'chore: bump test-widgets to ${{ env.VERSION }}'
+          commit-message: "chore: bump test-widgets to ${{ env.VERSION }}"
+          title: "chore: bump test-widgets to ${{ env.VERSION }}"
           body: |
             Automated bump of `@viamrobotics/test-widgets` to `${{ env.VERSION }}` following a release in [viamrobotics/test-widgets](https://github.com/viamrobotics/test-widgets/releases).
 
