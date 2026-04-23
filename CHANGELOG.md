@@ -5,6 +5,7 @@
 ### Patch Changes
 
 - 9641fbb: Show slow loading indicator for vision service widget
+- 0568d73: Add source dropdown to camera widget
 
 ## 0.1.9
 
