@@ -1,0 +1,103 @@
+name: Bump app catalog
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version of @viamrobotics/test-widgets to bump to (e.g. 0.1.9)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version of @viamrobotics/test-widgets to bump to (e.g. 0.1.9)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bump-app-catalog:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Generate app repo token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.CI_GITHUB_APP_ID }}
+          private-key: ${{ secrets.CI_GITHUB_APP_PRIVATE_KEY }}
+          owner: viamrobotics
+          repositories: app
+
+      - name: Checkout viamrobotics/app
+        uses: actions/checkout@v6
+        with:
+          repository: viamrobotics/app
+          token: ${{ steps.app-token.outputs.token }}
+          path: app
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          package_json_file: app/package.json
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: app/package.json
+          cache: "pnpm"
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Bump @viamrobotics/test-widgets in pnpm-workspace.yaml
+        working-directory: app
+        run: |
+          sed -i "s|\(['\"]\?@viamrobotics/test-widgets['\"]\?:\s*\).*|\1${VERSION}|" pnpm-workspace.yaml
+          grep "@viamrobotics/test-widgets" pnpm-workspace.yaml
+
+      - name: pnpm install
+        working-directory: app
+        run: pnpm install
+
+      - name: Determine workspaces that depend on test-widgets
+        id: affected
+        working-directory: app
+        run: |
+          FILTERS=""
+          while IFS= read -r pkgjson; do
+            if jq -e '(.dependencies // {}) + (.devDependencies // {}) + (.peerDependencies // {}) | has("@viamrobotics/test-widgets")' "$pkgjson" > /dev/null; then
+              NAME=$(jq -r .name "$pkgjson")
+              FILTERS="$FILTERS --filter $NAME"
+            fi
+          done < <(find . -name package.json -not -path '*/node_modules/*')
+          echo "Affected packages:$FILTERS"
+          echo "filters=$FILTERS" >> "$GITHUB_OUTPUT"
+
+      - name: Type check affected workspaces
+        if: steps.affected.outputs.filters != ''
+        working-directory: app
+        run: pnpm${{ steps.affected.outputs.filters }} --if-present check
+
+      - name: Run tests in affected workspaces
+        if: steps.affected.outputs.filters != ''
+        working-directory: app
+        run: pnpm${{ steps.affected.outputs.filters }} --if-present test
+
+      - name: Open bump PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          path: app
+          token: ${{ steps.app-token.outputs.token }}
+          branch: bump/test-widgets-${{ env.VERSION }}
+          delete-branch: true
+          base: main
+          commit-message: "chore: bump test-widgets to ${{ env.VERSION }}"
+          title: "chore: bump test-widgets to ${{ env.VERSION }}"
+          body: |
+            Automated bump of `@viamrobotics/test-widgets` to `${{ env.VERSION }}` following a release in [viamrobotics/test-widgets](https://github.com/viamrobotics/test-widgets/releases/tag/v${{ env.VERSION }}).
+
+            Triggered by: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
