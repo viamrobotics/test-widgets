@@ -83,11 +83,11 @@ jobs:
         working-directory: app
         run: pnpm${{ steps.affected.outputs.filters }} --if-present check
 
-      - name: Install Playwright browsers (if used)
+      - name: Install Playwright browsers
         if: steps.affected.outputs.filters != ''
         working-directory: app
         run: |
-          pnpm exec playwright install
+          pnpm${{ steps.affected.outputs.filters }} exec playwright install
 
       - name: Run tests in affected workspaces
         if: steps.affected.outputs.filters != ''
