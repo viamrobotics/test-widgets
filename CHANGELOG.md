@@ -1,5 +1,12 @@
 # @viamrobotics/test-widgets
 
+## 0.1.9
+
+### Patch Changes
+
+- 2e3da38: Add Claude workflows and auto-bump workflow for `app`
+- 4906f00: Fix: incorrect sizing for bounding boxes in vision service card
+
 ## 0.1.8
 
 ### Patch Changes
