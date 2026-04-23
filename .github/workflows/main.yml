@@ -2,7 +2,7 @@ name: Main
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -29,8 +29,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22.22.1
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Update npm
         run: npm install -g npm@latest
@@ -59,6 +59,9 @@ jobs:
   bump-app-catalog:
     needs: deploy-and-publish
     if: needs.deploy-and-publish.outputs.published == 'true'
+    permissions:
+      contents: read
+      issues: write
     uses: ./.github/workflows/bump-app-catalog.yml
     with:
       version: ${{ needs.deploy-and-publish.outputs.version }}
