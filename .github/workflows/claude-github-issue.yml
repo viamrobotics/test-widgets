@@ -2,9 +2,9 @@ name: Claude GitHub Issue
 
 on:
   issues:
-    types: [ opened ]
+    types: [opened]
   issue_comment:
-    types: [ created ]
+    types: [created]
 
 permissions:
   contents: read
@@ -44,12 +44,12 @@ jobs:
         corepack enable
         pnpm install
       task_complexity: small
-      allowed_tools: "Edit,Read,Write,Glob,Grep,Bash(pnpm *),Bash(npx *),Bash(node
+      allowed_tools: 'Edit,Read,Write,Glob,Grep,Bash(pnpm *),Bash(npx *),Bash(node
         *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git
         commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git
         log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse
         *),Bash(git fetch *),Bash(gh pr create*),Bash(gh pr edit*),Bash(gh pr
-        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*)"
+        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*)'
       extra_prompt: |
         - If the issue is unclear, missing critical detail, or you need a decision from the reporter before you can proceed, DO NOT open a PR. Instead, post ONE comment on the issue using `gh issue comment ${{ github.event.issue.number }}` that:
           - Opens by tagging the reporter with `@${{ github.event.issue.user.login }}`
