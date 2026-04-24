@@ -17,18 +17,22 @@
 	)
 
 	let showCopySuccess = $state(false)
+	let copySuccessTimeoutId: ReturnType<typeof setTimeout> | undefined
 
 	const copyErrorToClipboard = async () => {
 		try {
 			await globalThis.navigator.clipboard.writeText(errorText)
 			showCopySuccess = true
-			setTimeout(() => {
+			clearTimeout(copySuccessTimeoutId)
+			copySuccessTimeoutId = setTimeout(() => {
 				showCopySuccess = false
 			}, 750)
 		} catch (error) {
 			console.error('Failed to copy error to clipboard', error)
 		}
 	}
+
+	$effect(() => () => clearTimeout(copySuccessTimeoutId))
 </script>
 
 {#if errorText}
