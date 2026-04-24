@@ -36,7 +36,7 @@
 </script>
 
 {#if errorText}
-	<div class="flex items-start gap-1">
+	<div class="flex items-center justify-between gap-1">
 		<p
 			{id}
 			class={twMerge('font-roboto-mono text-danger-dark text-xs', className)}
