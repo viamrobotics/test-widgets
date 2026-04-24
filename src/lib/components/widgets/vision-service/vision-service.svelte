@@ -130,6 +130,12 @@
 							on:change={onCameraSelect}
 							slot="input"
 						>
+							<option
+								value=""
+								selected={cameraName === ''}
+							>
+								Default camera
+							</option>
 							{#each cameras.current as { name } (name)}
 								<option
 									selected={cameraName === name}
