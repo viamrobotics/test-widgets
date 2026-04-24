@@ -61,7 +61,7 @@
 		{contentRect}
 		cx={contentCx}
 	>
-		{#each errors as error (`${error.name}:${error.message}`)}
+		{#each errors as error (`${error.name}\0${error.message}`)}
 			<ErrorDisplay lastError={error} />
 		{/each}
 	</ContentRect>
