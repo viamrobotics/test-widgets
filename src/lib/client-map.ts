@@ -1,5 +1,7 @@
 import {
 	ArmClient,
+	AudioInClient,
+	AudioOutClient,
 	BaseClient,
 	BoardClient,
 	ButtonClient,
@@ -33,6 +35,8 @@ import { getResourceAPI } from './resource.ts'
 
 export const clientMap = {
 	'rdk:component:arm': ArmClient,
+	'rdk:component:audio_input': AudioInClient,
+	'rdk:component:audio_output': AudioOutClient,
 	'rdk:component:base': BaseClient,
 	'rdk:component:board': BoardClient,
 	'rdk:component:button': ButtonClient,

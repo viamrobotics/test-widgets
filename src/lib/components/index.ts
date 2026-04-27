@@ -1,5 +1,9 @@
 export { default as ConnectionStatus } from './connection-status.svelte'
 
+export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
+
+export { default as AudioOutputWidget } from './widgets/audio-output/audio-output.svelte'
+
 export { default as ArmWidget } from './widgets/arm/arm.svelte'
 export { default as ArmMoveToJointPositionsWidget } from './widgets/arm/move-to-joint-positions-widget.svelte'
 export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-position-widget.svelte'
