@@ -51,7 +51,9 @@
 	let playNumChannels = $state<number | null>(null)
 
 	const selectedCodec = $derived(playCodec || availableCodecs[0]!)
-	const selectedSampleRateHz = $derived(playSampleRateHz ?? propertiesQuery.data?.sampleRateHz ?? 48000)
+	const selectedSampleRateHz = $derived(
+		playSampleRateHz ?? propertiesQuery.data?.sampleRateHz ?? 48000
+	)
 	const selectedNumChannels = $derived(playNumChannels ?? propertiesQuery.data?.numChannels ?? 1)
 
 	const mimeToCodec: Record<string, string> = {
@@ -94,7 +96,11 @@
 			// PlayRequest's constructor accepts PartialMessage<AudioInfo> at runtime.
 			await client.current.play(
 				audioData,
-				{ codec: selectedCodec, sampleRateHz: selectedSampleRateHz, numChannels: selectedNumChannels } as unknown as Parameters<AudioOutClient['play']>[1],
+				{
+					codec: selectedCodec,
+					sampleRateHz: selectedSampleRateHz,
+					numChannels: selectedNumChannels,
+				} as unknown as Parameters<AudioOutClient['play']>[1],
 				{}
 			)
 			playStatus = 'done'
@@ -103,6 +109,12 @@
 			playError = error instanceof Error ? error : new Error(String(error))
 		}
 	}
+
+	const playButtonLabel = $derived.by(() => {
+		if (playStatus === 'playing') return 'Playing...'
+		if (playStatus === 'done') return 'Play Again'
+		return 'Play'
+	})
 </script>
 
 <ConnectionStatus {partID}>
@@ -180,7 +192,7 @@
 							onclick={play}
 							disabled={!client.current || playStatus === 'playing'}
 						>
-							{playStatus === 'playing' ? 'Playing...' : (playStatus === 'done' ? 'Play Again' : 'Play')}
+							{playButtonLabel}
 						</Button>
 					</div>
 				</MutationSection>
