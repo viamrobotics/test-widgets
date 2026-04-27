@@ -35,8 +35,8 @@ import { getResourceAPI } from './resource.ts'
 
 export const clientMap = {
 	'rdk:component:arm': ArmClient,
-	'rdk:component:audio_input': AudioInClient,
-	'rdk:component:audio_output': AudioOutClient,
+	'rdk:component:audio_in': AudioInClient,
+	'rdk:component:audio_out': AudioOutClient,
 	'rdk:component:base': BaseClient,
 	'rdk:component:board': BoardClient,
 	'rdk:component:button': ButtonClient,
@@ -68,4 +68,9 @@ export const clientMap = {
 export const clientForBuiltinResource = (resource: ResourceName) => {
 	const resAPI = getResourceAPI(resource)
 	return resAPI in clientMap ? clientMap[resAPI as keyof typeof clientMap] : undefined
+}
+
+export const supportsDoCommand = (resource: ResourceName): boolean => {
+	const client = clientForBuiltinResource(resource)
+	return client !== undefined && client !== MLModelClient
 }

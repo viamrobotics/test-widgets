@@ -4,6 +4,8 @@ When reviewing or writing code that touches Viam APIs or SDK types, use the tool
 
 Use `WebFetch` on `https://docs.viam.com/` to understand what a resource type (arm, camera, sensor, etc.) is supposed to do — its RPC semantics, method signatures, and expected behavior.
 
+Use `WebFetch` on `https://design.viam.com/` to understand the style guide and general design conventions and available UI components from the `prime-core` library.
+
 ## Viam source repos
 
 Use `gh api` to fetch source directly from the four Viam repos:

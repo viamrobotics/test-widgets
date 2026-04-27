@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { Button, Progress } from '@viamrobotics/prime-core'
 	import { JsonEditor } from '@viamrobotics/prime-editor'
-	import { MLModelClient, ResourceName, Struct } from '@viamrobotics/sdk'
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { type ResourceName, Struct } from '@viamrobotics/sdk'
+	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
 
-	import { clientForBuiltinResource } from '$lib/client-map'
+	import { supportsDoCommand } from '$lib/client-map'
 	import { getResourceAPI, getResourceKey } from '$lib/resource'
 
 	import ErrorDisplay from '../../error.svelte'
+	import { createDoCommandClient } from './create-do-command-client.svelte'
 
 	interface Props {
 		partID: string
@@ -17,19 +18,15 @@
 
 	const { partID, resource }: Props = $props()
 
-	type DoCommandable = Extract<ReturnType<typeof clientForBuiltinResource>, MLModelClient>
-
-	const resourceClientType = $derived(clientForBuiltinResource(resource)) as DoCommandable
-
-	const client = $derived(
-		createResourceClient(
-			resourceClientType,
-			() => partID,
-			() => resource.name
-		)
+	const client = createDoCommandClient(
+		() => resource,
+		() => partID,
+		() => resource.name
 	)
 
-	const doCommandMutation = $derived(createResourceMutation(client, 'doCommand'))
+	const doCommandMutation = createResourceMutation(client, 'doCommand')
+
+	const isSupported = $derived(supportsDoCommand(resource))
 
 	let lastErr = $state<Error | null>()
 
@@ -53,7 +50,7 @@
 	}
 </script>
 
-{#if doCommandMutation}
+{#if isSupported}
 	<div class="flex flex-row items-center justify-between">
 		<div class="flex w-[45%] flex-col gap-2 border-r py-2">
 			<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
