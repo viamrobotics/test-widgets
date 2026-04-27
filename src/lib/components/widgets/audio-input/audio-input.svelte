@@ -45,6 +45,12 @@
 	let captureDownloadUrl = $state<string>()
 	let captureAbortController = $state.raw<AbortController>()
 
+	$effect(() => {
+		return () => {
+			if (captureDownloadUrl) URL.revokeObjectURL(captureDownloadUrl)
+		}
+	})
+
 	const availableCodecs = $derived(
 		propertiesQuery.data?.supportedCodecs.length ? propertiesQuery.data.supportedCodecs : ['pcm16']
 	)

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Label, NumericInput, Select } from '@viamrobotics/prime-core'
-	import { AudioOutClient } from '@viamrobotics/sdk'
+	import { AudioOutClient, commonApi } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
@@ -73,7 +73,8 @@
 		selectedFile = file
 		fileInputError = null
 		if (file) {
-			const detected = mimeToCodec[file.type] ?? file.name.split('.').pop()?.toLowerCase() ?? ''
+			const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+			const detected = mimeToCodec[file.type] ?? mimeToCodec[`audio/${ext}`] ?? ''
 			playCodec = detected
 		}
 	}
@@ -91,16 +92,13 @@
 		try {
 			const buffer = await selectedFile.arrayBuffer()
 			const audioData = new Uint8Array(buffer)
-
-			// AudioInfo is not exported from the SDK barrel; cast is safe because
-			// PlayRequest's constructor accepts PartialMessage<AudioInfo> at runtime.
 			await client.current.play(
 				audioData,
-				{
+				commonApi.AudioInfo.fromJson({
 					codec: selectedCodec,
 					sampleRateHz: selectedSampleRateHz,
 					numChannels: selectedNumChannels,
-				} as unknown as Parameters<AudioOutClient['play']>[1],
+				}),
 				{}
 			)
 			playStatus = 'done'
