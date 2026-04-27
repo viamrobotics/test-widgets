@@ -1,8 +1,47 @@
-## Project Configuration
+# test-widgets
 
-- **Language**: TypeScript
-- **Package Manager**: pnpm
-- **Add-ons**: prettier, eslint, vitest, playwright, tailwindcss, sveltekit-adapter, devtools-json, mcp
+A library of Svelte components for interacting with Viam-powered machines. Each widget provides a test interface for a specific resource type — arms, bases, cameras, motors, sensors, and more — allowing users to send commands, view live data, and control hardware directly from the browser.
+
+## Tech stack
+
+| Layer           | Technology          |
+| --------------- | ------------------- |
+| Frontend        | Svelte 5 (runes)    |
+| Styling         | TailwindCSS         |
+| Package manager | pnpm                |
+| Testing         | Vitest + Playwright |
+
+## Commands
+
+```
+pnpm dev           # start dev server
+pnpm build         # build for production
+pnpm check         # svelte-check
+pnpm lint          # prettier + eslint
+pnpm format        # prettier + eslint --fix
+pnpm test          # vitest unit tests
+pnpm test:e2e      # Playwright E2E
+```
+
+## Generated code — never hand-edit
+
+- Any files included in `.gitignore` should not be edited
+
+## Code organization
+
+Organize code by feature with **one focused unit per file**. File names should describe what the code does. Avoid generic bucket files (`utils`, `helpers`, `constants`).
+
+## Topic-specific rules
+
+Detailed guidance lives in `.claude/rules/`. Path-scoped rules load when Claude reads matching files; rules without `paths` load every session.
+
+| Rule                  | Loads when                                          |
+| --------------------- | --------------------------------------------------- |
+| `svelte.md`           | editing `.svelte`, `.svelte.ts`, `.svelte.js`       |
+| `typescript.md`       | editing `.ts`                                       |
+| `testing-frontend.md` | editing frontend test files (`src/**/*.spec.ts`)    |
+| `pr-description.md`   | editing files under `.changeset/`                   |
+| `changesets.md`       | editing files under `.changeset/` or `CHANGELOG.md` |
 
 ---
 

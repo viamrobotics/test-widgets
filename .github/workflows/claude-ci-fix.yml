@@ -43,7 +43,7 @@ jobs:
         pnpm install
       max_turns: 50
       team_mention: '@viamrobotics/team-viz'
-      allowed_tools: 'Edit,Read,Write,Glob,Grep,Bash(pnpm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse *),Bash(git fetch *)'
+      allowed_tools: 'Edit,Read,Write,Glob,Grep,WebFetch,Bash(pnpm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse *),Bash(git fetch *),Bash(gh api *)'
       extra_prompt: |
         - Only run verification commands relevant to the files you changed:
           - Svelte / TS / JS files (.svelte, .ts, .js): `pnpm lint`, `pnpm check`, and `pnpm test`
@@ -52,6 +52,7 @@ jobs:
         - If a lint or test command fails more than twice on the same issue, commit what you have, push, and note the unresolved issue in a PR comment.
         - Before editing code, read 1-2 similar functions or components in the same file or package to follow existing patterns and conventions.
         - This repo uses Svelte 5 runes and SvelteKit. Consult the Svelte MCP server when editing `.svelte` / `.svelte.ts` / `.svelte.js` files.
+        - If a type error involves a `@viamrobotics` SDK import, use `Bash(gh api *)` to look up the current exported API in the source repo before attempting a fix. See `.claude/rules/viam-context.md`.
       extra_system_prompt: >-
         This is a Svelte 5 + SvelteKit TypeScript library (`@viamrobotics/test-widgets`).
         It is verifiable with `pnpm lint`, `pnpm check`, `pnpm test`, and `pnpm build`.

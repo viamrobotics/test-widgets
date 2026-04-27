@@ -47,12 +47,12 @@ jobs:
         corepack enable
         pnpm install
       task_complexity: small
-      allowed_tools: 'Edit,Read,Write,Glob,Grep,Bash(pnpm *),Bash(npx *),Bash(node
+      allowed_tools: 'Edit,Read,Write,Glob,Grep,WebFetch,Bash(pnpm *),Bash(npx *),Bash(node
         *),Bash(ls *),Bash(find *),Bash(git config *),Bash(git add *),Bash(git
         commit *),Bash(git push *),Bash(git status*),Bash(git diff*),Bash(git
         log*),Bash(git checkout *),Bash(git branch *),Bash(git rev-parse
         *),Bash(git fetch *),Bash(gh pr create*),Bash(gh pr edit*),Bash(gh pr
-        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*),Bash(gh run view*),Bash(gh run list*)'
+        view*),Bash(gh pr diff*),Bash(gh issue comment*),Bash(gh issue view*),Bash(gh run view*),Bash(gh run list*),Bash(gh api *)'
       extra_prompt: |
         - If the issue is unclear, missing critical detail, or you need a decision from the reporter before you can proceed, DO NOT open a PR. Instead, post ONE comment on the issue using `gh issue comment ${{ github.event.issue.number }}` that:
           - Opens by tagging the reporter with `@${{ github.event.issue.user.login }}`
@@ -77,6 +77,7 @@ jobs:
           - Svelte / TS / JS files (.svelte, .ts, .js): `pnpm lint`, `pnpm check`, and `pnpm test`
         - Before editing code, read 1-2 similar functions or components in the same file or package to follow existing patterns and conventions.
         - This repo uses Svelte 5 runes and SvelteKit. Consult the Svelte MCP server when editing `.svelte` / `.svelte.ts` / `.svelte.js` files.
+        - `WebFetch` and `Bash(gh api *)` are available for looking up Viam API context (docs.viam.com, viamrobotics/api, viamrobotics/viam-typescript-sdk, viamrobotics/viam-svelte-sdk). See `.claude/rules/viam-context.md`.
       extra_system_prompt: >-
         This is a Svelte 5 + SvelteKit TypeScript library
         (`@viamrobotics/test-widgets`). It is verifiable with `pnpm lint`, `pnpm
