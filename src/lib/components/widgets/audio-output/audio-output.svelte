@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Label, NumericInput, Select } from '@viamrobotics/prime-core'
-	import { AudioOutClient, commonApi } from '@viamrobotics/sdk'
+	import { AudioOutClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
@@ -11,6 +11,8 @@
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
+	import { ExtToCodec, MimeToCodec } from './codec.ts'
+	import { createAudioPlayer } from './create-audio-player.svelte.ts'
 	import Properties from './properties.svelte'
 
 	interface Props {
@@ -40,9 +42,7 @@
 		propertiesQuery.data?.supportedCodecs.length ? propertiesQuery.data.supportedCodecs : ['pcm16']
 	)
 
-	type PlayStatus = 'idle' | 'playing' | 'done' | 'error'
-	let playStatus = $state<PlayStatus>('idle')
-	let playError = $state<Error | null>(null)
+	const playContext = createAudioPlayer(client)
 
 	let selectedFile = $state.raw<File | null>(null)
 	let fileInputError = $state<string | null>(null)
@@ -56,17 +56,6 @@
 	)
 	const selectedNumChannels = $derived(playNumChannels ?? propertiesQuery.data?.numChannels ?? 1)
 
-	const mimeToCodec: Record<string, string> = {
-		'audio/mpeg': 'mp3',
-		'audio/mp3': 'mp3',
-		'audio/wav': 'wav',
-		'audio/x-wav': 'wav',
-		'audio/aac': 'aac',
-		'audio/ogg': 'opus',
-		'audio/flac': 'flac',
-		'audio/x-flac': 'flac',
-	}
-
 	const handleFileChange = (event: Event) => {
 		const input = event.target as HTMLInputElement
 		const file = input.files?.[0] ?? null
@@ -74,8 +63,15 @@
 		fileInputError = null
 		if (file) {
 			const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
-			const detected = mimeToCodec[file.type] ?? mimeToCodec[`audio/${ext}`] ?? ''
-			playCodec = detected
+			if (MimeToCodec[file.type]) {
+				playCodec = MimeToCodec[file.type]
+			} else if (MimeToCodec[`audio/${ext}`]) {
+				playCodec = MimeToCodec[`audio/${ext}`]
+			} else if (ExtToCodec[ext]) {
+				playCodec = ExtToCodec[ext]
+			} else {
+				fileInputError = 'Unsupported audio format'
+			}
 		}
 	}
 
@@ -86,31 +82,14 @@
 		}
 		if (!client.current) return
 
-		playStatus = 'playing'
-		playError = null
-
-		try {
-			const buffer = await selectedFile.arrayBuffer()
-			const audioData = new Uint8Array(buffer)
-			await client.current.play(
-				audioData,
-				commonApi.AudioInfo.fromJson({
-					codec: selectedCodec,
-					sampleRateHz: selectedSampleRateHz,
-					numChannels: selectedNumChannels,
-				}),
-				{}
-			)
-			playStatus = 'done'
-		} catch (error) {
-			playStatus = 'error'
-			playError = error instanceof Error ? error : new Error(String(error))
-		}
+		const buffer = await selectedFile.arrayBuffer()
+		const audioData = new Uint8Array(buffer)
+		await playContext.play(audioData, selectedCodec, selectedSampleRateHz, selectedNumChannels)
 	}
 
 	const playButtonLabel = $derived.by(() => {
-		if (playStatus === 'playing') return 'Playing...'
-		if (playStatus === 'done') return 'Play Again'
+		if (playContext.status === 'playing') return 'Playing...'
+		if (playContext.status === 'done') return 'Play Again'
 		return 'Play'
 	})
 </script>
@@ -129,7 +108,7 @@
 				<MutationSection
 					title="Play"
 					description="Send audio data to the device"
-					lastError={playError}
+					lastError={playContext.error}
 				>
 					<div class="flex flex-col gap-2">
 						<Label cx="gap-1 text-xs">
@@ -137,7 +116,7 @@
 							<input
 								slot="input"
 								type="file"
-								accept="audio/*"
+								accept={availableCodecs.map((c) => `.${c}`).join(',')}
 								class="text-xs"
 								onchange={handleFileChange}
 							/>
@@ -188,7 +167,7 @@
 						<Button
 							icon="play-circle-outline"
 							onclick={play}
-							disabled={!client.current || playStatus === 'playing'}
+							disabled={!client.current || playContext.status === 'playing'}
 						>
 							{playButtonLabel}
 						</Button>

@@ -1,14 +1,11 @@
-import {
-	MachineConnectionEvent,
-	MLModelClient,
-	type Resource,
-	ResourceName,
-} from '@viamrobotics/sdk'
+import { MachineConnectionEvent, MLModelClient, ResourceName } from '@viamrobotics/sdk'
 import { useConnectionStatus, useRobotClient } from '@viamrobotics/svelte-sdk'
 
-import { clientForBuiltinResource } from '$lib/client-map'
+import { clientForBuiltinResource, clientMap } from '$lib/client-map'
 
-type DoCommandable = Exclude<Resource, MLModelClient>
+type DoCommandable = InstanceType<
+	Exclude<(typeof clientMap)[keyof typeof clientMap], typeof MLModelClient>
+>
 
 export const createDoCommandClient = (
 	resource: () => ResourceName,
@@ -24,6 +21,7 @@ export const createDoCommandClient = (
 
 		const constructor = clientForBuiltinResource(resource())
 		if (!constructor) return
+		if (constructor === MLModelClient) return
 
 		const nextClient = new constructor(robotClient.current, resourceName()) as DoCommandable
 		// PartIDs are used to invalidate queries for this client

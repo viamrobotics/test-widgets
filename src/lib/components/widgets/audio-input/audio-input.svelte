@@ -11,6 +11,7 @@
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
+	import { createAudioCapturer } from './create-audio-capturer.svelte.ts'
 	import Properties from './properties.svelte'
 
 	interface Props {
@@ -36,94 +37,16 @@
 		refetchInterval: refetchInterval.current,
 	}))
 
-	type CaptureStatus = 'idle' | 'recording' | 'done' | 'error'
-	let captureStatus = $state<CaptureStatus>('idle')
-	let captureError = $state<Error | null>(null)
 	let captureCodec = $state('')
 	let captureDuration = $state(3)
-	let captureTotalBytes = $state(0)
-	let captureDownloadUrl = $state<string>()
-	let captureAbortController = $state.raw<AbortController>()
 
-	$effect(() => {
-		return () => {
-			if (captureDownloadUrl) URL.revokeObjectURL(captureDownloadUrl)
-		}
-	})
+	const capture = createAudioCapturer(client)
 
 	const availableCodecs = $derived(
 		propertiesQuery.data?.supportedCodecs.length ? propertiesQuery.data.supportedCodecs : ['pcm16']
 	)
 
 	const selectedCodec = $derived(captureCodec || availableCodecs[0]!)
-
-	const startCapture = async () => {
-		if (!client.current) return
-
-		captureStatus = 'recording'
-		captureError = null
-		captureTotalBytes = 0
-
-		if (captureDownloadUrl) {
-			URL.revokeObjectURL(captureDownloadUrl)
-			captureDownloadUrl = undefined
-		}
-
-		const controller = new AbortController()
-		captureAbortController = controller
-
-		const chunks: Uint8Array[] = []
-
-		try {
-			const stream = client.current.getAudio(
-				selectedCodec,
-				captureDuration,
-				0n,
-				{},
-				{ ...client.current.callOptions, signal: controller.signal }
-			)
-
-			for await (const chunk of stream) {
-				chunks.push(chunk.audioData)
-				captureTotalBytes += chunk.audioData.byteLength
-			}
-
-			captureStatus = 'done'
-		} catch (error) {
-			if (controller.signal.aborted) {
-				captureStatus = 'done'
-			} else {
-				captureStatus = 'error'
-				captureError = error instanceof Error ? error : new Error(String(error))
-			}
-		} finally {
-			captureAbortController = undefined
-		}
-
-		if (chunks.length > 0) {
-			const totalLength = chunks.reduce((sum, c) => sum + c.byteLength, 0)
-			const merged = new Uint8Array(totalLength)
-			let offset = 0
-			for (const chunk of chunks) {
-				merged.set(chunk, offset)
-				offset += chunk.byteLength
-			}
-
-			const mimeTypes: Record<string, string> = {
-				mp3: 'audio/mpeg',
-				wav: 'audio/wav',
-				aac: 'audio/aac',
-				opus: 'audio/ogg',
-				flac: 'audio/flac',
-			}
-			const mimeType = mimeTypes[selectedCodec] ?? 'audio/octet-stream'
-			captureDownloadUrl = URL.createObjectURL(new Blob([merged], { type: mimeType }))
-		}
-	}
-
-	const stopCapture = () => {
-		captureAbortController?.abort()
-	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -140,7 +63,7 @@
 				<MutationSection
 					title="GetAudio"
 					description="Capture audio from the device"
-					lastError={captureError}
+					lastError={capture.error}
 				>
 					<div class="flex flex-col gap-2">
 						<Label cx="gap-1 text-xs">
@@ -170,23 +93,23 @@
 					</div>
 
 					<div class="mt-auto flex flex-col items-start gap-2">
-						{#if captureStatus === 'recording'}
+						{#if capture.status === 'recording'}
 							<p class="font-roboto-mono text-subtle-1 text-xs">
-								{(captureTotalBytes / 1024).toFixed(1)} kB captured
+								{(capture.totalBytes / 1024).toFixed(1)} kB captured
 							</p>
 							<Button
 								icon="stop-circle-outline"
-								onclick={stopCapture}
+								onclick={capture.stop}
 							>
 								Stop
 							</Button>
 						{:else}
-							{#if captureDownloadUrl}
+							{#if capture.downloadUrl}
 								<p class="font-roboto-mono text-subtle-1 text-xs">
-									{(captureTotalBytes / 1024).toFixed(1)} kB captured
+									{(capture.totalBytes / 1024).toFixed(1)} kB captured
 								</p>
 								<a
-									href={captureDownloadUrl}
+									href={capture.downloadUrl}
 									download="audio-capture.{selectedCodec}"
 									rel="external"
 								>
@@ -195,10 +118,10 @@
 							{/if}
 							<Button
 								icon="play-circle-outline"
-								onclick={startCapture}
+								onclick={() => capture.start(selectedCodec, captureDuration)}
 								disabled={!client.current}
 							>
-								{captureStatus === 'done' ? 'Capture Again' : 'Start Capture'}
+								{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
 							</Button>
 						{/if}
 					</div>
