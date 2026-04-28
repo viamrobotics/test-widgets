@@ -43,11 +43,6 @@ if (isPose(data)) {
 export const assertExists = <T>(value: T, message: string): asserts value is NonNullable<T> => {
 	if (value == null) throw new Error(message)
 }
-
-// Exhaustive switch — compile error if a case is missing
-export const assertExhaustive = (value: never): never => {
-	throw new Error(`Unhandled case: ${String(value)}`)
-}
 ```
 
 ## Utility Functions
