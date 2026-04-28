@@ -6,7 +6,7 @@ paths:
 
 # Changesets
 
-Every PR that changes runtime behavior needs a changeset in `.changeset/`. The single package is `@viamrobotics/motion-tools`; see [CHANGELOG.md](../../CHANGELOG.md) for voice and existing `.changeset/*.md` files for format.
+Every PR that changes runtime behavior needs a changeset in `.changeset/`. The single package is `@viamrobotics/test-widgets`; see [CHANGELOG.md](../../CHANGELOG.md) for voice and existing `.changeset/*.md` files for format.
 
 ## Creating a Changeset
 
