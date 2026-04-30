@@ -51,6 +51,7 @@ describe('<ErrorDisplay>', () => {
 
 	it('shows check icon after successful copy and restores content-copy icon after timeout', async () => {
 		vi.useFakeTimers()
+		const timerUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) })
 		const writeText = vi.fn().mockResolvedValue(undefined)
 		vi.stubGlobal('navigator', { clipboard: { writeText } })
 
@@ -61,7 +62,7 @@ describe('<ErrorDisplay>', () => {
 		expect(screen.getByTestId('icon-content-copy')).toBeInTheDocument()
 
 		const copyButton = screen.getByRole('button', { name: /copy error/iu })
-		await user.click(copyButton)
+		await timerUser.click(copyButton)
 
 		await waitFor(() => expect(screen.getByTestId('icon-check')).toBeInTheDocument())
 		expect(screen.queryByTestId('icon-content-copy')).not.toBeInTheDocument()
