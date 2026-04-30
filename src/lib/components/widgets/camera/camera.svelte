@@ -30,6 +30,7 @@
 		() => resourceName,
 		'camera'
 	)
+	let isPlaying = $state(false)
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
@@ -50,7 +51,7 @@
 		'getImages',
 		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
 		() => ({
-			enabled: refetchInterval.current !== RefetchIntervals.LIVE,
+			enabled: isPlaying && refetchInterval.current !== RefetchIntervals.LIVE,
 			refetchInterval: refetchInterval.current,
 		})
 	)
@@ -106,95 +107,116 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex gap-4 p-4 pb-3">
-			<RefetchController
-				{refetchInterval}
-				allowLive
-				queries={[imageQuery, pointcloudQuery]}
-			/>
-			{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-				<Label position="left">
-					Source
-					<Select
-						value={selectedSource}
-						on:change={onSourceSelect}
-						slot="input"
-					>
-						{#each sourceNames as name (name)}
-							<option value={name}>{name}</option>
-						{/each}
-					</Select>
-				</Label>
-			{/if}
-		</div>
+		{#if isPlaying}
+			<div class="flex gap-4 p-4 pb-3">
+				<RefetchController
+					{refetchInterval}
+					allowLive
+					queries={[imageQuery, pointcloudQuery]}
+				/>
+				{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
+					<Label position="left">
+						Source
+						<Select
+							value={selectedSource}
+							on:change={onSourceSelect}
+							slot="input"
+						>
+							{#each sourceNames as name (name)}
+								<option value={name}>{name}</option>
+							{/each}
+						</Select>
+					</Label>
+				{/if}
+			</div>
+		{/if}
 		<div class="flex h-full w-full gap-4 p-4">
 			<div class="grow">
-				<LiveOrPollingVideo
-					{partID}
-					{resourceName}
-					showResolutionOptions
-					isLive={refetchInterval.current === RefetchIntervals.LIVE}
-					data={imageQuery.data}
-					error={imageQuery.error}
-					isLoading={imageQuery.isLoading}
-					refetch={imageQuery.refetch}
-					showMousePositionTooltip={mousePostionTooltip === 'On'}
-				/>
-			</div>
-			<div class="flex flex-col items-start gap-2">
-				<ExportScreenshot
-					name={client.current?.name ?? ''}
-					getImage={exportScreenshotQuery.refetch}
-				/>
-				{#if addImageToDataset}
-					<Button
-						icon="layers-triple-outline"
-						onclick={async () => {
-							let imgData
-							if (refetchInterval.current === RefetchIntervals.LIVE) {
-								const { isSuccess, data } = await imageQuery.refetch()
-								if (!isSuccess) return
-								imgData = data
-							} else {
-								imgData = imageQuery.data
-							}
-
-							const image = imgData?.images?.[0]?.image
-							const mimeType = imgData?.images?.[0]?.mimeType
-
-							if (image) {
-								addImageToDataset({
-									binaryData: new Uint8Array(image),
-									partID,
-									componentType: 'camera',
-									componentName: resourceName,
-									methodName: 'captureAllFromCamera',
-									mimeType: mimeType ?? 'image/png',
-									dataRequestTimes: [new Date(), new Date()],
-								})
-							}
-						}}
-					>
-						Add current image to dataset
-					</Button>
-				{/if}
-				{#if !isFirefox}
-					<PictureInPictureButton
+				{#if isPlaying}
+					<LiveOrPollingVideo
+						{partID}
 						{resourceName}
-						rate={refetchInterval.current}
+						showResolutionOptions
+						isLive={refetchInterval.current === RefetchIntervals.LIVE}
+						data={imageQuery.data}
+						error={imageQuery.error}
+						isLoading={imageQuery.isLoading}
+						refetch={imageQuery.refetch}
+						showMousePositionTooltip={mousePostionTooltip === 'On'}
 					/>
+				{:else}
+					<div
+						class="bg-medium flex h-64 w-80 items-center justify-center"
+						aria-label={`${resourceName} feed paused`}
+					>
+						<Button
+							icon="play-circle-outline"
+							variant="dark"
+							onclick={() => {
+								isPlaying = true
+							}}
+						>
+							Start feed
+						</Button>
+					</div>
 				{/if}
-				<Label>
-					Mouse Position Tooltip
-
-					<ToggleButtons
-						slot="input"
-						options={['On', 'Off']}
-						selected={mousePostionTooltip}
-						on:input={setMousePostionTooltip}
-					/>
-				</Label>
 			</div>
+			{#if isPlaying}
+				<div class="flex flex-col items-start gap-2">
+					<ExportScreenshot
+						name={client.current?.name ?? ''}
+						getImage={exportScreenshotQuery.refetch}
+					/>
+					{#if addImageToDataset}
+						<Button
+							icon="layers-triple-outline"
+							onclick={async () => {
+								let imgData
+								if (refetchInterval.current === RefetchIntervals.LIVE) {
+									const { isSuccess, data } = await imageQuery.refetch()
+									if (!isSuccess) return
+									imgData = data
+								} else {
+									imgData = imageQuery.data
+								}
+
+								const image = imgData?.images?.[0]?.image
+								const mimeType = imgData?.images?.[0]?.mimeType
+
+								if (image) {
+									addImageToDataset({
+										binaryData: new Uint8Array(image),
+										partID,
+										componentType: 'camera',
+										componentName: resourceName,
+										methodName: 'captureAllFromCamera',
+										mimeType: mimeType ?? 'image/png',
+										dataRequestTimes: [new Date(), new Date()],
+									})
+								}
+							}}
+						>
+							Add current image to dataset
+						</Button>
+					{/if}
+					{#if !isFirefox}
+						<PictureInPictureButton
+							{resourceName}
+							rate={refetchInterval.current}
+						/>
+					{/if}
+					<Label>
+						Mouse Position Tooltip
+
+						<ToggleButtons
+							slot="input"
+							options={['On', 'Off']}
+							selected={mousePostionTooltip}
+							on:input={setMousePostionTooltip}
+						/>
+					</Label>
+				</div>
+			{/if}
 		</div>
 
 		<section
