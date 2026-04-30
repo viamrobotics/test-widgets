@@ -30,7 +30,7 @@
 	let data = $state.raw<unknown[]>([])
 
 	const serializeErrors = (errs: Error[]) =>
-		errs.map((error) => `${error.name}\0${error.message}`).join('\n')
+		errs.map((error) => `${error.name}\0${error.message}`).join('\0\0')
 
 	// Errors are null during loading, so keep the latest errors during polling.
 	// Only update errors if the content has changed to avoid re-rendering identical errors.
