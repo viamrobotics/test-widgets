@@ -31,6 +31,13 @@
 		'camera'
 	)
 	let isPlaying = $state(false)
+	$effect(() => {
+		// Reset the play gate whenever the camera identity changes so a swapped
+		// resource doesn't auto-start using the previous instance's state.
+		void resourceName
+		void partID
+		isPlaying = false
+	})
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
@@ -145,10 +152,7 @@
 						showMousePositionTooltip={mousePostionTooltip === 'On'}
 					/>
 				{:else}
-					<div
-						class="bg-medium flex h-64 w-80 items-center justify-center"
-						aria-label={`${resourceName} feed paused`}
-					>
+					<div class="bg-medium flex h-64 w-80 items-center justify-center">
 						<Button
 							icon="play-circle-outline"
 							variant="dark"
