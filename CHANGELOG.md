@@ -1,5 +1,12 @@
 # @viamrobotics/test-widgets
 
+## 0.1.11
+
+### Patch Changes
+
+- 05cd71c: Add play button to camera widget to start the feed on demand
+- c5e89cd: Update vision service widget to use "Default camera" (empty string) camera name option
+
 ## 0.1.10
 
 ### Patch Changes
