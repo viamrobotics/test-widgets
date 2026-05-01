@@ -31,16 +31,18 @@
 		'camera'
 	)
 	let isPlaying = $state(false)
+	let selectedSource = $state('')
+	let sourceNames = $state<string[]>([])
 	$effect(() => {
 		// Reset the play gate whenever the camera identity changes so a swapped
 		// resource doesn't auto-start using the previous instance's state.
 		void resourceName
 		void partID
 		isPlaying = false
+		sourceNames = []
+		selectedSource = ''
 	})
 	let isShowingPointcloud = $state(false)
-	let selectedSource = $state('')
-	let sourceNames = $state<string[]>([])
 
 	const { addImageToDataset } = useAddImageToDataset()
 	const setIsShowingPointcloud = (event: CustomEvent<boolean>) => {
