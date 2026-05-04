@@ -46,7 +46,7 @@
 		"@threlte/core": ">=8",
 		"@threlte/extras": ">=9",
 		"@viamrobotics/prime-core": ">=0.1",
-		"@viamrobotics/prime-editor": ">=0.0.2",
+		"@viamrobotics/prime-editor": ">=0.0.1",
 		"@viamrobotics/sdk": ">=0.68",
 		"@viamrobotics/svelte-sdk": ">=1.1",
 		"lodash-es": ">=4",
