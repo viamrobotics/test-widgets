@@ -49,7 +49,6 @@
 		}
 	}
 
-	$inspect(output)
 </script>
 
 {#if isSupported}
