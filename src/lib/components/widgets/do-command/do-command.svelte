@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Progress } from '@viamrobotics/prime-core'
-	import { JsonEditor } from '@viamrobotics/prime-editor'
+	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
@@ -54,13 +54,14 @@
 	<div class="flex flex-row items-center justify-between">
 		<div class="flex w-[45%] flex-col gap-2 border-r py-2">
 			<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
-			<JsonEditor
+			<CodeEditor
 				label="input"
-				initialValue={input.current ?? '{}'}
+				language="json"
+				value={input.current ?? '{}'}
 				onChange={(nextInput: string) => {
 					input.current = nextInput
 				}}
-				cx="h-56 overflow-y-auto"
+				class="h-56 overflow-y-auto"
 				errorMessageID={lastErr ? uid : undefined}
 			/>
 		</div>
@@ -81,11 +82,12 @@
 				{/if}
 			</div>
 			{#if !lastErr}
-				<JsonEditor
+				<CodeEditor
 					label="output"
-					initialValue={output}
+					language="json"
+					value={output}
 					readonly
-					cx="h-56 overflow-y-auto"
+					class="h-56 overflow-y-auto"
 				/>
 			{:else}
 				<ErrorDisplay
