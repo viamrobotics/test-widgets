@@ -1,5 +1,16 @@
 # @viamrobotics/test-widgets
 
+## 0.2.0
+
+### Minor Changes
+
+- 8ec8a0e: Add `AudioInputWidget` and `AudioOutputWidget` components for audio in/out resources
+
+### Patch Changes
+
+- ebfdd5d: Add copy button to error display and prevent re-rendering unchanged errors during query polling
+- 5e64fef: Remove `prime-editor` dependency, use code editor from `prime-core`
+
 ## 0.1.11
 
 ### Patch Changes
