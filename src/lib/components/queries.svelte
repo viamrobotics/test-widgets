@@ -29,11 +29,17 @@
 	let errors = $state.raw<Error[]>([])
 	let data = $state.raw<unknown[]>([])
 
+	const serializeErrors = (errs: Error[]) =>
+		errs.map((error) => `${error.name}\0${error.message}`).join('\0\0')
+
 	// Errors are null during loading, so keep the latest errors during polling.
+	// Only update errors if the content has changed to avoid re-rendering identical errors.
 	$effect.pre(() => {
 		const nextErrors = queries.map((query) => query.error).filter((error) => error !== null)
 		if (nextErrors.length > 0) {
-			errors = nextErrors
+			if (serializeErrors(nextErrors) !== serializeErrors(errors)) {
+				errors = nextErrors
+			}
 		} else if (queries.every((query) => query.isSuccess)) {
 			errors = []
 		}
@@ -55,7 +61,7 @@
 		{contentRect}
 		cx={contentCx}
 	>
-		{#each errors as error (error)}
+		{#each errors as error (`${error.name}\0${error.message}`)}
 			<ErrorDisplay lastError={error} />
 		{/each}
 	</ContentRect>
