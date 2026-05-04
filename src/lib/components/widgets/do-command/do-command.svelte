@@ -48,7 +48,6 @@
 			lastErr = error as Error
 		}
 	}
-
 </script>
 
 {#if isSupported}
