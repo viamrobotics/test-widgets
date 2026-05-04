@@ -85,7 +85,7 @@
 		"@viamrobotics/motion-tools": "^1.19.1",
 		"@viamrobotics/prime-core": "^0.1.19",
 		"@viamrobotics/prime-editor": "^0.0.2",
-		"@viamrobotics/sdk": "^0.68.2",
+		"@viamrobotics/sdk": "^0.69.0",
 		"@viamrobotics/svelte-sdk": "^1.2.1",
 		"@viamrobotics/tailwind-config": "^1.0.0",
 		"@viamrobotics/three": "^0.0.9",

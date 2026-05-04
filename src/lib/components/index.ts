@@ -5,6 +5,10 @@ export { default as ArmMoveToJointPositionsWidget } from './widgets/arm/move-to-
 export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-position-widget.svelte'
 export { default as ArmQuickMoveWidget } from './widgets/arm/quick-move-widget.svelte'
 
+export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
+
+export { default as AudioOutputWidget } from './widgets/audio-output/audio-output.svelte'
+
 export { default as BaseWidget } from './widgets/base/base.svelte'
 export { default as BaseMoveStraightWidget } from './widgets/base/move-straight-widget.svelte'
 export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-widget.svelte'

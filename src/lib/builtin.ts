@@ -2,6 +2,8 @@ import type { ResourceName } from '@viamrobotics/sdk'
 
 import {
 	ArmWidget,
+	AudioInputWidget,
+	AudioOutputWidget,
 	BaseWidget,
 	BoardWidget,
 	ButtonWidget,
@@ -35,6 +37,8 @@ const resourceMap =
 	// list created via `cat rdkbuiltins/viam-server-stable.json | rg "api" | sort | uniq`
 	{
 		'rdk:component:arm': [clientMap['rdk:component:arm'], ArmWidget, true],
+		'rdk:component:audio_in': [clientMap['rdk:component:audio_in'], AudioInputWidget, true],
+		'rdk:component:audio_out': [clientMap['rdk:component:audio_out'], AudioOutputWidget, true],
 		'rdk:component:base': [clientMap['rdk:component:base'], BaseWidget, true],
 		'rdk:component:board': [clientMap['rdk:component:board'], BoardWidget, true],
 		'rdk:component:button': [clientMap['rdk:component:button'], ButtonWidget, true],

@@ -32,7 +32,7 @@ A group of sections in a card. For example, "test" or "do command"
 >
 	<header class={['border-gray-3 bg-light hover:bg-medium h-7', !isCollapsed && 'border-b']}>
 		<button
-			class="group flex h-full w-full flex-row items-center gap-2 px-[11px]"
+			class="group flex h-full w-full flex-row items-center gap-2 px-2.75"
 			aria-controls={collapseID}
 			aria-expanded={!isCollapsed}
 			aria-label={`${isCollapsed ? 'expand' : 'collapse'} ${title}`}
