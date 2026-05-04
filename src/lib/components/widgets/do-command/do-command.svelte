@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Progress } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
-	import { ResourceName, Struct } from '@viamrobotics/sdk'
+	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
 
