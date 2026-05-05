@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.3.0
+
+### Minor Changes
+
+- f0b054f: Export `widgetForResource`, `showResourceWidget`, `hasWidget`, `getResourceAPI`, and `clientForResource`.
+
 ## 0.2.0
 
 ### Minor Changes
