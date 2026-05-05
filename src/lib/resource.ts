@@ -3,6 +3,7 @@ import type { Component } from 'svelte'
 
 import { type ResourceName, robotApi } from '@viamrobotics/sdk'
 
+import { clientMap } from './client-map.ts'
 import {
 	ArmWidget,
 	AudioInputWidget,
@@ -26,9 +27,7 @@ import {
 	SlamWidget,
 	SwitchWidget,
 	VisionServiceWidget,
-} from '$lib'
-
-import { clientMap } from './client-map.ts'
+} from './components'
 
 export type NamedResourceStatus = ResourceStatus & {
 	name: ResourceName
@@ -114,7 +113,7 @@ export const getResourceKey = (name: ResourceName) => `${getResourceAPI(name)}/$
 // service   b
 // component remote:c
 // service   remote:b
-export const sortResourceNames = (names: ResourceName[]) =>
+export const sortResourceNames = (names: ResourceName[]): ResourceName[] =>
 	names.toSorted(({ type, name }, { type: otherType, name: otherName }) => {
 		// sort all non-remote resources before remote resources
 		if (name.includes(':') !== otherName.includes(':')) {
