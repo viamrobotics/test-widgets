@@ -65,12 +65,12 @@ export const clientMap = {
 	'rdk:service:video': VideoClient,
 } as const
 
-export const clientForBuiltinResource = (resource: ResourceName) => {
+export const clientForResource = (resource: ResourceName) => {
 	const resAPI = getResourceAPI(resource)
 	return resAPI in clientMap ? clientMap[resAPI as keyof typeof clientMap] : undefined
 }
 
 export const supportsDoCommand = (resource: ResourceName): boolean => {
-	const client = clientForBuiltinResource(resource)
+	const client = clientForResource(resource)
 	return client !== undefined && client !== MLModelClient
 }

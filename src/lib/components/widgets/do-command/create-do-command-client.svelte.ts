@@ -1,7 +1,7 @@
 import { MachineConnectionEvent, MLModelClient, ResourceName } from '@viamrobotics/sdk'
 import { useConnectionStatus, useRobotClient } from '@viamrobotics/svelte-sdk'
 
-import { clientForBuiltinResource, clientMap } from '$lib/client-map'
+import { clientForResource, clientMap } from '$lib/client-map'
 
 type DoCommandable = InstanceType<
 	Exclude<(typeof clientMap)[keyof typeof clientMap], typeof MLModelClient>
@@ -19,7 +19,7 @@ export const createDoCommandClient = (
 		if (!robotClient.current) return
 		if (connectionStatus.current !== MachineConnectionEvent.CONNECTED) return
 
-		const constructor = clientForBuiltinResource(resource())
+		const constructor = clientForResource(resource())
 		if (!constructor) return
 		if (constructor === MLModelClient) return
 

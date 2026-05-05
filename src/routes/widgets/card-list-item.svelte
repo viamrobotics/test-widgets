@@ -32,7 +32,6 @@
 	import { PersistedState } from 'runed'
 	import { slide } from 'svelte/transition'
 
-	import { viewForBuiltinResource } from '$lib/builtin'
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import SectionGroup from '$lib/components/section-group.svelte'
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
@@ -41,6 +40,7 @@
 		getResourceKey,
 		type NamedResourceStatus,
 		ResourceStatusText,
+		widgetForResource,
 	} from '$lib/resource'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
@@ -76,7 +76,7 @@
 	const namespace = $derived(resource.name.namespace)
 	const type = $derived(resource.name.type)
 	const subtype = $derived(resource.name.subtype)
-	const ResourceTestView = $derived(viewForBuiltinResource(resource.name))
+	const ResourceTestView = $derived(widgetForResource(resource.name))
 	const resourceAPI = $derived(getResourceAPI(resource.name))
 	const id = $derived(encodeURIComponent(name))
 	// Exclude the # character

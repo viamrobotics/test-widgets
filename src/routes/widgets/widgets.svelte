@@ -7,11 +7,9 @@
 	import { PersistedState, useResizeObserver } from 'runed'
 	import { Pane, Splitpanes } from 'svelte-splitpanes'
 
-	import type { NamedResourceStatus } from '$lib/resource'
-
 	import { providePip } from '$lib'
-	import { showResourceInControlView } from '$lib/builtin'
 	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
+	import { type NamedResourceStatus, showResourceWidget } from '$lib/resource'
 
 	import { collapseAll, expandAll } from './card-list-item.svelte'
 	import CardList from './card-list.svelte'
@@ -51,7 +49,7 @@
 	})
 
 	const filteredResources = $derived(
-		resources.filter((resource) => showResourceInControlView(resource.name))
+		resources.filter((resource) => showResourceWidget(resource.name))
 	)
 
 	let splitpanesDiv = $state.raw<HTMLDivElement>()
