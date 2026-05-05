@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.3.1
+
+### Patch Changes
+
+- 75f49be: Fix circular dependency in resource.ts
+
 ## 0.3.0
 
 ### Minor Changes
