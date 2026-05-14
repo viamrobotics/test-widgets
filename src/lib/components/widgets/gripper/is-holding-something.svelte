@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Pill } from '@viamrobotics/prime-core'
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
@@ -37,16 +38,20 @@
 		contentCx="h-5"
 	>
 		<div class="flex items-center gap-2">
-			{#if query.data}
-				<ClosedGripperSvg />
+			{#if query.data !== undefined}
+				{#if query.data}
+					<ClosedGripperSvg />
+				{:else}
+					<OpenGripperSvg />
+				{/if}
+				<StatusPill
+					isActive={query.data}
+					activeText="Holding"
+					inactiveText="Empty"
+				/>
 			{:else}
-				<OpenGripperSvg />
+				<Pill value="Loading" />
 			{/if}
-			<StatusPill
-				isActive={query.data ?? false}
-				activeText="Holding"
-				inactiveText="Empty"
-			/>
 		</div>
 	</Query>
 </ApiSection>

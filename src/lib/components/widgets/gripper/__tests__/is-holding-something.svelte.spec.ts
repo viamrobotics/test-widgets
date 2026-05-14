@@ -25,7 +25,7 @@ describe('Gripper IsHoldingSomething', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as never)
+		} as ReturnType<typeof createResourceQuery>)
 
 		render(Subject, {
 			props: { partID: 'test-part', resourceName: 'test-gripper' },
@@ -40,7 +40,7 @@ describe('Gripper IsHoldingSomething', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as never)
+		} as ReturnType<typeof createResourceQuery>)
 
 		render(Subject, {
 			props: { partID: 'test-part', resourceName: 'test-gripper' },
