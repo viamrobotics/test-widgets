@@ -28,6 +28,7 @@ import {
 	SwitchWidget,
 	VisionServiceWidget,
 } from './components'
+import { getResourceAPI } from './get-resource-api.ts'
 
 export type NamedResourceStatus = ResourceStatus & {
 	name: ResourceName
@@ -101,11 +102,6 @@ const resourceMap =
 		'rdk:service:world_state_store': [clientMap['rdk:service:world_state_store'], undefined, true],
 		'rdk:service:video': [clientMap['rdk:service:video'], undefined, true],
 	} as const
-
-export const getResourceAPI = ({ namespace, type, subtype }: ResourceName) =>
-	`${namespace}:${type}:${subtype}`
-
-export const getResourceKey = (name: ResourceName) => `${getResourceAPI(name)}/${name.name}`
 
 // sorts resource names by local/remote -> type -> name (alphabetical) to produce a list like
 // component a

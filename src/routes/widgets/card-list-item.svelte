@@ -35,13 +35,9 @@
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import SectionGroup from '$lib/components/section-group.svelte'
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
-	import {
-		getResourceAPI,
-		getResourceKey,
-		type NamedResourceStatus,
-		ResourceStatusText,
-		widgetForResource,
-	} from '$lib/resource'
+	import { getResourceAPI } from '$lib/get-resource-api'
+	import { getResourceKey } from '$lib/get-resource-key'
+	import { type NamedResourceStatus, ResourceStatusText, widgetForResource } from '$lib/resource'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'

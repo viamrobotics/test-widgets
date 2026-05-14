@@ -3,7 +3,8 @@
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
-	import { getResourceKey, type NamedResourceStatus } from '$lib/resource'
+	import { getResourceKey } from '$lib/get-resource-key'
+	import { type NamedResourceStatus } from '$lib/resource'
 
 	interface Props {
 		isLoading: boolean

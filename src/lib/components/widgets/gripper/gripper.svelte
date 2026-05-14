@@ -8,6 +8,7 @@
 	import StopButton from '$lib/components/stop-button.svelte'
 
 	import Grab from './grab.svelte'
+	import IsHoldingSomething from './is-holding-something.svelte'
 	import Open from './open.svelte'
 
 	interface Props {
@@ -60,6 +61,10 @@
 				</ApiSection>
 				<IsMoving
 					client={GripperClient}
+					{partID}
+					{resourceName}
+				/>
+				<IsHoldingSomething
 					{partID}
 					{resourceName}
 				/>

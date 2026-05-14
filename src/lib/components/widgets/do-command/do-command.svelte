@@ -6,7 +6,8 @@
 	import { PersistedState } from 'runed'
 
 	import { supportsDoCommand } from '$lib/client-map'
-	import { getResourceAPI, getResourceKey } from '$lib/resource'
+	import { getResourceAPI } from '$lib/get-resource-api'
+	import { getResourceKey } from '$lib/get-resource-key'
 
 	import ErrorDisplay from '../../error.svelte'
 	import { createDoCommandClient } from './create-do-command-client.svelte'
