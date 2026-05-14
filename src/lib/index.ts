@@ -6,6 +6,7 @@ export {
 
 export { clientForResource } from './client-map'
 export * from './components'
+export { getResourceAPI } from './get-resource-api'
 
 export { providePip, usePip } from './pip/context.svelte'
-export { getResourceAPI, hasWidget, showResourceWidget, widgetForResource } from './resource'
+export { hasWidget, showResourceWidget, widgetForResource } from './resource'

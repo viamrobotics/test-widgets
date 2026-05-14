@@ -6,6 +6,9 @@
 	import Query from '$lib/components/query.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
 
+	import ClosedGripperSvg from './closed-gripper-svg.svelte'
+	import OpenGripperSvg from './open-gripper-svg.svelte'
+
 	interface Props {
 		partID: string
 		resourceName: string
@@ -33,10 +36,17 @@
 		{query}
 		contentCx="h-5"
 	>
-		<StatusPill
-			isActive={query.data ?? false}
-			activeText="Holding"
-			inactiveText="Empty"
-		/>
+		<div class="flex items-center gap-2">
+			{#if query.data}
+				<ClosedGripperSvg />
+			{:else}
+				<OpenGripperSvg />
+			{/if}
+			<StatusPill
+				isActive={query.data ?? false}
+				activeText="Holding"
+				inactiveText="Empty"
+			/>
+		</div>
 	</Query>
 </ApiSection>

@@ -31,7 +31,7 @@ import {
 	WorldStateStoreClient,
 } from '@viamrobotics/sdk'
 
-import { getResourceAPI } from './resource.ts'
+import { getResourceAPI } from './get-resource-api.ts'
 
 export const clientMap = {
 	'rdk:component:arm': ArmClient,

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import { getResourceKey, type NamedResourceStatus } from '$lib/resource'
+	import { getResourceKey } from '$lib/get-resource-key'
+	import { type NamedResourceStatus } from '$lib/resource'
 
 	import CardListItem from './card-list-item.svelte'
 	import NullState from './null-state.svelte'
