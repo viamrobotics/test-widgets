@@ -1,5 +1,15 @@
 # @viamrobotics/test-widgets
 
+## 0.4.0
+
+### Minor Changes
+
+- 3f8110c: Add `IsHoldingSomething` widget
+
+### Patch Changes
+
+- 3f8110c: Fix circular imports
+
 ## 0.3.1
 
 ### Patch Changes
