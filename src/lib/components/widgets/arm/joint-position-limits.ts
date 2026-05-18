@@ -5,6 +5,18 @@ export type JointLimit = {
 
 export type OutOfBoundsSide = 'below-min' | 'above-max'
 
+export interface KinematicsJSON {
+	kinematic_param_type: string
+}
+
+interface SVAKinematicsJSON extends KinematicsJSON {
+	kinematic_param_type: 'SVA'
+	joints: {
+		min: number
+		max: number
+	}[]
+}
+
 export const isOutsideJointLimit = (value: number, min: number, max: number): boolean =>
 	value < min || value > max
 
@@ -20,18 +32,6 @@ export const getOutOfBoundsSide = (
 		return 'above-max'
 	}
 	return null
-}
-
-export interface KinematicsJSON {
-	kinematic_param_type: string
-}
-
-interface SVAKinematicsJSON extends KinematicsJSON {
-	kinematic_param_type: 'SVA'
-	joints: {
-		min: number
-		max: number
-	}[]
 }
 
 export const getJointPositionLimits = (kinematics: KinematicsJSON): JointLimit[] => {

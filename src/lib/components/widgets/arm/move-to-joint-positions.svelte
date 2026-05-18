@@ -104,7 +104,6 @@
 				{@const limit = jointLimitsDegrees[index]}
 				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
 				{@const outOfBounds = outOfBoundsByIndex[index]}
-				{@const boundsErrorId = `joint-${index}-bounds-error`}
 				<tr>
 					<th>{index}</th>
 					<th>
@@ -112,18 +111,13 @@
 							<NumericInput
 								cx="max-w-[76px]"
 								{value}
-								aria-invalid={outOfBounds ? true : undefined}
-								aria-errormessage={outOfBounds ? boundsErrorId : undefined}
 								on:change={(event) => {
 									const inputValue = numberValueFromEvent(event) ?? 0
 									handleJointInputChange(index, inputValue)
 								}}
 							/>
 							{#if limit && outOfBounds}
-								<p
-									id={boundsErrorId}
-									class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal"
-								>
+								<p class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal">
 									{outOfBoundsMessage(displayPositions[index], limit)}
 								</p>
 							{/if}
