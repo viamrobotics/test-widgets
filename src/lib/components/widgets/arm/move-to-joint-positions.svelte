@@ -14,7 +14,7 @@
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
 		lastError: Error | null
-		jointLimitsDegrees?: JointLimit[]
+		jointLimitsDegrees: JointLimit[]
 	}
 
 	const { positions, moveToJointPositions, lastError, jointLimitsDegrees = [] }: Props = $props()
