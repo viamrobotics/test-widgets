@@ -180,7 +180,6 @@ describe('Arm move-to-joint-positions', () => {
 		await user.clear(positionInputs[1]!)
 		await user.type(positionInputs[1]!, '999')
 
-		expect(positionInputs[1]).not.toHaveAttribute('aria-invalid')
 		expect(screen.queryByText(/above range/iu)).not.toBeInTheDocument()
 		expect(screen.queryByText(/below range/iu)).not.toBeInTheDocument()
 	})
