@@ -17,7 +17,7 @@
 		jointLimitsDegrees: JointLimit[]
 	}
 
-	const { positions, moveToJointPositions, lastError, jointLimitsDegrees = [] }: Props = $props()
+	const { positions, moveToJointPositions, lastError, jointLimitsDegrees }: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
@@ -31,39 +31,19 @@
 		desiredPositions = [...positions]
 	}
 
-	const displayPositions = $derived(
-		desiredPositions.map((pos) => (useRadians ? degreesToRadians(pos) : pos))
-	)
-
-	const copyData = $derived(`[${displayPositions.join(', ')}]`)
-
 	const handleJointInputChange = (index: number, inputValue: number) => {
 		// default is degrees, so if user has toggle to radians, convert back to degrees before setting
 		// (we only convert to radians when displaying)
 		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
 	}
 
-	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
-
-	const outOfBoundsByIndex = $derived(
-		displayPositions.map((displayValue, index) => {
-			const limit = jointLimitsDegrees[index]
-			if (!limit) {
-				return false
-			}
-			return isOutsideJointLimit(
-				displayValue,
-				toDisplayAngle(limit.minDegrees),
-				toDisplayAngle(limit.maxDegrees)
-			)
-		})
-	)
-
-	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
+	const degreesToDisplayAngle = (degrees: number) => {
+		return useRadians ? degreesToRadians(degrees) : degrees
+	}
 
 	const outOfBoundsMessage = (displayValue: number, limit: JointLimit) => {
-		const min = toDisplayAngle(limit.minDegrees)
-		const max = toDisplayAngle(limit.maxDegrees)
+		const min = degreesToDisplayAngle(limit.minDegrees)
+		const max = degreesToDisplayAngle(limit.maxDegrees)
 		const unit = useRadians ? 'rad' : 'deg'
 		const side = getOutOfBoundsSide(displayValue, min, max)
 
@@ -75,6 +55,26 @@
 			return `Max value is ${formatNumeric(max)} ${unit}`
 		}
 	}
+
+	const displayPositions = $derived(desiredPositions.map((pos) => degreesToDisplayAngle(pos)))
+
+	const copyData = $derived(`[${displayPositions.join(', ')}]`)
+
+	const outOfBoundsByIndex = $derived(
+		displayPositions.map((displayValue, index) => {
+			const limit = jointLimitsDegrees[index]
+			if (!limit) {
+				return false
+			}
+			return isOutsideJointLimit(
+				displayValue,
+				degreesToDisplayAngle(limit.minDegrees),
+				degreesToDisplayAngle(limit.maxDegrees)
+			)
+		})
+	)
+
+	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
