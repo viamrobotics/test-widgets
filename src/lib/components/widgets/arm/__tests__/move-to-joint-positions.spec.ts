@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { JointLimit } from '../joint-position-limits'
+
 import Subject from '../move-to-joint-positions.svelte'
 
 const jointLimitsForCount = (
@@ -122,28 +123,63 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 
-	it('displays joint limit bounds beside inputs when provided', () => {
+	it('marks inputs invalid and shows max error when above range', async () => {
 		renderSubject({
-			positions: [0, 0],
-			jointLimitsDegrees: [
-				{ minDegrees: -90, maxDegrees: 90 },
-				{ minDegrees: 0, maxDegrees: 180 },
-			],
+			positions: [0],
+			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
 		})
 
-		expect(screen.getByTitle('Minimum')).toHaveTextContent('-90.00')
-		expect(screen.getByTitle('Maximum')).toHaveTextContent('90.00')
-		expect(screen.getAllByTitle('Minimum')[1]).toHaveTextContent('0.00')
-		expect(screen.getAllByTitle('Maximum')[1]).toHaveTextContent('180.00')
+		const positionInput = screen.getByRole('spinbutton')
+		expect(positionInput).not.toHaveAttribute('aria-invalid')
+
+		await user.clear(positionInput)
+		await user.type(positionInput, '100')
+
+		expect(positionInput).toHaveAttribute('aria-invalid', 'true')
+		expect(screen.getByText('Above range. Max value is 90.00 °')).toBeInTheDocument()
 	})
 
-	it('omits joint limit bounds for joints without limit data', () => {
+	it('shows min error when below range', async () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+		})
+
+		const positionInput = screen.getByRole('spinbutton')
+		await user.clear(positionInput)
+		await user.type(positionInput, '-100')
+
+		expect(screen.getByText('Below range. Min value is -90.00 °')).toBeInTheDocument()
+	})
+
+	it('disables execute when any joint is out of bounds', async () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+		})
+
+		const executeButton = screen.getByRole('button', { name: /execute/iu })
+		expect(executeButton).not.toBeDisabled()
+
+		const positionInput = screen.getByRole('spinbutton')
+		await user.clear(positionInput)
+		await user.type(positionInput, '100')
+
+		expect(executeButton).toBeDisabled()
+	})
+
+	it('does not validate joints without limit data', async () => {
 		renderSubject({
 			positions: [0, 0],
 			jointLimitsDegrees: [{ minDegrees: -45, maxDegrees: 45 }],
 		})
 
-		expect(screen.getAllByTitle('Minimum')).toHaveLength(1)
-		expect(screen.getAllByTitle('Maximum')).toHaveLength(1)
+		const positionInputs = screen.getAllByRole('spinbutton')
+		await user.clear(positionInputs[1]!)
+		await user.type(positionInputs[1]!, '999')
+
+		expect(positionInputs[1]).not.toHaveAttribute('aria-invalid')
+		expect(screen.queryByText(/above range/iu)).not.toBeInTheDocument()
+		expect(screen.queryByText(/below range/iu)).not.toBeInTheDocument()
 	})
 })

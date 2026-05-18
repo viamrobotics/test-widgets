@@ -7,7 +7,8 @@
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
-	import type { JointLimit } from './joint-position-limits'
+
+	import { getOutOfBoundsSide, isOutsideJointLimit, type JointLimit } from './joint-position-limits'
 
 	interface Props {
 		positions: number[]
@@ -43,6 +44,37 @@
 	}
 
 	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
+
+	const outOfBoundsByIndex = $derived(
+		displayPositions.map((displayValue, index) => {
+			const limit = jointLimitsDegrees[index]
+			if (!limit) {
+				return false
+			}
+			return isOutsideJointLimit(
+				displayValue,
+				toDisplayAngle(limit.minDegrees),
+				toDisplayAngle(limit.maxDegrees)
+			)
+		})
+	)
+
+	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
+
+	const outOfBoundsMessage = (displayValue: number, limit: JointLimit) => {
+		const min = toDisplayAngle(limit.minDegrees)
+		const max = toDisplayAngle(limit.maxDegrees)
+		const unit = useRadians ? 'rad' : 'deg'
+		const side = getOutOfBoundsSide(displayValue, min, max)
+
+		if (side === 'below-min') {
+			return `Min value is ${formatNumeric(min)} ${unit}`
+		}
+
+		if (side === 'above-max') {
+			return `Max value is ${formatNumeric(max)} ${unit}`
+		}
+	}
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -71,35 +103,29 @@
 			{#each { length: positions.length }, index}
 				{@const limit = jointLimitsDegrees[index]}
 				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
+				{@const outOfBounds = outOfBoundsByIndex[index]}
+				{@const boundsErrorId = `joint-${index}-bounds-error`}
 				<tr>
-					<th> {index} </th>
+					<th>{index}</th>
 					<th>
-						<div class="flex items-center justify-center gap-1.5">
-							{#if limit}
-								<span
-									class="text-subtle-2 w-9 shrink-0 text-right font-roboto-mono text-xs tabular-nums"
-									title="Minimum"
-								>
-									{formatNumeric(toDisplayAngle(limit.minDegrees))}
-								</span>
-							{/if}
+						<div class="flex flex-col items-center gap-0.5 py-0.5">
 							<NumericInput
 								cx="max-w-[76px]"
 								{value}
-								min={limit ? toDisplayAngle(limit.minDegrees) : undefined}
-								max={limit ? toDisplayAngle(limit.maxDegrees) : undefined}
+								aria-invalid={outOfBounds ? true : undefined}
+								aria-errormessage={outOfBounds ? boundsErrorId : undefined}
 								on:change={(event) => {
 									const inputValue = numberValueFromEvent(event) ?? 0
 									handleJointInputChange(index, inputValue)
 								}}
 							/>
-							{#if limit}
-								<span
-									class="text-subtle-2 w-9 shrink-0 text-left font-roboto-mono text-xs tabular-nums"
-									title="Maximum"
+							{#if limit && outOfBounds}
+								<p
+									id={boundsErrorId}
+									class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal"
 								>
-									{formatNumeric(toDisplayAngle(limit.maxDegrees))}
-								</span>
+									{outOfBoundsMessage(displayPositions[index], limit)}
+								</p>
 							{/if}
 						</div>
 					</th>
@@ -129,6 +155,7 @@
 	</div>
 	<Button
 		class="mt-auto w-fit"
+		disabled={hasOutOfBoundsPositions}
 		icon="play-circle-outline"
 		variant="dark"
 		onclick={() => moveToJointPositions(desiredPositions)}
