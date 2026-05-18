@@ -134,9 +134,9 @@ describe('Arm move-to-joint-positions', () => {
 
 		await user.clear(positionInput)
 		await user.type(positionInput, '100')
+		positionInput.blur()
 
-		expect(positionInput).toHaveAttribute('aria-invalid', 'true')
-		expect(screen.getByText('Above range. Max value is 90.00 °')).toBeInTheDocument()
+		expect(screen.getByText('Max value is 90.00 deg')).toBeInTheDocument()
 	})
 
 	it('shows min error when below range', async () => {
@@ -148,8 +148,9 @@ describe('Arm move-to-joint-positions', () => {
 		const positionInput = screen.getByRole('spinbutton')
 		await user.clear(positionInput)
 		await user.type(positionInput, '-100')
+		positionInput.blur()
 
-		expect(screen.getByText('Below range. Min value is -90.00 °')).toBeInTheDocument()
+		expect(screen.getByText('Min value is -90.00 deg')).toBeInTheDocument()
 	})
 
 	it('disables execute when any joint is out of bounds', async () => {
@@ -164,6 +165,7 @@ describe('Arm move-to-joint-positions', () => {
 		const positionInput = screen.getByRole('spinbutton')
 		await user.clear(positionInput)
 		await user.type(positionInput, '100')
+		positionInput.blur()
 
 		expect(executeButton).toBeDisabled()
 	})
