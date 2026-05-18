@@ -7,14 +7,16 @@
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import type { JointLimit } from './joint-position-limits'
 
 	interface Props {
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
 		lastError: Error | null
+		jointLimitsDegrees?: JointLimit[]
 	}
 
-	const { positions, moveToJointPositions, lastError }: Props = $props()
+	const { positions, moveToJointPositions, lastError, jointLimitsDegrees = [] }: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
@@ -39,6 +41,8 @@
 		// (we only convert to radians when displaying)
 		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
 	}
+
+	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -65,18 +69,39 @@
 		</thead>
 		<tbody>
 			{#each { length: positions.length }, index}
+				{@const limit = jointLimitsDegrees[index]}
 				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
 				<tr>
 					<th> {index} </th>
 					<th>
-						<NumericInput
-							cx="max-w-[76px]"
-							{value}
-							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0
-								handleJointInputChange(index, inputValue)
-							}}
-						/>
+						<div class="flex items-center justify-center gap-1.5">
+							{#if limit}
+								<span
+									class="text-subtle-2 w-9 shrink-0 text-right font-roboto-mono text-xs tabular-nums"
+									title="Minimum"
+								>
+									{formatNumeric(toDisplayAngle(limit.minDegrees))}
+								</span>
+							{/if}
+							<NumericInput
+								cx="max-w-[76px]"
+								{value}
+								min={limit ? toDisplayAngle(limit.minDegrees) : undefined}
+								max={limit ? toDisplayAngle(limit.maxDegrees) : undefined}
+								on:change={(event) => {
+									const inputValue = numberValueFromEvent(event) ?? 0
+									handleJointInputChange(index, inputValue)
+								}}
+							/>
+							{#if limit}
+								<span
+									class="text-subtle-2 w-9 shrink-0 text-left font-roboto-mono text-xs tabular-nums"
+									title="Maximum"
+								>
+									{formatNumeric(toDisplayAngle(limit.maxDegrees))}
+								</span>
+							{/if}
+						</div>
 					</th>
 				</tr>
 			{/each}

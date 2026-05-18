@@ -4,7 +4,13 @@ import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { JointLimit } from '../joint-position-limits'
 import Subject from '../move-to-joint-positions.svelte'
+
+const jointLimitsForCount = (
+	count: number,
+	limit: JointLimit = { minDegrees: -180, maxDegrees: 180 }
+): JointLimit[] => Array.from({ length: count }, () => ({ ...limit }))
 
 describe('Arm move-to-joint-positions', () => {
 	let user: ReturnType<typeof userEvent.setup>
@@ -13,27 +19,30 @@ describe('Arm move-to-joint-positions', () => {
 		user = userEvent.setup()
 	})
 
-	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
-		render(Subject, {
+	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) => {
+		const positions = props.positions ?? []
+		return render(Subject, {
 			positions: [],
 			moveToJointPositions: vi.fn(),
 			lastError: null,
+			jointLimitsDegrees: jointLimitsForCount(positions.length),
 			...props,
 		})
+	}
 
 	it('renders a row for each axis', () => {
 		renderSubject({
 			positions: [1, 2, 3],
+			jointLimitsDegrees: jointLimitsForCount(3),
 		})
 
-		const positionInputs = screen.getAllByRole('spinbutton')
-
-		expect(positionInputs).toHaveLength(3)
+		expect(screen.getAllByRole('spinbutton')).toHaveLength(3)
 	})
 
 	it('trims axis values to 2 decimal places', () => {
 		renderSubject({
 			positions: [1, 2.34, 3.456_789],
+			jointLimitsDegrees: jointLimitsForCount(3),
 		})
 
 		const positionInputs = screen.getAllByRole('spinbutton')
@@ -46,17 +55,16 @@ describe('Arm move-to-joint-positions', () => {
 	it('resets to zero when Zero button is clicked', async () => {
 		renderSubject({
 			positions: [1, 2],
+			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
 		const positionInputs = screen.getAllByRole('spinbutton')
-		// set one speed pos to a non-default value
 		const nonDefaultPos = positionInputs[0]!
 
 		await user.clear(nonDefaultPos)
 		await user.type(nonDefaultPos, '100')
 		expect(nonDefaultPos).toHaveValue(100)
 
-		// press zero
 		const zeroButton = screen.getByRole('button', { name: /zero/iu })
 		await user.click(zeroButton)
 
@@ -69,11 +77,10 @@ describe('Arm move-to-joint-positions', () => {
 		const positions = [1, 2]
 		renderSubject({
 			positions,
+			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
 		const positionInputs = screen.getAllByRole('spinbutton')
-
-		// set one position input to a non-default value
 		const nonDefaultPos = positionInputs[0]!
 
 		await user.clear(nonDefaultPos)
@@ -81,7 +88,6 @@ describe('Arm move-to-joint-positions', () => {
 
 		expect(nonDefaultPos).toHaveValue(42)
 
-		// press current
 		const currentPositionButton = screen.getByRole('button', {
 			name: /current position/iu,
 		})
@@ -97,6 +103,7 @@ describe('Arm move-to-joint-positions', () => {
 		renderSubject({
 			positions: [1],
 			moveToJointPositions,
+			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
 		const positionInput = screen.getByRole('spinbutton')
@@ -113,5 +120,30 @@ describe('Arm move-to-joint-positions', () => {
 	it('displays the provided error', () => {
 		renderSubject({ lastError: new Error('some error msg') })
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
+	})
+
+	it('displays joint limit bounds beside inputs when provided', () => {
+		renderSubject({
+			positions: [0, 0],
+			jointLimitsDegrees: [
+				{ minDegrees: -90, maxDegrees: 90 },
+				{ minDegrees: 0, maxDegrees: 180 },
+			],
+		})
+
+		expect(screen.getByTitle('Minimum')).toHaveTextContent('-90.00')
+		expect(screen.getByTitle('Maximum')).toHaveTextContent('90.00')
+		expect(screen.getAllByTitle('Minimum')[1]).toHaveTextContent('0.00')
+		expect(screen.getAllByTitle('Maximum')[1]).toHaveTextContent('180.00')
+	})
+
+	it('omits joint limit bounds for joints without limit data', () => {
+		renderSubject({
+			positions: [0, 0],
+			jointLimitsDegrees: [{ minDegrees: -45, maxDegrees: 45 }],
+		})
+
+		expect(screen.getAllByTitle('Minimum')).toHaveLength(1)
+		expect(screen.getAllByTitle('Maximum')).toHaveLength(1)
 	})
 })
