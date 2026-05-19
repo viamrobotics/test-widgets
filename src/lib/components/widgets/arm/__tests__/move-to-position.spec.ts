@@ -132,4 +132,55 @@ describe('Arm move-to-position', () => {
 		renderSubject({ lastError: new Error('some error msg') })
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
+
+	it('displays plan validation errors', async () => {
+		renderSubject({
+			validatePlan: vi.fn().mockRejectedValue(new Error('unreachable pose')),
+		})
+
+		const executeButton = screen.getByRole('button', { name: /execute/iu })
+		await user.click(executeButton)
+
+		expect(await screen.findByText(/unreachable pose/iu)).toBeInTheDocument()
+	})
+
+	it('disables execute when plan validation fails', async () => {
+		renderSubject({
+			validatePlan: vi.fn().mockRejectedValue(new Error('unreachable pose')),
+		})
+
+		const executeButton = screen.getByRole('button', { name: /execute/iu })
+		await user.click(executeButton)
+
+		expect(await screen.findByText(/unreachable pose/iu)).toBeInTheDocument()
+		expect(executeButton).toBeDisabled()
+	})
+
+	it('does not call moveToPosition when plan validation fails', async () => {
+		const moveToPosition = vi.fn()
+		renderSubject({
+			moveToPosition,
+			validatePlan: vi.fn().mockRejectedValue(new Error('unreachable pose')),
+		})
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(moveToPosition).not.toHaveBeenCalled()
+	})
+
+	it('calls moveToPosition after successful plan validation', async () => {
+		const moveToPosition = vi.fn()
+		const validatePlan = vi.fn().mockResolvedValue(undefined)
+		renderSubject({
+			moveToPosition,
+			validatePlan,
+		})
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(validatePlan).toHaveBeenCalled()
+		expect(moveToPosition).toHaveBeenCalledWith({
+			...defaultPose,
+		})
+	})
 })

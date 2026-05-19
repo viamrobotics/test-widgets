@@ -10,16 +10,78 @@
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
+	const PLAN_VALIDATION_DEBOUNCE_MS = 400
+
 	interface Props {
 		endPosition: Pose
 		moveToPosition: (position: Pose) => void
 		lastError: Error | null
+		validatePlan?: ((position: Pose) => Promise<void>) | undefined
 	}
 
-	const { endPosition, moveToPosition, lastError }: Props = $props()
+	const { endPosition, moveToPosition, lastError, validatePlan }: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPosition = $state({ ...endPosition })
+
+	let planError = $state<Error | null>(null)
+	let isPlanning = $state(false)
+
+	const desiredPose = $derived({
+		x: desiredPosition.x,
+		y: desiredPosition.y,
+		z: desiredPosition.z,
+		oX: desiredPosition.oX,
+		oY: desiredPosition.oY,
+		oZ: desiredPosition.oZ,
+		theta: desiredPosition.theta,
+	})
+
+	const displayError = $derived(planError ?? lastError)
+	const canExecute = $derived(!validatePlan || (!isPlanning && planError === null))
+
+	const runPlanValidation = async (pose: Pose) => {
+		if (!validatePlan) {
+			return
+		}
+
+		isPlanning = true
+		planError = null
+		try {
+			await validatePlan(pose)
+		} catch (error) {
+			planError = error as Error
+		} finally {
+			isPlanning = false
+		}
+	}
+
+	$effect(() => {
+		if (!validatePlan) {
+			return
+		}
+
+		const pose = desiredPose
+		const timeoutId = setTimeout(() => {
+			void runPlanValidation(pose)
+		}, PLAN_VALIDATION_DEBOUNCE_MS)
+
+		return () => {
+			clearTimeout(timeoutId)
+		}
+	})
+
+	const executeMove = async () => {
+		if (validatePlan) {
+			await runPlanValidation(desiredPose)
+			if (planError !== null) {
+				return
+			}
+		}
+
+		moveToPosition(desiredPose)
+	}
+
 	let useRadians = $state(false)
 
 	const resetToZero = () => {
@@ -134,11 +196,12 @@
 	</div>
 	<Button
 		class="mt-auto w-fit"
+		disabled={!canExecute}
 		icon="play-circle-outline"
 		variant="dark"
-		onclick={() => moveToPosition(desiredPosition)}
+		onclick={executeMove}
 	>
 		Execute
 	</Button>
-	<ErrorDisplay {lastError} />
+	<ErrorDisplay lastError={displayError} />
 </div>

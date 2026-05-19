@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
 
-	import { ArmClient } from '@viamrobotics/sdk'
+	import { ArmClient, MotionClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
 		createResourceQuery,
+		useResourceNames,
 	} from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
@@ -20,6 +21,10 @@
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPosition from './move-to-position.svelte'
 	import QuickMove from './quick-move.svelte'
+	import {
+		DEFAULT_MOTION_SERVICE_NAME,
+		validateMoveToPositionPlan,
+	} from './validate-move-to-position-plan'
 
 	interface Props {
 		partID: string
@@ -32,6 +37,17 @@
 		ArmClient,
 		() => partID,
 		() => resourceName
+	)
+
+	const resourceNames = useResourceNames(() => partID)
+	const motionServiceName = $derived(
+		resourceNames.current?.find((name) => name.type === 'motion')?.name
+	)
+
+	const motionClient = createResourceClient(
+		MotionClient,
+		() => partID,
+		() => motionServiceName || DEFAULT_MOTION_SERVICE_NAME
 	)
 
 	const options = { refetchInterval: 500 }
@@ -55,6 +71,14 @@
 	const moveToPosition = (position: Pose) => {
 		moveToPosMutation.mutate([position], {})
 	}
+
+	const validatePlan = (position: Pose) =>
+		validateMoveToPositionPlan(
+			motionClient.current!,
+			DEFAULT_MOTION_SERVICE_NAME,
+			resourceName,
+			position
+		)
 </script>
 
 <ConnectionStatus {partID}>
@@ -92,6 +116,7 @@
 							<MoveToPosition
 								endPosition={endPositionQuery.data}
 								{moveToPosition}
+								{validatePlan}
 								lastError={moveToPosMutation.error}
 							/>
 						{/if}
