@@ -15,6 +15,9 @@
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 
+	import { decodeViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
+	import { pickImageForSource } from './pick-image-for-source'
+
 	interface Props {
 		resourceName: string
 		partID: string
@@ -25,6 +28,7 @@
 		isLoading: boolean
 		videoClass?: string
 		showMousePositionTooltip?: boolean
+		sourceName?: string
 		refetch: () => Promise<unknown>
 	}
 
@@ -38,6 +42,7 @@
 		isLoading,
 		videoClass = '',
 		showMousePositionTooltip = false,
+		sourceName = '',
 		refetch,
 	}: Props = $props()
 
@@ -211,12 +216,29 @@
 	})
 
 	$effect(() => {
-		if (!data?.images?.[0]?.image) {
+		const matchingImage = pickImageForSource(data?.images, sourceName)
+		if (!matchingImage?.image) {
 			return
 		}
 
-		const imageBlob = new Blob([new Uint8Array(data.images[0].image)], {
-			type: data.images[0].mimeType || 'image/jpeg',
+		const bytes = new Uint8Array(matchingImage.image)
+
+		// Browsers cannot decode Viam's custom depth MIME type; render it ourselves.
+		if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
+			const decoded = decodeViamDepth(bytes)
+			if (!decoded || !canvasCtx) {
+				return
+			}
+			canvas.width = decoded.width
+			canvas.height = decoded.height
+			const imageData = canvasCtx.createImageData(decoded.width, decoded.height)
+			imageData.data.set(decoded.pixels)
+			canvasCtx.putImageData(imageData, 0, 0)
+			return
+		}
+
+		const imageBlob = new Blob([bytes], {
+			type: matchingImage.mimeType || 'image/jpeg',
 		})
 
 		img.src = URL.createObjectURL(imageBlob)

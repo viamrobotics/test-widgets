@@ -6,12 +6,15 @@
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 
+	import { pickImageForSource } from './pick-image-for-source'
+
 	interface Props {
 		name: string
+		sourceName?: string
 		getImage: () => Promise<QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>>
 	}
 
-	const { name, getImage }: Props = $props()
+	const { name, sourceName = '', getImage }: Props = $props()
 
 	let lastError = $state<Error>()
 
@@ -43,9 +46,10 @@
 		}
 
 		lastError = undefined
-		if (image.data?.images?.[0]?.image) {
-			const imageBlob = new Blob([new Uint8Array(image.data.images[0].image)], {
-				type: image.data.images[0].mimeType || 'image/jpeg',
+		const matchingImage = pickImageForSource(image.data?.images, sourceName)
+		if (matchingImage?.image) {
+			const imageBlob = new Blob([new Uint8Array(matchingImage.image)], {
+				type: matchingImage.mimeType || 'image/jpeg',
 			})
 
 			const link = document.createElement('a')

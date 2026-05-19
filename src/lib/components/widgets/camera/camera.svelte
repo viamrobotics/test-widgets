@@ -16,6 +16,7 @@
 	import ExportScreenshot from './export-screenshot.svelte'
 	import { getSourceNames } from './get-source-names'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
+	import { pickImageForSource } from './pick-image-for-source'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
 
 	interface Props {
@@ -150,6 +151,7 @@
 						isLoading={imageQuery.isLoading}
 						refetch={imageQuery.refetch}
 						showMousePositionTooltip={mousePostionTooltip === 'On'}
+						sourceName={selectedSource}
 					/>
 				{:else}
 					<div class="bg-medium flex h-64 w-80 items-center justify-center">
@@ -169,6 +171,7 @@
 				<div class="flex flex-col items-start gap-2">
 					<ExportScreenshot
 						name={client.current?.name ?? ''}
+						sourceName={selectedSource}
 						getImage={exportScreenshotQuery.refetch}
 					/>
 					{#if addImageToDataset}
@@ -184,8 +187,9 @@
 									imgData = imageQuery.data
 								}
 
-								const image = imgData?.images?.[0]?.image
-								const mimeType = imgData?.images?.[0]?.mimeType
+								const matchingImage = pickImageForSource(imgData?.images, selectedSource)
+								const image = matchingImage?.image
+								const mimeType = matchingImage?.mimeType
 
 								if (image) {
 									addImageToDataset({
