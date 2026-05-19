@@ -2,4 +2,4 @@
 '@viamrobotics/test-widgets': minor
 ---
 
-feat: display join limits before executing moveToJointPositions
+feat: display joint limits before executing moveToJointPositions
