@@ -11,10 +11,12 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
+	import Queries from '$lib/components/queries.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 
 	import GetJointPositions from './get-joint-positions.svelte'
+	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPosition from './move-to-position.svelte'
 	import QuickMove from './quick-move.svelte'
@@ -35,6 +37,7 @@
 	const options = { refetchInterval: 500 }
 	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
 	const endPositionQuery = createResourceQuery(client, 'getEndPosition', options)
+	const kinematicsQuery = createResourceQuery(client, 'getKinematics', options)
 
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
 	const quickMoveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
@@ -72,15 +75,16 @@
 					</Query>
 				</ApiSection>
 				<ApiSection title="MoveToJointPositions">
-					<Query query={jointPositionsQuery}>
-						{#if jointPositionsQuery.data}
+					<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
+						{#if jointPositionsQuery.data && kinematicsQuery.data}
 							<MoveToJointPositions
 								positions={jointPositionsQuery.data.values}
 								{moveToJointPositions}
 								lastError={moveToJointPosMutation.error}
+								jointLimitsDegrees={getJointPositionLimits(kinematicsQuery.data as KinematicsJSON)}
 							/>
 						{/if}
-					</Query>
+					</Queries>
 				</ApiSection>
 				<ApiSection title="MoveToPosition">
 					<Query query={endPositionQuery}>
