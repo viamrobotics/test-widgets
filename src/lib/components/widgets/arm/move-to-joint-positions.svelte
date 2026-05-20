@@ -98,8 +98,8 @@
 				/>
 
 				<span slot="description">
-					Joint position limits are based solely on the arm kinematics and do not take into
-					account motion service limit overrides.
+					Joint position limits are based solely on the arm kinematics and do not take into account
+					motion service limit overrides.
 				</span>
 			</Tooltip>
 		</span>
