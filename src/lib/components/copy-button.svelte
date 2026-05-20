@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
 
 	interface Props {
 		data: string
@@ -26,15 +26,12 @@
 </script>
 
 <Tooltip>
-	<button
+	<IconButton
 		onclick={handleCopyClick}
 		aria-label={ariaLabel}
 		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
-	>
-		<Icon
-			name={showCopySuccess ? 'check' : 'content-copy'}
-			size="xs"
-		/>
-	</button>
-	<span slot="description">Copy to clipboard</span>
+		icon={showCopySuccess ? 'check' : 'content-copy'}
+		label="Copy to clipboard"
+	/>
+	<span slot="description">{ariaLabel}</span>
 </Tooltip>

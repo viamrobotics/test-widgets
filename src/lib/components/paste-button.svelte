@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
 
 	interface Props {
 		onPaste: (data: string) => boolean
@@ -26,15 +26,12 @@
 </script>
 
 <Tooltip>
-	<button
+	<IconButton
 		onclick={handlePasteClick}
 		aria-label={ariaLabel}
 		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
-	>
-		<Icon
-			name={iconName}
-			size="xs"
-		/>
-	</button>
+		icon={iconName}
+		label="Paste from clipboard"
+	/>
 	<span slot="description">{ariaLabel}</span>
 </Tooltip>
