@@ -91,10 +91,10 @@ importers:
         version: 0.183.1
       '@viamrobotics/motion-tools':
         specifier: ^1.19.1
-        version: 1.19.1(227c8cb51869e1778568ba51e8c8cd26)
+        version: 1.19.1(3de9b43f3c997d767960211059488fa9)
       '@viamrobotics/prime-core':
-        specifier: ^0.1.21
-        version: 0.1.21(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))
+        specifier: ^0.1.22
+        version: 0.1.22(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))
       '@viamrobotics/sdk':
         specifier: ^0.69.0
         version: 0.69.0
@@ -1308,8 +1308,8 @@ packages:
       svelte: '>=5'
       svelte-virtuallists: '>=1'
 
-  '@viamrobotics/prime-core@0.1.21':
-    resolution: {integrity: sha512-y/EG0eIqi7yfpUK86Lyha6h9ZFfl9YLr3/6B8nzpnua6dGuzAt22Rvgi3ekmJP4M6G5BczazjqYbd36ijO00lA==}
+  '@viamrobotics/prime-core@0.1.22':
+    resolution: {integrity: sha512-h5ukdMQqHSLIBCWyheliW7cJfCeMC2bIifa9hzHnWBUpuYPwoujG/4/4wWRhohG9XBN1bCZQs/txttUdXpxqBA==}
     peerDependencies:
       svelte: '>=5 <6'
 
@@ -4183,7 +4183,7 @@ snapshots:
       '@typescript-eslint/types': 8.59.1
       eslint-visitor-keys: 5.0.1
 
-  '@viamrobotics/motion-tools@1.19.1(227c8cb51869e1778568ba51e8c8cd26)':
+  '@viamrobotics/motion-tools@1.19.1(3de9b43f3c997d767960211059488fa9)':
     dependencies:
       '@ag-grid-community/client-side-row-model': 32.3.9
       '@ag-grid-community/core': 32.3.9
@@ -4198,7 +4198,7 @@ snapshots:
       '@threlte/extras': 9.15.0(@types/three@0.183.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))(three@0.183.2)
       '@threlte/rapier': 3.4.0(@dimforge/rapier3d-compat@0.12.0)(svelte@5.55.7(@typescript-eslint/types@8.59.1))(three@0.183.2)
       '@threlte/xr': 1.4.0(svelte@5.55.7(@typescript-eslint/types@8.59.1))(three@0.183.2)
-      '@viamrobotics/prime-core': 0.1.21(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))
+      '@viamrobotics/prime-core': 0.1.22(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))
       '@viamrobotics/sdk': 0.69.0
       '@viamrobotics/svelte-sdk': 1.2.1(@viamrobotics/sdk@0.69.0)(svelte@5.55.7(@typescript-eslint/types@8.59.1))
       '@zag-js/collapsible': 1.40.0
@@ -4227,7 +4227,7 @@ snapshots:
       - react
       - three
 
-  '@viamrobotics/prime-core@0.1.21(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))':
+  '@viamrobotics/prime-core@0.1.22(@internationalized/date@3.12.1)(svelte@5.55.7(@typescript-eslint/types@8.59.1))':
     dependencies:
       '@codemirror/commands': 6.3.0
       '@codemirror/lang-go': 6.0.1

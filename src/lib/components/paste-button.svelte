@@ -21,7 +21,7 @@
 	}
 
 	const iconName = $derived(
-		isPasteSuccessful === null ? 'content-paste' : isPasteSuccessful ? 'check' : 'close'
+		isPasteSuccessful === null ? 'content-paste' : (isPasteSuccessful ? 'check' : 'close')
 	)
 </script>
 
