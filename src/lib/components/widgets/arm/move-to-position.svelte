@@ -53,8 +53,7 @@
 	const handlePaste = (data: string): boolean => {
 		try {
 			desiredPosition = JSON.parse(data) as Pose
-		} catch (error) {
-			console.error('Error parsing paste data', error)
+		} catch {
 			return false
 		}
 		return true
