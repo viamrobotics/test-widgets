@@ -32,7 +32,7 @@
 </script>
 
 <section
-	class="flex flex-col gap-2 p-4"
+	class="flex w-full flex-col gap-2 p-4"
 	aria-labelledby={headingID}
 >
 	<div class={twMerge('flex grow flex-row flex-wrap gap-2', className)}>

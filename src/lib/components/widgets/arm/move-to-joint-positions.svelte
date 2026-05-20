@@ -9,13 +9,16 @@
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
+	import { getOutOfBoundsSide, isOutsideJointLimit, type JointLimit } from './joint-position-limits'
+
 	interface Props {
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
 		lastError: Error | null
+		jointLimitsDegrees: JointLimit[]
 	}
 
-	const { positions, moveToJointPositions, lastError }: Props = $props()
+	const { positions, moveToJointPositions, lastError, jointLimitsDegrees }: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
@@ -28,12 +31,6 @@
 	const resetToCurrent = () => {
 		desiredPositions = [...positions]
 	}
-
-	const displayPositions = $derived(
-		desiredPositions.map((pos) => (useRadians ? degreesToRadians(pos) : pos))
-	)
-
-	const copyData = $derived(`[${displayPositions.join(', ')}]`)
 
 	const handleJointInputChange = (index: number, inputValue: number) => {
 		// default is degrees, so if user has toggle to radians, convert back to degrees before setting
@@ -49,6 +46,44 @@
 		}
 		return true
 	}
+	const degreesToDisplayAngle = (degrees: number) => {
+		return useRadians ? degreesToRadians(degrees) : degrees
+	}
+
+	const outOfBoundsMessage = (displayValue: number, limit: JointLimit) => {
+		const min = degreesToDisplayAngle(limit.minDegrees)
+		const max = degreesToDisplayAngle(limit.maxDegrees)
+		const unit = useRadians ? 'rad' : 'deg'
+		const side = getOutOfBoundsSide(displayValue, min, max)
+
+		if (side === 'below-min') {
+			return `Min value is ${formatNumeric(min)} ${unit}`
+		}
+
+		if (side === 'above-max') {
+			return `Max value is ${formatNumeric(max)} ${unit}`
+		}
+	}
+
+	const displayPositions = $derived(desiredPositions.map((pos) => degreesToDisplayAngle(pos)))
+
+	const copyData = $derived(`[${displayPositions.join(', ')}]`)
+
+	const outOfBoundsByIndex = $derived(
+		displayPositions.map((displayValue, index) => {
+			const limit = jointLimitsDegrees[index]
+			if (!limit) {
+				return false
+			}
+			return isOutsideJointLimit(
+				displayValue,
+				degreesToDisplayAngle(limit.minDegrees),
+				degreesToDisplayAngle(limit.maxDegrees)
+			)
+		})
+	)
+
+	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
@@ -76,18 +111,27 @@
 		</thead>
 		<tbody>
 			{#each { length: positions.length }, index}
+				{@const limit = jointLimitsDegrees[index]}
 				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
+				{@const outOfBounds = outOfBoundsByIndex[index]}
 				<tr>
-					<th> {index} </th>
+					<th>{index}</th>
 					<th>
-						<NumericInput
-							cx="max-w-[76px]"
-							{value}
-							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0
-								handleJointInputChange(index, inputValue)
-							}}
-						/>
+						<div class="flex flex-col items-center gap-0.5 py-0.5">
+							<NumericInput
+								cx="max-w-[76px]"
+								{value}
+								on:change={(event) => {
+									const inputValue = numberValueFromEvent(event) ?? 0
+									handleJointInputChange(index, inputValue)
+								}}
+							/>
+							{#if limit && outOfBounds}
+								<p class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal">
+									{outOfBoundsMessage(displayPositions[index], limit)}
+								</p>
+							{/if}
+						</div>
 					</th>
 				</tr>
 			{/each}
@@ -115,6 +159,7 @@
 	</div>
 	<Button
 		class="mt-auto w-fit"
+		disabled={hasOutOfBoundsPositions}
 		icon="play-circle-outline"
 		variant="dark"
 		onclick={() => moveToJointPositions(desiredPositions)}
