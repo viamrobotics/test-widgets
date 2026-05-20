@@ -233,6 +233,7 @@
 			if (!canvasCtx) {
 				return
 			}
+			lastError = undefined
 			canvas.width = decoded.width
 			canvas.height = decoded.height
 			const imageData = canvasCtx.createImageData(decoded.width, decoded.height)
