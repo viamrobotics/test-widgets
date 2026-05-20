@@ -21,7 +21,8 @@
 	}
 
 	const iconName = $derived(
-		isPasteSuccessful === null ? 'content-paste' : (isPasteSuccessful ? 'check' : 'close')
+		// eslint-disable-next-line unicorn/no-nested-ternary
+		isPasteSuccessful === null ? 'content-paste' : isPasteSuccessful ? 'check' : 'close'
 	)
 </script>
 
