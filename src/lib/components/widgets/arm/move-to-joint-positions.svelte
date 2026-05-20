@@ -89,7 +89,20 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<!-- Controls Header -->
 	<div class="flex items-center justify-between">
-		<span class="text-sm">Joint Positions</span>
+		<span class="flex flex-row items-center gap-1 text-sm">
+			Joint Positions
+			<Tooltip>
+				<Icon
+					name="information-outline"
+					cx="text-gray-6"
+				/>
+
+				<span slot="description">
+					Joint position limits are based solely on the arm kinematics and do not take into
+					account motion service limit overrides.
+				</span>
+			</Tooltip>
+		</span>
 		<div class="flex gap-1">
 			<AngleUnitToggle
 				{useRadians}
