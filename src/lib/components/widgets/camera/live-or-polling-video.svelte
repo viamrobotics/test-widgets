@@ -226,7 +226,11 @@
 		// Browsers cannot decode Viam's custom depth MIME type; render it ourselves.
 		if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
 			const decoded = decodeViamDepth(bytes)
-			if (!decoded || !canvasCtx) {
+			if (!decoded) {
+				lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
+				return
+			}
+			if (!canvasCtx) {
 				return
 			}
 			canvas.width = decoded.width

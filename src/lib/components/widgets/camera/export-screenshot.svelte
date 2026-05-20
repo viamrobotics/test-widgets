@@ -6,6 +6,7 @@
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 
+	import { decodeViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
 
 	interface Props {
@@ -38,7 +39,6 @@
 	}
 
 	const handleExport = async () => {
-		const exportFilename = `${name}-${getDateString()}.jpeg`
 		const image = await getImage()
 		if (image.error) {
 			lastError = image.error
@@ -47,18 +47,51 @@
 
 		lastError = undefined
 		const matchingImage = pickImageForSource(image.data?.images, sourceName)
-		if (matchingImage?.image) {
-			const imageBlob = new Blob([new Uint8Array(matchingImage.image)], {
-				type: matchingImage.mimeType || 'image/jpeg',
-			})
-
-			const link = document.createElement('a')
-			const dataUrl = URL.createObjectURL(imageBlob)
-			link.href = dataUrl
-			link.download = exportFilename
-			link.click()
-			URL.revokeObjectURL(dataUrl)
+		if (!matchingImage?.image) {
+			return
 		}
+
+		const bytes = new Uint8Array(matchingImage.image)
+		let blob: Blob
+		let ext: string
+
+		if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
+			// Decode depth frames to a viewable PNG so the exported file matches the live feed.
+			const decoded = decodeViamDepth(bytes)
+			if (!decoded) {
+				lastError = new Error('Failed to decode depth image')
+				return
+			}
+			const offscreen = document.createElement('canvas')
+			offscreen.width = decoded.width
+			offscreen.height = decoded.height
+			const ctx = offscreen.getContext('2d')
+			if (!ctx) {
+				lastError = new Error('Canvas context unavailable')
+				return
+			}
+			const imageData = ctx.createImageData(decoded.width, decoded.height)
+			imageData.data.set(decoded.pixels)
+			ctx.putImageData(imageData, 0, 0)
+			blob = await new Promise<Blob>((resolve, reject) => {
+				offscreen.toBlob((b) => {
+					if (b) resolve(b)
+					else reject(new Error('Canvas toBlob failed'))
+				}, 'image/png')
+			})
+			ext = 'png'
+		} else {
+			blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
+			ext = 'jpeg'
+		}
+
+		const exportFilename = `${name}-${getDateString()}.${ext}`
+		const link = document.createElement('a')
+		const dataUrl = URL.createObjectURL(blob)
+		link.href = dataUrl
+		link.download = exportFilename
+		link.click()
+		URL.revokeObjectURL(dataUrl)
 	}
 </script>
 

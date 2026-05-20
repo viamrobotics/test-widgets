@@ -18,32 +18,41 @@ const encodeDepthFrame = (width: number, height: number, depths: number[]): Uint
 describe('decodeViamDepth', () => {
 	it('decodes width and height from the header', () => {
 		const result = decodeViamDepth(encodeDepthFrame(2, 3, [0, 0, 0, 0, 0, 0]))
-		expect(result?.width).toBe(2)
-		expect(result?.height).toBe(3)
+		expect(result).toBeDefined()
+		expect(result!.width).toBe(2)
+		expect(result!.height).toBe(3)
 	})
 
 	it('maps near depths to warm hues and far depths to cool hues', () => {
 		const result = decodeViamDepth(encodeDepthFrame(2, 1, [100, 200]))
+		expect(result).toBeDefined()
 		// Near (hue 30°, orange-yellow): high red, some green, no blue
-		expect(result?.pixels[0]).toBeGreaterThan(result?.pixels[1] ?? 0)
-		expect(result?.pixels[2]).toBe(0)
-		expect(result?.pixels[3]).toBe(255) // alpha
+		expect(result!.pixels[0]).toBeGreaterThan(result!.pixels[1]!)
+		expect(result!.pixels[2]).toBe(0)
+		expect(result!.pixels[3]).toBe(255) // alpha
 		// Far (hue 230°, blue): high blue, some green, no red
-		expect(result?.pixels[6]).toBeGreaterThan(result?.pixels[5] ?? 0)
-		expect(result?.pixels[4]).toBe(0)
-		expect(result?.pixels[7]).toBe(255) // alpha
+		expect(result!.pixels[6]).toBeGreaterThan(result!.pixels[5]!)
+		expect(result!.pixels[4]).toBe(0)
+		expect(result!.pixels[7]).toBe(255) // alpha
 	})
 
 	it('renders zero-depth pixels as opaque black and skips them from min/max', () => {
 		const result = decodeViamDepth(encodeDepthFrame(3, 1, [0, 100, 200]))
+		expect(result).toBeDefined()
 		// zero → opaque black
-		expect(result?.pixels[0]).toBe(0)
-		expect(result?.pixels[1]).toBe(0)
-		expect(result?.pixels[2]).toBe(0)
-		expect(result?.pixels[3]).toBe(255)
+		expect(result!.pixels[0]).toBe(0)
+		expect(result!.pixels[1]).toBe(0)
+		expect(result!.pixels[2]).toBe(0)
+		expect(result!.pixels[3]).toBe(255)
 		// 100 is the new min; far end of the range goes to 200, not influenced by the zero.
-		expect(result?.pixels[7]).toBe(255) // alpha
-		expect(result?.pixels[11]).toBe(255) // alpha
+		expect(result!.pixels[7]).toBe(255) // alpha
+		expect(result!.pixels[11]).toBe(255) // alpha
+	})
+
+	it('renders an all-zero frame as entirely opaque black', () => {
+		const result = decodeViamDepth(encodeDepthFrame(2, 1, [0, 0]))
+		expect(result).toBeDefined()
+		expect([...result!.pixels]).toEqual([0, 0, 0, 255, 0, 0, 0, 255])
 	})
 
 	it('returns undefined when the buffer is shorter than the header', () => {
