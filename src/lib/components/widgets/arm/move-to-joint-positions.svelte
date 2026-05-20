@@ -4,6 +4,7 @@
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
+	import PasteButton from '$lib/components/paste-button.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
@@ -37,6 +38,14 @@
 		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
 	}
 
+	const handlePaste = (data: string): boolean => {
+		try {
+			desiredPositions = JSON.parse(data) as number[]
+		} catch {
+			return false
+		}
+		return true
+	}
 	const degreesToDisplayAngle = (degrees: number) => {
 		return useRadians ? degreesToRadians(degrees) : degrees
 	}
@@ -89,6 +98,7 @@
 				}}
 			/>
 			<CopyButton data={copyData} />
+			<PasteButton onPaste={handlePaste} />
 		</div>
 	</div>
 

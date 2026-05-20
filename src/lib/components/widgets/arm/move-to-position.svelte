@@ -6,6 +6,7 @@
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
+	import PasteButton from '$lib/components/paste-button.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
@@ -48,9 +49,15 @@
 		theta: useRadians ? degreesToRadians(desiredPosition.theta) : desiredPosition.theta,
 	})
 
-	const copyData = $derived(
-		`{x: ${displayPosition.x}, y: ${displayPosition.y}, z: ${displayPosition.z}, o_x: ${displayPosition.oX}, o_y: ${displayPosition.oY}, o_z: ${displayPosition.oZ}, theta: ${displayPosition.theta}}`
-	)
+	const copyData = $derived(JSON.stringify(displayPosition))
+	const handlePaste = (data: string): boolean => {
+		try {
+			desiredPosition = JSON.parse(data) as Pose
+		} catch {
+			return false
+		}
+		return true
+	}
 
 	const handleAngleInputChange = (key: keyof Pose, inputValue: number) => {
 		if (key === 'theta') {
@@ -84,6 +91,7 @@
 				}}
 			/>
 			<CopyButton data={copyData} />
+			<PasteButton onPaste={handlePaste} />
 		</div>
 	</div>
 
