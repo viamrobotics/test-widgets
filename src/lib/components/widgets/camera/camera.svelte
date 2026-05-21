@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Canvas } from '@threlte/core'
 	import { Button, Label, Select, Switch, ToggleButtons } from '@viamrobotics/prime-core'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
@@ -15,8 +16,10 @@
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
 	import { getSourceNames } from './get-source-names'
+	import { getXmpJsonFromImageBytes, type XmpJson } from './get-xmp-json-from-image'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
+	import ThreeSixtyCameraView from './three-sixty-camera-view.svelte'
 
 	interface Props {
 		partID: string
@@ -41,6 +44,7 @@
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
+	let displayAs360 = $state(false)
 
 	const { addImageToDataset } = useAddImageToDataset()
 	const setIsShowingPointcloud = (event: CustomEvent<boolean>) => {
@@ -71,6 +75,20 @@
 				selectedSource = names[0]!
 			}
 		}
+	})
+
+	const xmpJson = $derived.by((): XmpJson | null => {
+		const imageRecord = imageQuery.data?.images?.[0]
+		const image = imageRecord?.image
+		if (!image) {
+			return null
+		}
+
+		return getXmpJsonFromImageBytes(new Uint8Array(image), imageRecord.mimeType)
+	})
+
+	const is360EnabledImage = $derived.by((): boolean => {
+		return xmpJson?.['viam:is360'] === 'true'
 	})
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
@@ -135,22 +153,41 @@
 						</Select>
 					</Label>
 				{/if}
+				{#if is360EnabledImage}
+					<Label>
+						Display as 360°
+						<ToggleButtons
+							slot="input"
+							options={['On', 'Off']}
+							selected={displayAs360 ? 'On' : 'Off'}
+							on:input={(event) => {
+								displayAs360 = event.detail === 'On'
+							}}
+						/>
+					</Label>
+				{/if}
 			</div>
 		{/if}
 		<div class="flex h-full w-full gap-4 p-4">
 			<div class="grow">
 				{#if isPlaying}
-					<LiveOrPollingVideo
-						{partID}
-						{resourceName}
-						showResolutionOptions
-						isLive={refetchInterval.current === RefetchIntervals.LIVE}
-						data={imageQuery.data}
-						error={imageQuery.error}
-						isLoading={imageQuery.isLoading}
-						refetch={imageQuery.refetch}
-						showMousePositionTooltip={mousePostionTooltip === 'On'}
-					/>
+					{#if displayAs360}
+						<Canvas>
+							<ThreeSixtyCameraView data={imageQuery.data} />
+						</Canvas>
+					{:else}
+						<LiveOrPollingVideo
+							{partID}
+							{resourceName}
+							showResolutionOptions
+							isLive={refetchInterval.current === RefetchIntervals.LIVE}
+							data={imageQuery.data}
+							error={imageQuery.error}
+							isLoading={imageQuery.isLoading}
+							refetch={imageQuery.refetch}
+							showMousePositionTooltip={mousePostionTooltip === 'On'}
+						/>
+					{/if}
 				{:else}
 					<div class="bg-medium flex h-64 w-80 items-center justify-center">
 						<Button
