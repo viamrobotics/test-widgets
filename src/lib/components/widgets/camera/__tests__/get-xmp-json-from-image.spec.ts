@@ -25,16 +25,14 @@ describe('getXmpJsonFromImageBytes', () => {
 		expect(getXmpJsonFromImageBytes(jpeg)).toBeNull()
 	})
 
-	it('parses GPano fields from a JPEG XMP packet', () => {
+	it('parses viam:is360 from a JPEG XMP packet', () => {
 		const xmpXml = `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <rdf:Description
       rdf:about=""
-      xmlns:GPano="http://ns.google.com/photos/1.0/panorama/"
-      GPano:ProjectionType="equirectangular"
-      GPano:UsePanoramaViewer="True"
-      GPano:PoseHeadingDegrees="90"
+      xmlns:viam="https://www.viam.com/"
+      viam:is360="true"
     />
   </rdf:RDF>
 </x:xmpmeta>
@@ -44,9 +42,7 @@ describe('getXmpJsonFromImageBytes', () => {
 		const xmpJson = getXmpJsonFromImageBytes(jpeg, 'image/jpeg')
 
 		expect(xmpJson).toEqual({
-			'GPano:ProjectionType': 'equirectangular',
-			'GPano:UsePanoramaViewer': 'True',
-			'GPano:PoseHeadingDegrees': '90',
+			'viam:is360': 'true',
 		})
 	})
 })
