@@ -43,6 +43,9 @@ describe('getXmpJsonFromImageBytes', () => {
 
 		expect(xmpJson).toEqual({
 			'viam:is360': 'true',
+			'xmlns:rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+			'xmlns:viam': 'https://www.viam.com/',
+			'xmlns:x': 'adobe:ns:meta/',
 		})
 	})
 })

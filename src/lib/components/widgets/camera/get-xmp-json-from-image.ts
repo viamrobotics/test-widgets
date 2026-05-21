@@ -8,10 +8,7 @@ const XMP_IDENTIFIER = 'http://ns.adobe.com/xap/1.0/\0'
 export type XmpJson = Record<string, unknown>
 
 /** Extract XMP metadata from image bytes and return it as a plain object. */
-export const getXmpJsonFromImageBytes = (
-	image: Uint8Array,
-	mimeType?: string
-): XmpJson | null => {
+export const getXmpJsonFromImageBytes = (image: Uint8Array, mimeType?: string): XmpJson | null => {
 	if (mimeType?.includes('png')) {
 		return getXmpJsonFromPng(image)
 	}
@@ -146,9 +143,7 @@ const xmpXmlToJson = (xmpXml: string): XmpJson | null => {
 		}
 
 		if (element.childElementCount === 0 && element.textContent?.trim()) {
-			const key = element.prefix
-				? `${element.prefix}:${element.localName}`
-				: element.localName
+			const key = element.prefix ? `${element.prefix}:${element.localName}` : element.localName
 			json[key] = element.textContent.trim()
 		}
 	}
