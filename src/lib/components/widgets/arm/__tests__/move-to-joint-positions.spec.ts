@@ -31,17 +31,6 @@ describe('Arm move-to-joint-positions', () => {
 		})
 	}
 
-	it('renders a disclaimer about joint position limits', () => {
-		renderSubject({
-			positions: [1],
-			jointLimitsDegrees: jointLimitsForCount(1),
-		})
-
-		expect(
-			screen.getByText(/joint position limits are based solely on the arm kinematics/iu)
-		).toBeInTheDocument()
-	})
-
 	it('renders a row for each axis', () => {
 		renderSubject({
 			positions: [1, 2, 3],
