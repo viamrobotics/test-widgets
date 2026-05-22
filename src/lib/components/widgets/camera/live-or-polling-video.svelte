@@ -15,7 +15,7 @@
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 
-	import { decodeViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
+	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
 
 	interface Props {
@@ -222,32 +222,32 @@
 		}
 
 		const bytes = new Uint8Array(matchingImage.image)
+		let cancelled = false
+		let objectUrl: string | undefined
 
-		// Browsers cannot decode Viam's custom depth MIME type; render it ourselves.
-		if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
-			const decoded = decodeViamDepth(bytes)
-			if (!decoded) {
-				lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
-				return
+		const render = async () => {
+			let blob: Blob | undefined
+			if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
+				blob = await getBlobForViamDepth(bytes)
+				if (!blob) {
+					lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
+					return
+				}
+			} else {
+				blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
 			}
-			if (!canvasCtx) {
-				return
-			}
+			if (cancelled) return
 			lastError = undefined
-			canvas.width = decoded.width
-			canvas.height = decoded.height
-			const imageData = canvasCtx.createImageData(decoded.width, decoded.height)
-			imageData.data.set(decoded.pixels)
-			canvasCtx.putImageData(imageData, 0, 0)
-			return
+			objectUrl = URL.createObjectURL(blob)
+			img.src = objectUrl
 		}
 
-		const imageBlob = new Blob([bytes], {
-			type: matchingImage.mimeType || 'image/jpeg',
-		})
+		void render()
 
-		img.src = URL.createObjectURL(imageBlob)
-		return () => URL.revokeObjectURL(img.src)
+		return () => {
+			cancelled = true
+			if (objectUrl) URL.revokeObjectURL(objectUrl)
+		}
 	})
 
 	let contentRect = $state.raw<DOMRect>()

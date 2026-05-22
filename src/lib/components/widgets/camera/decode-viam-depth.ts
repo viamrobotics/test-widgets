@@ -49,6 +49,13 @@ export const decodeViamDepth = (
 	}
 
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+
+	// Verify the 8-byte "DEPTHMAP" magic (0x4445505448_4d4150).
+	const magic = view.getBigUint64(0, false)
+	if (magic !== 0x4445505448_4d4150n) {
+		return undefined
+	}
+
 	const width = Number(view.getBigUint64(8, false))
 	const height = Number(view.getBigUint64(16, false))
 	const pixelCount = width * height
@@ -86,4 +93,29 @@ export const decodeViamDepth = (
 	}
 
 	return { width, height, pixels }
+}
+
+/**
+ * Decode the Viam depth format and return a PNG `Blob` suitable for display or export,
+ * using the same colorization as `decodeViamDepth`.
+ *
+ * Returns `undefined` if the buffer is too short or a canvas context is unavailable.
+ */
+export const getBlobForViamDepth = (bytes: Uint8Array): Promise<Blob | undefined> => {
+	const decoded = decodeViamDepth(bytes)
+	if (!decoded) return Promise.resolve(undefined)
+
+	const offscreen = document.createElement('canvas')
+	offscreen.width = decoded.width
+	offscreen.height = decoded.height
+	const ctx = offscreen.getContext('2d')
+	if (!ctx) return Promise.resolve(undefined)
+
+	const imageData = ctx.createImageData(decoded.width, decoded.height)
+	imageData.data.set(decoded.pixels)
+	ctx.putImageData(imageData, 0, 0)
+
+	return new Promise<Blob | undefined>((resolve) => {
+		offscreen.toBlob((blob) => resolve(blob ?? undefined), 'image/png')
+	})
 }

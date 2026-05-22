@@ -6,7 +6,7 @@
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 
-	import { decodeViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
+	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
 
 	interface Props {
@@ -57,28 +57,12 @@
 
 		if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
 			// Decode depth frames to a viewable PNG so the exported file matches the live feed.
-			const decoded = decodeViamDepth(bytes)
-			if (!decoded) {
+			const depthBlob = await getBlobForViamDepth(bytes)
+			if (!depthBlob) {
 				lastError = new Error('Failed to decode depth image')
 				return
 			}
-			const offscreen = document.createElement('canvas')
-			offscreen.width = decoded.width
-			offscreen.height = decoded.height
-			const ctx = offscreen.getContext('2d')
-			if (!ctx) {
-				lastError = new Error('Canvas context unavailable')
-				return
-			}
-			const imageData = ctx.createImageData(decoded.width, decoded.height)
-			imageData.data.set(decoded.pixels)
-			ctx.putImageData(imageData, 0, 0)
-			blob = await new Promise<Blob>((resolve, reject) => {
-				offscreen.toBlob((b) => {
-					if (b) resolve(b)
-					else reject(new Error('Canvas toBlob failed'))
-				}, 'image/png')
-			})
+			blob = depthBlob
 			ext = 'png'
 		} else {
 			blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
