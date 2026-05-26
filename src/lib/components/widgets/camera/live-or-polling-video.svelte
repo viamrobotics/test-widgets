@@ -15,6 +15,9 @@
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 
+	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
+	import { pickImageForSource } from './pick-image-for-source'
+
 	interface Props {
 		resourceName: string
 		partID: string
@@ -25,6 +28,7 @@
 		isLoading: boolean
 		videoClass?: string
 		showMousePositionTooltip?: boolean
+		sourceName?: string
 		refetch: () => Promise<unknown>
 	}
 
@@ -38,6 +42,7 @@
 		isLoading,
 		videoClass = '',
 		showMousePositionTooltip = false,
+		sourceName = '',
 		refetch,
 	}: Props = $props()
 
@@ -211,16 +216,38 @@
 	})
 
 	$effect(() => {
-		if (!data?.images?.[0]?.image) {
+		const matchingImage = pickImageForSource(data?.images, sourceName)
+		if (!matchingImage?.image) {
 			return
 		}
 
-		const imageBlob = new Blob([new Uint8Array(data.images[0].image)], {
-			type: data.images[0].mimeType || 'image/jpeg',
-		})
+		const bytes = new Uint8Array(matchingImage.image)
+		let cancelled = false
+		let objectUrl: string | undefined
 
-		img.src = URL.createObjectURL(imageBlob)
-		return () => URL.revokeObjectURL(img.src)
+		const render = async () => {
+			let blob: Blob | undefined
+			if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
+				blob = await getBlobForViamDepth(bytes)
+				if (!blob) {
+					lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
+					return
+				}
+			} else {
+				blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
+			}
+			if (cancelled) return
+			lastError = undefined
+			objectUrl = URL.createObjectURL(blob)
+			img.src = objectUrl
+		}
+
+		void render()
+
+		return () => {
+			cancelled = true
+			if (objectUrl) URL.revokeObjectURL(objectUrl)
+		}
 	})
 
 	let contentRect = $state.raw<DOMRect>()
