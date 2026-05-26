@@ -1,5 +1,18 @@
 # @viamrobotics/test-widgets
 
+## 0.5.0
+
+### Minor Changes
+
+- 3317d24: feat: allow pasting for moveToPositions and moveToPose widgets"
+- 34dedf6: support 360 camera images with special XMP metadata
+- 744bd55: feat: display joint limits before executing moveToJointPositions
+
+### Patch Changes
+
+- ea7611d: Fix camera source selection and handle Viam depth mimetype
+- 716e21b: fix: make base card quick move section expand to fill space
+
 ## 0.4.0
 
 ### Minor Changes
