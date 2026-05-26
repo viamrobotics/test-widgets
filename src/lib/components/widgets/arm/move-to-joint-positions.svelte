@@ -4,6 +4,7 @@
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
+	import PasteButton from '$lib/components/paste-button.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
@@ -37,6 +38,14 @@
 		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
 	}
 
+	const handlePaste = (data: string): boolean => {
+		try {
+			desiredPositions = JSON.parse(data) as number[]
+		} catch {
+			return false
+		}
+		return true
+	}
 	const degreesToDisplayAngle = (degrees: number) => {
 		return useRadians ? degreesToRadians(degrees) : degrees
 	}
@@ -80,7 +89,20 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<!-- Controls Header -->
 	<div class="flex items-center justify-between">
-		<span class="text-sm">Joint Positions</span>
+		<span class="flex flex-row items-center gap-1 text-sm">
+			Joint Positions
+			<Tooltip>
+				<Icon
+					name="information-outline"
+					cx="text-gray-6"
+				/>
+
+				<span slot="description">
+					Joint position limits are based solely on the arm kinematics and do not take into account
+					motion service limit overrides.
+				</span>
+			</Tooltip>
+		</span>
 		<div class="flex gap-1">
 			<AngleUnitToggle
 				{useRadians}
@@ -89,6 +111,7 @@
 				}}
 			/>
 			<CopyButton data={copyData} />
+			<PasteButton onPaste={handlePaste} />
 		</div>
 	</div>
 
