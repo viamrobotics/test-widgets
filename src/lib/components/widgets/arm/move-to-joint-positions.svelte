@@ -10,6 +10,7 @@
 	import { type JointLimit } from './joint-position-limits'
 
 	const SAFE_THRESHOLD_DEGREES = 5
+	const INCREMENT_DEGREES = 5
 
 	interface Props {
 		positions: number[]
@@ -71,6 +72,14 @@
 			moveToJointPositions([...desiredPositions])
 			releaseControlAfterDelay()
 		}
+	}
+
+	const adjustJoint = (index: number, delta: number) => {
+		const min = getSliderMin(index)
+		const max = getSliderMax(index)
+		isUserControlled = true
+		desiredPositions[index] = Math.min(Math.max((desiredPositions[index] ?? 0) + delta, min), max)
+		handleSliderChange(index)
 	}
 
 	const dismissWarning = (index: number) => {
@@ -154,6 +163,13 @@
 			<div class="flex flex-col gap-0.5">
 				<div class="flex items-center gap-2">
 					<span class="w-8 shrink-0 text-right text-xs text-gray-500">J{index}</span>
+					<button
+						aria-label="Decrease joint {index} by 5 degrees"
+						class="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
+						onclick={() => adjustJoint(index, -INCREMENT_DEGREES)}
+					>
+						−5°
+					</button>
 					<input
 						type="range"
 						class="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-800"
@@ -165,6 +181,13 @@
 						oninput={(e) => handleSliderInput(index, e)}
 						onchange={() => handleSliderChange(index)}
 					/>
+					<button
+						aria-label="Increase joint {index} by 5 degrees"
+						class="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
+						onclick={() => adjustJoint(index, INCREMENT_DEGREES)}
+					>
+						+5°
+					</button>
 					<span
 						class={[
 							'w-20 shrink-0 text-right text-xs tabular-nums',

@@ -204,4 +204,102 @@ describe('Arm move-to-joint-positions', () => {
 		renderSubject({ lastError: new Error('some error msg') })
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
+
+	describe('±5° increment buttons', () => {
+		it('renders decrease and increase buttons for each joint', () => {
+			renderSubject({
+				positions: [0, 0],
+				jointLimitsDegrees: jointLimitsForCount(2),
+			})
+
+			expect(screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })).toHaveLength(2)
+			expect(screen.getAllByRole('button', { name: /increase joint \d by 5 degrees/iu })).toHaveLength(2)
+		})
+
+		it('+5° button increases the slider value by 5', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			expect(screen.getByRole('slider')).toHaveValue('5')
+		})
+
+		it('-5° button decreases the slider value by 5', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
+
+			expect(screen.getByRole('slider')).toHaveValue('-5')
+		})
+
+		it('+5° button clamps to joint max', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+			})
+
+			// Set slider near max first
+			const slider = screen.getByRole('slider')
+			fireEvent.input(slider, { target: { value: '88' } })
+			fireEvent.change(slider, { target: { value: '88' } })
+
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			expect(slider).toHaveValue('90')
+		})
+
+		it('-5° button clamps to joint min', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+			})
+
+			const slider = screen.getByRole('slider')
+			fireEvent.input(slider, { target: { value: '-88' } })
+			fireEvent.change(slider, { target: { value: '-88' } })
+
+			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
+
+			expect(slider).toHaveValue('-90')
+		})
+
+		it('+5° button shows large move warning when total delta >= 5 degrees', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			expect(screen.getByText(/large move/iu)).toBeInTheDocument()
+		})
+
+		it('increment button auto-executes when resulting delta from current position is under threshold', async () => {
+			const moveToJointPositions = vi.fn()
+			// Arm at 0°; stage desired to -3° via slider (delta 3°, auto-executed), then +5° → desired 2°, delta 2° → auto-execute
+			renderSubject({
+				positions: [0],
+				moveToJointPositions,
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			const slider = screen.getByRole('slider')
+			fireEvent.input(slider, { target: { value: '-3' } })
+			fireEvent.change(slider, { target: { value: '-3' } })
+
+			moveToJointPositions.mockClear()
+
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			// desired is now 2°, delta from current (0°) is 2° < 5° → auto-execute
+			expect(moveToJointPositions).toHaveBeenCalledWith([2])
+			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+		})
+	})
 })
