@@ -155,7 +155,7 @@
 
 	<!-- Per-joint sliders -->
 	<div class="flex flex-col gap-3">
-		{#each { length: positions.length } as _, index}
+		{#each { length: positions.length } as _, index (index)}
 			{@const min = getSliderMin(index)}
 			{@const max = getSliderMax(index)}
 			{@const hasWarning = pendingLargeMovesPerJoint[index] ?? false}
@@ -164,8 +164,18 @@
 			{@const unit = useRadians ? ' rad' : '°'}
 
 			<div class="flex flex-col gap-0.5">
+				<div class="flex items-center justify-between">
+					<span class="text-xs text-gray-500">J{index}</span>
+					<span
+						class={[
+							'text-xs tabular-nums',
+							hasWarning ? 'font-medium text-amber-700' : 'text-gray-700',
+						]}
+					>
+						{formatNumeric(displayValue)}{unit}
+					</span>
+				</div>
 				<div class="flex items-center gap-2">
-					<span class="w-8 shrink-0 text-right text-xs text-gray-500">J{index}</span>
 					<button
 						aria-label="Decrease joint {index} by 5 degrees"
 						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
@@ -191,19 +201,11 @@
 					>
 						+5°
 					</button>
-					<span
-						class={[
-							'w-20 shrink-0 text-right text-xs tabular-nums',
-							hasWarning ? 'font-medium text-amber-700' : 'text-gray-700',
-						]}
-					>
-						{formatNumeric(displayValue)}{unit}
-					</span>
 				</div>
 
 				{#if hasWarning}
 					<div
-						class="ml-10 flex w-fit items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-800"
+						class="flex w-fit items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-800"
 					>
 						<Icon
 							name="alert"
