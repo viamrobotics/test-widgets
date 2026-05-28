@@ -115,8 +115,8 @@
 				Math.min(Math.max(pos, getSliderMin(i)), getSliderMax(i))
 			)
 			desiredPositions = clamped
-			pendingLargeMovesPerJoint = clamped.map((pos, i) =>
-				Math.abs(pos - (positions[i] ?? 0)) > SAFE_THRESHOLD_DEGREES
+			pendingLargeMovesPerJoint = clamped.map(
+				(pos, i) => Math.abs(pos - (positions[i] ?? 0)) > SAFE_THRESHOLD_DEGREES
 			)
 			isUserControlled = true
 		} catch {
@@ -177,35 +177,33 @@
 					</span>
 				</div>
 				<div class="flex items-center gap-2">
-					<button
+					<Button
 						aria-label="Decrease joint {index} by 5 degrees"
-						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
 						onclick={() => adjustJoint(index, -INCREMENT_DEGREES)}
 					>
 						−5°
-					</button>
+					</Button>
 					<div class="min-w-0 flex-1">
 						<Slider
 							bind:value={desiredPositions[index]}
 							{min}
 							{max}
 							step={0.1}
-							label="Joint {index} position"
+							wide={true}
 							theme={ThemeUtils.presets.light}
-							on:change={(e) => {
+							on:change={(e: CustomEvent<{ origin: string }>) => {
 								if (e.detail.origin === 'internal') {
 									handleSliderInternalChange(index)
 								}
 							}}
 						/>
 					</div>
-					<button
+					<Button
 						aria-label="Increase joint {index} by 5 degrees"
-						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
 						onclick={() => adjustJoint(index, INCREMENT_DEGREES)}
 					>
 						+5°
-					</button>
+					</Button>
 				</div>
 
 				{#if hasWarning}
