@@ -65,7 +65,7 @@
 
 	const handleSliderChange = (index: number) => {
 		const delta = Math.abs((desiredPositions[index] ?? 0) - (positions[index] ?? 0))
-		if (delta >= SAFE_THRESHOLD_DEGREES) {
+		if (delta > SAFE_THRESHOLD_DEGREES) {
 			pendingLargeMovesPerJoint[index] = true
 		} else {
 			pendingLargeMovesPerJoint[index] = false
@@ -99,7 +99,7 @@
 	const resetToZero = () => {
 		desiredPositions = positions.map(() => 0)
 		isUserControlled = true
-		pendingLargeMovesPerJoint = positions.map((pos) => Math.abs(pos) >= SAFE_THRESHOLD_DEGREES)
+		pendingLargeMovesPerJoint = positions.map((pos) => Math.abs(pos) > SAFE_THRESHOLD_DEGREES)
 	}
 
 	const resetToCurrent = () => {
@@ -115,7 +115,7 @@
 			)
 			desiredPositions = clamped
 			pendingLargeMovesPerJoint = clamped.map((pos, i) =>
-				Math.abs(pos - (positions[i] ?? 0)) >= SAFE_THRESHOLD_DEGREES
+				Math.abs(pos - (positions[i] ?? 0)) > SAFE_THRESHOLD_DEGREES
 			)
 			isUserControlled = true
 		} catch {
@@ -168,7 +168,7 @@
 					<span class="w-8 shrink-0 text-right text-xs text-gray-500">J{index}</span>
 					<button
 						aria-label="Decrease joint {index} by 5 degrees"
-						class="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
+						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
 						onclick={() => adjustJoint(index, -INCREMENT_DEGREES)}
 					>
 						−5°
@@ -186,7 +186,7 @@
 					/>
 					<button
 						aria-label="Increase joint {index} by 5 degrees"
-						class="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
+						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
 						onclick={() => adjustJoint(index, INCREMENT_DEGREES)}
 					>
 						+5°
