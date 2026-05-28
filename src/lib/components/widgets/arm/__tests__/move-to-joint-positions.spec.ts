@@ -2,7 +2,7 @@ import type { ComponentProps } from 'svelte'
 
 import { fireEvent, render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { JointLimit } from '../joint-position-limits'
 
@@ -181,6 +181,42 @@ describe('Arm move-to-joint-positions', () => {
 		}
 	})
 
+	it('Zero button shows large move warnings when joints would move 5 or more degrees', async () => {
+		renderSubject({
+			positions: [30, 0],
+			jointLimitsDegrees: jointLimitsForCount(2),
+		})
+
+		await user.click(screen.getByRole('button', { name: /zero/iu }))
+
+		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
+		expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
+	})
+
+	it('Zero button does not show warnings when all joints are already within 5 degrees of zero', async () => {
+		renderSubject({
+			positions: [2, -3],
+			jointLimitsDegrees: jointLimitsForCount(2),
+		})
+
+		await user.click(screen.getByRole('button', { name: /zero/iu }))
+
+		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+	})
+
+	it('Zero button does not auto-execute when any joint would move 5 or more degrees', async () => {
+		const moveToJointPositions = vi.fn()
+		renderSubject({
+			positions: [30],
+			moveToJointPositions,
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		await user.click(screen.getByRole('button', { name: /zero/iu }))
+
+		expect(moveToJointPositions).not.toHaveBeenCalled()
+	})
+
 	it('resets sliders to current position when Current position button is clicked', async () => {
 		renderSubject({
 			positions: [10, 20],
@@ -198,6 +234,55 @@ describe('Arm move-to-joint-positions', () => {
 		const sliders = screen.getAllByRole('slider')
 		expect(sliders[0]).toHaveValue('10')
 		expect(sliders[1]).toHaveValue('20')
+	})
+
+	describe('paste', () => {
+		beforeEach(() => {
+			vi.spyOn(globalThis.navigator.clipboard, 'readText')
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		it('shows large move warnings when pasted values would move any joint 5 or more degrees', async () => {
+			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
+
+			expect(screen.getByText(/large move/iu)).toBeInTheDocument()
+			expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
+		})
+
+		it('does not auto-execute when pasted values include large moves', async () => {
+			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
+			const moveToJointPositions = vi.fn()
+			renderSubject({
+				positions: [0],
+				moveToJointPositions,
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
+
+			expect(moveToJointPositions).not.toHaveBeenCalled()
+		})
+
+		it('does not show warnings when pasted values are within 5 degrees of current', async () => {
+			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[3]')
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
+
+			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+		})
 	})
 
 	it('displays the provided error', () => {

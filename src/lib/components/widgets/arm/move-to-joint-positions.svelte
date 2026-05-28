@@ -97,9 +97,9 @@
 	}
 
 	const resetToZero = () => {
-		pendingLargeMovesPerJoint = positions.map(() => false)
 		desiredPositions = positions.map(() => 0)
 		isUserControlled = true
+		pendingLargeMovesPerJoint = positions.map((pos) => Math.abs(pos) >= SAFE_THRESHOLD_DEGREES)
 	}
 
 	const resetToCurrent = () => {
@@ -110,10 +110,13 @@
 	const handlePaste = (data: string): boolean => {
 		try {
 			const parsed = JSON.parse(data) as number[]
-			desiredPositions = parsed.map((pos, i) =>
+			const clamped = parsed.map((pos, i) =>
 				Math.min(Math.max(pos, getSliderMin(i)), getSliderMax(i))
 			)
-			pendingLargeMovesPerJoint = desiredPositions.map(() => false)
+			desiredPositions = clamped
+			pendingLargeMovesPerJoint = clamped.map((pos, i) =>
+				Math.abs(pos - (positions[i] ?? 0)) >= SAFE_THRESHOLD_DEGREES
+			)
 			isUserControlled = true
 		} catch {
 			return false
