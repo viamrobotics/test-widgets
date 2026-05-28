@@ -37,7 +37,7 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(3),
 		})
 
-		expect(screen.getAllByRole('slider')).toHaveLength(3)
+		expect(screen.getAllByRole('textbox')).toHaveLength(3)
 	})
 
 	it('labels each slider with its joint index', () => {
@@ -46,30 +46,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		expect(screen.getByRole('slider', { name: 'Joint 0 position' })).toBeInTheDocument()
-		expect(screen.getByRole('slider', { name: 'Joint 1 position' })).toBeInTheDocument()
-	})
-
-	it('sets slider min and max from jointLimitsDegrees', () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-		})
-
-		const slider = screen.getByRole('slider')
-		expect(slider).toHaveAttribute('min', '-90')
-		expect(slider).toHaveAttribute('max', '90')
-	})
-
-	it('uses -180/180 as default bounds when no joint limits are provided', () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: [],
-		})
-
-		const slider = screen.getByRole('slider')
-		expect(slider).toHaveAttribute('min', '-180')
-		expect(slider).toHaveAttribute('max', '180')
+		expect(screen.getByText('Joint 0 position')).toBeInTheDocument()
+		expect(screen.getByText('Joint 1 position')).toBeInTheDocument()
 	})
 
 	it('auto-executes immediately when a slider is adjusted by less than 5 degrees', () => {
@@ -80,9 +58,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '3' } })
-		fireEvent.change(slider, { target: { value: '3' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '3' } })
 
 		expect(moveToJointPositions).toHaveBeenCalledWith([3])
 	})
@@ -95,9 +72,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '50' } })
-		fireEvent.change(slider, { target: { value: '50' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '50' } })
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 	})
@@ -108,9 +84,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '30' } })
-		fireEvent.change(slider, { target: { value: '30' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '30' } })
 
 		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
 		expect(screen.getByText(/\+30\.00°/u)).toBeInTheDocument()
@@ -122,9 +97,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '20' } })
-		fireEvent.change(slider, { target: { value: '20' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '20' } })
 
 		expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
 	})
@@ -135,9 +109,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '30' } })
-		fireEvent.change(slider, { target: { value: '30' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '30' } })
 
 		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
 
@@ -155,9 +128,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const slider = screen.getByRole('slider')
-		fireEvent.input(slider, { target: { value: '45' } })
-		fireEvent.change(slider, { target: { value: '45' } })
+		const textInput = screen.getByRole('textbox')
+		fireEvent.change(textInput, { target: { value: '45' } })
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 
@@ -176,8 +148,8 @@ describe('Arm move-to-joint-positions', () => {
 		const zeroButton = screen.getByRole('button', { name: /zero/iu })
 		await user.click(zeroButton)
 
-		for (const slider of screen.getAllByRole('slider')) {
-			expect(slider).toHaveValue('0')
+		for (const textInput of screen.getAllByRole('textbox')) {
+			expect(Number(textInput.value)).toBeCloseTo(0)
 		}
 	})
 
@@ -224,16 +196,15 @@ describe('Arm move-to-joint-positions', () => {
 		})
 
 		// Stage a change so sliders diverge from current
-		const [slider] = screen.getAllByRole('slider')
-		fireEvent.input(slider!, { target: { value: '45' } })
-		fireEvent.change(slider!, { target: { value: '45' } })
+		const [textInput] = screen.getAllByRole('textbox')
+		fireEvent.change(textInput!, { target: { value: '45' } })
 
 		const currentPositionButton = screen.getByRole('button', { name: /current position/iu })
 		await user.click(currentPositionButton)
 
-		const sliders = screen.getAllByRole('slider')
-		expect(sliders[0]).toHaveValue('10')
-		expect(sliders[1]).toHaveValue('20')
+		const textInputs = screen.getAllByRole('textbox')
+		expect(textInputs[0]).toHaveValue('10.0')
+		expect(textInputs[1]).toHaveValue('20.0')
 	})
 
 	describe('paste', () => {
@@ -283,6 +254,18 @@ describe('Arm move-to-joint-positions', () => {
 
 			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
 		})
+
+		it('clamps pasted values to jointLimitsDegrees', async () => {
+			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[200]')
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+			})
+
+			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
+
+			expect(screen.getByRole('textbox')).toHaveValue('90.0')
+		})
 	})
 
 	it('displays the provided error', () => {
@@ -309,7 +292,7 @@ describe('Arm move-to-joint-positions', () => {
 
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
-			expect(screen.getByRole('slider')).toHaveValue('5')
+			expect(screen.getByRole('textbox')).toHaveValue('5.0')
 		})
 
 		it('-5° button decreases the slider value by 5', async () => {
@@ -320,7 +303,7 @@ describe('Arm move-to-joint-positions', () => {
 
 			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
 
-			expect(screen.getByRole('slider')).toHaveValue('-5')
+			expect(screen.getByRole('textbox')).toHaveValue('-5.0')
 		})
 
 		it('+5° button clamps to joint max', async () => {
@@ -330,13 +313,12 @@ describe('Arm move-to-joint-positions', () => {
 			})
 
 			// Set slider near max first
-			const slider = screen.getByRole('slider')
-			fireEvent.input(slider, { target: { value: '88' } })
-			fireEvent.change(slider, { target: { value: '88' } })
+			const textInput = screen.getByRole('textbox')
+			fireEvent.change(textInput, { target: { value: '88' } })
 
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
-			expect(slider).toHaveValue('90')
+			expect(textInput).toHaveValue('90.0')
 		})
 
 		it('-5° button clamps to joint min', async () => {
@@ -345,13 +327,12 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
 			})
 
-			const slider = screen.getByRole('slider')
-			fireEvent.input(slider, { target: { value: '-88' } })
-			fireEvent.change(slider, { target: { value: '-88' } })
+			const textInput = screen.getByRole('textbox')
+			fireEvent.change(textInput, { target: { value: '-88' } })
 
 			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
 
-			expect(slider).toHaveValue('-90')
+			expect(textInput).toHaveValue('-90.0')
 		})
 
 		it('+5° button does not show large move warning when total delta is exactly 5 degrees', async () => {
@@ -371,9 +352,8 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const slider = screen.getByRole('slider')
-			fireEvent.input(slider, { target: { value: '1' } })
-			fireEvent.change(slider, { target: { value: '1' } })
+			const textInput = screen.getByRole('textbox')
+			fireEvent.change(textInput, { target: { value: '1' } })
 
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
@@ -383,16 +363,15 @@ describe('Arm move-to-joint-positions', () => {
 
 		it('increment button auto-executes when resulting delta from current position is under threshold', async () => {
 			const moveToJointPositions = vi.fn()
-			// Arm at 0°; stage desired to -3° via slider (delta 3°, auto-executed), then +5° → desired 2°, delta 2° → auto-execute
+			// Arm at 0°; stage desired to -3° via text input (delta 3°, auto-executed), then +5° → desired 2°, delta 2° → auto-execute
 			renderSubject({
 				positions: [0],
 				moveToJointPositions,
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const slider = screen.getByRole('slider')
-			fireEvent.input(slider, { target: { value: '-3' } })
-			fireEvent.change(slider, { target: { value: '-3' } })
+			const textInput = screen.getByRole('textbox')
+			fireEvent.change(textInput, { target: { value: '-3' } })
 
 			moveToJointPositions.mockClear()
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { Slider, ThemeUtils } from 'svelte-tweakpane-ui'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
@@ -46,9 +47,9 @@
 
 	const hasPendingLargeMoves = $derived(pendingLargeMovesPerJoint.some(Boolean))
 
-	const handleSliderInput = (index: number, event: Event) => {
+	const handleSliderInternalChange = (index: number) => {
 		isUserControlled = true
-		desiredPositions[index] = Number((event.target as HTMLInputElement).value)
+		handleSliderChange(index)
 	}
 
 	/**
@@ -183,17 +184,21 @@
 					>
 						−5°
 					</button>
-					<input
-						type="range"
-						class="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-800"
-						aria-label="Joint {index} position"
-						{min}
-						{max}
-						step="0.1"
-						value={desiredPositions[index] ?? 0}
-						oninput={(e) => handleSliderInput(index, e)}
-						onchange={() => handleSliderChange(index)}
-					/>
+					<div class="min-w-0 flex-1">
+						<Slider
+							bind:value={desiredPositions[index]}
+							{min}
+							{max}
+							step={0.1}
+							label="Joint {index} position"
+							theme={ThemeUtils.presets.light}
+							on:change={(e) => {
+								if (e.detail.origin === 'internal') {
+									handleSliderInternalChange(index)
+								}
+							}}
+						/>
+					</div>
 					<button
 						aria-label="Increase joint {index} by 5 degrees"
 						class="shrink-0 rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
