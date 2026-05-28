@@ -65,7 +65,7 @@
 
 	const handleSliderChange = (index: number) => {
 		const delta = Math.abs((desiredPositions[index] ?? 0) - (positions[index] ?? 0))
-		if (delta >= SAFE_THRESHOLD_DEGREES) {
+		if (delta > SAFE_THRESHOLD_DEGREES) {
 			pendingLargeMovesPerJoint[index] = true
 		} else {
 			pendingLargeMovesPerJoint[index] = false

@@ -181,7 +181,7 @@ describe('Arm move-to-joint-positions', () => {
 		}
 	})
 
-	it('Zero button shows large move warnings when joints would move 5 or more degrees', async () => {
+	it('Zero button shows large move warnings when joints would move more than 5 degrees', async () => {
 		renderSubject({
 			positions: [30, 0],
 			jointLimitsDegrees: jointLimitsForCount(2),
@@ -204,7 +204,7 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
 	})
 
-	it('Zero button does not auto-execute when any joint would move 5 or more degrees', async () => {
+	it('Zero button does not auto-execute when any joint would move more than 5 degrees', async () => {
 		const moveToJointPositions = vi.fn()
 		renderSubject({
 			positions: [30],
@@ -245,7 +245,7 @@ describe('Arm move-to-joint-positions', () => {
 			vi.restoreAllMocks()
 		})
 
-		it('shows large move warnings when pasted values would move any joint 5 or more degrees', async () => {
+		it('shows large move warnings when pasted values would move any joint more than 5 degrees', async () => {
 			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
 			renderSubject({
 				positions: [0],
@@ -354,7 +354,7 @@ describe('Arm move-to-joint-positions', () => {
 			expect(slider).toHaveValue('-90')
 		})
 
-		it('+5° button shows large move warning when total delta >= 5 degrees', async () => {
+		it('+5° button does not show large move warning when total delta is exactly 5 degrees', async () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
@@ -362,6 +362,22 @@ describe('Arm move-to-joint-positions', () => {
 
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
+			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+		})
+
+		it('+5° button shows large move warning when total delta exceeds 5 degrees', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			const slider = screen.getByRole('slider')
+			fireEvent.input(slider, { target: { value: '1' } })
+			fireEvent.change(slider, { target: { value: '1' } })
+
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			// desired is now 6°, delta from current (0°) is 6° > 5° → large move warning
 			expect(screen.getByText(/large move/iu)).toBeInTheDocument()
 		})
 
