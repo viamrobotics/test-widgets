@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -31,156 +31,177 @@ describe('Arm move-to-joint-positions', () => {
 		})
 	}
 
-	it('renders a row for each axis', () => {
+	it('renders a slider for each joint', () => {
 		renderSubject({
 			positions: [1, 2, 3],
 			jointLimitsDegrees: jointLimitsForCount(3),
 		})
 
-		expect(screen.getAllByRole('spinbutton')).toHaveLength(3)
+		expect(screen.getAllByRole('slider')).toHaveLength(3)
 	})
 
-	it('trims axis values to 2 decimal places', () => {
+	it('labels each slider with its joint index', () => {
 		renderSubject({
-			positions: [1, 2.34, 3.456_789],
-			jointLimitsDegrees: jointLimitsForCount(3),
-		})
-
-		const positionInputs = screen.getAllByRole('spinbutton')
-
-		expect(positionInputs[0]).toHaveValue(1)
-		expect(positionInputs[1]).toHaveValue(2.34)
-		expect(positionInputs[2]).toHaveValue(3.46)
-	})
-
-	it('resets to zero when Zero button is clicked', async () => {
-		renderSubject({
-			positions: [1, 2],
+			positions: [0, 0],
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		const positionInputs = screen.getAllByRole('spinbutton')
-		const nonDefaultPos = positionInputs[0]!
-
-		await user.clear(nonDefaultPos)
-		await user.type(nonDefaultPos, '100')
-		expect(nonDefaultPos).toHaveValue(100)
-
-		const zeroButton = screen.getByRole('button', { name: /zero/iu })
-		await user.click(zeroButton)
-
-		for (const input of positionInputs) {
-			expect(input).toHaveValue(0)
-		}
+		expect(screen.getByRole('slider', { name: 'Joint 0 position' })).toBeInTheDocument()
+		expect(screen.getByRole('slider', { name: 'Joint 1 position' })).toBeInTheDocument()
 	})
 
-	it('resets desired positions when Current position button is clicked', async () => {
-		const positions = [1, 2]
+	it('sets slider min and max from jointLimitsDegrees', () => {
 		renderSubject({
-			positions,
-			jointLimitsDegrees: jointLimitsForCount(2),
+			positions: [0],
+			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
 		})
 
-		const positionInputs = screen.getAllByRole('spinbutton')
-		const nonDefaultPos = positionInputs[0]!
-
-		await user.clear(nonDefaultPos)
-		await user.type(nonDefaultPos, '42')
-
-		expect(nonDefaultPos).toHaveValue(42)
-
-		const currentPositionButton = screen.getByRole('button', {
-			name: /current position/iu,
-		})
-		await user.click(currentPositionButton)
-
-		for (const [index, input] of positionInputs.entries()) {
-			expect(input).toHaveValue(positions[index])
-		}
+		const slider = screen.getByRole('slider')
+		expect(slider).toHaveAttribute('min', '-90')
+		expect(slider).toHaveAttribute('max', '90')
 	})
 
-	it('calls moveToJointPositions with the correct parameters when Execute button is clicked', async () => {
+	it('uses -180/180 as default bounds when no joint limits are provided', () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: [],
+		})
+
+		const slider = screen.getByRole('slider')
+		expect(slider).toHaveAttribute('min', '-180')
+		expect(slider).toHaveAttribute('max', '180')
+	})
+
+	it('auto-executes immediately when a slider is adjusted by less than 5 degrees', () => {
 		const moveToJointPositions = vi.fn()
 		renderSubject({
-			positions: [1],
+			positions: [0],
 			moveToJointPositions,
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const positionInput = screen.getByRole('spinbutton')
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '3' } })
+		fireEvent.change(slider, { target: { value: '3' } })
 
-		await user.clear(positionInput)
-		await user.type(positionInput, '5')
+		expect(moveToJointPositions).toHaveBeenCalledWith([3])
+	})
+
+	it('does not auto-execute when a slider is adjusted by 5 degrees or more', () => {
+		const moveToJointPositions = vi.fn()
+		renderSubject({
+			positions: [0],
+			moveToJointPositions,
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '50' } })
+		fireEvent.change(slider, { target: { value: '50' } })
+
+		expect(moveToJointPositions).not.toHaveBeenCalled()
+	})
+
+	it('shows a warning with the delta when a large move is staged', () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '30' } })
+		fireEvent.change(slider, { target: { value: '30' } })
+
+		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
+		expect(screen.getByText(/\+30\.00°/u)).toBeInTheDocument()
+	})
+
+	it('shows a prompt to use Execute when large moves are pending', () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '20' } })
+		fireEvent.change(slider, { target: { value: '20' } })
+
+		expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
+	})
+
+	it('dismissing a warning hides it', async () => {
+		renderSubject({
+			positions: [0],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '30' } })
+		fireEvent.change(slider, { target: { value: '30' } })
+
+		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
+
+		const dismissButton = screen.getByRole('button', { name: /dismiss warning for joint 0/iu })
+		await user.click(dismissButton)
+
+		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+	})
+
+	it('Execute button calls moveToJointPositions with current desired positions', async () => {
+		const moveToJointPositions = vi.fn()
+		renderSubject({
+			positions: [0],
+			moveToJointPositions,
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		const slider = screen.getByRole('slider')
+		fireEvent.input(slider, { target: { value: '45' } })
+		fireEvent.change(slider, { target: { value: '45' } })
+
+		expect(moveToJointPositions).not.toHaveBeenCalled()
 
 		const executeButton = screen.getByRole('button', { name: /execute/iu })
 		await user.click(executeButton)
 
-		expect(moveToJointPositions).toHaveBeenCalledWith([5])
+		expect(moveToJointPositions).toHaveBeenCalledWith([45])
+	})
+
+	it('resets all sliders to zero when Zero button is clicked', async () => {
+		renderSubject({
+			positions: [10, 20],
+			jointLimitsDegrees: jointLimitsForCount(2),
+		})
+
+		const zeroButton = screen.getByRole('button', { name: /zero/iu })
+		await user.click(zeroButton)
+
+		for (const slider of screen.getAllByRole('slider')) {
+			expect(slider).toHaveValue('0')
+		}
+	})
+
+	it('resets sliders to current position when Current position button is clicked', async () => {
+		renderSubject({
+			positions: [10, 20],
+			jointLimitsDegrees: jointLimitsForCount(2),
+		})
+
+		// Stage a change so sliders diverge from current
+		const [slider] = screen.getAllByRole('slider')
+		fireEvent.input(slider!, { target: { value: '45' } })
+		fireEvent.change(slider!, { target: { value: '45' } })
+
+		const currentPositionButton = screen.getByRole('button', { name: /current position/iu })
+		await user.click(currentPositionButton)
+
+		const sliders = screen.getAllByRole('slider')
+		expect(sliders[0]).toHaveValue('10')
+		expect(sliders[1]).toHaveValue('20')
 	})
 
 	it('displays the provided error', () => {
 		renderSubject({ lastError: new Error('some error msg') })
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
-	})
-
-	it('marks inputs invalid and shows max error when above range', async () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-		})
-
-		const positionInput = screen.getByRole('spinbutton')
-		expect(positionInput).not.toHaveAttribute('aria-invalid')
-
-		await user.clear(positionInput)
-		await user.type(positionInput, '100')
-		positionInput.blur()
-
-		expect(screen.getByText('Max value is 90.00 deg')).toBeInTheDocument()
-	})
-
-	it('shows min error when below range', async () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-		})
-
-		const positionInput = screen.getByRole('spinbutton')
-		await user.clear(positionInput)
-		await user.type(positionInput, '-100')
-		positionInput.blur()
-
-		expect(screen.getByText('Min value is -90.00 deg')).toBeInTheDocument()
-	})
-
-	it('disables execute when any joint is out of bounds', async () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-		})
-
-		const executeButton = screen.getByRole('button', { name: /execute/iu })
-		expect(executeButton).not.toBeDisabled()
-
-		const positionInput = screen.getByRole('spinbutton')
-		await user.clear(positionInput)
-		await user.type(positionInput, '100')
-		positionInput.blur()
-
-		expect(executeButton).toBeDisabled()
-	})
-
-	it('does not validate joints without limit data', async () => {
-		renderSubject({
-			positions: [0, 0],
-			jointLimitsDegrees: [{ minDegrees: -45, maxDegrees: 45 }],
-		})
-
-		const positionInputs = screen.getAllByRole('spinbutton')
-		await user.clear(positionInputs[1]!)
-		await user.type(positionInputs[1]!, '999')
-
-		expect(screen.queryByText(/above range/iu)).not.toBeInTheDocument()
-		expect(screen.queryByText(/below range/iu)).not.toBeInTheDocument()
 	})
 })

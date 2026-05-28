@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import { degreesToRadians, formatNumeric } from '$lib/format'
 
-	import { getOutOfBoundsSide, isOutsideJointLimit, type JointLimit } from './joint-position-limits'
+	import { type JointLimit } from './joint-position-limits'
+
+	const SAFE_THRESHOLD_DEGREES = 5
 
 	interface Props {
 		positions: number[]
@@ -22,72 +22,99 @@
 
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
+	let isUserControlled = $state(false)
+	let pendingLargeMovesPerJoint = $state<boolean[]>([])
 	let useRadians = $state(false)
 
+	// Sync sliders to live arm positions when the user is not actively controlling them.
+	// This is intentional state synchronization (not derivation), so $effect is appropriate here.
+	$effect(() => {
+		if (!isUserControlled) {
+			desiredPositions = [...positions]
+		}
+	})
+
+	const getSliderMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
+	const getSliderMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
+
+	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
+
+	const displayPositions = $derived(desiredPositions.map(toDisplayAngle))
+
+	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
+
+	const hasPendingLargeMoves = $derived(pendingLargeMovesPerJoint.some(Boolean))
+
+	const handleSliderInput = (index: number, event: Event) => {
+		isUserControlled = true
+		desiredPositions[index] = Number((event.target as HTMLInputElement).value)
+	}
+
+	/**
+	 * After executing a move, keep user control briefly so the slider doesn't snap back
+	 * to the stale live position before the arm has had time to reach the target.
+	 */
+	const releaseControlAfterDelay = () => {
+		setTimeout(() => {
+			if (!pendingLargeMovesPerJoint.some(Boolean)) {
+				isUserControlled = false
+			}
+		}, 1500)
+	}
+
+	const handleSliderChange = (index: number) => {
+		const delta = Math.abs((desiredPositions[index] ?? 0) - (positions[index] ?? 0))
+		if (delta >= SAFE_THRESHOLD_DEGREES) {
+			pendingLargeMovesPerJoint[index] = true
+		} else {
+			pendingLargeMovesPerJoint[index] = false
+			moveToJointPositions([...desiredPositions])
+			releaseControlAfterDelay()
+		}
+	}
+
+	const dismissWarning = (index: number) => {
+		pendingLargeMovesPerJoint[index] = false
+		desiredPositions[index] = positions[index] ?? 0
+		if (!pendingLargeMovesPerJoint.some(Boolean)) {
+			isUserControlled = false
+		}
+	}
+
+	const execute = () => {
+		moveToJointPositions([...desiredPositions])
+		pendingLargeMovesPerJoint = positions.map(() => false)
+		releaseControlAfterDelay()
+	}
+
 	const resetToZero = () => {
-		desiredPositions = [...desiredPositions].fill(0)
+		pendingLargeMovesPerJoint = positions.map(() => false)
+		desiredPositions = positions.map(() => 0)
+		isUserControlled = true
 	}
 
 	const resetToCurrent = () => {
-		desiredPositions = [...positions]
-	}
-
-	const handleJointInputChange = (index: number, inputValue: number) => {
-		// default is degrees, so if user has toggle to radians, convert back to degrees before setting
-		// (we only convert to radians when displaying)
-		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
+		pendingLargeMovesPerJoint = positions.map(() => false)
+		isUserControlled = false
 	}
 
 	const handlePaste = (data: string): boolean => {
 		try {
-			desiredPositions = JSON.parse(data) as number[]
+			const parsed = JSON.parse(data) as number[]
+			desiredPositions = parsed.map((pos, i) =>
+				Math.min(Math.max(pos, getSliderMin(i)), getSliderMax(i))
+			)
+			pendingLargeMovesPerJoint = desiredPositions.map(() => false)
+			isUserControlled = true
 		} catch {
 			return false
 		}
 		return true
 	}
-	const degreesToDisplayAngle = (degrees: number) => {
-		return useRadians ? degreesToRadians(degrees) : degrees
-	}
-
-	const outOfBoundsMessage = (displayValue: number, limit: JointLimit) => {
-		const min = degreesToDisplayAngle(limit.minDegrees)
-		const max = degreesToDisplayAngle(limit.maxDegrees)
-		const unit = useRadians ? 'rad' : 'deg'
-		const side = getOutOfBoundsSide(displayValue, min, max)
-
-		if (side === 'below-min') {
-			return `Min value is ${formatNumeric(min)} ${unit}`
-		}
-
-		if (side === 'above-max') {
-			return `Max value is ${formatNumeric(max)} ${unit}`
-		}
-	}
-
-	const displayPositions = $derived(desiredPositions.map((pos) => degreesToDisplayAngle(pos)))
-
-	const copyData = $derived(`[${displayPositions.join(', ')}]`)
-
-	const outOfBoundsByIndex = $derived(
-		displayPositions.map((displayValue, index) => {
-			const limit = jointLimitsDegrees[index]
-			if (!limit) {
-				return false
-			}
-			return isOutsideJointLimit(
-				displayValue,
-				degreesToDisplayAngle(limit.minDegrees),
-				degreesToDisplayAngle(limit.maxDegrees)
-			)
-		})
-	)
-
-	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<!-- Controls Header -->
+	<!-- Controls header -->
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
 			Joint Positions
@@ -96,7 +123,6 @@
 					name="information-outline"
 					cx="text-gray-6"
 				/>
-
 				<span slot="description">
 					Joint position limits are based solely on the arm kinematics and do not take into account
 					motion service limit overrides.
@@ -115,42 +141,68 @@
 		</div>
 	</div>
 
-	<Table>
-		<thead>
-			<tr>
-				<th> Joint </th>
-				<th>Move ({useRadians ? 'radians' : 'degrees'})</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each { length: positions.length }, index}
-				{@const limit = jointLimitsDegrees[index]}
-				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
-				{@const outOfBounds = outOfBoundsByIndex[index]}
-				<tr>
-					<th>{index}</th>
-					<th>
-						<div class="flex flex-col items-center gap-0.5 py-0.5">
-							<NumericInput
-								cx="max-w-[76px]"
-								{value}
-								on:change={(event) => {
-									const inputValue = numberValueFromEvent(event) ?? 0
-									handleJointInputChange(index, inputValue)
-								}}
-							/>
-							{#if limit && outOfBounds}
-								<p class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal">
-									{outOfBoundsMessage(displayPositions[index], limit)}
-								</p>
-							{/if}
-						</div>
-					</th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
+	<!-- Per-joint sliders -->
+	<div class="flex flex-col gap-3">
+		{#each { length: positions.length } as _, index}
+			{@const min = getSliderMin(index)}
+			{@const max = getSliderMax(index)}
+			{@const hasWarning = pendingLargeMovesPerJoint[index] ?? false}
+			{@const delta = (desiredPositions[index] ?? 0) - (positions[index] ?? 0)}
+			{@const displayValue = displayPositions[index] ?? 0}
+			{@const unit = useRadians ? ' rad' : '°'}
 
+			<div class="flex flex-col gap-0.5">
+				<div class="flex items-center gap-2">
+					<span class="w-8 shrink-0 text-right text-xs text-gray-500">J{index}</span>
+					<input
+						type="range"
+						class="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-800"
+						aria-label="Joint {index} position"
+						{min}
+						{max}
+						step="0.1"
+						value={desiredPositions[index] ?? 0}
+						oninput={(e) => handleSliderInput(index, e)}
+						onchange={() => handleSliderChange(index)}
+					/>
+					<span
+						class={[
+							'w-20 shrink-0 text-right text-xs tabular-nums',
+							hasWarning ? 'font-medium text-amber-700' : 'text-gray-700',
+						]}
+					>
+						{formatNumeric(displayValue)}{unit}
+					</span>
+				</div>
+
+				{#if hasWarning}
+					<div
+						class="ml-10 flex w-fit items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-800"
+					>
+						<Icon
+							name="alert"
+							cx="shrink-0 text-amber-600"
+						/>
+						<span>
+							Large move: {delta > 0 ? '+' : ''}{formatNumeric(toDisplayAngle(delta))}{unit} from current
+						</span>
+						<button
+							aria-label="Dismiss warning for joint {index}"
+							class="ml-0.5 shrink-0 hover:text-amber-900"
+							onclick={() => dismissWarning(index)}
+						>
+							<Icon
+								name="close"
+								cx="text-xs"
+							/>
+						</button>
+					</div>
+				{/if}
+			</div>
+		{/each}
+	</div>
+
+	<!-- Quick set -->
 	<div class="mb-2 flex flex-col gap-2">
 		<span class="flex flex-row gap-2">
 			<h4 class="text-xs font-semibold">Quick set</h4>
@@ -159,10 +211,7 @@
 					name="information-outline"
 					cx="text-gray-6"
 				/>
-
-				<span slot="description">
-					Will update the "Move to" input values but will not execute
-				</span>
+				<span slot="description">Will update the slider values but will not execute</span>
 			</Tooltip>
 		</span>
 		<div class="flex flex-col gap-2 sm:flex-row">
@@ -170,14 +219,22 @@
 			<Button onclick={resetToCurrent}>Current position</Button>
 		</div>
 	</div>
+
+	{#if hasPendingLargeMoves}
+		<p class="text-xs text-amber-700">
+			One or more joints have large pending movements. Review warnings above, then click Execute to
+			confirm.
+		</p>
+	{/if}
+
 	<Button
 		class="mt-auto w-fit"
-		disabled={hasOutOfBoundsPositions}
 		icon="play-circle-outline"
 		variant="dark"
-		onclick={() => moveToJointPositions(desiredPositions)}
+		onclick={execute}
 	>
 		Execute
 	</Button>
+
 	<ErrorDisplay {lastError} />
 </div>
