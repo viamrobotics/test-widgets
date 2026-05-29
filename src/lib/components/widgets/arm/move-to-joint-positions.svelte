@@ -164,13 +164,39 @@
 			{@const displayValue = displayPositions[index] ?? 0}
 			{@const unit = useRadians ? ' rad' : '°'}
 
-			<div class="flex flex-col gap-0.5">
-				<div class="flex items-center justify-between">
-					<span class="text-xs text-gray-500">J{index}</span>
+			<div class="flex flex-col gap-1">
+				<div class="flex min-h-4 items-center justify-between text-xs text-gray-500">
+					<span class="">J{index}</span>
+					<div class="flex gap-3">
+						{#if hasWarning}
+							<div
+								class="flex gap-1 text-amber-600"
+							>
+								<Icon
+									name="alert"
+									size="sm"
+									cx="text-amber-600"
+								/>
+								<span class="">
+									Large move: {delta > 0 ? '+' : ''}{formatNumeric(toDisplayAngle(delta))}{unit}
+								</span>
+								<button
+									aria-label="Dismiss warning for joint {index}"
+									class="text-gray-6 cursor-pointer hover:text-gray-8"
+									onclick={() => dismissWarning(index)}
+								>
+									<Icon
+										name="close"
+										cx="text-xs"
+									/>
+								</button>
+							</div>
+						{/if}
+					</div>
 					<span
 						class={[
 							'text-xs tabular-nums',
-							hasWarning ? 'font-medium text-amber-700' : 'text-gray-700',
+							hasWarning ? 'font-medium text-amber-600' : 'text-gray-700',
 						]}
 					>
 						{formatNumeric(displayValue)}{unit}
@@ -205,30 +231,6 @@
 						+5°
 					</Button>
 				</div>
-
-				{#if hasWarning}
-					<div
-						class="flex w-fit items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-800"
-					>
-						<Icon
-							name="alert"
-							cx="shrink-0 text-amber-600"
-						/>
-						<span>
-							Large move: {delta > 0 ? '+' : ''}{formatNumeric(toDisplayAngle(delta))}{unit} from current
-						</span>
-						<button
-							aria-label="Dismiss warning for joint {index}"
-							class="ml-0.5 shrink-0 hover:text-amber-900"
-							onclick={() => dismissWarning(index)}
-						>
-							<Icon
-								name="close"
-								cx="text-xs"
-							/>
-						</button>
-					</div>
-				{/if}
 			</div>
 		{/each}
 	</div>
@@ -252,7 +254,7 @@
 	</div>
 
 	{#if hasPendingLargeMoves}
-		<p class="text-xs text-amber-700">
+		<p class="text-xs text-amber-600">
 			One or more joints have large pending movements. Review warnings above, then click Execute to
 			confirm.
 		</p>

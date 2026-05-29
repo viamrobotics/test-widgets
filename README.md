@@ -10,7 +10,7 @@ The playground (`pnpm dev`) can be used to develop the test-cards against prod r
 
 This is useful if you need to validate the sdk against specific behavior of modules or need to replicate a bug from another robot (why replicate locally when you could just develop directly against the robot with the bug?).
 
-To setup your playground, create a `.env.local` in the test-cards directory with the following format (no need to create two robots):
+To setup your playground, create a `.env.local` in the test-widgets directory with the following format (no need to create two robots):
 
 ```json
 VITE_PLAYGROUND_ROBOTS='
