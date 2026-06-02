@@ -1,4 +1,7 @@
-<script lang="ts" module>
+<script
+	lang="ts"
+	module
+>
 	export interface FavoriteDoCommand {
 		id: string
 		name: string
@@ -39,14 +42,8 @@
 		onRenameFavorite?: (id: string, name: string) => void | Promise<void>
 	}
 
-	const {
-		partID,
-		resource,
-		favorites,
-		onAddFavorite,
-		onRemoveFavorite,
-		onRenameFavorite,
-	}: Props = $props()
+	const { partID, resource, favorites, onAddFavorite, onRemoveFavorite, onRenameFavorite }: Props =
+		$props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -224,9 +221,7 @@
 		<div class="flex flex-col gap-2 border-t px-4 py-3">
 			<h3 class="text-gray-9 text-sm font-medium">Favorite Commands</h3>
 			{#if (favorites ?? []).length === 0}
-				<p class="text-subtle-1 text-xs">
-					Click "Add favorite" to save the current input.
-				</p>
+				<p class="text-subtle-1 text-xs">Click "Add favorite" to save the current input.</p>
 			{:else}
 				<div class="flex flex-col gap-1">
 					{#each favorites ?? [] as favorite (favorite.id)}
@@ -277,13 +272,13 @@
 							>
 								<button
 									type="button"
-									class="text-gray-9 flex-1 truncate py-1.5 pl-2 pr-2 text-left text-sm"
+									class="text-gray-9 flex-1 truncate py-1.5 pr-2 pl-2 text-left text-sm"
 									title={favorite.input}
 									onclick={() => selectFavorite(favorite)}
 								>
 									{favorite.name}
 								</button>
-								<span class="text-subtle-2 whitespace-nowrap px-2 text-xs">
+								<span class="text-subtle-2 px-2 text-xs whitespace-nowrap">
 									{formatTime(favorite.createdOn)}
 								</span>
 								<FloatingMenu
