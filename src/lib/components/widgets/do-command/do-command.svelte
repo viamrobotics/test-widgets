@@ -26,6 +26,8 @@
 
 	import ErrorDisplay from '../../error.svelte'
 	import { createDoCommandClient } from './create-do-command-client.svelte'
+	import KebabSvg from './kebab-svg.svelte'
+	import StarSvg from './star-svg.svelte'
 
 	interface Props {
 		partID: string
@@ -91,14 +93,6 @@
 			(favorite) => normalizeJson(favorite.input) === normalizeJson(input.current ?? '{}')
 		)
 	)
-
-	const STAR_FILLED =
-		'M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z'
-	const STAR_OUTLINE =
-		'M12,15.39L8.24,17.66L9.23,13.38L5.91,10.5L10.29,10.13L12,6.09L13.71,10.13L18.09,10.5L14.77,13.38L15.76,17.66L12,15.39M22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.45,13.97L5.82,21L12,17.27L18.18,21L16.54,13.97L22,9.24Z'
-
-	const DOTS_VERTICAL =
-		'M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z'
 
 	const timeFormatter = new Intl.DateTimeFormat(undefined, {
 		month: 'numeric',
@@ -191,14 +185,7 @@
 			{#if favorites}
 				<Button onclick={addFavorite}>
 					<span class="flex items-center gap-1.5">
-						<svg
-							class="h-4 w-4"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path d={matchingFavorite ? STAR_FILLED : STAR_OUTLINE} />
-						</svg>
+						<StarSvg filled={!!matchingFavorite} />
 						Favorite
 					</span>
 				</Button>
@@ -306,15 +293,7 @@
 									placement="bottom-end"
 									buttonCX="text-subtle-2 hover:text-gray-9 p-1 pr-1.5 flex items-center"
 								>
-									<svg
-										slot="control"
-										class="h-4 w-4"
-										viewBox="0 0 24 24"
-										fill="currentColor"
-										aria-hidden="true"
-									>
-										<path d={DOTS_VERTICAL} />
-									</svg>
+									<KebabSvg slot="control" />
 									<svelte:fragment slot="items">
 										{#if onRenameFavorite}
 											<ContextMenuItem
