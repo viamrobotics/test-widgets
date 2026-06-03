@@ -140,7 +140,7 @@
 				</span>
 			</Tooltip>
 		</span>
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-1">
 			<div class="flex gap-1">
 				{#if !isQuickMoveMode}
 					<CopyButton data={copyData} />
@@ -159,12 +159,11 @@
 					aria-label={isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
 					class={[
 						'hover:border-medium hover:bg-medium active:bg-gray-2 rounded p-0.5',
-						isQuickMoveMode ? 'text-cyan-600' : 'text-gray-6',
+						isQuickMoveMode ? 'text-amber-600' : 'text-gray-6',
 					]}
 				>
 					<Icon
 						name="lightning-bolt-outline"
-						size="xs"
 					/>
 				</button>
 				<span slot="description">
@@ -218,7 +217,7 @@
 								>
 									−5°
 								</Button>
-								<span class="min-w-[4rem] text-center text-xs text-gray-700 tabular-nums">
+								<span class="grow min-w-16 text-center text-xs text-gray-700 tabular-nums">
 									{formatNumeric(currentValue)}{unit}
 								</span>
 								<Button

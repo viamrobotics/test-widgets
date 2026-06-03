@@ -17,7 +17,6 @@
 	>
 		<Icon
 			name="sync"
-			size="xs"
 		/>
 	</button>
 
