@@ -162,7 +162,7 @@
 					]}
 				>
 					<Icon
-						name="flash"
+						name="lightning-bolt-outline"
 						size="xs"
 					/>
 				</button>
@@ -203,7 +203,7 @@
 						>
 							−5°
 						</Button>
-						<span class="min-w-[4rem] text-center text-xs tabular-nums text-gray-700">
+						<span class="min-w-[4rem] text-center text-xs text-gray-700 tabular-nums">
 							{formatNumeric(currentValue)}{unit}
 						</span>
 						<Button
