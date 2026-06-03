@@ -173,10 +173,7 @@
 				{@const unit = useRadians ? ' rad' : '°'}
 				<div class="flex items-center justify-between gap-2">
 					<span class="text-xs text-gray-500">J{index}</span>
-					<span class="text-xs tabular-nums text-gray-700">
-						{formatNumeric(currentValue)}{unit}
-					</span>
-					<div class="flex gap-1.5">
+					<div class="flex items-center gap-1.5">
 						<Button
 							aria-label="Decrease joint {index} by 5 degrees"
 							disabled={isMoving}
@@ -184,6 +181,9 @@
 						>
 							−5°
 						</Button>
+						<span class="min-w-[4rem] text-center text-xs tabular-nums text-gray-700">
+							{formatNumeric(currentValue)}{unit}
+						</span>
 						<Button
 							aria-label="Increase joint {index} by 5 degrees"
 							disabled={isMoving}
