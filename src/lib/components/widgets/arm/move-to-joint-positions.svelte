@@ -233,7 +233,6 @@
 							<div class="joint-slider min-w-0">
 								<Slider
 									bind:value={desiredPositions[index]}
-									label=""
 									min={getSliderMin(index)}
 									max={getSliderMax(index)}
 									step={0.1}
