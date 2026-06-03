@@ -205,7 +205,7 @@
 		<tbody>
 			{#each positions as position, index (index)}
 				<tr>
-					<th>{index}</th>
+					<th scope="row">{index}</th>
 					<th>
 						{#if isQuickMoveMode}
 							{@const currentValue = currentDisplayPositions[index] ?? position}

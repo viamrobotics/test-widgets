@@ -46,8 +46,8 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		expect(screen.getByText('Joint 0 position')).toBeInTheDocument()
-		expect(screen.getByText('Joint 1 position')).toBeInTheDocument()
+		expect(screen.getByRole('rowheader', { name: '0' })).toBeInTheDocument()
+		expect(screen.getByRole('rowheader', { name: '1' })).toBeInTheDocument()
 	})
 
 	it('does not execute when a slider value is changed', () => {
