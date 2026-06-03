@@ -6,6 +6,7 @@
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
+	import Table from '$lib/components/table.svelte'
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
 	import { type JointLimit } from './joint-position-limits'
@@ -174,73 +175,85 @@
 	</div>
 
 	{#if isQuickMoveMode}
-		<div class="flex flex-col gap-3">
-			<Tooltip>
-				<span class="flex items-center gap-1 text-xs text-amber-600">
-					<Icon
-						name="alert"
-						size="sm"
-						cx="text-amber-600"
-					/>
-					Quick move executes immediately
-				</span>
-				<span slot="description">
-					Each ±5° button sends a move command as soon as it is pressed. Buttons are disabled while
-					the arm is moving.
-				</span>
-			</Tooltip>
+		<Tooltip>
+			<span class="flex items-center gap-1 text-xs text-amber-600">
+				<Icon
+					name="alert"
+					size="sm"
+					cx="text-amber-600"
+				/>
+				Quick move executes immediately
+			</span>
+			<span slot="description">
+				Each ±5° button sends a move command as soon as it is pressed. Buttons are disabled while
+				the arm is moving.
+			</span>
+		</Tooltip>
+	{/if}
 
+	<Table>
+		<thead>
+			<tr>
+				<th>Joint</th>
+				{#if isQuickMoveMode}
+					<th>Move (degrees)</th>
+				{:else}
+					<th>Position ({useRadians ? 'radians' : 'degrees'})</th>
+				{/if}
+			</tr>
+		</thead>
+		<tbody>
 			{#each positions as position, index (index)}
-				{@const currentValue = currentDisplayPositions[index] ?? position}
-				{@const unit = useRadians ? ' rad' : '°'}
-				<div class="flex items-center gap-2">
-					<span class="w-6 shrink-0 text-xs text-gray-500">J{index}</span>
-					<div class="flex flex-1 items-center justify-center gap-1.5">
-						<Button
-							aria-label="Decrease joint {index} by 5 degrees"
-							disabled={isMoving}
-							onclick={() => quickMove(index, -INCREMENT_DEGREES)}
-						>
-							−5°
-						</Button>
-						<span class="min-w-[4rem] text-center text-xs text-gray-700 tabular-nums">
-							{formatNumeric(currentValue)}{unit}
-						</span>
-						<Button
-							aria-label="Increase joint {index} by 5 degrees"
-							disabled={isMoving}
-							onclick={() => quickMove(index, INCREMENT_DEGREES)}
-						>
-							+5°
-						</Button>
-					</div>
-				</div>
+				<tr>
+					<th>{index}</th>
+					<th>
+						{#if isQuickMoveMode}
+							{@const currentValue = currentDisplayPositions[index] ?? position}
+							{@const unit = useRadians ? ' rad' : '°'}
+							<div class="flex h-full max-h-6.5 gap-1.5">
+								<Button
+									aria-label="Decrease joint {index} by 5 degrees"
+									disabled={isMoving}
+									onclick={() => quickMove(index, -INCREMENT_DEGREES)}
+								>
+									−5°
+								</Button>
+								<span class="min-w-[4rem] text-center text-xs text-gray-700 tabular-nums">
+									{formatNumeric(currentValue)}{unit}
+								</span>
+								<Button
+									aria-label="Increase joint {index} by 5 degrees"
+									disabled={isMoving}
+									onclick={() => quickMove(index, INCREMENT_DEGREES)}
+								>
+									+5°
+								</Button>
+							</div>
+						{:else}
+							<div class="joint-slider min-w-0">
+								<Slider
+									bind:value={desiredPositions[index]}
+									label=""
+									min={getSliderMin(index)}
+									max={getSliderMax(index)}
+									step={0.1}
+									format={sliderFormat}
+									theme={unifiedSliderTheme}
+									on:change={(e: CustomEvent<{ origin: string }>) => {
+										if (e.detail.origin === 'internal') {
+											handleSliderInternalChange()
+										}
+									}}
+								/>
+							</div>
+						{/if}
+					</th>
+				</tr>
 			{/each}
-		</div>
-	{:else}
-		<div class="flex flex-col gap-3">
-			{#each positions, index (index)}
-				{@const min = getSliderMin(index)}
-				{@const max = getSliderMax(index)}
-				<div class="joint-slider min-w-0">
-					<Slider
-						bind:value={desiredPositions[index]}
-						label="Joint {index} position"
-						{min}
-						{max}
-						step={0.1}
-						format={sliderFormat}
-						theme={unifiedSliderTheme}
-						on:change={(e: CustomEvent<{ origin: string }>) => {
-							if (e.detail.origin === 'internal') {
-								handleSliderInternalChange()
-							}
-						}}
-					/>
-				</div>
-			{/each}
-		</div>
+		</tbody>
+	</Table>
 
+	{#if !isQuickMoveMode}
 		<div class="mb-2 flex flex-col gap-2">
 			<span class="flex flex-row gap-2">
 				<h4 class="text-xs font-semibold">Quick set</h4>
