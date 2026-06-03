@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 	import { Slider, ThemeUtils } from 'svelte-tweakpane-ui'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
@@ -67,8 +67,8 @@
 		inputBackgroundColorActive: 'hsla(230, 15%, 30%, 0.06)',
 	}
 
-	const handleModeChange = (event: CustomEvent<string>) => {
-		controlMode = event.detail === 'Quick move' ? 'quickMove' : 'jointPositions'
+	const toggleMode = () => {
+		controlMode = isQuickMoveMode ? 'jointPositions' : 'quickMove'
 	}
 
 	const handleSliderInternalChange = () => {
@@ -152,12 +152,24 @@
 					}}
 				/>
 			</div>
-			<ToggleButtons
-				options={['Move to JPs', 'Quick move']}
-				selected={isQuickMoveMode ? 'Quick move' : 'Move to JPs'}
-				cx="text-xs [&>div>button]:px-2!"
-				on:input={handleModeChange}
-			/>
+			<Tooltip>
+				<button
+					onclick={toggleMode}
+					aria-label={isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
+					class={[
+						'hover:border-medium hover:bg-medium active:bg-gray-2 rounded p-0.5',
+						isQuickMoveMode ? 'text-cyan-600' : 'text-gray-6',
+					]}
+				>
+					<Icon
+						name="flash"
+						size="xs"
+					/>
+				</button>
+				<span slot="description">
+					{isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
+				</span>
+			</Tooltip>
 		</div>
 	</div>
 
@@ -181,9 +193,9 @@
 			{#each positions as position, index (index)}
 				{@const currentValue = currentDisplayPositions[index] ?? position}
 				{@const unit = useRadians ? ' rad' : '°'}
-				<div class="flex items-center justify-between gap-2">
-					<span class="text-xs text-gray-500">J{index}</span>
-					<div class="flex items-center gap-1.5">
+				<div class="flex items-center gap-2">
+					<span class="w-6 shrink-0 text-xs text-gray-500">J{index}</span>
+					<div class="flex flex-1 items-center justify-center gap-1.5">
 						<Button
 							aria-label="Decrease joint {index} by 5 degrees"
 							disabled={isMoving}
