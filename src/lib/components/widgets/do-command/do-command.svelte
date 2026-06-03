@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Button, Progress } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
@@ -15,9 +17,11 @@
 	interface Props {
 		partID: string
 		resource: ResourceName
+		/** Rendered above the input/output editor row. */
+		header?: Snippet<[{ input: string; setInput: (value: string) => void }]>
 	}
 
-	const { partID, resource }: Props = $props()
+	const { partID, resource, header }: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -37,6 +41,10 @@
 
 	let output = $state('')
 
+	const setInput = (value: string) => {
+		input.current = value
+	}
+
 	const execute = async () => {
 		try {
 			lastErr = null
@@ -52,6 +60,11 @@
 </script>
 
 {#if isSupported}
+	{#if header}
+		<div class="border-b">
+			{@render header({ input: input.current ?? '{}', setInput })}
+		</div>
+	{/if}
 	<div class="flex flex-row items-center justify-between">
 		<div class="flex w-[45%] flex-col gap-2 border-r py-2">
 			<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
