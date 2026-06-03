@@ -171,9 +171,9 @@
 			{#each positions as position, index (index)}
 				{@const currentValue = currentDisplayPositions[index] ?? position}
 				{@const unit = useRadians ? ' rad' : '°'}
-				<div class="flex items-center justify-between gap-2">
-					<span class="text-xs text-gray-500">J{index}</span>
-					<div class="flex items-center gap-1.5">
+				<div class="flex items-center gap-2">
+					<span class="w-6 shrink-0 text-xs text-gray-500">J{index}</span>
+					<div class="flex flex-1 items-center justify-center gap-1.5">
 						<Button
 							aria-label="Decrease joint {index} by 5 degrees"
 							disabled={isMoving}
