@@ -19,7 +19,6 @@
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPosition from './move-to-position.svelte'
-	import QuickMove from './quick-move.svelte'
 
 	interface Props {
 		partID: string
@@ -38,18 +37,14 @@
 	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
 	const endPositionQuery = createResourceQuery(client, 'getEndPosition', options)
 	const kinematicsQuery = createResourceQuery(client, 'getKinematics', options)
+	const isMovingQuery = createResourceQuery(client, 'isMoving', options)
 
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
-	const quickMoveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
 	const stopMutation = createResourceMutation(client, 'stop')
 	const moveToPosMutation = createResourceMutation(client, 'moveToPosition')
 
 	const moveToJointPositions = (jointPositionsList: number[]) => {
 		moveToJointPosMutation.mutate([jointPositionsList], {})
-	}
-
-	const quickMoveToJointPositions = (jointPositionsList: number[]) => {
-		quickMoveToJointPosMutation.mutate([jointPositionsList], {})
 	}
 
 	const moveToPosition = (position: Pose) => {
@@ -62,7 +57,7 @@
 		<div class="flex flex-col gap-4 lg:flex-row lg:gap-0 lg:divide-x">
 			<!-- Main control sections -->
 			<div
-				class="flex flex-col gap-4 lg:grid lg:grow lg:grid-cols-2 lg:gap-0 lg:divide-x xl:grid-cols-4"
+				class="flex flex-col gap-4 lg:grid lg:grow lg:grid-cols-2 lg:gap-0 lg:divide-x xl:grid-cols-3"
 			>
 				<ApiSection
 					title="GetJointPositions"
@@ -82,6 +77,7 @@
 								{moveToJointPositions}
 								lastError={moveToJointPosMutation.error}
 								jointLimitsDegrees={getJointPositionLimits(kinematicsQuery.data as KinematicsJSON)}
+								isMoving={isMovingQuery.data ?? false}
 							/>
 						{/if}
 					</Queries>
@@ -97,7 +93,7 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<ApiSection
+				<!-- <ApiSection
 					title="Quick move"
 					bottomText="Press a button to execute"
 				>
@@ -110,7 +106,7 @@
 							/>
 						{/if}
 					</Query>
-				</ApiSection>
+				</ApiSection> -->
 			</div>
 
 			<!-- Control actions sidebar -->

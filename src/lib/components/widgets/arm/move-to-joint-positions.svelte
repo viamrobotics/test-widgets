@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
 	import { Slider, ThemeUtils } from 'svelte-tweakpane-ui'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
@@ -10,26 +10,35 @@
 
 	import { type JointLimit } from './joint-position-limits'
 
-	const SAFE_THRESHOLD_DEGREES = 5
 	const INCREMENT_DEGREES = 5
+
+	type ControlMode = 'jointPositions' | 'quickMove'
 
 	interface Props {
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
 		lastError: Error | null
 		jointLimitsDegrees: JointLimit[]
+		isMoving?: boolean
 	}
 
-	const { positions, moveToJointPositions, lastError, jointLimitsDegrees }: Props = $props()
+	const {
+		positions,
+		moveToJointPositions,
+		lastError,
+		jointLimitsDegrees,
+		isMoving = false,
+	}: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions])
 	let isUserControlled = $state(false)
-	let pendingLargeMovesPerJoint = $state<boolean[]>([])
 	let useRadians = $state(false)
+	let controlMode = $state<ControlMode>('jointPositions')
+
+	const isQuickMoveMode = $derived(controlMode === 'quickMove')
 
 	// Sync sliders to live arm positions when the user is not actively controlling them.
-	// This is intentional state synchronization (not derivation), so $effect is appropriate here.
 	$effect(() => {
 		if (!isUserControlled) {
 			desiredPositions = [...positions]
@@ -41,15 +50,19 @@
 
 	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
 
-	const displayPositions = $derived(desiredPositions.map(toDisplayAngle))
+	const displayPositions = $derived(desiredPositions.map((degrees) => toDisplayAngle(degrees)))
+	const currentDisplayPositions = $derived(positions.map((degrees) => toDisplayAngle(degrees)))
 
 	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
 
-	const hasPendingLargeMoves = $derived(pendingLargeMovesPerJoint.some(Boolean))
+	const sliderFormat = (value: number) => formatNumeric(value, 1)
 
-	const handleSliderInternalChange = (index: number) => {
+	const handleModeChange = (event: CustomEvent<string>) => {
+		controlMode = event.detail === 'Quick move' ? 'quickMove' : 'jointPositions'
+	}
+
+	const handleSliderInternalChange = () => {
 		isUserControlled = true
-		handleSliderChange(index)
 	}
 
 	/**
@@ -58,65 +71,39 @@
 	 */
 	const releaseControlAfterDelay = () => {
 		setTimeout(() => {
-			if (!pendingLargeMovesPerJoint.some(Boolean)) {
-				isUserControlled = false
-			}
+			isUserControlled = false
 		}, 1500)
 	}
 
-	const handleSliderChange = (index: number) => {
-		const delta = Math.abs((desiredPositions[index] ?? 0) - (positions[index] ?? 0))
-		if (delta > SAFE_THRESHOLD_DEGREES) {
-			pendingLargeMovesPerJoint[index] = true
-		} else {
-			pendingLargeMovesPerJoint[index] = false
-			moveToJointPositions([...desiredPositions])
-			releaseControlAfterDelay()
+	const quickMove = (index: number, increment: number) => {
+		if (isMoving) {
+			return
 		}
-	}
-
-	const adjustJoint = (index: number, delta: number) => {
-		const min = getSliderMin(index)
-		const max = getSliderMax(index)
-		isUserControlled = true
-		desiredPositions[index] = Math.min(Math.max((desiredPositions[index] ?? 0) + delta, min), max)
-		handleSliderChange(index)
-	}
-
-	const dismissWarning = (index: number) => {
-		pendingLargeMovesPerJoint[index] = false
-		desiredPositions[index] = positions[index] ?? 0
-		if (!pendingLargeMovesPerJoint.some(Boolean)) {
-			isUserControlled = false
-		}
+		const clonedPositions = positions.map((position, positionIndex) =>
+			positionIndex === index ? position + increment : position
+		)
+		moveToJointPositions(clonedPositions)
 	}
 
 	const execute = () => {
 		moveToJointPositions([...desiredPositions])
-		pendingLargeMovesPerJoint = positions.map(() => false)
 		releaseControlAfterDelay()
 	}
 
 	const resetToZero = () => {
 		desiredPositions = positions.map(() => 0)
 		isUserControlled = true
-		pendingLargeMovesPerJoint = positions.map((pos) => Math.abs(pos) > SAFE_THRESHOLD_DEGREES)
 	}
 
 	const resetToCurrent = () => {
-		pendingLargeMovesPerJoint = positions.map(() => false)
 		isUserControlled = false
 	}
 
 	const handlePaste = (data: string): boolean => {
 		try {
 			const parsed = JSON.parse(data) as number[]
-			const clamped = parsed.map((pos, i) =>
+			desiredPositions = parsed.map((pos, i) =>
 				Math.min(Math.max(pos, getSliderMin(i)), getSliderMax(i))
-			)
-			desiredPositions = clamped
-			pendingLargeMovesPerJoint = clamped.map(
-				(pos, i) => Math.abs(pos - (positions[i] ?? 0)) > SAFE_THRESHOLD_DEGREES
 			)
 			isUserControlled = true
 		} catch {
@@ -142,132 +129,122 @@
 				</span>
 			</Tooltip>
 		</span>
-		<div class="flex gap-1">
-			<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
-			<CopyButton data={copyData} />
-			<PasteButton onPaste={handlePaste} />
-		</div>
-	</div>
-
-	<!-- Per-joint sliders -->
-	<div class="flex flex-col gap-3">
-		{#each { length: positions.length } as _, index (index)}
-			{@const min = getSliderMin(index)}
-			{@const max = getSliderMax(index)}
-			{@const hasWarning = pendingLargeMovesPerJoint[index] ?? false}
-			{@const delta = (desiredPositions[index] ?? 0) - (positions[index] ?? 0)}
-			{@const displayValue = displayPositions[index] ?? 0}
-			{@const unit = useRadians ? ' rad' : '°'}
-
-			<div class="flex flex-col gap-1">
-				<div class="flex min-h-4 items-center justify-between text-xs text-gray-500">
-					<span class="">J{index}</span>
-					<div class="flex gap-3">
-						{#if hasWarning}
-							<div
-								class="flex gap-1 text-amber-600"
-							>
-								<Icon
-									name="alert"
-									size="sm"
-									cx="text-amber-600"
-								/>
-								<span class="">
-									Large move: {delta > 0 ? '+' : ''}{formatNumeric(toDisplayAngle(delta))}{unit}
-								</span>
-								<button
-									aria-label="Dismiss warning for joint {index}"
-									class="text-gray-6 cursor-pointer hover:text-gray-8"
-									onclick={() => dismissWarning(index)}
-								>
-									<Icon
-										name="close"
-										cx="text-xs"
-									/>
-								</button>
-							</div>
-						{/if}
-					</div>
-					<span
-						class={[
-							'text-xs tabular-nums',
-							hasWarning ? 'font-medium text-amber-600' : 'text-gray-700',
-						]}
-					>
-						{formatNumeric(displayValue)}{unit}
-					</span>
-				</div>
-				<div class="flex items-center gap-2">
-					<Button
-						aria-label="Decrease joint {index} by 5 degrees"
-						onclick={() => adjustJoint(index, -INCREMENT_DEGREES)}
-					>
-						−5°
-					</Button>
-					<div class="min-w-0 flex-1">
-						<Slider
-							bind:value={desiredPositions[index]}
-							{min}
-							{max}
-							step={0.1}
-							wide={true}
-							theme={ThemeUtils.presets.light}
-							on:change={(e: CustomEvent<{ origin: string }>) => {
-								if (e.detail.origin === 'internal') {
-									handleSliderInternalChange(index)
-								}
-							}}
-						/>
-					</div>
-					<Button
-						aria-label="Increase joint {index} by 5 degrees"
-						onclick={() => adjustJoint(index, INCREMENT_DEGREES)}
-					>
-						+5°
-					</Button>
-				</div>
-			</div>
-		{/each}
-	</div>
-
-	<!-- Quick set -->
-	<div class="mb-2 flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
+		<div class="flex items-center gap-2">
+			<div class="flex gap-1">
+				{#if !isQuickMoveMode}
+					<CopyButton data={copyData} />
+					<PasteButton onPaste={handlePaste} />
+				{/if}
+				<AngleUnitToggle
+					{useRadians}
+					onToggle={() => {
+						useRadians = !useRadians
+					}}
 				/>
-				<span slot="description">Will update the slider values but will not execute</span>
-			</Tooltip>
-		</span>
-		<div class="flex flex-col gap-2 sm:flex-row">
-			<Button onclick={resetToZero}>Zero</Button>
-			<Button onclick={resetToCurrent}>Current position</Button>
+			</div>
+			<ToggleButtons
+				options={['Move to JPs', 'Quick move']}
+				selected={isQuickMoveMode ? 'Quick move' : 'Move to JPs'}
+				cx="text-xs [&>div>button]:px-2!"
+				on:input={handleModeChange}
+			/>
 		</div>
 	</div>
 
-	{#if hasPendingLargeMoves}
-		<p class="text-xs text-amber-600">
-			One or more joints have large pending movements. Review warnings above, then click Execute to
-			confirm.
-		</p>
-	{/if}
+	{#if isQuickMoveMode}
+		<div class="flex flex-col gap-3">
+			<Tooltip>
+				<span class="flex items-center gap-1 text-xs text-amber-600">
+					<Icon
+						name="alert"
+						size="sm"
+						cx="text-amber-600"
+					/>
+					Quick move executes immediately
+				</span>
+				<span slot="description">
+					Each ±5° button sends a move command as soon as it is pressed. Buttons are disabled while
+					the arm is moving.
+				</span>
+			</Tooltip>
 
-	<Button
-		class="mt-auto w-fit"
-		icon="play-circle-outline"
-		variant="dark"
-		onclick={execute}
-	>
-		Execute
-	</Button>
+			{#each positions as position, index (index)}
+				{@const currentValue = currentDisplayPositions[index] ?? position}
+				{@const unit = useRadians ? ' rad' : '°'}
+				<div class="flex items-center justify-between gap-2">
+					<span class="text-xs text-gray-500">J{index}</span>
+					<span class="text-xs tabular-nums text-gray-700">
+						{formatNumeric(currentValue)}{unit}
+					</span>
+					<div class="flex gap-1.5">
+						<Button
+							aria-label="Decrease joint {index} by 5 degrees"
+							disabled={isMoving}
+							onclick={() => quickMove(index, -INCREMENT_DEGREES)}
+						>
+							−5°
+						</Button>
+						<Button
+							aria-label="Increase joint {index} by 5 degrees"
+							disabled={isMoving}
+							onclick={() => quickMove(index, INCREMENT_DEGREES)}
+						>
+							+5°
+						</Button>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{:else}
+		<div class="flex flex-col gap-3">
+			{#each positions, index (index)}
+				{@const min = getSliderMin(index)}
+				{@const max = getSliderMax(index)}
+				<div class="min-w-0">
+					<Slider
+						bind:value={desiredPositions[index]}
+						label="Joint {index} position"
+						{min}
+						{max}
+						step={0.1}
+						format={sliderFormat}
+						theme={ThemeUtils.presets.light}
+						on:change={(e: CustomEvent<{ origin: string }>) => {
+							if (e.detail.origin === 'internal') {
+								handleSliderInternalChange()
+							}
+						}}
+					/>
+				</div>
+			{/each}
+		</div>
+
+		<div class="mb-2 flex flex-col gap-2">
+			<span class="flex flex-row gap-2">
+				<h4 class="text-xs font-semibold">Quick set</h4>
+				<Tooltip>
+					<Icon
+						name="information-outline"
+						cx="text-gray-6"
+					/>
+					<span slot="description">Will update the slider values but will not execute</span>
+				</Tooltip>
+			</span>
+			<div class="flex flex-col gap-2 sm:flex-row">
+				<Button onclick={resetToZero}>Zero</Button>
+				<Button onclick={resetToCurrent}>Current position</Button>
+			</div>
+		</div>
+
+		<Button
+			class="mt-auto w-fit"
+			icon="play-circle-outline"
+			variant="dark"
+			onclick={execute}
+		>
+			Execute
+		</Button>
+	{/if}
 
 	<ErrorDisplay {lastError} />
 </div>

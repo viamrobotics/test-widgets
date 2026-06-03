@@ -31,7 +31,7 @@ describe('Arm move-to-joint-positions', () => {
 		})
 	}
 
-	it('renders a slider for each joint', () => {
+	it('renders a slider with text input for each joint', () => {
 		renderSubject({
 			positions: [1, 2, 3],
 			jointLimitsDegrees: jointLimitsForCount(3),
@@ -50,7 +50,7 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getByText('Joint 1 position')).toBeInTheDocument()
 	})
 
-	it('auto-executes immediately when a slider is adjusted by less than 5 degrees', () => {
+	it('does not execute when a slider value is changed', () => {
 		const moveToJointPositions = vi.fn()
 		renderSubject({
 			positions: [0],
@@ -61,10 +61,10 @@ describe('Arm move-to-joint-positions', () => {
 		const textInput = screen.getByRole('textbox')
 		fireEvent.change(textInput, { target: { value: '3' } })
 
-		expect(moveToJointPositions).toHaveBeenCalledWith([3])
+		expect(moveToJointPositions).not.toHaveBeenCalled()
 	})
 
-	it('does not auto-execute when a slider is adjusted by 5 degrees or more', () => {
+	it('does not execute when a large slider change is staged', () => {
 		const moveToJointPositions = vi.fn()
 		renderSubject({
 			positions: [0],
@@ -76,47 +76,6 @@ describe('Arm move-to-joint-positions', () => {
 		fireEvent.change(textInput, { target: { value: '50' } })
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
-	})
-
-	it('shows a warning with the delta when a large move is staged', () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: jointLimitsForCount(1),
-		})
-
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '30' } })
-
-		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
-		expect(screen.getByText(/\+30\.00°/u)).toBeInTheDocument()
-	})
-
-	it('shows a prompt to use Execute when large moves are pending', () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: jointLimitsForCount(1),
-		})
-
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '20' } })
-
-		expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
-	})
-
-	it('dismissing a warning hides it', async () => {
-		renderSubject({
-			positions: [0],
-			jointLimitsDegrees: jointLimitsForCount(1),
-		})
-
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '30' } })
-
-		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
-
-		const dismissButton = screen.getByRole('button', { name: /dismiss warning for joint 0/iu })
-		await user.click(dismissButton)
-
 		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
 	})
 
@@ -149,34 +108,11 @@ describe('Arm move-to-joint-positions', () => {
 		await user.click(zeroButton)
 
 		for (const textInput of screen.getAllByRole('textbox')) {
-			expect(Number(textInput.value)).toBeCloseTo(0)
+			expect(Number((textInput as HTMLInputElement).value)).toBeCloseTo(0)
 		}
 	})
 
-	it('Zero button shows large move warnings when joints would move more than 5 degrees', async () => {
-		renderSubject({
-			positions: [30, 0],
-			jointLimitsDegrees: jointLimitsForCount(2),
-		})
-
-		await user.click(screen.getByRole('button', { name: /zero/iu }))
-
-		expect(screen.getByText(/large move/iu)).toBeInTheDocument()
-		expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
-	})
-
-	it('Zero button does not show warnings when all joints are already within 5 degrees of zero', async () => {
-		renderSubject({
-			positions: [2, -3],
-			jointLimitsDegrees: jointLimitsForCount(2),
-		})
-
-		await user.click(screen.getByRole('button', { name: /zero/iu }))
-
-		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
-	})
-
-	it('Zero button does not auto-execute when any joint would move more than 5 degrees', async () => {
+	it('Zero button does not auto-execute', async () => {
 		const moveToJointPositions = vi.fn()
 		renderSubject({
 			positions: [30],
@@ -195,7 +131,6 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		// Stage a change so sliders diverge from current
 		const [textInput] = screen.getAllByRole('textbox')
 		fireEvent.change(textInput!, { target: { value: '45' } })
 
@@ -216,20 +151,7 @@ describe('Arm move-to-joint-positions', () => {
 			vi.restoreAllMocks()
 		})
 
-		it('shows large move warnings when pasted values would move any joint more than 5 degrees', async () => {
-			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
-
-			expect(screen.getByText(/large move/iu)).toBeInTheDocument()
-			expect(screen.getByText(/review warnings/iu)).toBeInTheDocument()
-		})
-
-		it('does not auto-execute when pasted values include large moves', async () => {
+		it('does not auto-execute when values are pasted', async () => {
 			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
 			const moveToJointPositions = vi.fn()
 			renderSubject({
@@ -241,18 +163,6 @@ describe('Arm move-to-joint-positions', () => {
 			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
 
 			expect(moveToJointPositions).not.toHaveBeenCalled()
-		})
-
-		it('does not show warnings when pasted values are within 5 degrees of current', async () => {
-			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[3]')
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
-
-			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
 		})
 
 		it('clamps pasted values to jointLimitsDegrees', async () => {
@@ -273,113 +183,92 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 
-	describe('±5° increment buttons', () => {
-		it('renders decrease and increase buttons for each joint', () => {
+	const switchToQuickMove = async () => {
+		await user.click(screen.getByRole('button', { name: /quick move/iu }))
+	}
+
+	describe('quick move mode', () => {
+		it('renders ±5° buttons only after switching to quick move', async () => {
 			renderSubject({
 				positions: [0, 0],
 				jointLimitsDegrees: jointLimitsForCount(2),
 			})
 
+			expect(
+				screen.queryByRole('button', { name: /decrease joint \d by 5 degrees/iu })
+			).not.toBeInTheDocument()
+
+			await switchToQuickMove()
+
 			expect(screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })).toHaveLength(2)
 			expect(screen.getAllByRole('button', { name: /increase joint \d by 5 degrees/iu })).toHaveLength(2)
 		})
 
-		it('+5° button increases the slider value by 5', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
-
-			expect(screen.getByRole('textbox')).toHaveValue('5.0')
-		})
-
-		it('-5° button decreases the slider value by 5', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
-
-			expect(screen.getByRole('textbox')).toHaveValue('-5.0')
-		})
-
-		it('+5° button clamps to joint max', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-			})
-
-			// Set slider near max first
-			const textInput = screen.getByRole('textbox')
-			fireEvent.change(textInput, { target: { value: '88' } })
-
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
-
-			expect(textInput).toHaveValue('90.0')
-		})
-
-		it('-5° button clamps to joint min', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
-			})
-
-			const textInput = screen.getByRole('textbox')
-			fireEvent.change(textInput, { target: { value: '-88' } })
-
-			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
-
-			expect(textInput).toHaveValue('-90.0')
-		})
-
-		it('+5° button does not show large move warning when total delta is exactly 5 degrees', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
-
-			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
-		})
-
-		it('+5° button shows large move warning when total delta exceeds 5 degrees', async () => {
-			renderSubject({
-				positions: [0],
-				jointLimitsDegrees: jointLimitsForCount(1),
-			})
-
-			const textInput = screen.getByRole('textbox')
-			fireEvent.change(textInput, { target: { value: '1' } })
-
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
-
-			// desired is now 6°, delta from current (0°) is 6° > 5° → large move warning
-			expect(screen.getByText(/large move/iu)).toBeInTheDocument()
-		})
-
-		it('increment button auto-executes when resulting delta from current position is under threshold', async () => {
+		it('+5° button executes immediately with current position plus 5', async () => {
 			const moveToJointPositions = vi.fn()
-			// Arm at 0°; stage desired to -3° via text input (delta 3°, auto-executed), then +5° → desired 2°, delta 2° → auto-execute
 			renderSubject({
-				positions: [0],
+				positions: [10],
 				moveToJointPositions,
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const textInput = screen.getByRole('textbox')
-			fireEvent.change(textInput, { target: { value: '-3' } })
-
-			moveToJointPositions.mockClear()
-
+			await switchToQuickMove()
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
-			// desired is now 2°, delta from current (0°) is 2° < 5° → auto-execute
-			expect(moveToJointPositions).toHaveBeenCalledWith([2])
-			expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
+			expect(moveToJointPositions).toHaveBeenCalledWith([15])
+		})
+
+		it('-5° button executes immediately with current position minus 5', async () => {
+			const moveToJointPositions = vi.fn()
+			renderSubject({
+				positions: [10],
+				moveToJointPositions,
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await switchToQuickMove()
+			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
+
+			expect(moveToJointPositions).toHaveBeenCalledWith([5])
+		})
+
+		it('disables ±5° buttons while the arm is moving', async () => {
+			renderSubject({
+				positions: [0],
+				isMoving: true,
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await switchToQuickMove()
+
+			expect(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu })).toBeDisabled()
+			expect(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu })).toBeDisabled()
+		})
+
+		it('does not execute quick move when the arm is moving', async () => {
+			const moveToJointPositions = vi.fn()
+			renderSubject({
+				positions: [0],
+				moveToJointPositions,
+				isMoving: true,
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await switchToQuickMove()
+			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+
+			expect(moveToJointPositions).not.toHaveBeenCalled()
+		})
+
+		it('shows a warning that quick move executes immediately', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await switchToQuickMove()
+
+			expect(screen.getByText(/quick move executes immediately/iu)).toBeInTheDocument()
 		})
 	})
 })
