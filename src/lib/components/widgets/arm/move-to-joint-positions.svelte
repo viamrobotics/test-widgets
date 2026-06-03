@@ -210,7 +210,7 @@
 						{#if isQuickMoveMode}
 							{@const currentValue = currentDisplayPositions[index] ?? position}
 							{@const unit = useRadians ? ' rad' : '°'}
-							<div class="flex h-full max-h-6.5 gap-1.5">
+							<div class="flex h-full max-h-6.5 w-full items-center justify-center gap-1.5">
 								<Button
 									aria-label="Decrease joint {index} by 5 degrees"
 									disabled={isMoving}
