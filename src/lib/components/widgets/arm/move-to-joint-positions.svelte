@@ -57,6 +57,16 @@
 
 	const sliderFormat = (value: number) => formatNumeric(value, 1)
 
+	const unifiedSliderTheme = {
+		...ThemeUtils.presets.light,
+		// Remove the input's own background so the slider and input share the pane's
+		// single container background, making them read as one cohesive control.
+		inputBackgroundColor: 'transparent',
+		inputBackgroundColorHover: 'hsla(230, 15%, 30%, 0.06)',
+		inputBackgroundColorFocus: 'hsla(230, 15%, 30%, 0.12)',
+		inputBackgroundColorActive: 'hsla(230, 15%, 30%, 0.06)',
+	}
+
 	const handleModeChange = (event: CustomEvent<string>) => {
 		controlMode = event.detail === 'Quick move' ? 'quickMove' : 'jointPositions'
 	}
@@ -200,7 +210,7 @@
 			{#each positions, index (index)}
 				{@const min = getSliderMin(index)}
 				{@const max = getSliderMax(index)}
-				<div class="min-w-0">
+				<div class="joint-slider min-w-0">
 					<Slider
 						bind:value={desiredPositions[index]}
 						label="Joint {index} position"
@@ -208,7 +218,7 @@
 						{max}
 						step={0.1}
 						format={sliderFormat}
-						theme={ThemeUtils.presets.light}
+						theme={unifiedSliderTheme}
 						on:change={(e: CustomEvent<{ origin: string }>) => {
 							if (e.detail.origin === 'internal') {
 								handleSliderInternalChange()
@@ -248,3 +258,14 @@
 
 	<ErrorDisplay {lastError} />
 </div>
+
+<style>
+	/*
+	 * Restore the slider groove track color that was removed when we set
+	 * inputBackgroundColor to transparent (the groove uses the same CSS variable).
+	 * Scoped to .joint-slider so it doesn't affect other Tweakpane instances.
+	 */
+	:global(.joint-slider .tp-sldv_t::before) {
+		background-color: hsla(230, 15%, 30%, 0.15);
+	}
+</style>
