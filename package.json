@@ -89,7 +89,7 @@
 		"@viamrobotics/svelte-sdk": "^1.2.1",
 		"@viamrobotics/tailwind-config": "^1.0.0",
 		"@viamrobotics/three": "^0.0.9",
-		"@vitest/browser": "^4.1.5",
+		"@vitest/browser": "^4.1.6",
 		"@vitest/browser-playwright": "^4.1.5",
 		"@vitest/coverage-v8": "^4.1.5",
 		"eslint": "^10.2.1",
