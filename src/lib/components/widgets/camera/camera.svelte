@@ -15,9 +15,11 @@
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
+	import { getPanoCoverageFromXmp } from './get-pano-coverage-from-xmp'
 	import { getSourceNames } from './get-source-names'
 	import { getXmpJsonFromImageBytes, type XmpJson } from './get-xmp-json-from-image'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
+	import LiveThreeSixtyCameraView from './live-three-sixty-camera-view.svelte'
 	import { pickImageForSource } from './pick-image-for-source'
 	import PictureInPictureButton from './picture-in-picture-button.svelte'
 	import ThreeSixtyCameraView from './three-sixty-camera-view.svelte'
@@ -58,13 +60,27 @@
 		() => resourceName
 	)
 
+	const isLive = $derived(refetchInterval.current === RefetchIntervals.LIVE)
+
 	const imageQuery = createResourceQuery(
 		client,
 		'getImages',
 		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
 		() => ({
-			enabled: isPlaying && refetchInterval.current !== RefetchIntervals.LIVE,
+			enabled: isPlaying && !isLive,
 			refetchInterval: refetchInterval.current,
+		})
+	)
+
+	// The live WebRTC stream carries no XMP, so when live we fetch a single frame
+	// to learn the GPano crop geometry needed to render the stream on the right band.
+	const liveCoverageProbe = createResourceQuery(
+		client,
+		'getImages',
+		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
+		() => ({
+			enabled: isPlaying && isLive,
+			refetchInterval: false,
 		})
 	)
 
@@ -79,7 +95,7 @@
 	})
 
 	const xmpJson = $derived.by((): XmpJson | null => {
-		const imageRecord = imageQuery.data?.images?.[0]
+		const imageRecord = isLive ? liveCoverageProbe.data?.images?.[0] : imageQuery.data?.images?.[0]
 		const image = imageRecord?.image
 		if (!image) {
 			return null
@@ -88,9 +104,14 @@
 		return getXmpJsonFromImageBytes(new Uint8Array(image), imageRecord.mimeType)
 	})
 
-	const is360EnabledImage = $derived.by((): boolean => {
-		return xmpJson?.['viam:is360'] === 'true'
-	})
+	// Covers both the full-sphere `viam:equirectangular` tag and GPano
+	// (Google Photo Sphere) cropped-area metadata. Non-null means the image
+	// can be rendered on a viewing sphere.
+	const panoCoverage = $derived.by(() => getPanoCoverageFromXmp(xmpJson))
+	// A GPano frame is a partial band, not a full 360° sphere.
+	const panoToggleLabel = $derived(
+		panoCoverage?.kind === 'gpano' ? 'Display as panorama' : 'Display as 360°'
+	)
 
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
 		enabled: isShowingPointcloud,
@@ -154,9 +175,9 @@
 						</Select>
 					</Label>
 				{/if}
-				{#if is360EnabledImage}
+				{#if panoCoverage}
 					<Label>
-						Display as 360°
+						{panoToggleLabel}
 						<ToggleButtons
 							slot="input"
 							options={['On', 'Off']}
@@ -173,15 +194,29 @@
 			<div class="grow">
 				{#if isPlaying}
 					{#if displayAs360}
-						<Canvas>
-							<ThreeSixtyCameraView data={imageQuery.data} />
-						</Canvas>
+						{#if isLive}
+							<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
+							<Canvas renderMode="always">
+								<LiveThreeSixtyCameraView
+									{partID}
+									{resourceName}
+									coverage={panoCoverage}
+								/>
+							</Canvas>
+						{:else}
+							<Canvas>
+								<ThreeSixtyCameraView
+									data={imageQuery.data}
+									coverage={panoCoverage}
+								/>
+							</Canvas>
+						{/if}
 					{:else}
 						<LiveOrPollingVideo
 							{partID}
 							{resourceName}
 							showResolutionOptions
-							isLive={refetchInterval.current === RefetchIntervals.LIVE}
+							{isLive}
 							data={imageQuery.data}
 							error={imageQuery.error}
 							isLoading={imageQuery.isLoading}

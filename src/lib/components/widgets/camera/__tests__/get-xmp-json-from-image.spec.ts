@@ -48,4 +48,37 @@ describe('getXmpJsonFromImageBytes', () => {
 			'xmlns:x': 'adobe:ns:meta/',
 		})
 	})
+
+	it('parses GPano child-element fields from a JPEG XMP packet', () => {
+		const xmpXml = `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description
+      rdf:about=""
+      xmlns:GPano="http://ns.google.com/photos/1.0/panorama/">
+      <GPano:ProjectionType>equirectangular</GPano:ProjectionType>
+      <GPano:FullPanoWidthPixels>1920</GPano:FullPanoWidthPixels>
+      <GPano:FullPanoHeightPixels>645</GPano:FullPanoHeightPixels>
+      <GPano:CroppedAreaImageWidthPixels>1920</GPano:CroppedAreaImageWidthPixels>
+      <GPano:CroppedAreaImageHeightPixels>190</GPano:CroppedAreaImageHeightPixels>
+      <GPano:CroppedAreaLeftPixels>0</GPano:CroppedAreaLeftPixels>
+      <GPano:CroppedAreaTopPixels>227</GPano:CroppedAreaTopPixels>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`
+
+		const jpeg = buildJpegWithXmp(xmpXml)
+		const xmpJson = getXmpJsonFromImageBytes(jpeg, 'image/jpeg')
+
+		expect(xmpJson).toMatchObject({
+			'GPano:ProjectionType': 'equirectangular',
+			'GPano:FullPanoWidthPixels': '1920',
+			'GPano:FullPanoHeightPixels': '645',
+			'GPano:CroppedAreaImageWidthPixels': '1920',
+			'GPano:CroppedAreaImageHeightPixels': '190',
+			'GPano:CroppedAreaLeftPixels': '0',
+			'GPano:CroppedAreaTopPixels': '227',
+		})
+	})
 })
