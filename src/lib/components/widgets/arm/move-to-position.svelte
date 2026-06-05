@@ -82,7 +82,20 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<!-- Controls Header -->
 	<div class="flex items-center justify-between">
-		<span class="text-sm">Pose Values</span>
+		<span class="flex flex-row items-center gap-1 text-sm">
+			Pose Values
+			<Tooltip>
+				<Icon
+					name="information-outline"
+					cx="text-gray-6"
+				/>
+
+				<span slot="description">
+					Pose is with respect to the arm origin and does not take into account the motion service or
+					frame system.
+				</span>
+			</Tooltip>
+		</span>
 		<div class="flex gap-1">
 			<AngleUnitToggle
 				{useRadians}

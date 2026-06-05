@@ -128,6 +128,13 @@ describe('Arm move-to-position', () => {
 		})
 	})
 
+	it('renders a warning tooltip about the motion service and frame system', () => {
+		renderSubject({})
+		expect(
+			screen.getByText(/does not take into account the motion service or frame system/iu)
+		).toBeInTheDocument()
+	})
+
 	it('displays the provided error', () => {
 		renderSubject({ lastError: new Error('some error msg') })
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
