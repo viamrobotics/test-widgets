@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.6.1
+
+### Patch Changes
+
+- fd9d0cf: Add support for gpano cameras
+
 ## 0.6.0
 
 ### Minor Changes
