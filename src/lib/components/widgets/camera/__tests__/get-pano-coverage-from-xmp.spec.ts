@@ -62,6 +62,40 @@ describe('getPanoCoverageFromXmp', () => {
 		})
 	})
 
+	it('falls back to a full sphere when cropped area dimensions are zero', () => {
+		const fullSphere = {
+			kind: 'gpano',
+			phiStart: 0,
+			phiLength: Math.PI * 2,
+			thetaStart: 0,
+			thetaLength: Math.PI,
+		}
+
+		expect(
+			getPanoCoverageFromXmp({
+				'GPano:ProjectionType': 'equirectangular',
+				'GPano:FullPanoWidthPixels': '1920',
+				'GPano:FullPanoHeightPixels': '645',
+				'GPano:CroppedAreaImageWidthPixels': '0',
+				'GPano:CroppedAreaImageHeightPixels': '190',
+				'GPano:CroppedAreaLeftPixels': '0',
+				'GPano:CroppedAreaTopPixels': '0',
+			})
+		).toEqual(fullSphere)
+
+		expect(
+			getPanoCoverageFromXmp({
+				'GPano:ProjectionType': 'equirectangular',
+				'GPano:FullPanoWidthPixels': '1920',
+				'GPano:FullPanoHeightPixels': '645',
+				'GPano:CroppedAreaImageWidthPixels': '1920',
+				'GPano:CroppedAreaImageHeightPixels': '0',
+				'GPano:CroppedAreaLeftPixels': '0',
+				'GPano:CroppedAreaTopPixels': '0',
+			})
+		).toEqual(fullSphere)
+	})
+
 	it('falls back to a full sphere when GPano dimensions are missing or zero', () => {
 		const fullSphere = {
 			kind: 'gpano',

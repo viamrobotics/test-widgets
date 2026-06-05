@@ -95,7 +95,7 @@
 	})
 
 	const xmpJson = $derived.by((): XmpJson | null => {
-		const imageRecord = imageQuery.data?.images?.[0] ?? liveCoverageProbe.data?.images?.[0]
+		const imageRecord = isLive ? liveCoverageProbe.data?.images?.[0] : imageQuery.data?.images?.[0]
 		const image = imageRecord?.image
 		if (!image) {
 			return null

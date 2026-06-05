@@ -61,12 +61,20 @@ export const getPanoCoverageFromXmp = (xmp: XmpJson | null): PanoCoverage | null
 		return { kind: 'gpano', ...FULL_ANGLES }
 	}
 
+	const croppedWidth = num('GPano:CroppedAreaImageWidthPixels')
+	const croppedHeight = num('GPano:CroppedAreaImageHeightPixels')
+
+	// Malformed/zero cropped dims → full sphere rather than zero-area geometry.
+	if (!(croppedWidth > 0) || !(croppedHeight > 0)) {
+		return { kind: 'gpano', ...FULL_ANGLES }
+	}
+
 	const coverage: PanoCoverage = {
 		kind: 'gpano',
 		phiStart: TAU * (num('GPano:CroppedAreaLeftPixels') / fullWidth),
-		phiLength: TAU * (num('GPano:CroppedAreaImageWidthPixels') / fullWidth),
+		phiLength: TAU * (croppedWidth / fullWidth),
 		thetaStart: Math.PI * (num('GPano:CroppedAreaTopPixels') / fullHeight),
-		thetaLength: Math.PI * (num('GPano:CroppedAreaImageHeightPixels') / fullHeight),
+		thetaLength: Math.PI * (croppedHeight / fullHeight),
 	}
 
 	// Any non-finite cropped field → full sphere fallback.

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls.js'
-
 	import { T } from '@threlte/core'
 	import { OrbitControls } from '@threlte/extras'
 	import { BackSide, type Texture } from 'three'
@@ -28,8 +26,6 @@
 	const isPartialBand = $derived(sphere.thetaLength < Math.PI - 1e-3)
 	const verticalCenter = $derived(sphere.thetaStart + sphere.thetaLength / 2)
 	const fov = $derived(isPartialBand ? (sphere.thetaLength * 180) / Math.PI : 75)
-
-	let controlsRef = $state<OrbitControlsType>()
 </script>
 
 <T.PerspectiveCamera
@@ -38,7 +34,6 @@
 	{fov}
 >
 	<OrbitControls
-		bind:ref={controlsRef}
 		enableZoom={true}
 		enablePan={false}
 		minPolarAngle={isPartialBand ? verticalCenter : 0}
@@ -57,9 +52,3 @@
 		/>
 	</T.Mesh>
 {/if}
-
-<T.AmbientLight intensity={0.5} />
-<T.DirectionalLight
-	position={[5, 5, 5]}
-	intensity={1}
-/>
