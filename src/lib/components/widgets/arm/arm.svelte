@@ -93,20 +93,6 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<!-- <ApiSection
-					title="Quick move"
-					bottomText="Press a button to execute"
-				>
-					<Query query={jointPositionsQuery}>
-						{#if jointPositionsQuery.data}
-							<QuickMove
-								positions={jointPositionsQuery.data.values}
-								moveToJointPositions={quickMoveToJointPositions}
-								lastError={quickMoveToJointPosMutation.error}
-							/>
-						{/if}
-					</Query>
-				</ApiSection> -->
 			</div>
 
 			<!-- Control actions sidebar -->
