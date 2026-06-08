@@ -91,8 +91,8 @@
 				/>
 
 				<span slot="description">
-					Pose is with respect to the arm origin and does not take into account the motion service or
-					frame system.
+					Pose is with respect to the arm origin and does not take into account the motion service
+					or frame system.
 				</span>
 			</Tooltip>
 		</span>
