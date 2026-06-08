@@ -2,10 +2,9 @@
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import PasteButton from '$lib/components/paste-button.svelte'
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import { initPortals } from '$lib/portal'
+	import Portal from '$lib/Portal.svelte'
 
 	import JointPositionEditor from './joint-position-editor.svelte'
 	import { type JointLimit } from './joint-position-limits'
@@ -29,36 +28,15 @@
 		isMoving = false,
 	}: Props = $props()
 
-	// svelte-ignore state_referenced_locally
-	let desiredPositions = $state([...positions]) // in degrees
+	initPortals()
+
 	let useRadians = $state(false)
 	let controlMode = $state<ControlMode>('jointPositions')
 
 	const isQuickMoveMode = $derived(controlMode === 'quickMove')
 
-	const getJointMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
-	const getJointMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
-
-	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
-
-	const displayPositions = $derived(desiredPositions.map((degrees) => toDisplayAngle(degrees)))
-	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
-
 	const toggleMode = () => {
 		controlMode = isQuickMoveMode ? 'jointPositions' : 'quickMove'
-	}
-
-	const handlePaste = (data: string): boolean => {
-		try {
-			const parsed = JSON.parse(data) as number[]
-			desiredPositions = parsed.map((pos, i) => {
-				const degrees = useRadians ? radiansToDegrees(pos) : pos
-				return Math.min(Math.max(degrees, getJointMin(i)), getJointMax(i))
-			})
-		} catch {
-			return false
-		}
-		return true
 	}
 </script>
 
@@ -79,10 +57,7 @@
 		</span>
 		<div class="flex items-center gap-1">
 			<div class="flex gap-1">
-				{#if !isQuickMoveMode}
-					<CopyButton data={copyData} />
-					<PasteButton onPaste={handlePaste} />
-				{/if}
+				<Portal name="widget-buttons" />
 				<AngleUnitToggle
 					{useRadians}
 					onToggle={() => {
@@ -117,7 +92,6 @@
 		/>
 	{:else}
 		<JointPositionEditor
-			bind:desiredPositions
 			{positions}
 			{moveToJointPositions}
 			{useRadians}

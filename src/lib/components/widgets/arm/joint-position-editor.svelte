@@ -1,29 +1,47 @@
 <script lang="ts">
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
+	import CopyButton from '$lib/components/copy-button.svelte'
+	import PasteButton from '$lib/components/paste-button.svelte'
 	import Table from '$lib/components/table.svelte'
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import PortalTarget from '$lib/PortalTarget.svelte'
 
 	import { type JointLimit } from './joint-position-limits'
 	import JointPositionSlider from './joint-position-slider.svelte'
 
 	interface Props {
-		desiredPositions: number[]
 		positions: number[]
 		jointLimitsDegrees: JointLimit[]
 		useRadians: boolean
 		moveToJointPositions: (jointPositions: number[]) => void
 	}
 
-	let {
-		desiredPositions = $bindable(),
-		positions,
-		jointLimitsDegrees,
-		useRadians,
-		moveToJointPositions,
-	}: Props = $props()
+	let { positions, jointLimitsDegrees, useRadians, moveToJointPositions }: Props = $props()
+
+	// svelte-ignore state_referenced_locally
+	let desiredPositions = $state([...positions])
 
 	const getSliderMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
 	const getSliderMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
+
+	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
+
+	const displayPositions = $derived(desiredPositions.map((degrees) => toDisplayAngle(degrees)))
+	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
+
+	const handlePaste = (data: string): boolean => {
+		try {
+			const parsed = JSON.parse(data) as number[]
+			desiredPositions = parsed.map((pos, i) => {
+				const degrees = useRadians ? radiansToDegrees(pos) : pos
+				return Math.min(Math.max(degrees, getSliderMin(i)), getSliderMax(i))
+			})
+		} catch {
+			return false
+		}
+		return true
+	}
 
 	const execute = () => {
 		moveToJointPositions([...desiredPositions])
@@ -87,3 +105,8 @@
 >
 	Execute
 </Button>
+
+<PortalTarget name="widget-buttons">
+	<CopyButton data={copyData} />
+	<PasteButton onPaste={handlePaste} />
+</PortalTarget>
