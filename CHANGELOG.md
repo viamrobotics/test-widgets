@@ -1,7 +1,5 @@
 # @viamrobotics/test-widgets
 
-<<<<<<< HEAD
-=======
 ## 0.6.1
 
 ### Patch Changes
@@ -14,7 +12,6 @@
 
 - faf0e41: Add an optional `header` snippet prop to `DoCommandWidget`, rendered above the input/output editor row. It receives `{ input, setInput }` so callers can read the current editor input and replace it (useful for "save as favorite" / "apply favorite" flows).
 
->>>>>>> main
 ## 0.5.0
 
 ### Minor Changes

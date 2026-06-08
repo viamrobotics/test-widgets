@@ -17,27 +17,16 @@
 	const step = $derived(useRadians ? 0.01 : 0.1)
 
 	const sliderFormat = (v: number) => formatNumeric(v, useRadians ? 3 : 1)
-
-	let sliderValue = $state(0)
-
 	const toDisplay = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
 	const toDegrees = (display: number) => (useRadians ? radiansToDegrees(display) : display)
-
-	$effect(() => {
-		sliderValue = toDisplay(value)
-	})
-
-	$effect(() => {
-		const degrees = toDegrees(sliderValue)
-		if (Math.abs(degrees - value) > 1e-6) {
-			value = degrees
-		}
-	})
 </script>
 
 <div class="joint-slider min-w-0">
 	<Slider
-		bind:value={sliderValue}
+		value={toDisplay(value)}
+		on:change={(event) => {
+			value = toDegrees(event.detail.value)
+		}}
 		{min}
 		{max}
 		{step}

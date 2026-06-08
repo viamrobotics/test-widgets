@@ -30,14 +30,14 @@
 	}: Props = $props()
 
 	// svelte-ignore state_referenced_locally
-	let desiredPositions = $state([...positions])
+	let desiredPositions = $state([...positions]) // in degrees
 	let useRadians = $state(false)
 	let controlMode = $state<ControlMode>('jointPositions')
 
 	const isQuickMoveMode = $derived(controlMode === 'quickMove')
 
-	const getSliderMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
-	const getSliderMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
+	const getJointMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
+	const getJointMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
 
 	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
 
@@ -53,7 +53,7 @@
 			const parsed = JSON.parse(data) as number[]
 			desiredPositions = parsed.map((pos, i) => {
 				const degrees = useRadians ? radiansToDegrees(pos) : pos
-				return Math.min(Math.max(degrees, getSliderMin(i)), getSliderMax(i))
+				return Math.min(Math.max(degrees, getJointMin(i)), getJointMax(i))
 			})
 		} catch {
 			return false
@@ -84,11 +84,11 @@
 					<PasteButton onPaste={handlePaste} />
 				{/if}
 				<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
+					{useRadians}
+					onToggle={() => {
+						useRadians = !useRadians
+					}}
+				/>
 			</div>
 			<Tooltip>
 				<button
