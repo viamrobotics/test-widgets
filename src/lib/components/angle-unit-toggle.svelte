@@ -15,9 +15,7 @@
 		aria-label={useRadians ? 'Switch to Degrees' : 'Switch to Radians'}
 		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
 	>
-		<Icon
-			name="sync"
-		/>
+		<Icon name="sync" />
 	</button>
 
 	<span slot="description">

@@ -40,8 +40,8 @@
 		Quick move executes immediately
 	</span>
 	<span slot="description">
-		Each ±5° button sends a move command as soon as it is pressed. Buttons are disabled while the arm
-		is moving.
+		Each ±5° button sends a move command as soon as it is pressed. Buttons are disabled while the
+		arm is moving.
 	</span>
 </Tooltip>
 

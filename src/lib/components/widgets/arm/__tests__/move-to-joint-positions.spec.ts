@@ -200,8 +200,12 @@ describe('Arm move-to-joint-positions', () => {
 
 			await switchToQuickMove()
 
-			expect(screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })).toHaveLength(2)
-			expect(screen.getAllByRole('button', { name: /increase joint \d by 5 degrees/iu })).toHaveLength(2)
+			expect(
+				screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })
+			).toHaveLength(2)
+			expect(
+				screen.getAllByRole('button', { name: /increase joint \d by 5 degrees/iu })
+			).toHaveLength(2)
 		})
 
 		it('+5° button executes immediately with current position plus 5', async () => {
