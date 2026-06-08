@@ -1,93 +1,68 @@
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
-	import { getOutOfBoundsSide, isOutsideJointLimit, type JointLimit } from './joint-position-limits'
+	import JointPositionEditor from './joint-position-editor.svelte'
+	import { type JointLimit } from './joint-position-limits'
+	import JointPositionQuickMove from './joint-position-quick-move.svelte'
+
+	type ControlMode = 'jointPositions' | 'quickMove'
 
 	interface Props {
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
 		lastError: Error | null
 		jointLimitsDegrees: JointLimit[]
+		isMoving?: boolean
 	}
 
-	const { positions, moveToJointPositions, lastError, jointLimitsDegrees }: Props = $props()
+	const {
+		positions,
+		moveToJointPositions,
+		lastError,
+		jointLimitsDegrees,
+		isMoving = false,
+	}: Props = $props()
 
 	// svelte-ignore state_referenced_locally
-	let desiredPositions = $state([...positions])
+	let desiredPositions = $state([...positions]) // in degrees
 	let useRadians = $state(false)
+	let controlMode = $state<ControlMode>('jointPositions')
 
-	const resetToZero = () => {
-		desiredPositions = [...desiredPositions].fill(0)
-	}
+	const isQuickMoveMode = $derived(controlMode === 'quickMove')
 
-	const resetToCurrent = () => {
-		desiredPositions = [...positions]
-	}
+	const getJointMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
+	const getJointMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
 
-	const handleJointInputChange = (index: number, inputValue: number) => {
-		// default is degrees, so if user has toggle to radians, convert back to degrees before setting
-		// (we only convert to radians when displaying)
-		desiredPositions[index] = useRadians ? radiansToDegrees(inputValue) : inputValue
+	const toDisplayAngle = (degrees: number) => (useRadians ? degreesToRadians(degrees) : degrees)
+
+	const displayPositions = $derived(desiredPositions.map((degrees) => toDisplayAngle(degrees)))
+	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
+
+	const toggleMode = () => {
+		controlMode = isQuickMoveMode ? 'jointPositions' : 'quickMove'
 	}
 
 	const handlePaste = (data: string): boolean => {
 		try {
-			desiredPositions = JSON.parse(data) as number[]
+			const parsed = JSON.parse(data) as number[]
+			desiredPositions = parsed.map((pos, i) => {
+				const degrees = useRadians ? radiansToDegrees(pos) : pos
+				return Math.min(Math.max(degrees, getJointMin(i)), getJointMax(i))
+			})
 		} catch {
 			return false
 		}
 		return true
 	}
-	const degreesToDisplayAngle = (degrees: number) => {
-		return useRadians ? degreesToRadians(degrees) : degrees
-	}
-
-	const outOfBoundsMessage = (displayValue: number, limit: JointLimit) => {
-		const min = degreesToDisplayAngle(limit.minDegrees)
-		const max = degreesToDisplayAngle(limit.maxDegrees)
-		const unit = useRadians ? 'rad' : 'deg'
-		const side = getOutOfBoundsSide(displayValue, min, max)
-
-		if (side === 'below-min') {
-			return `Min value is ${formatNumeric(min)} ${unit}`
-		}
-
-		if (side === 'above-max') {
-			return `Max value is ${formatNumeric(max)} ${unit}`
-		}
-	}
-
-	const displayPositions = $derived(desiredPositions.map((pos) => degreesToDisplayAngle(pos)))
-
-	const copyData = $derived(`[${displayPositions.join(', ')}]`)
-
-	const outOfBoundsByIndex = $derived(
-		displayPositions.map((displayValue, index) => {
-			const limit = jointLimitsDegrees[index]
-			if (!limit) {
-				return false
-			}
-			return isOutsideJointLimit(
-				displayValue,
-				degreesToDisplayAngle(limit.minDegrees),
-				degreesToDisplayAngle(limit.maxDegrees)
-			)
-		})
-	)
-
-	const hasOutOfBoundsPositions = $derived(outOfBoundsByIndex.some(Boolean))
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<!-- Controls Header -->
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
 			Joint Positions
@@ -96,88 +71,59 @@
 					name="information-outline"
 					cx="text-gray-6"
 				/>
-
 				<span slot="description">
 					Joint position limits are based solely on the arm kinematics and do not take into account
 					motion service limit overrides.
 				</span>
 			</Tooltip>
 		</span>
-		<div class="flex gap-1">
-			<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
-			<CopyButton data={copyData} />
-			<PasteButton onPaste={handlePaste} />
-		</div>
-	</div>
-
-	<Table>
-		<thead>
-			<tr>
-				<th> Joint </th>
-				<th>Move ({useRadians ? 'radians' : 'degrees'})</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each { length: positions.length }, index}
-				{@const limit = jointLimitsDegrees[index]}
-				{@const value = Number.parseFloat(formatNumeric(displayPositions[index]))}
-				{@const outOfBounds = outOfBoundsByIndex[index]}
-				<tr>
-					<th>{index}</th>
-					<th>
-						<div class="flex flex-col items-center gap-0.5 py-0.5">
-							<NumericInput
-								cx="max-w-[76px]"
-								{value}
-								on:change={(event) => {
-									const inputValue = numberValueFromEvent(event) ?? 0
-									handleJointInputChange(index, inputValue)
-								}}
-							/>
-							{#if limit && outOfBounds}
-								<p class="text-danger-dark text-center text-[10px] leading-snug whitespace-normal">
-									{outOfBoundsMessage(displayPositions[index], limit)}
-								</p>
-							{/if}
-						</div>
-					</th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
-
-	<div class="mb-2 flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
+		<div class="flex items-center gap-1">
+			<div class="flex gap-1">
+				{#if !isQuickMoveMode}
+					<CopyButton data={copyData} />
+					<PasteButton onPaste={handlePaste} />
+				{/if}
+				<AngleUnitToggle
+					{useRadians}
+					onToggle={() => {
+						useRadians = !useRadians
+					}}
 				/>
-
+			</div>
+			<Tooltip>
+				<button
+					onclick={toggleMode}
+					aria-label={isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
+					class={[
+						'hover:border-medium hover:bg-medium active:bg-gray-2 rounded p-0.5',
+						isQuickMoveMode ? 'text-amber-600' : 'text-gray-6',
+					]}
+				>
+					<Icon name="lightning-bolt-outline" />
+				</button>
 				<span slot="description">
-					Will update the "Move to" input values but will not execute
+					{isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
 				</span>
 			</Tooltip>
-		</span>
-		<div class="flex flex-col gap-2 sm:flex-row">
-			<Button onclick={resetToZero}>Zero</Button>
-			<Button onclick={resetToCurrent}>Current position</Button>
 		</div>
 	</div>
-	<Button
-		class="mt-auto w-fit"
-		disabled={hasOutOfBoundsPositions}
-		icon="play-circle-outline"
-		variant="dark"
-		onclick={() => moveToJointPositions(desiredPositions)}
-	>
-		Execute
-	</Button>
+
+	{#if isQuickMoveMode}
+		<JointPositionQuickMove
+			{positions}
+			{moveToJointPositions}
+			{useRadians}
+			{isMoving}
+		/>
+	{:else}
+		<JointPositionEditor
+			bind:desiredPositions
+			{positions}
+			{moveToJointPositions}
+			{useRadians}
+			{jointLimitsDegrees}
+		/>
+	{/if}
+
 	<ErrorDisplay {lastError} />
 </div>
