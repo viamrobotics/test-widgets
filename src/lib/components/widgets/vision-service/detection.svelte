@@ -23,6 +23,9 @@
 
 	let hovering = $state(false)
 
+	const isSelected = $derived(context.selected === detection.id)
+	const isActive = $derived(isSelected || context.hovered.has(detection.id))
+
 	// These are ballparking, but seem good enough for nearly all cases
 	const isDetectionNearTop = $derived(factoredyMin < 30)
 	const isDetectionNearRight = $derived(factoredxMin > $size.width * 0.66)
@@ -32,10 +35,7 @@
 	positionType="absolute"
 	positionLeft={factoredxMin}
 	positionTop={factoredyMin}
-	borderColor="#aaa"
-	hover={{
-		borderColor: detection.color,
-	}}
+	borderColor={isActive ? detection.color : '#aaa'}
 	borderWidth={2}
 	width={factoredxMax - factoredxMin}
 	height={factoredyMax - factoredyMin}
@@ -46,6 +46,9 @@
 	onpointerleave={() => {
 		context.hovered.delete(detection.id)
 		hovering = false
+	}}
+	onclick={() => {
+		context.selected = context.selected === detection.id ? null : detection.id
 	}}
 >
 	{#if hovering}
