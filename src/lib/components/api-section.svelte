@@ -2,14 +2,19 @@
 	import type { Snippet } from 'svelte'
 	import type { HTMLAttributes } from 'svelte/elements'
 
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 	import { twMerge } from 'tailwind-merge'
+
+	import SectionTitle from './section-title.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
 		title?: string | undefined
 		tooltip?: string | undefined
 		description?: string | undefined
 		bottomText?: string | undefined
+		/** camelCase method name; presence → monospace title */
+		method?: string | undefined
+		/** docs URL; presence → underline + link (requires method) */
+		href?: string | undefined
 		class?: string
 		children?: Snippet
 	}
@@ -19,6 +24,8 @@
 		tooltip,
 		description,
 		bottomText,
+		method,
+		href,
 		class: className = '',
 		children,
 		...rest
@@ -29,32 +36,18 @@
 
 <section
 	class={twMerge('flex grow flex-col gap-4 p-4', className)}
-	aria-labelledby={headingID}
+	aria-labelledby={title ? headingID : undefined}
 	{...rest}
 >
 	{#if title}
 		<div class="flex flex-col gap-0.5">
-			<h3
-				class="flex flex-row items-center gap-1 text-sm font-semibold"
-				id={headingID}
-			>
+			<SectionTitle
 				{title}
-				{#if tooltip}
-					<Tooltip>
-						<Icon
-							name="information-outline"
-							cx="text-gray-6"
-						/>
-
-						<p
-							slot="description"
-							class="text-xs whitespace-pre-line"
-						>
-							{tooltip}
-						</p>
-					</Tooltip>
-				{/if}
-			</h3>
+				{tooltip}
+				{method}
+				{href}
+				headingId={headingID}
+			/>
 			{#if description}
 				<p class="text-subtle-2 text-xs">{description}</p>
 			{/if}

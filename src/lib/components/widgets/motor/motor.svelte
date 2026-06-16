@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -86,6 +87,8 @@
 				</MutationSection>
 				<MutationSection
 					title="SetPower"
+					method="setPower"
+					href={apiDocsHref('rdk:component:motor', 'setPower')}
 					description="Move continuously"
 					lastError={setPowerMutation.error}
 				>
@@ -94,6 +97,8 @@
 				{#if propertiesQuery.data?.positionReporting}
 					<MutationSection
 						title="SetRPM"
+						method="setRPM"
+						href={apiDocsHref('rdk:component:motor', 'setRPM')}
 						description="Move indefinitely at a specified speed."
 						lastError={setRPMMutation.error}
 					>
@@ -101,6 +106,8 @@
 					</MutationSection>
 					<MutationSection
 						title="GoFor"
+						method="goFor"
+						href={apiDocsHref('rdk:component:motor', 'goFor')}
 						description="Move a specified number of revolutions"
 						lastError={goForMutation.error}
 					>
@@ -108,6 +115,8 @@
 					</MutationSection>
 					<MutationSection
 						title="GoTo"
+						method="goTo"
+						href={apiDocsHref('rdk:component:motor', 'goTo')}
 						description="Turn to a specified position"
 						lastError={goToMutation.error}
 					>
@@ -117,7 +126,11 @@
 			</div>
 
 			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					method="stop"
+					href={apiDocsHref('rdk:component:motor', 'stop')}
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -127,12 +140,15 @@
 				</ApiSection>
 				<IsMoving
 					client={MotorClient}
+					api="rdk:component:motor"
 					{partID}
 					{resourceName}
 				>
 					<div class="flex flex-col gap-6 pt-2">
 						<ApiSection
 							title="IsPowered"
+							method="isPowered"
+							href={apiDocsHref('rdk:component:motor', 'isPowered')}
 							class="gap-3 p-0"
 							tooltip="Returns whether or not the motor is running and the current portion of max power.
 
@@ -158,6 +174,8 @@
 						{#if propertiesQuery.data?.positionReporting === true}
 							<ApiSection
 								title="GetPosition"
+								method="getPosition"
+								href={apiDocsHref('rdk:component:motor', 'getPosition')}
 								class="gap-3 p-0"
 								tooltip="Reports the position of an encoded motor in revolutions from zero/home."
 							>

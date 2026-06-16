@@ -3,6 +3,7 @@
 	import { AudioOutClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import MutationSection from '$lib/components/mutation-section.svelte'
@@ -107,6 +108,8 @@
 			<div class="flex w-full flex-col divide-y">
 				<MutationSection
 					title="Play"
+					method="play"
+					href={apiDocsHref('rdk:component:audio_output', 'play')}
 					description="Send audio data to the device"
 					lastError={playContext.error}
 				>
@@ -178,6 +181,8 @@
 			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
 				<ApiSection
 					title="GetProperties"
+					method="getProperties"
+					href={apiDocsHref('rdk:component:audio_output', 'getProperties')}
 					description="Audio output properties"
 					class="relative"
 				>

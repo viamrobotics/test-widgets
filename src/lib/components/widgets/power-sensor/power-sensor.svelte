@@ -4,6 +4,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 	import { slide } from 'svelte/transition'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
@@ -66,6 +67,8 @@
 		<div class="grid w-full grid-cols-3 divide-x">
 			<ApiSection
 				title="GetCurrent"
+				method="getCurrent"
+				href={apiDocsHref('rdk:component:power_sensor', 'getCurrent')}
 				class="pb-5"
 			>
 				<Query
@@ -79,6 +82,8 @@
 			</ApiSection>
 			<ApiSection
 				title="GetVoltage"
+				method="getVoltage"
+				href={apiDocsHref('rdk:component:power_sensor', 'getVoltage')}
 				class="pb-5"
 			>
 				<Query
@@ -92,6 +97,8 @@
 			</ApiSection>
 			<ApiSection
 				title="GetPower"
+				method="getPower"
+				href={apiDocsHref('rdk:component:power_sensor', 'getPower')}
 				class="pb-5"
 			>
 				<Query
@@ -107,6 +114,8 @@
 
 		<ApiSection
 			title="GetReadings"
+			method="getReadings"
+			href={apiDocsHref('rdk:component:power_sensor', 'getReadings')}
 			description="Get all the measurements and data that this power sensor provides"
 		>
 			<Switch

@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -52,6 +53,8 @@
 			<div class="grid grow grid-cols-3 divide-x">
 				<ApiSection
 					title="GetPosition"
+					method="getPosition"
+					href={apiDocsHref('rdk:component:servo', 'getPosition')}
 					bottomText="Updates automatically"
 				>
 					<Query query={positionQuery}>
@@ -65,7 +68,11 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<ApiSection title="Move">
+				<ApiSection
+					title="Move"
+					method="move"
+					href={apiDocsHref('rdk:component:servo', 'move')}
+				>
 					<Query query={positionQuery}>
 						{#if positionQuery.data !== undefined}
 							<Move
@@ -92,7 +99,11 @@
 				</ApiSection>
 			</div>
 			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					method="stop"
+					href={apiDocsHref('rdk:component:servo', 'stop')}
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -102,6 +113,7 @@
 				</ApiSection>
 				<IsMoving
 					client={ServoClient}
+					api="rdk:component:servo"
 					{partID}
 					{resourceName}
 				/>

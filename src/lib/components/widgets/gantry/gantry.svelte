@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -51,12 +52,26 @@
 					aria-labelledby={positionHeadingID}
 				>
 					<h3
-						class="flex flex-row items-center gap-1 text-sm"
+						class="text-subtle-2 flex flex-row items-center gap-1 text-sm"
 						id={positionHeadingID}
 					>
-						<span class="font-semibold"> GetPosition </span>
+						<a
+							href={apiDocsHref('rdk:component:gantry', 'getPosition')}
+							target="_blank"
+							rel="noopener noreferrer external"
+							class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+						>
+							GetPosition
+						</a>
 						and
-						<span class="font-semibold"> GetLengths </span>
+						<a
+							href={apiDocsHref('rdk:component:gantry', 'getLengths')}
+							target="_blank"
+							rel="noopener noreferrer external"
+							class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+						>
+							GetLengths
+						</a>
 					</h3>
 					<Queries queries={[positionQuery, lengthsQuery]}>
 						{@const positions = positionQuery.data}
@@ -69,7 +84,11 @@
 						{/if}
 					</Queries>
 				</ApiSection>
-				<ApiSection title="MoveToPosition">
+				<ApiSection
+					title="MoveToPosition"
+					method="moveToPosition"
+					href={apiDocsHref('rdk:component:gantry', 'moveToPosition')}
+				>
 					<Query query={positionQuery}>
 						{@const positions = positionQuery.data}
 						{#if positions !== undefined}
@@ -106,6 +125,8 @@
 					</ApiSection>
 					<ApiSection
 						title="Home"
+						method="home"
+						href={apiDocsHref('rdk:component:gantry', 'home')}
 						description="Run the homing sequence"
 					>
 						<Home
@@ -116,7 +137,11 @@
 				</div>
 			</div>
 			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					method="stop"
+					href={apiDocsHref('rdk:component:gantry', 'stop')}
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -126,6 +151,7 @@
 				</ApiSection>
 				<IsMoving
 					client={GantryClient}
+					api="rdk:component:gantry"
 					{partID}
 					{resourceName}
 				/>

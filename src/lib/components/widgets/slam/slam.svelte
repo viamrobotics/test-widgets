@@ -14,6 +14,7 @@
 	} from '@viamrobotics/svelte-sdk'
 	import { Vector2, type Vector3 } from 'three'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Queries from '$lib/components/queries.svelte'
@@ -200,7 +201,11 @@
 							/>
 						</div>
 
-						<ApiSection title="GetPosition">
+						<ApiSection
+							title="GetPosition"
+							method="getPosition"
+							href={apiDocsHref('rdk:service:slam', 'getPosition')}
+						>
 							<Queries
 								queries={[propertiesQuery, positionQuery]}
 								contentCx="h-6"

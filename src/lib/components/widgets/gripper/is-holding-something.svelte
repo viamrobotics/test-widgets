@@ -3,6 +3,7 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
@@ -30,6 +31,8 @@
 
 <ApiSection
 	title="IsHoldingSomething"
+	method="isHoldingSomething"
+	href={apiDocsHref('rdk:component:gripper', 'isHoldingSomething')}
 	bottomText="Updates automatically"
 	class="grow"
 >

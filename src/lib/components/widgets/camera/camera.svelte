@@ -5,6 +5,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
@@ -12,6 +13,7 @@
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
+	import SectionTitle from '$lib/components/section-title.svelte'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
@@ -150,166 +152,181 @@
 	}
 
 	const headingID = $props.id()
+	const getImagesHeadingID = `${headingID}-images`
+	const getPointCloudHeadingID = `${headingID}-point-cloud`
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		{#if isPlaying}
-			<div class="flex gap-4 p-4 pb-3">
-				<RefetchController
-					{refetchInterval}
-					allowLive
-					queries={[imageQuery, pointcloudQuery]}
+		<section
+			class="flex flex-col"
+			aria-labelledby={getImagesHeadingID}
+		>
+			<div class="flex flex-col gap-0.5 p-4 pb-0">
+				<SectionTitle
+					title="GetImages"
+					method="getImages"
+					href={apiDocsHref('rdk:component:camera', 'getImages')}
+					headingId={getImagesHeadingID}
 				/>
-				{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-					<Label position="left">
-						Source
-						<Select
-							value={selectedSource}
-							on:change={onSourceSelect}
-							slot="input"
-						>
-							{#each sourceNames as name (name)}
-								<option value={name}>{name}</option>
-							{/each}
-						</Select>
-					</Label>
-				{/if}
-				{#if panoCoverage}
-					<Label>
-						{panoToggleLabel}
-						<ToggleButtons
-							slot="input"
-							options={['On', 'Off']}
-							selected={displayAs360 ? 'On' : 'Off'}
-							on:input={(event) => {
-								displayAs360 = event.detail === 'On'
-							}}
-						/>
-					</Label>
-				{/if}
 			</div>
-		{/if}
-		<div class="flex h-full w-full gap-4 p-4">
-			<div class="grow">
-				{#if isPlaying}
-					{#if displayAs360}
-						{#if isLive}
-							<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
-							<Canvas renderMode="always">
-								<LiveThreeSixtyCameraView
-									{partID}
-									{resourceName}
-									coverage={panoCoverage}
-								/>
-							</Canvas>
+			{#if isPlaying}
+				<div class="flex gap-4 p-4 pb-3">
+					<RefetchController
+						{refetchInterval}
+						allowLive
+						queries={[imageQuery, pointcloudQuery]}
+					/>
+					{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
+						<Label position="left">
+							Source
+							<Select
+								value={selectedSource}
+								on:change={onSourceSelect}
+								slot="input"
+							>
+								{#each sourceNames as name (name)}
+									<option value={name}>{name}</option>
+								{/each}
+							</Select>
+						</Label>
+					{/if}
+					{#if panoCoverage}
+						<Label>
+							{panoToggleLabel}
+							<ToggleButtons
+								slot="input"
+								options={['On', 'Off']}
+								selected={displayAs360 ? 'On' : 'Off'}
+								on:input={(event) => {
+									displayAs360 = event.detail === 'On'
+								}}
+							/>
+						</Label>
+					{/if}
+				</div>
+			{/if}
+			<div class="flex h-full w-full gap-4 p-4">
+				<div class="grow">
+					{#if isPlaying}
+						{#if displayAs360}
+							{#if isLive}
+								<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
+								<Canvas renderMode="always">
+									<LiveThreeSixtyCameraView
+										{partID}
+										{resourceName}
+										coverage={panoCoverage}
+									/>
+								</Canvas>
+							{:else}
+								<Canvas>
+									<ThreeSixtyCameraView
+										data={imageQuery.data}
+										coverage={panoCoverage}
+									/>
+								</Canvas>
+							{/if}
 						{:else}
-							<Canvas>
-								<ThreeSixtyCameraView
-									data={imageQuery.data}
-									coverage={panoCoverage}
-								/>
-							</Canvas>
+							<LiveOrPollingVideo
+								{partID}
+								{resourceName}
+								showResolutionOptions
+								{isLive}
+								data={imageQuery.data}
+								error={imageQuery.error}
+								isLoading={imageQuery.isLoading}
+								refetch={imageQuery.refetch}
+								showMousePositionTooltip={mousePostionTooltip === 'On'}
+								sourceName={selectedSource}
+							/>
 						{/if}
 					{:else}
-						<LiveOrPollingVideo
-							{partID}
-							{resourceName}
-							showResolutionOptions
-							{isLive}
-							data={imageQuery.data}
-							error={imageQuery.error}
-							isLoading={imageQuery.isLoading}
-							refetch={imageQuery.refetch}
-							showMousePositionTooltip={mousePostionTooltip === 'On'}
-							sourceName={selectedSource}
-						/>
+						<div class="bg-medium flex h-64 w-80 items-center justify-center">
+							<Button
+								icon="play-circle-outline"
+								variant="dark"
+								onclick={() => {
+									isPlaying = true
+								}}
+							>
+								Start feed
+							</Button>
+						</div>
 					{/if}
-				{:else}
-					<div class="bg-medium flex h-64 w-80 items-center justify-center">
-						<Button
-							icon="play-circle-outline"
-							variant="dark"
-							onclick={() => {
-								isPlaying = true
-							}}
-						>
-							Start feed
-						</Button>
+				</div>
+				{#if isPlaying}
+					<div class="flex flex-col items-start gap-2">
+						<ExportScreenshot
+							name={client.current?.name ?? ''}
+							sourceName={selectedSource}
+							getImage={exportScreenshotQuery.refetch}
+						/>
+						{#if addImageToDataset}
+							<Button
+								icon="layers-triple-outline"
+								onclick={async () => {
+									let imgData
+									if (refetchInterval.current === RefetchIntervals.LIVE) {
+										const { isSuccess, data } = await imageQuery.refetch()
+										if (!isSuccess) return
+										imgData = data
+									} else {
+										imgData = imageQuery.data
+									}
+
+									const matchingImage = pickImageForSource(imgData?.images, selectedSource)
+									const image = matchingImage?.image
+									const mimeType = matchingImage?.mimeType
+
+									if (image) {
+										addImageToDataset({
+											binaryData: new Uint8Array(image),
+											partID,
+											componentType: 'camera',
+											componentName: resourceName,
+											methodName: 'captureAllFromCamera',
+											mimeType: mimeType ?? 'image/png',
+											dataRequestTimes: [new Date(), new Date()],
+										})
+									}
+								}}
+							>
+								Add current image to dataset
+							</Button>
+						{/if}
+						{#if !isFirefox}
+							<PictureInPictureButton
+								{resourceName}
+								rate={refetchInterval.current}
+							/>
+						{/if}
+						<Label>
+							Mouse Position Tooltip
+
+							<ToggleButtons
+								slot="input"
+								options={['On', 'Off']}
+								selected={mousePostionTooltip}
+								on:input={setMousePostionTooltip}
+							/>
+						</Label>
 					</div>
 				{/if}
 			</div>
-			{#if isPlaying}
-				<div class="flex flex-col items-start gap-2">
-					<ExportScreenshot
-						name={client.current?.name ?? ''}
-						sourceName={selectedSource}
-						getImage={exportScreenshotQuery.refetch}
-					/>
-					{#if addImageToDataset}
-						<Button
-							icon="layers-triple-outline"
-							onclick={async () => {
-								let imgData
-								if (refetchInterval.current === RefetchIntervals.LIVE) {
-									const { isSuccess, data } = await imageQuery.refetch()
-									if (!isSuccess) return
-									imgData = data
-								} else {
-									imgData = imageQuery.data
-								}
-
-								const matchingImage = pickImageForSource(imgData?.images, selectedSource)
-								const image = matchingImage?.image
-								const mimeType = matchingImage?.mimeType
-
-								if (image) {
-									addImageToDataset({
-										binaryData: new Uint8Array(image),
-										partID,
-										componentType: 'camera',
-										componentName: resourceName,
-										methodName: 'captureAllFromCamera',
-										mimeType: mimeType ?? 'image/png',
-										dataRequestTimes: [new Date(), new Date()],
-									})
-								}
-							}}
-						>
-							Add current image to dataset
-						</Button>
-					{/if}
-					{#if !isFirefox}
-						<PictureInPictureButton
-							{resourceName}
-							rate={refetchInterval.current}
-						/>
-					{/if}
-					<Label>
-						Mouse Position Tooltip
-
-						<ToggleButtons
-							slot="input"
-							options={['On', 'Off']}
-							selected={mousePostionTooltip}
-							on:input={setMousePostionTooltip}
-						/>
-					</Label>
-				</div>
-			{/if}
-		</div>
+		</section>
 
 		<section
 			class="flex flex-col gap-4 p-4"
-			aria-labelledby={headingID}
+			aria-labelledby={getPointCloudHeadingID}
 		>
-			<div>
-				<h3
-					id={headingID}
-					class="pb-1.5 font-semibold"
-				>
-					GetPointCloud
-				</h3>
+			<div class="flex flex-col gap-0.5">
+				<SectionTitle
+					title="GetPointCloud"
+					method="getPointCloud"
+					href={apiDocsHref('rdk:component:camera', 'getPointCloud')}
+					headingId={getPointCloudHeadingID}
+				/>
 				<p class="text-subtle-2 text-xs">
 					Get depth measurement data from cameras with depth sensing support
 				</p>

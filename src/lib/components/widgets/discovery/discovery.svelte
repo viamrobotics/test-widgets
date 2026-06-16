@@ -7,6 +7,7 @@
 	} from '@viamrobotics/svelte-sdk'
 	import { isEqual } from 'lodash-es'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
@@ -135,6 +136,8 @@
 
 		<ApiSection
 			title="DiscoverResources"
+			method="discoverResources"
+			href={apiDocsHref('rdk:service:discovery', 'discoverResources')}
 			class="relative"
 		>
 			<Query

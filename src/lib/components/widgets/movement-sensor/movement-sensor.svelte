@@ -4,11 +4,15 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 	import { slide } from 'svelte/transition'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import SectionTitle from '$lib/components/section-title.svelte'
+
+	const MS_API = 'rdk:component:movement_sensor'
 
 	import Accuracy from './accuracy.svelte'
 	import CompassHeading from './compass-heading.svelte'
@@ -104,7 +108,11 @@
 				<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 lg:w-1/4">
 					{#if propertiesQuery.data?.positionSupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">GetPosition</h3>
+							<SectionTitle
+								title="GetPosition"
+								method="getPosition"
+								href={apiDocsHref(MS_API, 'getPosition')}
+							/>
 							<Query
 								query={positionQuery}
 								contentCx="h-6"
@@ -118,9 +126,14 @@
 
 					{#if propertiesQuery.data?.orientationSupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">
-								GetOrientation <span class="text-subtle-2 font-normal">(º)</span>
-							</h3>
+							<SectionTitle
+								title="GetOrientation"
+								method="getOrientation"
+								href={apiDocsHref(MS_API, 'getOrientation')}
+							>
+								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
+									>{/snippet}
+							</SectionTitle>
 							<Query
 								query={orientationQuery}
 								contentCx="h-6"
@@ -134,9 +147,14 @@
 
 					{#if propertiesQuery.data?.compassHeadingSupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">
-								GetCompassHeading <span class="text-subtle-2 font-normal">(º)</span>
-							</h3>
+							<SectionTitle
+								title="GetCompassHeading"
+								method="getCompassHeading"
+								href={apiDocsHref(MS_API, 'getCompassHeading')}
+							>
+								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
+									>{/snippet}
+							</SectionTitle>
 							<Query
 								query={compassHeadingQuery}
 								contentCx="h-6"
@@ -152,9 +170,14 @@
 				<div class="flex w-full flex-col gap-5 p-4 lg:w-1/4">
 					{#if propertiesQuery.data?.angularVelocitySupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">
-								GetAngularVelocity <span class="text-subtle-2 font-normal">(º/s)</span>
-							</h3>
+							<SectionTitle
+								title="GetAngularVelocity"
+								method="getAngularVelocity"
+								href={apiDocsHref(MS_API, 'getAngularVelocity')}
+							>
+								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
+									>{/snippet}
+							</SectionTitle>
 							<Query
 								query={angularVelocityQuery}
 								contentCx="h-6"
@@ -168,9 +191,14 @@
 
 					{#if propertiesQuery.data?.linearVelocitySupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">
-								GetLinearVelocity <span class="text-subtle-2 font-normal">(m/s)</span>
-							</h3>
+							<SectionTitle
+								title="GetLinearVelocity"
+								method="getLinearVelocity"
+								href={apiDocsHref(MS_API, 'getLinearVelocity')}
+							>
+								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
+									>{/snippet}
+							</SectionTitle>
 							<Query
 								query={linearVelocityQuery}
 								contentCx="h-6"
@@ -184,11 +212,15 @@
 
 					{#if propertiesQuery.data?.linearAccelerationSupported}
 						<div class="flex flex-col gap-2">
-							<h3 class="font-semibold">
-								GetLinearAcceleration <span class="text-subtle-2 font-normal"
-									>(m/s<sup>2</sup>)</span
-								>
-							</h3>
+							<SectionTitle
+								title="GetLinearAcceleration"
+								method="getLinearAcceleration"
+								href={apiDocsHref(MS_API, 'getLinearAcceleration')}
+							>
+								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
+										>(m/s<sup>2</sup>)</span
+									>{/snippet}
+							</SectionTitle>
 							<Query
 								query={linearAccelerationQuery}
 								contentCx="h-6"
@@ -201,7 +233,11 @@
 					{/if}
 
 					<div class="flex flex-col gap-2">
-						<h3 class="font-semibold">GetAccuracy</h3>
+						<SectionTitle
+							title="GetAccuracy"
+							method="getAccuracy"
+							href={apiDocsHref(MS_API, 'getAccuracy')}
+						/>
 						<Query
 							query={accuracyQuery}
 							contentCx="h-6"
@@ -226,13 +262,13 @@
 			class="flex flex-col gap-4 p-4"
 			aria-labelledby={headingID}
 		>
-			<div>
-				<h3
-					id={headingID}
-					class="pb-1.5 font-semibold"
-				>
-					GetReadings
-				</h3>
+			<div class="flex flex-col gap-0.5">
+				<SectionTitle
+					title="GetReadings"
+					method="getReadings"
+					href={apiDocsHref(MS_API, 'getReadings')}
+					headingId={headingID}
+				/>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>
 			</div>
 

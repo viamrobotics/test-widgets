@@ -8,6 +8,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -61,6 +62,8 @@
 			>
 				<ApiSection
 					title="GetJointPositions"
+					method="getJointPositions"
+					href={apiDocsHref('rdk:component:arm', 'getJointPositions')}
 					bottomText="Updates automatically"
 				>
 					<Query query={jointPositionsQuery}>
@@ -69,7 +72,11 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<ApiSection title="MoveToJointPositions">
+				<ApiSection
+					title="MoveToJointPositions"
+					method="moveToJointPositions"
+					href={apiDocsHref('rdk:component:arm', 'moveToJointPositions')}
+				>
 					<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
 						{#if jointPositionsQuery.data && kinematicsQuery.data}
 							<MoveToJointPositions
@@ -82,7 +89,11 @@
 						{/if}
 					</Queries>
 				</ApiSection>
-				<ApiSection title="MoveToPosition">
+				<ApiSection
+					title="MoveToPosition"
+					method="moveToPosition"
+					href={apiDocsHref('rdk:component:arm', 'moveToPosition')}
+				>
 					<Query query={endPositionQuery}>
 						{#if endPositionQuery.data}
 							<MoveToPosition
@@ -99,7 +110,11 @@
 			<div
 				class="flex flex-row gap-4 lg:ml-auto lg:w-full lg:max-w-40 lg:flex-col lg:gap-0 lg:divide-y"
 			>
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					method="stop"
+					href={apiDocsHref('rdk:component:arm', 'stop')}
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -109,6 +124,7 @@
 				</ApiSection>
 				<IsMoving
 					client={ArmClient}
+					api="rdk:component:arm"
 					{partID}
 					{resourceName}
 				/>

@@ -7,6 +7,7 @@
 	import { useResizeObserver } from 'runed'
 	import { untrack } from 'svelte'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import { assertExists } from '$lib/assert'
 	import ContentRect from '$lib/components/content-rect.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
@@ -393,6 +394,8 @@
 {#if showResolutionOptions && isLive}
 	<MutationSection
 		title="SetStreamOptions"
+		method="setStreamOptions"
+		href={apiDocsHref('rdk:component:camera', 'setStreamOptions')}
 		description="Change the resolution of the live stream video feed"
 		lastError={resolutionMutation.error}
 		class="-m-4 mt-4"

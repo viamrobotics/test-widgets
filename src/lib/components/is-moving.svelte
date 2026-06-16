@@ -17,6 +17,8 @@
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
+
 	import ApiSection from './api-section.svelte'
 	import Query from './query.svelte'
 	import StatusPill from './status-pill.svelte'
@@ -33,10 +35,11 @@
 		client: Client
 		partID: string
 		resourceName: string
+		api: string
 		children?: Snippet
 	}
 
-	const { client: clientClass, partID, resourceName, children }: Props = $props()
+	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
 
 	const client = $derived(
 		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
@@ -51,6 +54,8 @@
 
 <ApiSection
 	title="IsMoving"
+	method="isMoving"
+	href={apiDocsHref(api, 'isMoving')}
 	bottomText="Updates automatically"
 	class="grow"
 >

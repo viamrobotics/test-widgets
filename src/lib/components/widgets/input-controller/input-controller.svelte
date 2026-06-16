@@ -2,6 +2,7 @@
 	import { InputControllerClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
@@ -54,7 +55,9 @@
 		</div>
 
 		<ApiSection
-			title="GetReadings"
+			title="GetEvents"
+			method="getEvents"
+			href={apiDocsHref('rdk:component:input_controller', 'getEvents')}
 			class="relative"
 		>
 			<Query
