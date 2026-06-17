@@ -22,7 +22,10 @@
 	let planDeviationM = $state<number>()
 </script>
 
-<ApiSection title="MoveOnMap">
+<ApiSection
+	title="MoveOnMap"
+	api="rdk:service:motion"
+>
 	<Label>
 		Plan deviation <abbr>(m)</abbr>
 

@@ -61,6 +61,7 @@
 			>
 				<ApiSection
 					title="GetJointPositions"
+					api="rdk:component:arm"
 					bottomText="Updates automatically"
 				>
 					<Query query={jointPositionsQuery}>
@@ -69,7 +70,10 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<ApiSection title="MoveToJointPositions">
+				<ApiSection
+					title="MoveToJointPositions"
+					api="rdk:component:arm"
+				>
 					<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
 						{#if jointPositionsQuery.data && kinematicsQuery.data}
 							<MoveToJointPositions
@@ -82,7 +86,10 @@
 						{/if}
 					</Queries>
 				</ApiSection>
-				<ApiSection title="MoveToPosition">
+				<ApiSection
+					title="MoveToPosition"
+					api="rdk:component:arm"
+				>
 					<Query query={endPositionQuery}>
 						{#if endPositionQuery.data}
 							<MoveToPosition
@@ -99,7 +106,10 @@
 			<div
 				class="flex flex-row gap-4 lg:ml-auto lg:w-full lg:max-w-40 lg:flex-col lg:gap-0 lg:divide-y"
 			>
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					api="rdk:component:arm"
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -109,6 +119,7 @@
 				</ApiSection>
 				<IsMoving
 					client={ArmClient}
+					api="rdk:component:arm"
 					{partID}
 					{resourceName}
 				/>

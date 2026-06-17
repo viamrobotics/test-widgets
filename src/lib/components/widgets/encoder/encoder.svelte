@@ -81,6 +81,7 @@
 		<div class="grid w-full grid-cols-2 divide-x">
 			<ApiSection
 				title="GetPosition"
+				api="rdk:component:encoder"
 				tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
 				class="gap-3"
 			>
@@ -99,6 +100,7 @@
 
 			<ApiSection
 				title="ResetPosition"
+				api="rdk:component:encoder"
 				description="Set the current position as the new zero position"
 			>
 				<Button

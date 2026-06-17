@@ -30,6 +30,7 @@
 
 <ApiSection
 	title="IsHoldingSomething"
+	api="rdk:component:gripper"
 	bottomText="Updates automatically"
 	class="grow"
 >

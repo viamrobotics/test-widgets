@@ -393,6 +393,7 @@
 {#if showResolutionOptions && isLive}
 	<MutationSection
 		title="SetStreamOptions"
+		api="rdk:component:camera"
 		description="Change the resolution of the live stream video feed"
 		lastError={resolutionMutation.error}
 		class="-m-4 mt-4"

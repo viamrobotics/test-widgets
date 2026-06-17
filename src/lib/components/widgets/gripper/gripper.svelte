@@ -30,10 +30,11 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="flex flex-row divide-x">
-			<span class="flex flex-row gap-4">
+			<span class="flex grow flex-row gap-4">
 				<ApiSection
 					title="Open"
-					class="gap-3 pr-0"
+					api="rdk:component:gripper"
+					class="grow-0 gap-3 pr-0"
 				>
 					<Open
 						{partID}
@@ -42,7 +43,8 @@
 				</ApiSection>
 				<ApiSection
 					title="Grab"
-					class="gap-3 pl-0"
+					api="rdk:component:gripper"
+					class="grow-0 gap-3 pl-0"
 				>
 					<Grab
 						{partID}
@@ -50,8 +52,11 @@
 					/>
 				</ApiSection>
 			</span>
-			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
-				<ApiSection title="Stop">
+			<div class="flex shrink-0 flex-col divide-y">
+				<ApiSection
+					title="Stop"
+					api="rdk:component:gripper"
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -61,6 +66,7 @@
 				</ApiSection>
 				<IsMoving
 					client={GripperClient}
+					api="rdk:component:gripper"
 					{partID}
 					{resourceName}
 				/>

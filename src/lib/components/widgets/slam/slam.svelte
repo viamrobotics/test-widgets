@@ -200,7 +200,10 @@
 							/>
 						</div>
 
-						<ApiSection title="GetPosition">
+						<ApiSection
+							title="GetPosition"
+							api="rdk:service:slam"
+						>
 							<Queries
 								queries={[propertiesQuery, positionQuery]}
 								contentCx="h-6"

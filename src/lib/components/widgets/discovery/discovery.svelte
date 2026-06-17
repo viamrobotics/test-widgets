@@ -135,6 +135,7 @@
 
 		<ApiSection
 			title="DiscoverResources"
+			api="rdk:service:discovery"
 			class="relative"
 		>
 			<Query

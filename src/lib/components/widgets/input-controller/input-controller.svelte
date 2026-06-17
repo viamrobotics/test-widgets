@@ -54,7 +54,8 @@
 		</div>
 
 		<ApiSection
-			title="GetReadings"
+			title="GetEvents"
+			api="rdk:component:input_controller"
 			class="relative"
 		>
 			<Query

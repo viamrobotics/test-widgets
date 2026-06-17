@@ -33,10 +33,11 @@
 		client: Client
 		partID: string
 		resourceName: string
+		api: string
 		children?: Snippet
 	}
 
-	const { client: clientClass, partID, resourceName, children }: Props = $props()
+	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
 
 	const client = $derived(
 		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
@@ -51,6 +52,7 @@
 
 <ApiSection
 	title="IsMoving"
+	{api}
 	bottomText="Updates automatically"
 	class="grow"
 >
