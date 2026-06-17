@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
@@ -25,8 +24,7 @@
 
 <ApiSection
 	title="MoveOnMap"
-	method="moveOnMap"
-	href={apiDocsHref('rdk:service:motion', 'moveOnMap')}
+	api="rdk:service:motion"
 >
 	<Label>
 		Plan deviation <abbr>(m)</abbr>

@@ -8,7 +8,6 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -62,8 +61,7 @@
 			>
 				<ApiSection
 					title="GetJointPositions"
-					method="getJointPositions"
-					href={apiDocsHref('rdk:component:arm', 'getJointPositions')}
+					api="rdk:component:arm"
 					bottomText="Updates automatically"
 				>
 					<Query query={jointPositionsQuery}>
@@ -74,8 +72,7 @@
 				</ApiSection>
 				<ApiSection
 					title="MoveToJointPositions"
-					method="moveToJointPositions"
-					href={apiDocsHref('rdk:component:arm', 'moveToJointPositions')}
+					api="rdk:component:arm"
 				>
 					<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
 						{#if jointPositionsQuery.data && kinematicsQuery.data}
@@ -91,8 +88,7 @@
 				</ApiSection>
 				<ApiSection
 					title="MoveToPosition"
-					method="moveToPosition"
-					href={apiDocsHref('rdk:component:arm', 'moveToPosition')}
+					api="rdk:component:arm"
 				>
 					<Query query={endPositionQuery}>
 						{#if endPositionQuery.data}
@@ -112,8 +108,7 @@
 			>
 				<ApiSection
 					title="Stop"
-					method="stop"
-					href={apiDocsHref('rdk:component:arm', 'stop')}
+					api="rdk:component:arm"
 				>
 					<StopButton
 						error={stopMutation.error}

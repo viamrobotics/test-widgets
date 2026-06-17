@@ -2,7 +2,6 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -34,8 +33,7 @@
 			<span class="flex grow flex-row gap-4">
 				<ApiSection
 					title="Open"
-					method="open"
-					href={apiDocsHref('rdk:component:gripper', 'open')}
+					api="rdk:component:gripper"
 					class="grow-0 gap-3 pr-0"
 				>
 					<Open
@@ -45,8 +43,7 @@
 				</ApiSection>
 				<ApiSection
 					title="Grab"
-					method="grab"
-					href={apiDocsHref('rdk:component:gripper', 'grab')}
+					api="rdk:component:gripper"
 					class="grow-0 gap-3 pl-0"
 				>
 					<Grab
@@ -58,8 +55,7 @@
 			<div class="flex shrink-0 flex-col divide-y">
 				<ApiSection
 					title="Stop"
-					method="stop"
-					href={apiDocsHref('rdk:component:gripper', 'stop')}
+					api="rdk:component:gripper"
 				>
 					<StopButton
 						error={stopMutation.error}

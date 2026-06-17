@@ -4,7 +4,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 	import { slide } from 'svelte/transition'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
@@ -110,8 +109,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetPosition"
-								method="getPosition"
-								href={apiDocsHref(MS_API, 'getPosition')}
+								api={MS_API}
 							/>
 							<Query
 								query={positionQuery}
@@ -128,8 +126,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetOrientation"
-								method="getOrientation"
-								href={apiDocsHref(MS_API, 'getOrientation')}
+								api={MS_API}
 							>
 								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 									>{/snippet}
@@ -149,8 +146,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetCompassHeading"
-								method="getCompassHeading"
-								href={apiDocsHref(MS_API, 'getCompassHeading')}
+								api={MS_API}
 							>
 								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 									>{/snippet}
@@ -172,8 +168,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetAngularVelocity"
-								method="getAngularVelocity"
-								href={apiDocsHref(MS_API, 'getAngularVelocity')}
+								api={MS_API}
 							>
 								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
 									>{/snippet}
@@ -193,8 +188,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetLinearVelocity"
-								method="getLinearVelocity"
-								href={apiDocsHref(MS_API, 'getLinearVelocity')}
+								api={MS_API}
 							>
 								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
 									>{/snippet}
@@ -214,8 +208,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetLinearAcceleration"
-								method="getLinearAcceleration"
-								href={apiDocsHref(MS_API, 'getLinearAcceleration')}
+								api={MS_API}
 							>
 								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
 										>(m/s<sup>2</sup>)</span
@@ -235,8 +228,7 @@
 					<div class="flex flex-col gap-2">
 						<SectionTitle
 							title="GetAccuracy"
-							method="getAccuracy"
-							href={apiDocsHref(MS_API, 'getAccuracy')}
+							api={MS_API}
 						/>
 						<Query
 							query={accuracyQuery}
@@ -265,8 +257,7 @@
 			<div class="flex flex-col gap-0.5">
 				<SectionTitle
 					title="GetReadings"
-					method="getReadings"
-					href={apiDocsHref(MS_API, 'getReadings')}
+					api={MS_API}
 					headingId={headingID}
 				/>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>

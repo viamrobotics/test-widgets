@@ -17,8 +17,6 @@
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
-
 	import ApiSection from './api-section.svelte'
 	import Query from './query.svelte'
 	import StatusPill from './status-pill.svelte'
@@ -54,8 +52,7 @@
 
 <ApiSection
 	title="IsMoving"
-	method="isMoving"
-	href={apiDocsHref(api, 'isMoving')}
+	{api}
 	bottomText="Updates automatically"
 	class="grow"
 >

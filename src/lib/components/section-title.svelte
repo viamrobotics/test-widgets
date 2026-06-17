@@ -3,30 +3,34 @@
 
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
+	import { apiDocsHref } from '$lib/api-docs-href'
+
 	interface Props {
 		title: string
 		tooltip?: string | undefined
-		/** camelCase method name; presence → monospace rendering */
-		method?: string | undefined
-		/** presence → underline + external link (requires method) */
-		href?: string | undefined
+		/** RDK API string, e.g. "rdk:component:camera". Presence renders the title as a monospace API-method name, linked to the docs when an anchor exists. */
+		api?: string | undefined
 		/** Optional external ID for the <h3>; generated internally if omitted */
 		headingId?: string | undefined
 		/** Inline content rendered after the title inside the <h3> (e.g. unit labels) */
 		suffix?: Snippet
 	}
 
-	const { title, tooltip, method, href, headingId, suffix }: Props = $props()
+	const { title, tooltip, api, headingId, suffix }: Props = $props()
 
 	const generatedID = $props.id()
 	const id = $derived(headingId ?? generatedID)
+
+	// Method names are the camelCase form of the PascalCase title (GetPosition → getPosition).
+	const method = $derived(title.charAt(0).toLowerCase() + title.slice(1))
+	const href = $derived(api ? apiDocsHref(api, method) : undefined)
 </script>
 
 <h3
 	class="flex flex-row items-center gap-1 text-sm font-semibold"
 	{id}
 >
-	{#if href && method}
+	{#if href}
 		<a
 			{href}
 			target="_blank"
@@ -35,7 +39,7 @@
 		>
 			{title}
 		</a>
-	{:else if method}
+	{:else if api}
 		<span class="font-mono">{title}</span>
 	{:else}
 		{title}

@@ -7,7 +7,6 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
@@ -82,8 +81,7 @@
 		<div class="grid w-full grid-cols-2 divide-x">
 			<ApiSection
 				title="GetPosition"
-				method="getPosition"
-				href={apiDocsHref('rdk:component:encoder', 'getPosition')}
+				api="rdk:component:encoder"
 				tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
 				class="gap-3"
 			>
@@ -102,8 +100,7 @@
 
 			<ApiSection
 				title="ResetPosition"
-				method="resetPosition"
-				href={apiDocsHref('rdk:component:encoder', 'resetPosition')}
+				api="rdk:component:encoder"
 				description="Set the current position as the new zero position"
 			>
 				<Button

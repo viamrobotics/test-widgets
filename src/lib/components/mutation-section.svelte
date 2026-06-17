@@ -11,10 +11,8 @@
 		tooltip?: string | undefined
 		description?: string | undefined
 		lastError: Error | null
-		/** camelCase method name; presence → monospace title */
-		method?: string | undefined
-		/** docs URL; presence → underline + link (requires method) */
-		href?: string | undefined
+		/** RDK API string; presence renders the title as a linked monospace method name */
+		api?: string | undefined
 		class?: string
 		titleInput?: Snippet
 		error?: Snippet
@@ -26,8 +24,7 @@
 		tooltip,
 		description,
 		lastError = null,
-		method,
-		href,
+		api,
 		class: className,
 		titleInput,
 		error,
@@ -46,8 +43,7 @@
 			<SectionTitle
 				{title}
 				{tooltip}
-				{method}
-				{href}
+				{api}
 				headingId={headingID}
 			/>
 			{#if description}

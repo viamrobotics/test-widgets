@@ -86,8 +86,7 @@
 				</ApiSection>
 				<ApiSection
 					title="MoveToPosition"
-					method="moveToPosition"
-					href={apiDocsHref('rdk:component:gantry', 'moveToPosition')}
+					api="rdk:component:gantry"
 				>
 					<Query query={positionQuery}>
 						{@const positions = positionQuery.data}
@@ -125,8 +124,7 @@
 					</ApiSection>
 					<ApiSection
 						title="Home"
-						method="home"
-						href={apiDocsHref('rdk:component:gantry', 'home')}
+						api="rdk:component:gantry"
 						description="Run the homing sequence"
 					>
 						<Home
@@ -139,8 +137,7 @@
 			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
 				<ApiSection
 					title="Stop"
-					method="stop"
-					href={apiDocsHref('rdk:component:gantry', 'stop')}
+					api="rdk:component:gantry"
 				>
 					<StopButton
 						error={stopMutation.error}

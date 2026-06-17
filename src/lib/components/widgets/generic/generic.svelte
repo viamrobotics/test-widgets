@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ResourceName } from '@viamrobotics/sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import SectionTitle from '$lib/components/section-title.svelte'
 
 	import DoCommand from '../do-command/do-command.svelte'
@@ -27,8 +26,7 @@
 <div class="flex flex-col py-2 pl-4">
 	<SectionTitle
 		title="DoCommand"
-		method="doCommand"
-		href={apiDocsHref(api, 'doCommand')}
+		{api}
 	/>
 </div>
 

@@ -11,10 +11,8 @@
 		tooltip?: string | undefined
 		description?: string | undefined
 		bottomText?: string | undefined
-		/** camelCase method name; presence → monospace title */
-		method?: string | undefined
-		/** docs URL; presence → underline + link (requires method) */
-		href?: string | undefined
+		/** RDK API string; presence renders the title as a linked monospace method name */
+		api?: string | undefined
 		class?: string
 		children?: Snippet
 	}
@@ -24,8 +22,7 @@
 		tooltip,
 		description,
 		bottomText,
-		method,
-		href,
+		api,
 		class: className = '',
 		children,
 		...rest
@@ -44,8 +41,7 @@
 			<SectionTitle
 				{title}
 				{tooltip}
-				{method}
-				{href}
+				{api}
 				headingId={headingID}
 			/>
 			{#if description}

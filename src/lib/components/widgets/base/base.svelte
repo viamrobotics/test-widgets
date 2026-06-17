@@ -3,7 +3,6 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
@@ -86,8 +85,7 @@
 			<div class="ml-auto flex w-full max-w-40 grow flex-col divide-y">
 				<ApiSection
 					title="Stop"
-					method="stop"
-					href={apiDocsHref('rdk:component:base', 'stop')}
+					api="rdk:component:base"
 				>
 					<StopButton
 						error={stopMutation.error}
@@ -106,8 +104,7 @@
 		</div>
 		<MutationSection
 			title="MoveStraight"
-			method="moveStraight"
-			href={apiDocsHref('rdk:component:base', 'moveStraight')}
+			api="rdk:component:base"
 			description="Move across a given distance at a given velocity"
 			lastError={moveStraightMutation.error}
 		>
@@ -115,8 +112,7 @@
 		</MutationSection>
 		<MutationSection
 			title="Spin"
-			method="spin"
-			href={apiDocsHref('rdk:component:base', 'spin')}
+			api="rdk:component:base"
 			description="Turn to a given angle at a given velocity"
 			lastError={spinMutation.error}
 		>
@@ -124,8 +120,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetPower"
-			method="setPower"
-			href={apiDocsHref('rdk:component:base', 'setPower')}
+			api="rdk:component:base"
 			description="Move continuously at a given amount of power"
 			lastError={setPowerMutation.error}
 		>
@@ -133,8 +128,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetVelocity"
-			method="setVelocity"
-			href={apiDocsHref('rdk:component:base', 'setVelocity')}
+			api="rdk:component:base"
 			description="Move continually at a given velocity"
 			lastError={setVelocityMutation.error}
 		>

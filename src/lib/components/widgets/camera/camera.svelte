@@ -5,7 +5,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
-	import { apiDocsHref } from '$lib/api-docs-href'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
@@ -165,8 +164,7 @@
 			<div class="flex flex-col gap-0.5 p-4 pb-0">
 				<SectionTitle
 					title="GetImages"
-					method="getImages"
-					href={apiDocsHref('rdk:component:camera', 'getImages')}
+					api="rdk:component:camera"
 					headingId={getImagesHeadingID}
 				/>
 			</div>
@@ -323,8 +321,7 @@
 			<div class="flex flex-col gap-0.5">
 				<SectionTitle
 					title="GetPointCloud"
-					method="getPointCloud"
-					href={apiDocsHref('rdk:component:camera', 'getPointCloud')}
+					api="rdk:component:camera"
 					headingId={getPointCloudHeadingID}
 				/>
 				<p class="text-subtle-2 text-xs">
