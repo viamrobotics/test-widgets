@@ -38,12 +38,21 @@
 >
 	{#if title}
 		<div class="flex flex-col gap-0.5">
-			<SectionTitle
-				{title}
-				{tooltip}
-				{api}
-				headingId={headingID}
-			/>
+			{#if api}
+				<SectionTitle
+					{title}
+					{tooltip}
+					{api}
+					headingId={headingID}
+				/>
+			{:else}
+				<h3
+					class="flex flex-row items-center gap-1 text-sm font-semibold"
+					id={headingID}
+				>
+					{title}
+				</h3>
+			{/if}
 			{#if description}
 				<p class="text-subtle-2 text-xs">{description}</p>
 			{/if}

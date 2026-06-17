@@ -40,12 +40,21 @@
 >
 	<div class={twMerge('flex grow flex-row flex-wrap gap-2', className)}>
 		<div class="flex max-w-[200px] grow flex-col gap-0.5 pr-4">
-			<SectionTitle
-				{title}
-				{tooltip}
-				{api}
-				headingId={headingID}
-			/>
+			{#if api}
+				<SectionTitle
+					{title}
+					{tooltip}
+					{api}
+					headingId={headingID}
+				/>
+			{:else}
+				<h3
+					class="flex flex-row items-center gap-1 text-sm font-semibold"
+					id={headingID}
+				>
+					{title}
+				</h3>
+			{/if}
 			{#if description}
 				<p class="text-subtle-2 text-xs">{description}</p>
 			{/if}

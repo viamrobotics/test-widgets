@@ -8,8 +8,8 @@
 	interface Props {
 		title: string
 		tooltip?: string | undefined
-		/** RDK API string, e.g. "rdk:component:camera". Presence renders the title as a monospace API-method name, linked to the docs when an anchor exists. */
-		api?: string | undefined
+		/** RDK API string, e.g. "rdk:component:camera". Required — SectionTitle is only for headers that map to an API method; the docs link is built from this plus the title. */
+		api: string
 		/** Optional external ID for the <h3>; generated internally if omitted */
 		headingId?: string | undefined
 		/** Inline content rendered after the title inside the <h3> (e.g. unit labels) */
@@ -23,7 +23,7 @@
 
 	// Method names are the camelCase form of the PascalCase title (GetPosition → getPosition).
 	const method = $derived(title.charAt(0).toLowerCase() + title.slice(1))
-	const href = $derived(api ? apiDocsHref(api, method) : undefined)
+	const href = $derived(apiDocsHref(api, method))
 </script>
 
 <h3
@@ -39,10 +39,8 @@
 		>
 			{title}
 		</a>
-	{:else if api}
-		<span class="font-mono">{title}</span>
 	{:else}
-		{title}
+		<span class="font-mono">{title}</span>
 	{/if}
 	{#if suffix}
 		{@render suffix()}
