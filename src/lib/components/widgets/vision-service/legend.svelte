@@ -125,14 +125,15 @@
 						{#each detections as detection (detection.id)}
 							<li>
 								<button
-									class="hover:bg-light w-full py-1 pl-11 text-left {context.hovered.has(detection.id) || context.selected === detection.id
+									class="hover:bg-light w-full py-1 pl-11 text-left {context.hovered.has(
+										detection.id
+									) || context.selected === detection.id
 										? 'bg-light'
 										: ''}"
 									onpointerenter={() => context.hovered.add(detection.id)}
 									onpointerleave={() => context.hovered.delete(detection.id)}
 									onclick={() => {
-										context.selected =
-											context.selected === detection.id ? null : detection.id
+										context.selected = context.selected === detection.id ? null : detection.id
 									}}
 									use:scrollIntoViewOnSelect={context.selected === detection.id}
 								>
