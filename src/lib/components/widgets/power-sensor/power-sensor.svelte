@@ -66,6 +66,7 @@
 		<div class="grid w-full grid-cols-3 divide-x">
 			<ApiSection
 				title="GetCurrent"
+				api="rdk:component:power_sensor"
 				class="pb-5"
 			>
 				<Query
@@ -79,6 +80,7 @@
 			</ApiSection>
 			<ApiSection
 				title="GetVoltage"
+				api="rdk:component:power_sensor"
 				class="pb-5"
 			>
 				<Query
@@ -92,6 +94,7 @@
 			</ApiSection>
 			<ApiSection
 				title="GetPower"
+				api="rdk:component:power_sensor"
 				class="pb-5"
 			>
 				<Query
@@ -107,6 +110,7 @@
 
 		<ApiSection
 			title="GetReadings"
+			api="rdk:component:power_sensor"
 			description="Get all the measurements and data that this power sensor provides"
 		>
 			<Switch

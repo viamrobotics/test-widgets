@@ -62,6 +62,7 @@
 			<div class="flex w-full flex-col divide-y">
 				<MutationSection
 					title="GetAudio"
+					api="rdk:component:audio_input"
 					description="Capture audio from the device"
 					lastError={capture.error}
 				>
@@ -131,6 +132,7 @@
 			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
 				<ApiSection
 					title="GetProperties"
+					api="rdk:component:audio_input"
 					description="Audio input properties"
 					class="relative"
 				>

@@ -44,6 +44,7 @@
 
 		<ApiSection
 			title="GetReadings"
+			api="rdk:component:sensor"
 			class="relative"
 		>
 			<Query
