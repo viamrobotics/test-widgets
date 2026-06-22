@@ -32,6 +32,7 @@ export interface DetectionsContext {
 	readonly current: Detection[]
 	readonly byLabel: Record<string, DetectionGroup>
 	readonly hovered: SvelteSet<string>
+	selected: string | null
 }
 
 export const DETECTIONS_CONTEXT_KEY = Symbol('detections-context')
@@ -54,6 +55,7 @@ export const createDetectionContext = (getDetections: () => DetectionPb[]): Dete
 	const detections = $derived<Detection[]>(addIdsToDetections(getDetections()))
 	const detectionsByLabel = $derived(categorize(detections))
 	const hovered = new SvelteSet<string>()
+	let selected = $state<string | null>(null)
 
 	const context: DetectionsContext = {
 		get current() {
@@ -63,6 +65,12 @@ export const createDetectionContext = (getDetections: () => DetectionPb[]): Dete
 			return detectionsByLabel
 		},
 		hovered,
+		get selected() {
+			return selected
+		},
+		set selected(value: string | null) {
+			selected = value
+		},
 	}
 
 	return context
