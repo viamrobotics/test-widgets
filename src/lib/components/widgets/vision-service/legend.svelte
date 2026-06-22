@@ -27,8 +27,6 @@
 
 	const toggleExpand = (label: string) => {
 		if (expandedLabels.has(label)) {
-			const labelDetections = context.byLabel[label]?.detections ?? []
-			if (labelDetections.some((d) => d.id === context.selected)) return
 			expandedLabels.delete(label)
 		} else {
 			expandedLabels.add(label)
@@ -45,6 +43,16 @@
 				for (const detection of data.detections) {
 					context.hovered.add(detection.id)
 				}
+			}
+		}
+	})
+
+	$effect.pre(() => {
+		if (context.selected === undefined) return
+		for (const [label, { detections }] of Object.entries(context.byLabel)) {
+			if (detections.some((d) => d.id === context.selected)) {
+				expandedLabels.add(label)
+				break
 			}
 		}
 	})
@@ -112,7 +120,7 @@
 						</div>
 					</button>
 				</li>
-				{#if expandedLabels.has(label) || detections.some((d) => d.id === context.selected)}
+				{#if expandedLabels.has(label)}
 					<ul>
 						{#each detections as detection (detection.id)}
 							<li>
