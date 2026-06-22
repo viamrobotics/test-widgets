@@ -5,6 +5,7 @@
 	import { SvelteSet } from 'svelte/reactivity'
 
 	import { useDetections } from './context.svelte'
+	import DetectionRow from './detection-row.svelte'
 
 	interface Props {
 		classifications?: Classification[]
@@ -23,15 +24,6 @@
 	let selectedTab = $derived<'detections' | 'classifications'>(
 		detectionsSupported ? 'detections' : 'classifications'
 	)
-
-	const scrollIntoViewOnSelect = (node: HTMLElement, isSelected: boolean) => {
-		if (isSelected) node.scrollIntoView({ block: 'nearest' })
-		return {
-			update(next: boolean) {
-				if (next) node.scrollIntoView({ block: 'nearest' })
-			},
-		}
-	}
 
 	const toggleExpand = (label: string) => {
 		if (expandedLabels.has(label)) {
@@ -124,22 +116,7 @@
 					<ul>
 						{#each detections as detection (detection.id)}
 							<li>
-								<button
-									class="hover:bg-light w-full py-1 pl-11 text-left {context.hovered.has(
-										detection.id
-									) || context.selected === detection.id
-										? 'bg-light'
-										: ''}"
-									onpointerenter={() => context.hovered.add(detection.id)}
-									onpointerleave={() => context.hovered.delete(detection.id)}
-									onclick={() => {
-										context.selected = context.selected === detection.id ? null : detection.id
-									}}
-									use:scrollIntoViewOnSelect={context.selected === detection.id}
-								>
-									{label}
-									<span class="text-subtle-2 pl-1">{detection.confidence}%</span>
-								</button>
+								<DetectionRow {detection} {label} />
 							</li>
 						{/each}
 					</ul>
