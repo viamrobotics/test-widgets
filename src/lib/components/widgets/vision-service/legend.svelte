@@ -116,7 +116,10 @@
 					<ul>
 						{#each detections as detection (detection.id)}
 							<li>
-								<DetectionRow {detection} {label} />
+								<DetectionRow
+									{detection}
+									{label}
+								/>
 							</li>
 						{/each}
 					</ul>
