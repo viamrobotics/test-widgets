@@ -29,7 +29,6 @@ import {
 	VideoClient,
 	VisionClient,
 	WorldStateStoreClient,
-	
 } from '@viamrobotics/sdk'
 
 import { getResourceAPI } from './get-resource-api.ts'

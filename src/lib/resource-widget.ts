@@ -1,3 +1,4 @@
+import type { ResourceName } from '@viamrobotics/sdk'
 import type { Component } from 'svelte'
 
 import { clientMap } from './client-map.ts'
@@ -46,6 +47,7 @@ import {
 	SwitchWidget,
 	VisionServiceWidget,
 } from './components/index.ts'
+import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
 
 /** Every resource widget shares this prop contract and is self-contained. */
@@ -58,7 +60,7 @@ export type ResourceWidget = Component<ResourceWidgetProps>
 
 // Maps each resource triplet to its compound widget object. Every entry has a
 // `Widget` (the full composite) plus, where a single query API has a useful
-// standalone view, additional sub-widgets named after that API. Resources 
+// standalone view, additional sub-widgets named after that API. Resources
 // without a test widget fall back to `NotImplementedWidget`.
 const resourceWidgetRegistry = {
 	// components
@@ -108,7 +110,7 @@ const resourceWidgetRegistry = {
 	[ResourceTriplets.Sensor]: { Widget: SensorWidget },
 	[ResourceTriplets.Servo]: { Widget: ServoWidget, IsMoving: ServoIsMovingWidget },
 	[ResourceTriplets.Switch]: { Widget: SwitchWidget },
-	
+
 	// services
 	[ResourceTriplets.Discovery]: { Widget: DiscoveryWidget },
 	[ResourceTriplets.MLModel]: { Widget: MLModelServiceWidget },
@@ -125,7 +127,7 @@ type TripletForClient<C> = {
 	[K in keyof ClientMap]: C extends ClientMap[K] ? (ClientMap[K] extends C ? K : never) : never
 }[keyof ClientMap]
 
-type ResourceWidgetsFor<C> = [TripletForClient<C>] extends [never]
+type ResourceWidgetsFor<C> = [TripletForClient<C> & keyof ResourceWidgetRegistry] extends [never]
 	? { Widget: ResourceWidget }
 	: ResourceWidgetRegistry[TripletForClient<C> & keyof ResourceWidgetRegistry]
 
@@ -135,12 +137,10 @@ const notImplemented = { Widget: NotImplementedWidget }
 
 // Reverse `clientMap` (client class -> triplet) for the runtime lookup.
 const tripletForClient = new Map<unknown, keyof ResourceWidgetRegistry>(
-	Object.entries(clientMap).map(
-		([triplet, client]): [unknown, keyof ResourceWidgetRegistry] => [
-			client,
-			triplet as keyof ResourceWidgetRegistry,
-		]
-	)
+	Object.entries(clientMap).map(([triplet, client]): [unknown, keyof ResourceWidgetRegistry] => [
+		client,
+		triplet as keyof ResourceWidgetRegistry,
+	])
 )
 
 /**
@@ -158,18 +158,21 @@ const tripletForClient = new Map<unknown, keyof ResourceWidgetRegistry>(
  * // <Arm.Widget {partID} {resourceName} />
  * // <Arm.GetJointPositions {partID} {resourceName} />
  */
-export const createResourceWidget = <C extends ResourceClient>(client: C): ResourceWidgetsFor<C> => {
+export const createResourceWidget = <C extends ResourceClient>(
+	client: C
+): ResourceWidgetsFor<C> => {
 	const triplet = tripletForClient.get(client)
 	return (
-		triplet === undefined ? notImplemented : resourceWidgetRegistry[triplet]
+		triplet !== undefined && triplet in resourceWidgetRegistry
+			? resourceWidgetRegistry[triplet]
+			: notImplemented
 	) as ResourceWidgetsFor<C>
 }
 
 // The widget names available for a resource, e.g. `'Widget' | 'GetJointPositions'`.
-type ResourceWidgetName<K extends keyof ResourceWidgetRegistry> =
-	keyof ResourceWidgetRegistry[K]
+type ResourceWidgetName<K extends keyof ResourceWidgetRegistry> = keyof ResourceWidgetRegistry[K]
 
-// Each resource triplet mapped to the list of its available widget names. 
+// Each resource triplet mapped to the list of its available widget names.
 type AvailableResourceWidgets = {
 	[K in keyof ResourceWidgetRegistry]: ResourceWidgetName<K>[]
 }
@@ -177,9 +180,9 @@ type AvailableResourceWidgets = {
 /**
  * Returns each resource triplet that has an implemented widget mapped to its list
  * of available widget names.
- * 
+ *
  * Resources whose only widget is the not-implemented placeholder are excluded.
- * 
+ *
  * @example
  * availableResourceWidgets()['rdk:component:arm'] // ['Widget', 'GetJointPositions', 'IsMoving']
  */
@@ -194,3 +197,29 @@ export const availableResourceWidgets = () => {
 
 	return result as AvailableResourceWidgets
 }
+
+// Resources hidden from the control view.
+const hiddenResources = new Set<string>([
+	ResourceTriplets.DataManager,
+	ResourceTriplets.Motion,
+	ResourceTriplets.Sensors,
+	ResourceTriplets.Shell,
+])
+
+/** Returns the full composite widget for a resource, or `undefined` if none is implemented. */
+export const widgetForResource = (resource: ResourceName): ResourceWidget | undefined => {
+	const api = getResourceAPI(resource)
+	return api in resourceWidgetRegistry
+		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].Widget
+		: undefined
+}
+
+const knownResources = new Set<string>(Object.values(ResourceTriplets))
+
+/** Whether a resource's API is a recognized Viam resource triplet. */
+export const isKnownResource = (resource: ResourceName): boolean =>
+	knownResources.has(getResourceAPI(resource))
+
+/** Whether the control view should surface a card for this resource. */
+export const showResourceWidget = (resource: ResourceName): boolean =>
+	resource.namespace !== 'rdk-internal' && !hiddenResources.has(getResourceAPI(resource))

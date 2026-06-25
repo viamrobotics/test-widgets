@@ -10,9 +10,14 @@ export * from './components'
 export { getResourceAPI } from './get-resource-api'
 
 export { providePip, usePip } from './pip/context.svelte'
-export { hasWidget, showResourceWidget, widgetForResource } from './resource'
-export { ResourceTriplets as ResourceTriplet } from './resource-triplet'
+export { ResourceTriplets } from './resource-triplet'
 export {
 	availableResourceWidgets,
 	createResourceWidget,
+	isKnownResource,
+	// TODO: Delete `hasWidget`
+	/** @deprecated use `isKnownResource` instead. Will be deleted in the next release  */
+	isKnownResource as hasWidget,
+	showResourceWidget,
+	widgetForResource,
 } from './resource-widget'

@@ -9,7 +9,8 @@
 
 	import { providePip } from '$lib'
 	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
-	import { type NamedResourceStatus, showResourceWidget } from '$lib/resource'
+	import { type NamedResourceStatus } from '$lib/resource'
+	import { showResourceWidget } from '$lib/resource-widget'
 
 	import { collapseAll, expandAll } from './card-list-item.svelte'
 	import CardList from './card-list.svelte'

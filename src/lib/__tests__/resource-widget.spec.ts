@@ -1,8 +1,17 @@
-import { ArmClient, SwitchClient } from '@viamrobotics/sdk'
+import { ArmClient, ResourceName, SwitchClient } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
 import { ArmWidget, NotImplementedWidget, SwitchWidget } from '../components'
-import { availableResourceWidgets, createResourceWidget } from '../resource-widget'
+import {
+	availableResourceWidgets,
+	createResourceWidget,
+	isKnownResource,
+	showResourceWidget,
+	widgetForResource,
+} from '../resource-widget'
+
+const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
+	new ResourceName({ namespace, type, subtype, name: 'test' })
 
 describe('createResourceWidget', () => {
 	it('returns the full composite widget as `.Widget`', () => {
@@ -38,5 +47,36 @@ describe('availableResourceWidgets', () => {
 			'GetPower',
 		])
 		expect(available['rdk:component:switch']).toEqual(['Widget'])
+	})
+})
+
+describe('widgetForResource', () => {
+	it('returns the composite widget for a resource that has one', () => {
+		expect(widgetForResource(resourceName('rdk', 'component', 'arm'))).toBe(ArmWidget)
+	})
+
+	it('returns undefined for a recognized resource without a widget', () => {
+		expect(widgetForResource(resourceName('rdk', 'service', 'motion'))).toBeUndefined()
+	})
+})
+
+describe('isKnownResource', () => {
+	// The control view gates generic Do Command / Get Status sections on this, so it
+	// must stay true for recognized resources even when they have no test widget.
+	it('is true for any recognized resource, including ones without a widget', () => {
+		expect(isKnownResource(resourceName('rdk', 'component', 'arm'))).toBe(true)
+		expect(isKnownResource(resourceName('rdk', 'service', 'motion'))).toBe(true)
+	})
+
+	it('is false for unrecognized resources', () => {
+		expect(isKnownResource(resourceName('acme', 'component', 'widget'))).toBe(false)
+	})
+})
+
+describe('showResourceWidget', () => {
+	it('shows recognized resources but hides rdk-internal and confusing services', () => {
+		expect(showResourceWidget(resourceName('rdk', 'component', 'arm'))).toBe(true)
+		expect(showResourceWidget(resourceName('rdk', 'service', 'motion'))).toBe(false)
+		expect(showResourceWidget(resourceName('rdk-internal', 'service', 'foo'))).toBe(false)
 	})
 })

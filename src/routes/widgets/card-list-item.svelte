@@ -37,8 +37,9 @@
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
-	import { type NamedResourceStatus, ResourceStatusText, widgetForResource } from '$lib/resource'
+	import { type NamedResourceStatus, ResourceStatusText } from '$lib/resource'
 	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { widgetForResource } from '$lib/resource-widget'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'
