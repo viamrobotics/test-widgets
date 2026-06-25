@@ -38,6 +38,7 @@
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus, ResourceStatusText, widgetForResource } from '$lib/resource'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'
@@ -162,7 +163,7 @@
 						/>
 					</SectionGroup>
 				{/if}
-				{#if resourceAPI !== 'rdk:service:mlmodel'}
+				{#if resourceAPI !== ResourceTriplets.MLModel}
 					<SectionGroup
 						title="Do Command"
 						isCollapsed={isDoCommandCollapsed.current}

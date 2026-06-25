@@ -1,15 +1,21 @@
 export { default as ConnectionStatus } from './connection-status.svelte'
+export { default as NotImplementedWidget } from './widgets/not-implemented.svelte'
 
 export { default as ArmWidget } from './widgets/arm/arm.svelte'
+export { default as ArmGetJointPositionsWidget } from './widgets/arm/get-joint-positions-widget.svelte'
+export { default as ArmIsMovingWidget } from './widgets/arm/is-moving-widget.svelte'
 export { default as ArmMoveToJointPositionsWidget } from './widgets/arm/move-to-joint-positions-widget.svelte'
 export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-position-widget.svelte'
 export { default as ArmQuickMoveWidget } from './widgets/arm/quick-move-widget.svelte'
 
 export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
+export { default as AudioInputGetPropertiesWidget } from './widgets/audio-input/get-properties-widget.svelte'
 
 export { default as AudioOutputWidget } from './widgets/audio-output/audio-output.svelte'
+export { default as AudioOutputGetPropertiesWidget } from './widgets/audio-output/get-properties-widget.svelte'
 
 export { default as BaseWidget } from './widgets/base/base.svelte'
+export { default as BaseIsMovingWidget } from './widgets/base/is-moving-widget.svelte'
 export { default as BaseMoveStraightWidget } from './widgets/base/move-straight-widget.svelte'
 export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-widget.svelte'
 export { default as BaseSetPowerWidget } from './widgets/base/set-power-widget.svelte'
@@ -34,8 +40,11 @@ export { default as DiscoveryWidget } from './widgets/discovery/discovery.svelte
 export { default as DoCommandWidget } from './widgets/do-command/do-command.svelte'
 
 export { default as EncoderWidget } from './widgets/encoder/encoder.svelte'
+export { default as EncoderGetPositionWidget } from './widgets/encoder/get-position-widget.svelte'
 
 export { default as GantryWidget } from './widgets/gantry/gantry.svelte'
+export { default as GantryGetPositionWidget } from './widgets/gantry/get-position-widget.svelte'
+export { default as GantryIsMovingWidget } from './widgets/gantry/is-moving-widget.svelte'
 export { default as GantryHomeWidget } from './widgets/gantry/home.svelte'
 export { default as GantryMoveToPositionWidget } from './widgets/gantry/move-to-position-widget.svelte'
 export { default as GantryQuickMoveWidget } from './widgets/gantry/quick-move-widget.svelte'
@@ -44,6 +53,8 @@ export { default as GenericWidget } from './widgets/generic/generic.svelte'
 
 export { default as GripperGrabWidget } from './widgets/gripper/grab.svelte'
 export { default as GripperWidget } from './widgets/gripper/gripper.svelte'
+export { default as GripperIsHoldingSomethingWidget } from './widgets/gripper/is-holding-something.svelte'
+export { default as GripperIsMovingWidget } from './widgets/gripper/is-moving-widget.svelte'
 export { default as GripperOpenWidget } from './widgets/gripper/open.svelte'
 
 export { default as InputControllerWidget } from './widgets/input-controller/input-controller.svelte'
@@ -53,24 +64,34 @@ export { default as MLModelServiceWidget } from './widgets/ml-model-service/ml-m
 export { default as MotorGoForWidget } from './widgets/motor/go-for-view.svelte'
 export { default as MotorGoToWidget } from './widgets/motor/go-to-view.svelte'
 export { default as MotorWidget } from './widgets/motor/motor.svelte'
+export { default as MotorIsMovingWidget } from './widgets/motor/is-moving-widget.svelte'
 export { default as MotorQuickMoveWidget } from './widgets/motor/quick-move-widget.svelte'
 export { default as MotorSetPowerWidget } from './widgets/motor/set-power-widget.svelte'
 export { default as MotorSetRPMWidget } from './widgets/motor/set-rpm-widget.svelte'
 
 export { default as MovementSensorWidget } from './widgets/movement-sensor/movement-sensor.svelte'
+export { default as MovementSensorGetPositionWidget } from './widgets/movement-sensor/get-position-widget.svelte'
+export { default as MovementSensorGetOrientationWidget } from './widgets/movement-sensor/get-orientation-widget.svelte'
+export { default as MovementSensorGetCompassHeadingWidget } from './widgets/movement-sensor/get-compass-heading-widget.svelte'
+export { default as MovementSensorGetAccuracyWidget } from './widgets/movement-sensor/get-accuracy-widget.svelte'
 
 export { default as NavigationServiceWidget } from './widgets/navigation/navigation.svelte'
 
 export { default as PowerSensorWidget } from './widgets/power-sensor/power-sensor.svelte'
+export { default as PowerSensorGetVoltageWidget } from './widgets/power-sensor/get-voltage-widget.svelte'
+export { default as PowerSensorGetCurrentWidget } from './widgets/power-sensor/get-current-widget.svelte'
+export { default as PowerSensorGetPowerWidget } from './widgets/power-sensor/get-power-widget.svelte'
 
 export { default as SensorWidget } from './widgets/sensor/sensor.svelte'
 
 export { default as ServoMoveWidget } from './widgets/servo/move-widget.svelte'
 export { default as ServoQuickMoveWidget } from './widgets/servo/quick-move-widget.svelte'
 export { default as ServoWidget } from './widgets/servo/servo.svelte'
+export { default as ServoIsMovingWidget } from './widgets/servo/is-moving-widget.svelte'
 
 export { default as SlamMap2D } from './slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/slam/slam.svelte'
+export { default as SlamGetPositionWidget } from './widgets/slam/get-position-widget.svelte'
 
 export { default as StopWidget } from './stop.svelte'
 
