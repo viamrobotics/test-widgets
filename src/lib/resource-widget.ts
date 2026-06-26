@@ -66,7 +66,7 @@ import {
 	VisionServiceWidget,
 } from './components/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
-import {  type ResourceTriplet, ResourceTriplets } from './resource-triplet.ts'
+import { type ResourceTriplet, ResourceTriplets } from './resource-triplet.ts'
 
 /** Every resource widget shares this prop contract and is self-contained. */
 export interface ResourceWidgetProps {
@@ -108,12 +108,18 @@ const resourceWidgetRegistry = {
 	},
 	[ResourceTriplets.AudioInput]: {
 		widget: AudioInputWidget,
-		apis: [{ id: 'get-properties', label: 'GetProperties', components: [AudioInputGetPropertiesWidget] }],
+		apis: [
+			{ id: 'get-properties', label: 'GetProperties', components: [AudioInputGetPropertiesWidget] },
+		],
 	},
 	[ResourceTriplets.AudioOutput]: {
 		widget: AudioOutputWidget,
 		apis: [
-			{ id: 'get-properties', label: 'GetProperties', components: [AudioOutputGetPropertiesWidget] },
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				components: [AudioOutputGetPropertiesWidget],
+			},
 		],
 	},
 	[ResourceTriplets.Base]: {
@@ -244,7 +250,10 @@ export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget
  * availableAPIWidgets()[ResourceTriplets.Gripper]
  * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const availableAPIWidgets = (): Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]> => {
+export const availableAPIWidgets = (): Record<
+	keyof ResourceWidgetRegistry,
+	ResourceAPIWidget[]
+> => {
 	const result = {} as Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]>
 	for (const triplet of Object.keys(resourceWidgetRegistry) as (keyof ResourceWidgetRegistry)[]) {
 		result[triplet] = resourceWidgetRegistry[triplet].apis

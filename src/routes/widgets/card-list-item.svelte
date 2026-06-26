@@ -170,7 +170,7 @@
 					>
 						<ResourceTestView
 							{partID}
-							resourceName={resourceName}
+							{resourceName}
 						/>
 					</SectionGroup>
 				{/if}
@@ -187,7 +187,10 @@
 								<div class="flex flex-col gap-1">
 									<span class="font-bold">{label}</span>
 									{#each components as Widget, index (index)}
-										<Widget {partID} {resourceName} />
+										<Widget
+											{partID}
+											{resourceName}
+										/>
 									{/each}
 								</div>
 							{/each}
