@@ -1,16 +1,23 @@
 import type { ResourceName } from '@viamrobotics/sdk'
 import type { Component } from 'svelte'
 
-import { clientMap } from './client-map.ts'
 import {
 	ArmGetJointPositionsWidget,
 	ArmIsMovingWidget,
+	ArmMoveToJointPositionsWidget,
+	ArmMoveToPositionWidget,
+	ArmQuickMoveWidget,
 	ArmWidget,
 	AudioInputGetPropertiesWidget,
 	AudioInputWidget,
 	AudioOutputGetPropertiesWidget,
 	AudioOutputWidget,
 	BaseIsMovingWidget,
+	BaseMoveStraightWidget,
+	BaseQuickMoveWidget,
+	BaseSetPowerWidget,
+	BaseSetVelocityWidget,
+	BaseSpinWidget,
 	BaseWidget,
 	BoardWidget,
 	ButtonWidget,
@@ -19,14 +26,24 @@ import {
 	EncoderGetPositionWidget,
 	EncoderWidget,
 	GantryGetPositionWidget,
+	GantryHomeWidget,
 	GantryIsMovingWidget,
+	GantryMoveToPositionWidget,
+	GantryQuickMoveWidget,
 	GantryWidget,
+	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
+	GripperOpenWidget,
 	GripperWidget,
 	InputControllerWidget,
 	MLModelServiceWidget,
+	MotorGoForWidget,
+	MotorGoToWidget,
 	MotorIsMovingWidget,
+	MotorQuickMoveWidget,
+	MotorSetPowerWidget,
+	MotorSetRPMWidget,
 	MotorWidget,
 	MovementSensorGetAccuracyWidget,
 	MovementSensorGetCompassHeadingWidget,
@@ -34,13 +51,14 @@ import {
 	MovementSensorGetPositionWidget,
 	MovementSensorWidget,
 	NavigationServiceWidget,
-	NotImplementedWidget,
 	PowerSensorGetCurrentWidget,
 	PowerSensorGetPowerWidget,
 	PowerSensorGetVoltageWidget,
 	PowerSensorWidget,
 	SensorWidget,
 	ServoIsMovingWidget,
+	ServoMoveWidget,
+	ServoQuickMoveWidget,
 	ServoWidget,
 	SlamGetPositionWidget,
 	SlamWidget,
@@ -48,7 +66,7 @@ import {
 	VisionServiceWidget,
 } from './components/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
-import { ResourceTriplets } from './resource-triplet.ts'
+import {  type ResourceTriplet, ResourceTriplets } from './resource-triplet.ts'
 
 /** Every resource widget shares this prop contract and is self-contained. */
 export interface ResourceWidgetProps {
@@ -58,159 +76,174 @@ export interface ResourceWidgetProps {
 
 export type ResourceWidget = Component<ResourceWidgetProps>
 
-// Maps each resource triplet to its compound widget object. Every entry has a
-// `Widget` (the full composite) plus, where a single query API has a useful
-// standalone view, additional sub-widgets named after that API. Resources
-// without a test widget fall back to `NotImplementedWidget`.
+/** One of a resource's individual API widgets (e.g. a menu entry); renders one or more self-contained widgets. */
+export interface ResourceAPIWidget {
+	/** Stable identifier, safe to persist. Never rename. e.g. `'move-to-joint-positions'`. */
+	id: string
+	/** Human-readable menu label. e.g. `'MoveToJointPositions'` or `'Quick move'`. */
+	label: string
+	/** The self-contained widget(s) this entry renders, each with `{ partID, resourceName }`. */
+	components: ResourceWidget[]
+}
+
 const resourceWidgetRegistry = {
 	// components
 	[ResourceTriplets.Arm]: {
-		Widget: ArmWidget,
-		GetJointPositions: ArmGetJointPositionsWidget,
-		IsMoving: ArmIsMovingWidget,
+		widget: ArmWidget,
+		apis: [
+			{
+				id: 'move-to-joint-positions',
+				label: 'MoveToJointPositions',
+				components: [ArmMoveToJointPositionsWidget],
+			},
+			{ id: 'move-to-position', label: 'MoveToPosition', components: [ArmMoveToPositionWidget] },
+			{ id: 'quick-move', label: 'Quick move', components: [ArmQuickMoveWidget] },
+			{
+				id: 'get-joint-positions',
+				label: 'GetJointPositions',
+				components: [ArmGetJointPositionsWidget],
+			},
+			{ id: 'is-moving', label: 'IsMoving', components: [ArmIsMovingWidget] },
+		],
 	},
 	[ResourceTriplets.AudioInput]: {
-		Widget: AudioInputWidget,
-		GetProperties: AudioInputGetPropertiesWidget,
+		widget: AudioInputWidget,
+		apis: [{ id: 'get-properties', label: 'GetProperties', components: [AudioInputGetPropertiesWidget] }],
 	},
 	[ResourceTriplets.AudioOutput]: {
-		Widget: AudioOutputWidget,
-		GetProperties: AudioOutputGetPropertiesWidget,
+		widget: AudioOutputWidget,
+		apis: [
+			{ id: 'get-properties', label: 'GetProperties', components: [AudioOutputGetPropertiesWidget] },
+		],
 	},
-	[ResourceTriplets.Base]: { Widget: BaseWidget, IsMoving: BaseIsMovingWidget },
-	[ResourceTriplets.Board]: { Widget: BoardWidget },
-	[ResourceTriplets.Button]: { Widget: ButtonWidget },
-	[ResourceTriplets.Camera]: { Widget: CameraWidget },
-	[ResourceTriplets.Encoder]: { Widget: EncoderWidget, GetPosition: EncoderGetPositionWidget },
+	[ResourceTriplets.Base]: {
+		widget: BaseWidget,
+		apis: [
+			{ id: 'quick-move', label: 'Quick move', components: [BaseQuickMoveWidget] },
+			{ id: 'move-straight', label: 'MoveStraight', components: [BaseMoveStraightWidget] },
+			{ id: 'spin', label: 'Spin', components: [BaseSpinWidget] },
+			{ id: 'set-power', label: 'SetPower', components: [BaseSetPowerWidget] },
+			{ id: 'set-velocity', label: 'SetVelocity', components: [BaseSetVelocityWidget] },
+			{ id: 'is-moving', label: 'IsMoving', components: [BaseIsMovingWidget] },
+		],
+	},
+	[ResourceTriplets.Board]: { widget: BoardWidget, apis: [] },
+	[ResourceTriplets.Button]: { widget: ButtonWidget, apis: [] },
+	[ResourceTriplets.Camera]: { widget: CameraWidget, apis: [] },
+	[ResourceTriplets.Encoder]: {
+		widget: EncoderWidget,
+		apis: [{ id: 'get-position', label: 'GetPosition', components: [EncoderGetPositionWidget] }],
+	},
 	[ResourceTriplets.Gantry]: {
-		Widget: GantryWidget,
-		GetPosition: GantryGetPositionWidget,
-		IsMoving: GantryIsMovingWidget,
+		widget: GantryWidget,
+		apis: [
+			{ id: 'home', label: 'Home', components: [GantryHomeWidget] },
+			{ id: 'move-to-position', label: 'MoveToPosition', components: [GantryMoveToPositionWidget] },
+			{ id: 'quick-move', label: 'Quick move', components: [GantryQuickMoveWidget] },
+			{ id: 'get-position', label: 'GetPosition', components: [GantryGetPositionWidget] },
+			{ id: 'is-moving', label: 'IsMoving', components: [GantryIsMovingWidget] },
+		],
 	},
 	[ResourceTriplets.Gripper]: {
-		Widget: GripperWidget,
-		IsHoldingSomething: GripperIsHoldingSomethingWidget,
-		IsMoving: GripperIsMovingWidget,
+		widget: GripperWidget,
+		apis: [
+			{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] },
+			{
+				id: 'is-holding-something',
+				label: 'IsHoldingSomething',
+				components: [GripperIsHoldingSomethingWidget],
+			},
+			{ id: 'is-moving', label: 'IsMoving', components: [GripperIsMovingWidget] },
+		],
 	},
-	[ResourceTriplets.InputController]: { Widget: InputControllerWidget },
-	[ResourceTriplets.Motor]: { Widget: MotorWidget, IsMoving: MotorIsMovingWidget },
+	[ResourceTriplets.InputController]: { widget: InputControllerWidget, apis: [] },
+	[ResourceTriplets.Motor]: {
+		widget: MotorWidget,
+		apis: [
+			{ id: 'quick-move', label: 'Quick move', components: [MotorQuickMoveWidget] },
+			{ id: 'set-power', label: 'SetPower', components: [MotorSetPowerWidget] },
+			{ id: 'set-rpm', label: 'SetRPM', components: [MotorSetRPMWidget] },
+			{ id: 'go-for', label: 'GoFor', components: [MotorGoForWidget] },
+			{ id: 'go-to', label: 'GoTo', components: [MotorGoToWidget] },
+			{ id: 'is-moving', label: 'IsMoving', components: [MotorIsMovingWidget] },
+		],
+	},
 	[ResourceTriplets.MovementSensor]: {
-		Widget: MovementSensorWidget,
-		GetPosition: MovementSensorGetPositionWidget,
-		GetOrientation: MovementSensorGetOrientationWidget,
-		GetCompassHeading: MovementSensorGetCompassHeadingWidget,
-		GetAccuracy: MovementSensorGetAccuracyWidget,
+		widget: MovementSensorWidget,
+		apis: [
+			{ id: 'get-position', label: 'GetPosition', components: [MovementSensorGetPositionWidget] },
+			{
+				id: 'get-orientation',
+				label: 'GetOrientation',
+				components: [MovementSensorGetOrientationWidget],
+			},
+			{
+				id: 'get-compass-heading',
+				label: 'GetCompassHeading',
+				components: [MovementSensorGetCompassHeadingWidget],
+			},
+			{ id: 'get-accuracy', label: 'GetAccuracy', components: [MovementSensorGetAccuracyWidget] },
+		],
 	},
 	[ResourceTriplets.PowerSensor]: {
-		Widget: PowerSensorWidget,
-		GetVoltage: PowerSensorGetVoltageWidget,
-		GetCurrent: PowerSensorGetCurrentWidget,
-		GetPower: PowerSensorGetPowerWidget,
+		widget: PowerSensorWidget,
+		apis: [
+			{ id: 'get-voltage', label: 'GetVoltage', components: [PowerSensorGetVoltageWidget] },
+			{ id: 'get-current', label: 'GetCurrent', components: [PowerSensorGetCurrentWidget] },
+			{ id: 'get-power', label: 'GetPower', components: [PowerSensorGetPowerWidget] },
+		],
 	},
-	[ResourceTriplets.Sensor]: { Widget: SensorWidget },
-	[ResourceTriplets.Servo]: { Widget: ServoWidget, IsMoving: ServoIsMovingWidget },
-	[ResourceTriplets.Switch]: { Widget: SwitchWidget },
+	[ResourceTriplets.Sensor]: { widget: SensorWidget, apis: [] },
+	[ResourceTriplets.Servo]: {
+		widget: ServoWidget,
+		apis: [
+			{ id: 'move', label: 'Move', components: [ServoMoveWidget] },
+			{ id: 'quick-move', label: 'Quick move', components: [ServoQuickMoveWidget] },
+			{ id: 'is-moving', label: 'IsMoving', components: [ServoIsMovingWidget] },
+		],
+	},
+	[ResourceTriplets.Switch]: { widget: SwitchWidget, apis: [] },
 
 	// services
-	[ResourceTriplets.Discovery]: { Widget: DiscoveryWidget },
-	[ResourceTriplets.MLModel]: { Widget: MLModelServiceWidget },
-	[ResourceTriplets.Navigation]: { Widget: NavigationServiceWidget },
-	[ResourceTriplets.Slam]: { Widget: SlamWidget, GetPosition: SlamGetPositionWidget },
-	[ResourceTriplets.Vision]: { Widget: VisionServiceWidget },
-} as const
+	[ResourceTriplets.Discovery]: { widget: DiscoveryWidget, apis: [] },
+	[ResourceTriplets.MLModel]: { widget: MLModelServiceWidget, apis: [] },
+	[ResourceTriplets.Navigation]: { widget: NavigationServiceWidget, apis: [] },
+	[ResourceTriplets.Slam]: {
+		widget: SlamWidget,
+		apis: [{ id: 'get-position', label: 'GetPosition', components: [SlamGetPositionWidget] }],
+	},
+	[ResourceTriplets.Vision]: { widget: VisionServiceWidget, apis: [] },
+} satisfies Partial<Record<ResourceTriplet, { widget: ResourceWidget; apis: ResourceAPIWidget[] }>>
 
 type ResourceWidgetRegistry = typeof resourceWidgetRegistry
-type ClientMap = typeof clientMap
-
-// Resolve the triplet for a client class by matching it against `clientMap`.
-type TripletForClient<C> = {
-	[K in keyof ClientMap]: C extends ClientMap[K] ? (ClientMap[K] extends C ? K : never) : never
-}[keyof ClientMap]
-
-type ResourceWidgetsFor<C> = [TripletForClient<C> & keyof ResourceWidgetRegistry] extends [never]
-	? { Widget: ResourceWidget }
-	: ResourceWidgetRegistry[TripletForClient<C> & keyof ResourceWidgetRegistry]
-
-type ResourceClient = abstract new (...args: never[]) => object
-
-const notImplemented = { Widget: NotImplementedWidget }
-
-// Reverse `clientMap` (client class -> triplet) for the runtime lookup.
-const tripletForClient = new Map<unknown, keyof ResourceWidgetRegistry>(
-	Object.entries(clientMap).map(([triplet, client]): [unknown, keyof ResourceWidgetRegistry] => [
-		client,
-		triplet as keyof ResourceWidgetRegistry,
-	])
-)
 
 /**
- * Returns the compound widget object for a resource client class.
+ * Returns each resource triplet that has a test card, mapped to its individual
+ * API widgets. 
+ * 
+ * Each entry carries a stable `id`, a display `label`, and the `components` to 
+ * render with `{ partID, resourceName }`.
  *
- * The result always has a `.Widget` (the full composite widget) and, for some
- * resources, self-contained query sub-widgets such as `.GetJointPositions`.
- * Every component takes `{ partID, resourceName }`. Client classes with no test
- * widget resolve to a "not implemented" placeholder.
- *
- * @param client - The resource client class, e.g. `ArmClient`.
- * @returns The resource's widget object.
- * @example
- * const Arm = createResourceWidget(ArmClient)
- * // <Arm.Widget {partID} {resourceName} />
- * // <Arm.GetJointPositions {partID} {resourceName} />
- */
-export const createResourceWidget = <C extends ResourceClient>(
-	client: C
-): ResourceWidgetsFor<C> => {
-	const triplet = tripletForClient.get(client)
-	return (
-		triplet !== undefined && triplet in resourceWidgetRegistry
-			? resourceWidgetRegistry[triplet]
-			: notImplemented
-	) as ResourceWidgetsFor<C>
-}
-
-// The widget names available for a resource, e.g. `'Widget' | 'GetJointPositions'`.
-type ResourceWidgetName<K extends keyof ResourceWidgetRegistry> = keyof ResourceWidgetRegistry[K]
-
-// Each resource triplet mapped to the list of its available widget names.
-type AvailableResourceWidgets = {
-	[K in keyof ResourceWidgetRegistry]: ResourceWidgetName<K>[]
-}
-
-/**
- * Returns each resource triplet that has an implemented widget mapped to its list
- * of available widget names.
- *
- * Resources whose only widget is the not-implemented placeholder are excluded.
+ * Resources that have a card but no standalone API widgets map to `[]`.
  *
  * @example
- * availableResourceWidgets()['rdk:component:arm'] // ['Widget', 'GetJointPositions', 'IsMoving']
+ * resourceApiWidgets()[ResourceTriplets.Gripper]
+ * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const availableResourceWidgets = () => {
-	const result: Record<string, string[]> = {}
+export const resourceApiWidgets = () => {
+	const result = {} as Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]>
 	for (const triplet of Object.keys(resourceWidgetRegistry) as (keyof ResourceWidgetRegistry)[]) {
-		const entry = resourceWidgetRegistry[triplet]
-		if (entry.Widget !== NotImplementedWidget) {
-			result[triplet] = Object.keys(entry)
-		}
+		result[triplet] = resourceWidgetRegistry[triplet].apis
 	}
 
-	return result as AvailableResourceWidgets
+	return result
 }
 
-// Resources hidden from the control view.
-const hiddenResources = new Set<string>([
-	ResourceTriplets.DataManager,
-	ResourceTriplets.Motion,
-	ResourceTriplets.Sensors,
-	ResourceTriplets.Shell,
-])
-
-/** Returns the full composite widget for a resource, or `undefined` if none is implemented. */
+/** Returns the full composite test card for a resource, or `undefined` if none exists. */
 export const widgetForResource = (resource: ResourceName): ResourceWidget | undefined => {
 	const api = getResourceAPI(resource)
 	return api in resourceWidgetRegistry
-		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].Widget
+		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].widget
 		: undefined
 }
 
@@ -219,6 +252,13 @@ const knownResources = new Set<string>(Object.values(ResourceTriplets))
 /** Whether a resource's API is a recognized Viam resource triplet. */
 export const isKnownResource = (resource: ResourceName): boolean =>
 	knownResources.has(getResourceAPI(resource))
+
+const hiddenResources = new Set<string>([
+	ResourceTriplets.DataManager,
+	ResourceTriplets.Motion,
+	ResourceTriplets.Sensors,
+	ResourceTriplets.Shell,
+])
 
 /** Whether the control view should surface a card for this resource. */
 export const showResourceWidget = (resource: ResourceName): boolean =>

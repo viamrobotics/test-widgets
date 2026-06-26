@@ -12,12 +12,12 @@ export { getResourceAPI } from './get-resource-api'
 export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
 export {
-	availableResourceWidgets,
-	createResourceWidget,
+	resourceApiWidgets,
 	isKnownResource,
 	// TODO: Delete `hasWidget`
 	/** @deprecated use `isKnownResource` instead. Will be deleted in the next release  */
 	isKnownResource as hasWidget,
+	type ResourceAPIWidget,
 	showResourceWidget,
 	widgetForResource,
 } from './resource-widget'
