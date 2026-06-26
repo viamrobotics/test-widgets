@@ -218,19 +218,33 @@ const resourceWidgetRegistry = {
 type ResourceWidgetRegistry = typeof resourceWidgetRegistry
 
 /**
- * Returns each resource triplet that has a test card, mapped to its individual
- * API widgets. 
- * 
- * Each entry carries a stable `id`, a display `label`, and the `components` to 
- * render with `{ partID, resourceName }`.
+ * Returns a resource's individual API widgets. Each entry carries a stable `id`, a
+ * display `label`, and the `components` to render with `{ partID, resourceName }`.
  *
- * Resources that have a card but no standalone API widgets map to `[]`.
+ * Returns `[]` for a resource with a card but no standalone API widgets, and for
+ * unrecognized resources.
  *
  * @example
- * apiWidgetsForResource()[ResourceTriplets.Gripper]
+ * apiWidgetsForResource(gripperResourceName)
  * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const apiWidgetsForResource = () => {
+export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] => {
+	const api = getResourceAPI(resource)
+	return api in resourceWidgetRegistry
+		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].apis
+		: []
+}
+
+/**
+ * Returns every resource triplet that has a test card, mapped to its API widgets.
+ * Use this to enumerate the full catalog, e.g. a menu spanning every resource type;
+ * for a single resource, prefer `apiWidgetsForResource`.
+ *
+ * @example
+ * availableAPIWidgets()[ResourceTriplets.Gripper]
+ * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
+ */
+export const availableAPIWidgets = (): Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]> => {
 	const result = {} as Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]>
 	for (const triplet of Object.keys(resourceWidgetRegistry) as (keyof ResourceWidgetRegistry)[]) {
 		result[triplet] = resourceWidgetRegistry[triplet].apis

@@ -9,8 +9,9 @@ import {
 	GripperOpenWidget,
 } from '../components'
 import {
-	isKnownResource,
 	apiWidgetsForResource,
+	availableAPIWidgets,
+	isKnownResource,
 	showResourceWidget,
 	widgetForResource,
 } from '../resource-widget'
@@ -18,9 +19,9 @@ import {
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
 	new ResourceName({ namespace, type, subtype, name: 'test' })
 
-describe('availableResourceWidgets', () => {
-	it('maps a resource to its pinnable options with stable id, label, and components', () => {
-		expect(apiWidgetsForResource()['rdk:component:gripper']).toEqual([
+describe('availableAPIWidgets', () => {
+	it('maps each resource with a card to its API widgets', () => {
+		expect(availableAPIWidgets()['rdk:component:gripper']).toEqual([
 			{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] },
 			{
 				id: 'is-holding-something',
@@ -32,17 +33,33 @@ describe('availableResourceWidgets', () => {
 	})
 
 	it('folds the query views in alongside the action views', () => {
-		const armIds = apiWidgetsForResource()['rdk:component:arm'].map((option) => option.id)
+		const armIds = availableAPIWidgets()['rdk:component:arm'].map((widget) => widget.id)
 		expect(armIds).toContain('move-to-joint-positions')
 		expect(armIds).toContain('get-joint-positions')
 	})
 
-	it('returns an empty list for resources with a card but no pinnable options', () => {
-		expect(apiWidgetsForResource()['rdk:component:camera']).toEqual([])
+	it('maps a resource with a card but no API widgets to an empty list', () => {
+		expect(availableAPIWidgets()['rdk:component:camera']).toEqual([])
 	})
 
 	it('excludes resources that have no test card', () => {
-		expect(apiWidgetsForResource()).not.toHaveProperty('rdk:service:motion')
+		expect(availableAPIWidgets()).not.toHaveProperty('rdk:service:motion')
+	})
+})
+
+describe('apiWidgetsForResource', () => {
+	it("returns the targeted resource's API widgets", () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'gripper')).map((widget) => widget.id)
+		).toEqual(['open-grab', 'is-holding-something', 'is-moving'])
+	})
+
+	it('returns an empty list for a recognized resource with no API widgets', () => {
+		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
+	})
+
+	it('returns an empty list for an unrecognized resource', () => {
+		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
 })
 

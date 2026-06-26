@@ -2,6 +2,7 @@
 	import { ServoClient } from '@viamrobotics/sdk'
 
 	import IsMoving from '$lib/components/is-moving.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
 		partID: string
@@ -13,6 +14,7 @@
 
 <IsMoving
 	client={ServoClient}
+	api={ResourceTriplets.Servo}
 	{partID}
 	{resourceName}
 />
