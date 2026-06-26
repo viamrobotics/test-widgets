@@ -1,16 +1,18 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 	import { twMerge } from 'tailwind-merge'
 
 	import ErrorDisplay from './error.svelte'
+	import SectionTitle from './section-title.svelte'
 
 	interface Props {
 		title: string
 		tooltip?: string | undefined
 		description?: string | undefined
 		lastError: Error | null
+		/** RDK API string; presence renders the title as a linked monospace method name */
+		api?: string | undefined
 		class?: string
 		titleInput?: Snippet
 		error?: Snippet
@@ -22,6 +24,7 @@
 		tooltip,
 		description,
 		lastError = null,
+		api,
 		class: className,
 		titleInput,
 		error,
@@ -37,27 +40,21 @@
 >
 	<div class={twMerge('flex grow flex-row flex-wrap gap-2', className)}>
 		<div class="flex max-w-50 grow flex-col gap-0.5 pr-4">
-			<h3
-				class="flex flex-row items-center gap-1 text-sm font-semibold"
-				id={headingID}
-			>
-				{title}
-				{#if tooltip}
-					<Tooltip>
-						<Icon
-							name="information-outline"
-							cx="text-gray-6"
-						/>
-
-						<p
-							slot="description"
-							class="text-xs whitespace-pre-line"
-						>
-							{tooltip}
-						</p>
-					</Tooltip>
-				{/if}
-			</h3>
+			{#if api}
+				<SectionTitle
+					{title}
+					{tooltip}
+					{api}
+					headingId={headingID}
+				/>
+			{:else}
+				<h3
+					class="flex flex-row items-center gap-1 text-sm font-semibold"
+					id={headingID}
+				>
+					{title}
+				</h3>
+			{/if}
 			{#if description}
 				<p class="text-subtle-2 text-xs">{description}</p>
 			{/if}

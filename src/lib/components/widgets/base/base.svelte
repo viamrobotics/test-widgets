@@ -83,7 +83,10 @@
 				/>
 			</MutationSection>
 			<div class="ml-auto flex w-full max-w-40 grow flex-col divide-y">
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					api="rdk:component:base"
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -93,6 +96,7 @@
 				</ApiSection>
 				<IsMoving
 					client={BaseClient}
+					api="rdk:component:base"
 					{partID}
 					{resourceName}
 				/>
@@ -100,6 +104,7 @@
 		</div>
 		<MutationSection
 			title="MoveStraight"
+			api="rdk:component:base"
 			description="Move across a given distance at a given velocity"
 			lastError={moveStraightMutation.error}
 		>
@@ -107,6 +112,7 @@
 		</MutationSection>
 		<MutationSection
 			title="Spin"
+			api="rdk:component:base"
 			description="Turn to a given angle at a given velocity"
 			lastError={spinMutation.error}
 		>
@@ -114,6 +120,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetPower"
+			api="rdk:component:base"
 			description="Move continuously at a given amount of power"
 			lastError={setPowerMutation.error}
 		>
@@ -121,6 +128,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetVelocity"
+			api="rdk:component:base"
 			description="Move continually at a given velocity"
 			lastError={setVelocityMutation.error}
 		>

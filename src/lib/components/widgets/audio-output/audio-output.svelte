@@ -107,6 +107,7 @@
 			<div class="flex w-full flex-col divide-y">
 				<MutationSection
 					title="Play"
+					api="rdk:component:audio_output"
 					description="Send audio data to the device"
 					lastError={playContext.error}
 				>
@@ -178,6 +179,7 @@
 			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
 				<ApiSection
 					title="GetProperties"
+					api="rdk:component:audio_output"
 					description="Audio output properties"
 					class="relative"
 				>

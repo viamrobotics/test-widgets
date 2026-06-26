@@ -5,6 +5,7 @@
 	import { SvelteSet } from 'svelte/reactivity'
 
 	import { useDetections } from './context.svelte'
+	import DetectionRow from './detection-row.svelte'
 
 	interface Props {
 		classifications?: Classification[]
@@ -42,6 +43,16 @@
 				for (const detection of data.detections) {
 					context.hovered.add(detection.id)
 				}
+			}
+		}
+	})
+
+	$effect.pre(() => {
+		if (context.selected === undefined) return
+		for (const [label, { detections }] of Object.entries(context.byLabel)) {
+			if (detections.some((d) => d.id === context.selected)) {
+				expandedLabels.add(label)
+				break
 			}
 		}
 	})
@@ -113,18 +124,10 @@
 					<ul>
 						{#each detections as detection (detection.id)}
 							<li>
-								<button
-									class="hover:bg-light w-full py-1 pl-11 text-left {context.hovered.has(
-										detection.id
-									)
-										? 'bg-light'
-										: ''}"
-									onpointerenter={() => context.hovered.add(detection.id)}
-									onpointerleave={() => context.hovered.delete(detection.id)}
-								>
+								<DetectionRow
+									{detection}
 									{label}
-									<span class="text-subtle-2 pl-1">{detection.confidence}%</span>
-								</button>
+								/>
 							</li>
 						{/each}
 					</ul>

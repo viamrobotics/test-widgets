@@ -52,6 +52,7 @@
 			<div class="grid grow grid-cols-3 divide-x">
 				<ApiSection
 					title="GetPosition"
+					api="rdk:component:servo"
 					bottomText="Updates automatically"
 				>
 					<Query query={positionQuery}>
@@ -65,7 +66,10 @@
 						{/if}
 					</Query>
 				</ApiSection>
-				<ApiSection title="Move">
+				<ApiSection
+					title="Move"
+					api="rdk:component:servo"
+				>
 					<Query query={positionQuery}>
 						{#if positionQuery.data !== undefined}
 							<Move
@@ -92,7 +96,10 @@
 				</ApiSection>
 			</div>
 			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
-				<ApiSection title="Stop">
+				<ApiSection
+					title="Stop"
+					api="rdk:component:servo"
+				>
 					<StopButton
 						error={stopMutation.error}
 						onStop={() => {
@@ -102,6 +109,7 @@
 				</ApiSection>
 				<IsMoving
 					client={ServoClient}
+					api="rdk:component:servo"
 					{partID}
 					{resourceName}
 				/>
