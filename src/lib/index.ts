@@ -14,7 +14,7 @@ export { getResourceAPI } from './get-resource-api'
 export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
 export {
-	resourceApiWidgets,
+	apiWidgetForResource,
 	isKnownResource,
 	// TODO: Delete `hasWidget`
 	/** @deprecated use `isKnownResource` instead. Will be deleted in the next release  */

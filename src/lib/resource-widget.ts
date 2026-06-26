@@ -227,10 +227,10 @@ type ResourceWidgetRegistry = typeof resourceWidgetRegistry
  * Resources that have a card but no standalone API widgets map to `[]`.
  *
  * @example
- * resourceApiWidgets()[ResourceTriplets.Gripper]
+ * apiWidgetForResource()[ResourceTriplets.Gripper]
  * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const resourceApiWidgets = () => {
+export const apiWidgetForResource = () => {
 	const result = {} as Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]>
 	for (const triplet of Object.keys(resourceWidgetRegistry) as (keyof ResourceWidgetRegistry)[]) {
 		result[triplet] = resourceWidgetRegistry[triplet].apis
