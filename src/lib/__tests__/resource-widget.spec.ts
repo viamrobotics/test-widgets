@@ -10,7 +10,7 @@ import {
 } from '../components'
 import {
 	isKnownResource,
-	apiWidgetForResource,
+	apiWidgetsForResource,
 	showResourceWidget,
 	widgetForResource,
 } from '../resource-widget'
@@ -20,7 +20,7 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 
 describe('availableResourceWidgets', () => {
 	it('maps a resource to its pinnable options with stable id, label, and components', () => {
-		expect(apiWidgetForResource()['rdk:component:gripper']).toEqual([
+		expect(apiWidgetsForResource()['rdk:component:gripper']).toEqual([
 			{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] },
 			{
 				id: 'is-holding-something',
@@ -32,17 +32,17 @@ describe('availableResourceWidgets', () => {
 	})
 
 	it('folds the query views in alongside the action views', () => {
-		const armIds = apiWidgetForResource()['rdk:component:arm'].map((option) => option.id)
+		const armIds = apiWidgetsForResource()['rdk:component:arm'].map((option) => option.id)
 		expect(armIds).toContain('move-to-joint-positions')
 		expect(armIds).toContain('get-joint-positions')
 	})
 
 	it('returns an empty list for resources with a card but no pinnable options', () => {
-		expect(apiWidgetForResource()['rdk:component:camera']).toEqual([])
+		expect(apiWidgetsForResource()['rdk:component:camera']).toEqual([])
 	})
 
 	it('excludes resources that have no test card', () => {
-		expect(apiWidgetForResource()).not.toHaveProperty('rdk:service:motion')
+		expect(apiWidgetsForResource()).not.toHaveProperty('rdk:service:motion')
 	})
 })
 

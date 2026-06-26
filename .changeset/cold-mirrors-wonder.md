@@ -2,4 +2,4 @@
 '@viamrobotics/test-widgets': minor
 ---
 
-Add `widgetForResource` and `apiWidgetForResource` lookups and export granular widgets.
+Add `widgetForResource` and `apiWidgetsForResource` lookups and export granular widgets.
