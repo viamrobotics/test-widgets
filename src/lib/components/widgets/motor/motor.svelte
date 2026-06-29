@@ -175,10 +175,9 @@
 									contentCx=""
 									query={positionQuery}
 								>
-									<span class="font-roboto-mono text-default flex flex-row gap-1 text-xs">
+									<p class="font-roboto-mono text-default text-xs">
 										{formatNumeric(positionQuery.data, 4)}
-										<abbr class="text-subtle-2">rev</abbr>
-									</span>
+									</p>
 								</Query>
 							</ApiSection>
 						{/if}

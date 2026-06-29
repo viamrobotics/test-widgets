@@ -83,7 +83,7 @@
 		oX: '',
 		oY: '',
 		oZ: '',
-		theta: useRadians ? 'rad' : '°',
+		theta: useRadians ? 'rad' : 'deg',
 	} as const satisfies Record<keyof Pose, string>)
 
 	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][]
@@ -130,7 +130,12 @@
 				{@const [key, label] = labelList}
 				{@const value = Number.parseFloat(formatNumeric(displayPosition[key]))}
 				<tr>
-					<th>{label}</th>
+					<th>
+						<span class="relative inline-flex justify-center">
+							{label}
+							<abbr class="text-subtle-2 absolute left-full ml-1">{positionUnits[key]}</abbr>
+						</span>
+					</th>
 					<th>
 						<span class="flex items-center gap-1">
 							<NumericInput
@@ -141,9 +146,6 @@
 									handleAngleInputChange(key, inputValue)
 								}}
 							/>
-							{#if positionUnits[key]}
-								<abbr class="text-subtle-2 text-xs">{positionUnits[key]}</abbr>
-							{/if}
 						</span>
 					</th>
 				</tr>
