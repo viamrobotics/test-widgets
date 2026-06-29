@@ -43,6 +43,7 @@
 	<Label cx="max-w-[96px] grow gap-1 text-xs">
 		<p class="flex flex-row gap-1 whitespace-nowrap">
 			Target position
+			<abbr class="text-disabled">(rev)</abbr>
 			<Tooltip>
 				<Icon
 					name="information-outline"

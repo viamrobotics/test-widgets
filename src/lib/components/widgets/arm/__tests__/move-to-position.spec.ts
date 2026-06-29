@@ -128,6 +128,26 @@ describe('Arm move-to-position', () => {
 		})
 	})
 
+	it('displays mm units for position fields and degree symbol for theta', () => {
+		renderSubject({})
+
+		const mmUnits = screen.getAllByText('mm')
+		// x, y, z each get a mm unit
+		expect(mmUnits).toHaveLength(3)
+
+		expect(screen.getByText('°')).toBeInTheDocument()
+	})
+
+	it('does not display units for orientation vector fields', () => {
+		renderSubject({})
+
+		// oX, oY, oZ are dimensionless, so only 3 mm (x,y,z) + 1 ° (theta) = 4 unit labels
+		const mmUnits = screen.getAllByText('mm')
+		const degreeUnits = screen.getAllByText('°')
+		expect(mmUnits).toHaveLength(3)
+		expect(degreeUnits).toHaveLength(1)
+	})
+
 	it('renders a warning tooltip about the motion service and frame system', () => {
 		renderSubject({})
 		expect(

@@ -76,6 +76,16 @@
 		oZ: 'OZ',
 		theta: 'θ',
 	} as const
+	const positionUnits = $derived({
+		x: 'mm',
+		y: 'mm',
+		z: 'mm',
+		oX: '',
+		oY: '',
+		oZ: '',
+		theta: useRadians ? 'rad' : '°',
+	} as const satisfies Record<keyof Pose, string>)
+
 	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][]
 </script>
 
@@ -112,7 +122,7 @@
 		<thead>
 			<tr>
 				<th>Pose</th>
-				<th>Value ({useRadians ? 'radians' : 'degrees'})</th>
+				<th>Value</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -122,14 +132,19 @@
 				<tr>
 					<th>{label}</th>
 					<th>
-						<NumericInput
-							cx="max-w-[76px]"
-							{value}
-							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0
-								handleAngleInputChange(key, inputValue)
-							}}
-						/>
+						<span class="flex items-center gap-1">
+							<NumericInput
+								cx="max-w-[76px]"
+								{value}
+								on:change={(event) => {
+									const inputValue = numberValueFromEvent(event) ?? 0
+									handleAngleInputChange(key, inputValue)
+								}}
+							/>
+							{#if positionUnits[key]}
+								<abbr class="text-subtle-2 text-xs">{positionUnits[key]}</abbr>
+							{/if}
+						</span>
 					</th>
 				</tr>
 			{/each}

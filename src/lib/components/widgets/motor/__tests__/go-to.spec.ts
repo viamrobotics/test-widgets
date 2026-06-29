@@ -21,6 +21,12 @@ describe('Motor GoTo', () => {
 			...props,
 		})
 
+	it('displays (rev) unit on the target position label', () => {
+		renderSubject({})
+
+		expect(screen.getByText('(rev)')).toBeInTheDocument()
+	})
+
 	it('calls goTo with the correct rpm and pos values when Execute button is clicked', async () => {
 		renderSubject({})
 

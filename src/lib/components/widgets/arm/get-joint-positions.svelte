@@ -46,7 +46,10 @@
 			{#each displayPositions as pos, index (index)}
 				<tr>
 					<th> {index} </th>
-					<th> {formatNumeric(pos)} </th>
+					<th>
+						{formatNumeric(pos)}
+						<abbr class="text-subtle-2">{useRadians ? 'rad' : '°'}</abbr>
+					</th>
 				</tr>
 			{/each}
 		</tbody>
