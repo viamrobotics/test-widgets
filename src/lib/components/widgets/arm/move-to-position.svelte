@@ -137,16 +137,14 @@
 						</span>
 					</th>
 					<th>
-						<span class="flex items-center gap-1">
-							<NumericInput
-								cx="max-w-[76px]"
-								{value}
-								on:change={(event) => {
-									const inputValue = numberValueFromEvent(event) ?? 0
-									handleAngleInputChange(key, inputValue)
-								}}
-							/>
-						</span>
+						<NumericInput
+							cx="max-w-[76px]"
+							{value}
+							on:change={(event) => {
+								const inputValue = numberValueFromEvent(event) ?? 0
+								handleAngleInputChange(key, inputValue)
+							}}
+						/>
 					</th>
 				</tr>
 			{/each}
