@@ -331,6 +331,7 @@
 
 			<Switch
 				annotated
+				cx="w-fit"
 				on:change={setIsShowingPointcloud}
 				on={isShowingPointcloud}
 			/>

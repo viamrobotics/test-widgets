@@ -115,7 +115,7 @@
 		>
 			<Switch
 				bind:on={isGetReadingsEnabled}
-				cx="text-subtle-2"
+				cx="w-fit text-subtle-2"
 				annotated
 			/>
 			{#if isGetReadingsEnabled}

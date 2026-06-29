@@ -117,6 +117,11 @@
 	}
 
 	const detectionsSlow = $derived(captureAllSlow.isSlow || propertiesSlow.isSlow)
+
+	const isRemoteSwitchId = $derived(`vision-is-remote-switch-${partID}-${resourceName}`)
+	const showObjectPointCloudsSwitchId = $derived(
+		`vision-show-object-point-clouds-switch-${partID}-${resourceName}`
+	)
 </script>
 
 <ConnectionStatus {partID}>
@@ -147,16 +152,18 @@
 						</Select>
 					</Label>
 				</div>
-				<Label
-					cx="w-fit"
-					position="top"
-				>
-					Is remote?
+				<div class="flex flex-col gap-1 w-fit">
+					<Label
+						cx="w-fit"
+						for={isRemoteSwitchId}
+					>
+						Is remote?
+					</Label>
 					<Switch
-						slot="input"
+						id={isRemoteSwitchId}
 						bind:on={isRemote}
 					/>
-				</Label>
+				</div>
 			</div>
 
 			<h6 class="text-subtle-1 font-semibold">Detections/Classifications</h6>
@@ -220,14 +227,17 @@
 
 			<h6 class="text-subtle-1 mt-4 font-semibold">Object point clouds</h6>
 			<div class="flex items-center gap-4">
-				<div class="w-50">
-					<Label position="left">
+				<div class="flex items-center gap-2 w-fit">
+					<Label
+						cx="w-fit"
+						for={showObjectPointCloudsSwitchId}
+					>
 						Show object point clouds
-						<Switch
-							slot="input"
-							bind:on={showObjectPointClouds}
-						/>
 					</Label>
+					<Switch
+						id={showObjectPointCloudsSwitchId}
+						bind:on={showObjectPointClouds}
+					/>
 				</div>
 				<RefetchController
 					refetchInterval={getObjectPointCloudsRefetchInterval}

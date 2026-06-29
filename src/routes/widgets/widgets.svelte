@@ -105,6 +105,7 @@
 
 					<div class="flex items-center gap-2 px-4 py-2">
 						<Switch
+							cx="w-fit"
 							on={singleCardMode}
 							on:change={() => (singleCardMode = !singleCardMode)}
 						/>

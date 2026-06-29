@@ -27,19 +27,27 @@
 	}
 
 	let isKeyboardEnabled = $state(false)
+
+	const keyboardControlSwitchId = $derived(
+		`base-quick-move-keyboard-control-switch-${partID}-${resourceName}`
+	)
 </script>
 
 <MutationView lastError={quickSetPowerMutation.error}>
 	{#snippet titleInput()}
-		<Label cx="w-fit!">
-			Keyboard control
-
+		<div class="flex items-center gap-2 w-fit">
+			<Label
+				cx="w-fit"
+				for={keyboardControlSwitchId}
+			>
+				Keyboard control
+			</Label>
 			<Switch
-				slot="input"
+				id={keyboardControlSwitchId}
 				on={isKeyboardEnabled}
 				on:change={() => (isKeyboardEnabled = !isKeyboardEnabled)}
 			/>
-		</Label>
+		</div>
 	{/snippet}
 
 	<QuickMove

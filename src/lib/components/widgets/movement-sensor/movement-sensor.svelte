@@ -265,6 +265,7 @@
 
 			<Switch
 				annotated
+				cx="w-fit"
 				on:change={onSetShowFullReadings}
 			/>
 
