@@ -135,7 +135,7 @@ describe('Arm move-to-position', () => {
 		// x, y, z each get a mm unit
 		expect(mmUnits).toHaveLength(3)
 
-		expect(screen.getByText('°')).toBeInTheDocument()
+		expect(screen.getByText('deg')).toBeInTheDocument()
 	})
 
 	it('does not display units for orientation vector fields', () => {
@@ -143,7 +143,7 @@ describe('Arm move-to-position', () => {
 
 		// oX, oY, oZ are dimensionless, so only 3 mm (x,y,z) + 1 ° (theta) = 4 unit labels
 		const mmUnits = screen.getAllByText('mm')
-		const degreeUnits = screen.getAllByText('°')
+		const degreeUnits = screen.getAllByText('deg')
 		expect(mmUnits).toHaveLength(3)
 		expect(degreeUnits).toHaveLength(1)
 	})
