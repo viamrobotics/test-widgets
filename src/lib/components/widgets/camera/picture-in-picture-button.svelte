@@ -7,18 +7,11 @@
 
 	interface Props {
 		resourceName: string
-		rate: number | 'live' | false
 	}
 
-	const { resourceName, rate }: Props = $props()
+	const { resourceName }: Props = $props()
 
 	const pip = usePip()
-
-	$effect(() => {
-		if (resourceName === pip.resourceName) {
-			pip.setRate(rate)
-		}
-	})
 </script>
 
 <Button
