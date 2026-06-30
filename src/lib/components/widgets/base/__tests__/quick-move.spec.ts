@@ -84,6 +84,30 @@ describe('Base QuickMove', () => {
 		expect(setPower).toHaveBeenCalledWith({ x: 0, y: 0.75, z: 0 }, { x: 0, y: 0, z: 0 })
 	})
 
+	it('stops movement keys from reaching sibling window listeners when enabled', async () => {
+		const sibling = vi.fn()
+		window.addEventListener('keydown', sibling)
+		try {
+			renderSubject({ isKeyboardEnabled: true })
+			await user.keyboard('{a}')
+			expect(sibling).not.toHaveBeenCalled()
+		} finally {
+			window.removeEventListener('keydown', sibling)
+		}
+	})
+
+	it('lets keys reach sibling window listeners when disabled', async () => {
+		const sibling = vi.fn()
+		window.addEventListener('keydown', sibling)
+		try {
+			renderSubject({ isKeyboardEnabled: false })
+			await user.keyboard('{a}')
+			expect(sibling).toHaveBeenCalled()
+		} finally {
+			window.removeEventListener('keydown', sibling)
+		}
+	})
+
 	it('does not set power when keyboard is disabled', async () => {
 		renderSubject({ isKeyboardEnabled: false })
 
