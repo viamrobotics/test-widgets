@@ -14,6 +14,7 @@
 	import Progress from '$lib/components/progress.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
+	import { usePip } from '$lib/pip/context.svelte'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
@@ -52,7 +53,14 @@
 	let vfcID = 0
 	let liveStreamStart: DOMHighResTimeStamp | undefined
 
+	const fps = useMeasureFps()
+	const pip = usePip()
+
 	const setMediaStream = (mediaStream: MediaStream | null) => {
+		if (mediaStream) {
+			pip.setStream(resourceName, mediaStream)
+		}
+
 		if (videoElement) {
 			// TODO(2025-01-31): Remove these function guards.
 			// Sentry has some error traces where "cancelVideoFrameCallback is not a function".
@@ -102,10 +110,12 @@
 	// canvas in a media stream
 	const img = document.createElement('img')
 	const canvas = document.createElement('canvas')
-	const canvasCtx = canvas.getContext('2d')
+	const canvasCtx = canvas.getContext('2d', { alpha: false })
 	const drawImage = () => {
-		canvas.width = img.naturalWidth
-		canvas.height = img.naturalHeight
+		if (canvas.width !== img.naturalWidth || canvas.height !== img.naturalHeight) {
+			canvas.width = img.naturalWidth
+			canvas.height = img.naturalHeight
+		}
 		canvasCtx?.drawImage(img, 0, 0)
 	}
 
@@ -190,6 +200,7 @@
 		return () =>
 			untrack(() => {
 				disableStream().then(() => {
+					pip.setStream(resourceName, null)
 					setMediaStream(null)
 				})
 			})
@@ -299,8 +310,6 @@
 	const handleMouseLeaveVideo = () => {
 		hoverTooltipOpen = false
 	}
-
-	const fps = useMeasureFps()
 
 	$effect(() => {
 		let id: number | undefined

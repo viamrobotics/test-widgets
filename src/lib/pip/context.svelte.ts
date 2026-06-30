@@ -1,9 +1,3 @@
-import { CameraClient } from '@viamrobotics/sdk'
-import {
-	createResourceClient,
-	createResourceQuery,
-	createStreamClient,
-} from '@viamrobotics/svelte-sdk'
 import { getContext, setContext } from 'svelte'
 
 const PIP_KEY = Symbol('pip-context')
@@ -12,7 +6,8 @@ interface PipContext {
 	/** Called by PictureInPictureButton to start or stop PiP. */
 	toggle(resourceName: string): Promise<void>
 
-	setRate(rate: 'live' | number | false): void
+	/** Register the media stream from the main camera view for PiP reuse. */
+	setStream(resourceName: string, stream: MediaStream | null): void
 
 	error: Error | undefined
 
@@ -23,7 +18,7 @@ interface PipContext {
 	resourceName: string | undefined
 }
 
-export function providePip(partID: () => string): PipContext {
+export function providePip(): PipContext {
 	const video = document.createElement('video')
 	video.muted = true
 	video.autoplay = true
@@ -32,90 +27,84 @@ export function providePip(partID: () => string): PipContext {
 	video.ariaHidden = 'true'
 	video.style = 'position:fixed; right: 0; bottom: 0; height: 1px; width: 1px; opacity: 0.01;'
 
-	const canvas = document.createElement('canvas')
-	const canvasCtx = canvas.getContext('2d')
-	const canvasStream = canvas.captureStream()
-
-	const img = document.createElement('img')
+	const streams = new Map<string, MediaStream>()
+	const streamWaiters = new Map<string, Set<(stream: MediaStream) => void>>()
 
 	let error = $state<Error>()
 	let readyState = $state<'inactive' | 'loading' | 'active'>('inactive')
-	let rate = $state<'live' | number | false>('live')
 	let activeName = $state<string>()
 
-	const cameraClient = $derived(
-		activeName ? createResourceClient(CameraClient, partID, () => activeName ?? '') : undefined
-	)
-	const streamClient = $derived(
-		activeName ? createStreamClient(partID, () => activeName ?? '') : undefined
-	)
-	const imageQuery = $derived(
-		cameraClient?.current
-			? createResourceQuery(cameraClient, 'getImages', () => ({
-					enabled: rate !== 'live',
-					refetchInterval: typeof rate === 'number' ? rate : false,
-					refetchIntervalInBackground: activeName === cameraClient?.current?.name,
-				}))
-			: undefined
-	)
+	const resolveStreamWaiters = (resourceName: string, stream: MediaStream) => {
+		const waiters = streamWaiters.get(resourceName)
+		if (!waiters) return
+		for (const resolve of waiters) {
+			resolve(stream)
+		}
+		streamWaiters.delete(resourceName)
+	}
 
-	const mediaStream = $derived<MediaStream | null>(
-		(rate === 'live' ? streamClient?.mediaStream : canvasStream) ?? null
-	)
+	const waitForStream = (resourceName: string, timeoutMs = 15_000) =>
+		new Promise<MediaStream>((resolve, reject) => {
+			const existing = streams.get(resourceName)
+			if (existing) {
+				resolve(existing)
+				return
+			}
+
+			const waiters = streamWaiters.get(resourceName) ?? new Set()
+			waiters.add(resolve)
+			streamWaiters.set(resourceName, waiters)
+
+			setTimeout(() => {
+				if (!streams.has(resourceName)) {
+					waiters.delete(resolve)
+					if (waiters.size === 0) {
+						streamWaiters.delete(resourceName)
+					}
+					reject(new Error('No stream available for picture-in-picture'))
+				}
+			}, timeoutMs)
+		})
+
+	const setStream = (resourceName: string, stream: MediaStream | null) => {
+		if (stream) {
+			streams.set(resourceName, stream)
+			resolveStreamWaiters(resourceName, stream)
+		} else {
+			streams.delete(resourceName)
+		}
+
+		if (activeName !== resourceName) return
+
+		video.srcObject = stream
+
+		if (!stream && document.pictureInPictureElement === video) {
+			void document.exitPictureInPicture()
+		}
+	}
 
 	$effect(() => {
 		document.body.append(video)
+
+		const handleLeave = () => {
+			readyState = 'inactive'
+			activeName = undefined
+			error = undefined
+		}
+
+		video.addEventListener('leavepictureinpicture', handleLeave)
+
 		return () => {
+			video.removeEventListener('leavepictureinpicture', handleLeave)
 			video.remove()
 		}
 	})
 
-	$effect(() => {
-		video.srcObject = mediaStream
-		return () => {
-			video.srcObject = null
-		}
-	})
-
-	$effect(() => {
-		const currentRate = rate
-
-		if (currentRate === 'live') return
-
-		const image = imageQuery?.data?.images[0]
-
-		if (!image) return
-
-		if (img.src) URL.revokeObjectURL(img.src)
-
-		img.src = URL.createObjectURL(
-			new Blob([new Uint8Array(image.image)], {
-				type: image.mimeType || 'image/jpeg',
-			})
-		)
-
-		const drawImage = () => {
-			canvas.width = img.naturalWidth
-			canvas.height = img.naturalHeight
-			canvasCtx?.drawImage(img, 0, 0)
-		}
-
-		img.addEventListener('load', drawImage)
-
-		return () => {
-			if (img.src) URL.revokeObjectURL(img.src)
-			img.removeEventListener('load', drawImage)
-		}
-	})
-
-	const toggle = async () => {
-		if (
-			activeName === undefined &&
-			readyState === 'active' &&
-			document.pictureInPictureElement === video
-		) {
+	const toggle = async (resourceName: string) => {
+		if (activeName === resourceName && document.pictureInPictureElement === video) {
 			try {
 				await document.exitPictureInPicture()
+				activeName = undefined
 				readyState = 'inactive'
 				error = undefined
 			} catch (nextError) {
@@ -124,35 +113,34 @@ export function providePip(partID: () => string): PipContext {
 			return
 		}
 
+		activeName = resourceName
 		readyState = 'loading'
 
-		// Wait for the new stream's metadata to load before requesting PiP,
-		// otherwise the browser throws InvalidStateError.
-		if (video.readyState < 1 /* HAVE_METADATA */) {
-			await new Promise<void>((resolve) => {
-				video!.addEventListener('loadedmetadata', () => resolve(), { once: true })
-			})
-		}
-
 		try {
+			const stream = await waitForStream(resourceName)
+			video.srcObject = stream
+
+			// Wait for the stream's metadata to load before requesting PiP,
+			// otherwise the browser throws InvalidStateError.
+			if (video.readyState < 1 /* HAVE_METADATA */) {
+				await new Promise<void>((resolve) => {
+					video.addEventListener('loadedmetadata', () => resolve(), { once: true })
+				})
+			}
+
 			await video.requestPictureInPicture()
 			readyState = 'active'
 			error = undefined
 		} catch (nextError) {
+			readyState = 'inactive'
+			activeName = undefined
 			error = nextError as Error
 		}
 	}
 
 	const context: PipContext = {
-		async toggle(resourceName) {
-			activeName = activeName === resourceName ? undefined : resourceName
-
-			await toggle()
-		},
-
-		setRate(newRate) {
-			rate = newRate
-		},
+		toggle,
+		setStream,
 
 		get error() {
 			return error
