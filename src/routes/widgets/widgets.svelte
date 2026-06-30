@@ -24,7 +24,7 @@
 
 	const { partID, urlHash, hasUnsavedChanges = false, children }: Props = $props()
 
-	providePip()
+	providePip(() => partID)
 
 	const machineStatus = useMachineStatus(() => partID)
 	const connectionStatus = useConnectionStatus(() => partID)

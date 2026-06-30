@@ -1,3 +1,9 @@
+import { CameraClient } from '@viamrobotics/sdk'
+import {
+	createResourceClient,
+	createResourceQuery,
+	createStreamClient,
+} from '@viamrobotics/svelte-sdk'
 import { getContext, setContext } from 'svelte'
 
 const PIP_KEY = Symbol('pip-context')
@@ -6,7 +12,9 @@ interface PipContext {
 	/** Called by PictureInPictureButton to start or stop PiP. */
 	toggle(resourceName: string): Promise<void>
 
-	/** Register the media stream from the main camera view for PiP reuse. */
+	setRate(rate: 'live' | number | false): void
+
+	/** Register the media stream from the main camera view when its card is open. */
 	setStream(resourceName: string, stream: MediaStream | null): void
 
 	error: Error | undefined
@@ -18,7 +26,7 @@ interface PipContext {
 	resourceName: string | undefined
 }
 
-export function providePip(): PipContext {
+export function providePip(partID: () => string): PipContext {
 	const video = document.createElement('video')
 	video.muted = true
 	video.autoplay = true
@@ -27,60 +35,86 @@ export function providePip(): PipContext {
 	video.ariaHidden = 'true'
 	video.style = 'position:fixed; right: 0; bottom: 0; height: 1px; width: 1px; opacity: 0.01;'
 
-	const streams = new Map<string, MediaStream>()
-	const streamWaiters = new Map<string, Set<(stream: MediaStream) => void>>()
+	const canvas = document.createElement('canvas')
+	const canvasCtx = canvas.getContext('2d', { alpha: false })
+	const canvasStream = canvas.captureStream()
+
+	const img = document.createElement('img')
+
+	const externalStreams = new Map<string, MediaStream>()
+	let externalStreamVersion = $state(0)
 
 	let error = $state<Error>()
 	let readyState = $state<'inactive' | 'loading' | 'active'>('inactive')
+	let rate = $state<'live' | number | false>('live')
 	let activeName = $state<string>()
 
-	const resolveStreamWaiters = (resourceName: string, stream: MediaStream) => {
-		const waiters = streamWaiters.get(resourceName)
-		if (!waiters) return
-		for (const resolve of waiters) {
+	const externalStream = $derived.by(() => {
+		void externalStreamVersion
+		return activeName ? externalStreams.get(activeName) : undefined
+	})
+
+	const needsOwnedStream = $derived(activeName !== undefined && !externalStream)
+
+	const cameraClient = $derived(
+		needsOwnedStream && activeName
+			? createResourceClient(CameraClient, partID, () => activeName ?? '')
+			: undefined
+	)
+	const streamClient = $derived(
+		needsOwnedStream && activeName
+			? createStreamClient(partID, () => activeName ?? '')
+			: undefined
+	)
+	const imageQuery = $derived(
+		cameraClient?.current
+			? createResourceQuery(cameraClient, 'getImages', () => ({
+					enabled: rate !== 'live',
+					refetchInterval: typeof rate === 'number' ? rate : false,
+					refetchIntervalInBackground: activeName === cameraClient?.current?.name,
+				}))
+			: undefined
+	)
+
+	const ownedMediaStream = $derived<MediaStream | null>(
+		needsOwnedStream ? ((rate === 'live' ? streamClient?.mediaStream : canvasStream) ?? null) : null
+	)
+
+	const playbackStream = $derived(externalStream ?? ownedMediaStream)
+
+	const playbackWaiters = new Set<(stream: MediaStream) => void>()
+
+	const resolvePlaybackWaiters = (stream: MediaStream) => {
+		for (const resolve of playbackWaiters) {
 			resolve(stream)
 		}
-		streamWaiters.delete(resourceName)
+		playbackWaiters.clear()
 	}
 
-	const waitForStream = (resourceName: string, timeoutMs = 15_000) =>
+	const waitForPlaybackStream = (timeoutMs = 15_000) =>
 		new Promise<MediaStream>((resolve, reject) => {
-			const existing = streams.get(resourceName)
+			const existing = playbackStream
 			if (existing) {
 				resolve(existing)
 				return
 			}
 
-			const waiters = streamWaiters.get(resourceName) ?? new Set()
-			waiters.add(resolve)
-			streamWaiters.set(resourceName, waiters)
+			playbackWaiters.add(resolve)
 
 			setTimeout(() => {
-				if (!streams.has(resourceName)) {
-					waiters.delete(resolve)
-					if (waiters.size === 0) {
-						streamWaiters.delete(resourceName)
-					}
-					reject(new Error('No stream available for picture-in-picture'))
-				}
+				if (!playbackWaiters.has(resolve)) return
+				playbackWaiters.delete(resolve)
+				reject(new Error('No stream available for picture-in-picture'))
 			}, timeoutMs)
 		})
 
 	const setStream = (resourceName: string, stream: MediaStream | null) => {
 		if (stream) {
-			streams.set(resourceName, stream)
-			resolveStreamWaiters(resourceName, stream)
+			externalStreams.set(resourceName, stream)
 		} else {
-			streams.delete(resourceName)
+			externalStreams.delete(resourceName)
 		}
-
-		if (activeName !== resourceName) return
-
-		video.srcObject = stream
-
-		if (!stream && document.pictureInPictureElement === video) {
-			void document.exitPictureInPicture()
-		}
+		externalStreamVersion++
 	}
 
 	$effect(() => {
@@ -97,6 +131,48 @@ export function providePip(): PipContext {
 		return () => {
 			video.removeEventListener('leavepictureinpicture', handleLeave)
 			video.remove()
+		}
+	})
+
+	$effect(() => {
+		const stream = playbackStream
+		video.srcObject = stream ?? null
+
+		if (stream) {
+			resolvePlaybackWaiters(stream)
+		}
+	})
+
+	$effect(() => {
+		const currentRate = rate
+
+		if (!needsOwnedStream || currentRate === 'live') return
+
+		const image = imageQuery?.data?.images[0]
+
+		if (!image) return
+
+		if (img.src) URL.revokeObjectURL(img.src)
+
+		img.src = URL.createObjectURL(
+			new Blob([new Uint8Array(image.image)], {
+				type: image.mimeType || 'image/jpeg',
+			})
+		)
+
+		const drawImage = () => {
+			if (canvas.width !== img.naturalWidth || canvas.height !== img.naturalHeight) {
+				canvas.width = img.naturalWidth
+				canvas.height = img.naturalHeight
+			}
+			canvasCtx?.drawImage(img, 0, 0)
+		}
+
+		img.addEventListener('load', drawImage)
+
+		return () => {
+			if (img.src) URL.revokeObjectURL(img.src)
+			img.removeEventListener('load', drawImage)
 		}
 	})
 
@@ -117,7 +193,7 @@ export function providePip(): PipContext {
 		readyState = 'loading'
 
 		try {
-			const stream = await waitForStream(resourceName)
+			const stream = await waitForPlaybackStream()
 			video.srcObject = stream
 
 			// Wait for the stream's metadata to load before requesting PiP,
@@ -141,6 +217,10 @@ export function providePip(): PipContext {
 	const context: PipContext = {
 		toggle,
 		setStream,
+
+		setRate(newRate) {
+			rate = newRate
+		},
 
 		get error() {
 			return error
