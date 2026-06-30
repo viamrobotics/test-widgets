@@ -152,7 +152,7 @@
 						</Select>
 					</Label>
 				</div>
-				<div class="flex flex-col gap-1 w-fit">
+				<div class="flex w-fit flex-col gap-1">
 					<Label
 						cx="w-fit"
 						for={isRemoteSwitchId}
@@ -227,7 +227,7 @@
 
 			<h6 class="text-subtle-1 mt-4 font-semibold">Object point clouds</h6>
 			<div class="flex items-center gap-4">
-				<div class="flex items-center gap-2 w-fit">
+				<div class="flex w-fit items-center gap-2">
 					<Label
 						cx="w-fit"
 						for={showObjectPointCloudsSwitchId}

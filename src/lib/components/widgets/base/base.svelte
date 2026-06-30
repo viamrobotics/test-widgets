@@ -57,9 +57,7 @@
 
 	let quickMoveKeyboardControl = $state(false)
 
-	const keyboardControlSwitchId = $derived(
-		`base-keyboard-control-switch-${partID}-${resourceName}`
-	)
+	const keyboardControlSwitchId = $derived(`base-keyboard-control-switch-${partID}-${resourceName}`)
 </script>
 
 <ConnectionStatus {partID}>
@@ -70,7 +68,7 @@
 				lastError={quickSetPowerMutation.error}
 			>
 				{#snippet titleInput()}
-					<div class="flex items-center gap-2 w-fit">
+					<div class="flex w-fit items-center gap-2">
 						<Label
 							cx="w-fit"
 							for={keyboardControlSwitchId}
