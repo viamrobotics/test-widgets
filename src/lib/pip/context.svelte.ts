@@ -82,32 +82,6 @@ export function providePip(partID: () => string): PipContext {
 
 	const playbackStream = $derived(externalStream ?? ownedMediaStream)
 
-	const playbackWaiters = new Set<(stream: MediaStream) => void>()
-
-	const resolvePlaybackWaiters = (stream: MediaStream) => {
-		for (const resolve of playbackWaiters) {
-			resolve(stream)
-		}
-		playbackWaiters.clear()
-	}
-
-	const waitForPlaybackStream = (timeoutMs = 15_000) =>
-		new Promise<MediaStream>((resolve, reject) => {
-			const existing = playbackStream
-			if (existing) {
-				resolve(existing)
-				return
-			}
-
-			playbackWaiters.add(resolve)
-
-			setTimeout(() => {
-				if (!playbackWaiters.has(resolve)) return
-				playbackWaiters.delete(resolve)
-				reject(new Error('No stream available for picture-in-picture'))
-			}, timeoutMs)
-		})
-
 	const setStream = (resourceName: string, stream: MediaStream | null) => {
 		if (stream) {
 			externalStreams.set(resourceName, stream)
@@ -137,10 +111,6 @@ export function providePip(partID: () => string): PipContext {
 	$effect(() => {
 		const stream = playbackStream
 		video.srcObject = stream ?? null
-
-		if (stream) {
-			resolvePlaybackWaiters(stream)
-		}
 	})
 
 	$effect(() => {
@@ -191,7 +161,7 @@ export function providePip(partID: () => string): PipContext {
 		readyState = 'loading'
 
 		try {
-			const stream = await waitForPlaybackStream()
+			const stream = ownedMediaStream
 			video.srcObject = stream
 
 			// Wait for the stream's metadata to load before requesting PiP,
