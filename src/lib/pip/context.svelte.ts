@@ -36,7 +36,7 @@ export function providePip(partID: () => string): PipContext {
 	video.style = 'position:fixed; right: 0; bottom: 0; height: 1px; width: 1px; opacity: 0.01;'
 
 	const canvas = document.createElement('canvas')
-	const canvasCtx = canvas.getContext('2d', { alpha: false })
+	const canvasCtx = canvas.getContext('2d')
 	const canvasStream = canvas.captureStream()
 
 	const img = document.createElement('img')
@@ -161,10 +161,8 @@ export function providePip(partID: () => string): PipContext {
 		)
 
 		const drawImage = () => {
-			if (canvas.width !== img.naturalWidth || canvas.height !== img.naturalHeight) {
-				canvas.width = img.naturalWidth
-				canvas.height = img.naturalHeight
-			}
+			canvas.width = img.naturalWidth
+			canvas.height = img.naturalHeight
 			canvasCtx?.drawImage(img, 0, 0)
 		}
 
