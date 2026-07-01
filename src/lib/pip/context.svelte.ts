@@ -62,9 +62,7 @@ export function providePip(partID: () => string): PipContext {
 			: undefined
 	)
 	const streamClient = $derived(
-		needsOwnedStream && activeName
-			? createStreamClient(partID, () => activeName ?? '')
-			: undefined
+		needsOwnedStream && activeName ? createStreamClient(partID, () => activeName ?? '') : undefined
 	)
 	const imageQuery = $derived(
 		cameraClient?.current
