@@ -109,8 +109,11 @@ export function providePip(partID: () => string): PipContext {
 	})
 
 	$effect(() => {
-		const stream = playbackStream
-		video.srcObject = stream ?? null
+		video.srcObject = playbackStream
+
+		return () => {
+			video.srcObject = null
+		}
 	})
 
 	$effect(() => {
