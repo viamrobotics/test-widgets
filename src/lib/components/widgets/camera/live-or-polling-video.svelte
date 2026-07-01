@@ -53,7 +53,6 @@
 	let vfcID = 0
 	let liveStreamStart: DOMHighResTimeStamp | undefined
 
-	const fps = useMeasureFps()
 	const pip = usePip()
 
 	const setMediaStream = (mediaStream: MediaStream | null) => {
@@ -110,12 +109,10 @@
 	// canvas in a media stream
 	const img = document.createElement('img')
 	const canvas = document.createElement('canvas')
-	const canvasCtx = canvas.getContext('2d', { alpha: false })
+	const canvasCtx = canvas.getContext('2d')
 	const drawImage = () => {
-		if (canvas.width !== img.naturalWidth || canvas.height !== img.naturalHeight) {
-			canvas.width = img.naturalWidth
-			canvas.height = img.naturalHeight
-		}
+		canvas.width = img.naturalWidth
+		canvas.height = img.naturalHeight
 		canvasCtx?.drawImage(img, 0, 0)
 	}
 
@@ -311,6 +308,7 @@
 		hoverTooltipOpen = false
 	}
 
+	const fps = useMeasureFps()
 	$effect(() => {
 		let id: number | undefined
 
