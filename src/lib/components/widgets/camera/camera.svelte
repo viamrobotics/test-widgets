@@ -294,10 +294,7 @@
 							</Button>
 						{/if}
 						{#if !isFirefox}
-							<PictureInPictureButton
-								{resourceName}
-								rate={refetchInterval.current}
-							/>
+							<PictureInPictureButton {resourceName} />
 						{/if}
 						<Label>
 							Mouse Position Tooltip

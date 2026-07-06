@@ -196,10 +196,11 @@
 	$effect(() => {
 		return () =>
 			untrack(() => {
-				disableStream().then(() => {
-					pip.setStream(resourceName, null)
-					setMediaStream(null)
-				})
+				if (pip.resourceName !== resourceName) {
+					disableStream().then(() => {
+						setMediaStream(null)
+					})
+				}
 			})
 	})
 
