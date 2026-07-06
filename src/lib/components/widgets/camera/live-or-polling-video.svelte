@@ -171,7 +171,18 @@
 				liveStreamStart = performance.now()
 				streamClient = new StreamClient(robotClient)
 				streamClient.on('track', handleTrack)
-				await streamClient.getStream(name)
+
+				// If a previous instance of this component kept its stream alive for
+				// PiP after the card closed, the resource is already subscribed, so a
+				// fresh AddStream request never gets a matching 'track' event and
+				// getStream() would hang until it times out. Reuse the live stream.
+				const existingStream = pip.getStream(name)
+				if (existingStream) {
+					setMediaStream(existingStream)
+				} else {
+					await streamClient.getStream(name)
+				}
+
 				resolutionOptions = await streamClient.getOptions(name)
 				selectedResolution = resolutionOptions[0]
 			} else {

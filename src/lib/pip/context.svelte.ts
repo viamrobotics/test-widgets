@@ -9,6 +9,9 @@ interface PipContext {
 	/** Register the media stream from the main camera view when its card is open. */
 	setStream(resourceName: string, stream: MediaStream | null): void
 
+	/** Look up a previously registered stream, e.g. one kept alive for PiP after its card closed. */
+	getStream(resourceName: string): MediaStream | undefined
+
 	error: Error | undefined
 
 	/** Whether the PictureInPicture is active */
@@ -47,6 +50,8 @@ export function providePip(): PipContext {
 		}
 		externalStreamVersion++
 	}
+
+	const getStream = (resourceName: string) => externalStreams.get(resourceName)
 
 	$effect(() => {
 		document.body.append(video)
@@ -114,6 +119,7 @@ export function providePip(): PipContext {
 	const context: PipContext = {
 		toggle,
 		setStream,
+		getStream,
 
 		get error() {
 			return error
