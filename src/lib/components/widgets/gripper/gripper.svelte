@@ -52,7 +52,7 @@
 					/>
 				</ApiSection>
 			</span>
-			<div class="flex shrink-0 flex-col divide-y">
+			<div class="flex flex-col divide-y">
 				<ApiSection
 					title="Stop"
 					api="rdk:component:gripper"
