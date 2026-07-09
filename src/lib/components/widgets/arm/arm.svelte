@@ -11,7 +11,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 
@@ -50,6 +49,10 @@
 	const moveToPosition = (position: Pose) => {
 		moveToPosMutation.mutate([position], {})
 	}
+
+	const jointLimitsDegrees = $derived(
+		kinematicsQuery.data ? getJointPositionLimits(kinematicsQuery.data as KinematicsJSON) : []
+	)
 </script>
 
 <ConnectionStatus {partID}>
@@ -74,17 +77,17 @@
 					title="MoveToJointPositions"
 					api="rdk:component:arm"
 				>
-					<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
-						{#if jointPositionsQuery.data && kinematicsQuery.data}
+					<Query query={jointPositionsQuery}>
+						{#if jointPositionsQuery.data}
 							<MoveToJointPositions
 								positions={jointPositionsQuery.data.values}
 								{moveToJointPositions}
 								lastError={moveToJointPosMutation.error}
-								jointLimitsDegrees={getJointPositionLimits(kinematicsQuery.data as KinematicsJSON)}
+								{jointLimitsDegrees}
 								isMoving={isMovingQuery.data ?? false}
 							/>
 						{/if}
-					</Queries>
+					</Query>
 				</ApiSection>
 				<ApiSection
 					title="MoveToPosition"

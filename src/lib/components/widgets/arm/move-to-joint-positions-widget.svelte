@@ -6,7 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Queries from '$lib/components/queries.svelte'
+	import Query from '$lib/components/query.svelte'
 
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
@@ -36,15 +36,19 @@
 	const moveToJointPositions = (jointPositionsList: number[]) => {
 		moveToJointPosMutation.mutate([jointPositionsList], {})
 	}
+
+	const jointLimitsDegrees = $derived(
+		kinematicsQuery.data ? getJointPositionLimits(kinematicsQuery.data as KinematicsJSON) : []
+	)
 </script>
 
-<Queries queries={[jointPositionsQuery, kinematicsQuery]}>
-	{#if jointPositionsQuery.data && kinematicsQuery.data}
+<Query query={jointPositionsQuery}>
+	{#if jointPositionsQuery.data}
 		<MoveToJointPositions
 			positions={jointPositionsQuery.data.values}
 			{moveToJointPositions}
 			lastError={moveToJointPosMutation.error}
-			jointLimitsDegrees={getJointPositionLimits(kinematicsQuery.data as KinematicsJSON)}
+			{jointLimitsDegrees}
 		/>
 	{/if}
-</Queries>
+</Query>
