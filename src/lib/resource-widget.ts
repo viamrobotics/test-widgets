@@ -83,7 +83,7 @@ export interface ResourceAPIWidget {
 	/** Human-readable menu label. e.g. `'MoveToJointPositions'` or `'Quick move'`. */
 	label: string
 	/** The self-contained widget(s) this entry renders, each with `{ partID, resourceName }`. */
-	components: ResourceWidget[]
+	widgets: ResourceWidget[]
 }
 
 const resourceWidgetRegistry = {
@@ -94,22 +94,22 @@ const resourceWidgetRegistry = {
 			{
 				id: 'move-to-joint-positions',
 				label: 'MoveToJointPositions',
-				components: [ArmMoveToJointPositionsWidget],
+				widgets: [ArmMoveToJointPositionsWidget],
 			},
-			{ id: 'move-to-position', label: 'MoveToPosition', components: [ArmMoveToPositionWidget] },
-			{ id: 'quick-move', label: 'Quick move', components: [ArmQuickMoveWidget] },
+			{ id: 'move-to-position', label: 'MoveToPosition', widgets: [ArmMoveToPositionWidget] },
+			{ id: 'quick-move', label: 'Quick move', widgets: [ArmQuickMoveWidget] },
 			{
 				id: 'get-joint-positions',
 				label: 'GetJointPositions',
-				components: [ArmGetJointPositionsWidget],
+				widgets: [ArmGetJointPositionsWidget],
 			},
-			{ id: 'is-moving', label: 'IsMoving', components: [ArmIsMovingWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [ArmIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.AudioInput]: {
 		widget: AudioInputWidget,
 		apis: [
-			{ id: 'get-properties', label: 'GetProperties', components: [AudioInputGetPropertiesWidget] },
+			{ id: 'get-properties', label: 'GetProperties', widgets: [AudioInputGetPropertiesWidget] },
 		],
 	},
 	[ResourceTriplets.AudioOutput]: {
@@ -118,19 +118,19 @@ const resourceWidgetRegistry = {
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
-				components: [AudioOutputGetPropertiesWidget],
+				widgets: [AudioOutputGetPropertiesWidget],
 			},
 		],
 	},
 	[ResourceTriplets.Base]: {
 		widget: BaseWidget,
 		apis: [
-			{ id: 'quick-move', label: 'Quick move', components: [BaseQuickMoveWidget] },
-			{ id: 'move-straight', label: 'MoveStraight', components: [BaseMoveStraightWidget] },
-			{ id: 'spin', label: 'Spin', components: [BaseSpinWidget] },
-			{ id: 'set-power', label: 'SetPower', components: [BaseSetPowerWidget] },
-			{ id: 'set-velocity', label: 'SetVelocity', components: [BaseSetVelocityWidget] },
-			{ id: 'is-moving', label: 'IsMoving', components: [BaseIsMovingWidget] },
+			{ id: 'quick-move', label: 'Quick move', widgets: [BaseQuickMoveWidget] },
+			{ id: 'move-straight', label: 'MoveStraight', widgets: [BaseMoveStraightWidget] },
+			{ id: 'spin', label: 'Spin', widgets: [BaseSpinWidget] },
+			{ id: 'set-power', label: 'SetPower', widgets: [BaseSetPowerWidget] },
+			{ id: 'set-velocity', label: 'SetVelocity', widgets: [BaseSetVelocityWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [BaseIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.Board]: { widget: BoardWidget, apis: [] },
@@ -138,74 +138,74 @@ const resourceWidgetRegistry = {
 	[ResourceTriplets.Camera]: { widget: CameraWidget, apis: [] },
 	[ResourceTriplets.Encoder]: {
 		widget: EncoderWidget,
-		apis: [{ id: 'get-position', label: 'GetPosition', components: [EncoderGetPositionWidget] }],
+		apis: [{ id: 'get-position', label: 'GetPosition', widgets: [EncoderGetPositionWidget] }],
 	},
 	[ResourceTriplets.Gantry]: {
 		widget: GantryWidget,
 		apis: [
-			{ id: 'home', label: 'Home', components: [GantryHomeWidget] },
-			{ id: 'move-to-position', label: 'MoveToPosition', components: [GantryMoveToPositionWidget] },
-			{ id: 'quick-move', label: 'Quick move', components: [GantryQuickMoveWidget] },
-			{ id: 'get-position', label: 'GetPosition', components: [GantryGetPositionWidget] },
-			{ id: 'is-moving', label: 'IsMoving', components: [GantryIsMovingWidget] },
+			{ id: 'home', label: 'Home', widgets: [GantryHomeWidget] },
+			{ id: 'move-to-position', label: 'MoveToPosition', widgets: [GantryMoveToPositionWidget] },
+			{ id: 'quick-move', label: 'Quick move', widgets: [GantryQuickMoveWidget] },
+			{ id: 'get-position', label: 'GetPosition', widgets: [GantryGetPositionWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [GantryIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.Gripper]: {
 		widget: GripperWidget,
 		apis: [
-			{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] },
+			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] },
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
-				components: [GripperIsHoldingSomethingWidget],
+				widgets: [GripperIsHoldingSomethingWidget],
 			},
-			{ id: 'is-moving', label: 'IsMoving', components: [GripperIsMovingWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.InputController]: { widget: InputControllerWidget, apis: [] },
 	[ResourceTriplets.Motor]: {
 		widget: MotorWidget,
 		apis: [
-			{ id: 'quick-move', label: 'Quick move', components: [MotorQuickMoveWidget] },
-			{ id: 'set-power', label: 'SetPower', components: [MotorSetPowerWidget] },
-			{ id: 'set-rpm', label: 'SetRPM', components: [MotorSetRPMWidget] },
-			{ id: 'go-for', label: 'GoFor', components: [MotorGoForWidget] },
-			{ id: 'go-to', label: 'GoTo', components: [MotorGoToWidget] },
-			{ id: 'is-moving', label: 'IsMoving', components: [MotorIsMovingWidget] },
+			{ id: 'quick-move', label: 'Quick move', widgets: [MotorQuickMoveWidget] },
+			{ id: 'set-power', label: 'SetPower', widgets: [MotorSetPowerWidget] },
+			{ id: 'set-rpm', label: 'SetRPM', widgets: [MotorSetRPMWidget] },
+			{ id: 'go-for', label: 'GoFor', widgets: [MotorGoForWidget] },
+			{ id: 'go-to', label: 'GoTo', widgets: [MotorGoToWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [MotorIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.MovementSensor]: {
 		widget: MovementSensorWidget,
 		apis: [
-			{ id: 'get-position', label: 'GetPosition', components: [MovementSensorGetPositionWidget] },
+			{ id: 'get-position', label: 'GetPosition', widgets: [MovementSensorGetPositionWidget] },
 			{
 				id: 'get-orientation',
 				label: 'GetOrientation',
-				components: [MovementSensorGetOrientationWidget],
+				widgets: [MovementSensorGetOrientationWidget],
 			},
 			{
 				id: 'get-compass-heading',
 				label: 'GetCompassHeading',
-				components: [MovementSensorGetCompassHeadingWidget],
+				widgets: [MovementSensorGetCompassHeadingWidget],
 			},
-			{ id: 'get-accuracy', label: 'GetAccuracy', components: [MovementSensorGetAccuracyWidget] },
+			{ id: 'get-accuracy', label: 'GetAccuracy', widgets: [MovementSensorGetAccuracyWidget] },
 		],
 	},
 	[ResourceTriplets.PowerSensor]: {
 		widget: PowerSensorWidget,
 		apis: [
-			{ id: 'get-voltage', label: 'GetVoltage', components: [PowerSensorGetVoltageWidget] },
-			{ id: 'get-current', label: 'GetCurrent', components: [PowerSensorGetCurrentWidget] },
-			{ id: 'get-power', label: 'GetPower', components: [PowerSensorGetPowerWidget] },
+			{ id: 'get-voltage', label: 'GetVoltage', widgets: [PowerSensorGetVoltageWidget] },
+			{ id: 'get-current', label: 'GetCurrent', widgets: [PowerSensorGetCurrentWidget] },
+			{ id: 'get-power', label: 'GetPower', widgets: [PowerSensorGetPowerWidget] },
 		],
 	},
 	[ResourceTriplets.Sensor]: { widget: SensorWidget, apis: [] },
 	[ResourceTriplets.Servo]: {
 		widget: ServoWidget,
 		apis: [
-			{ id: 'move', label: 'Move', components: [ServoMoveWidget] },
-			{ id: 'quick-move', label: 'Quick move', components: [ServoQuickMoveWidget] },
-			{ id: 'is-moving', label: 'IsMoving', components: [ServoIsMovingWidget] },
+			{ id: 'move', label: 'Move', widgets: [ServoMoveWidget] },
+			{ id: 'quick-move', label: 'Quick move', widgets: [ServoQuickMoveWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [ServoIsMovingWidget] },
 		],
 	},
 	[ResourceTriplets.Switch]: { widget: SwitchWidget, apis: [] },
@@ -216,7 +216,7 @@ const resourceWidgetRegistry = {
 	[ResourceTriplets.Navigation]: { widget: NavigationServiceWidget, apis: [] },
 	[ResourceTriplets.Slam]: {
 		widget: SlamWidget,
-		apis: [{ id: 'get-position', label: 'GetPosition', components: [SlamGetPositionWidget] }],
+		apis: [{ id: 'get-position', label: 'GetPosition', widgets: [SlamGetPositionWidget] }],
 	},
 	[ResourceTriplets.Vision]: { widget: VisionServiceWidget, apis: [] },
 } satisfies Partial<Record<ResourceTriplet, { widget: ResourceWidget; apis: ResourceAPIWidget[] }>>
@@ -225,14 +225,14 @@ type ResourceWidgetRegistry = typeof resourceWidgetRegistry
 
 /**
  * Returns a resource's individual API widgets. Each entry carries a stable `id`, a
- * display `label`, and the `components` to render with `{ partID, resourceName }`.
+ * display `label`, and the `widgets` to render with `{ partID, resourceName }`.
  *
  * Returns `[]` for a resource with a card but no standalone API widgets, and for
  * unrecognized resources.
  *
  * @example
  * apiWidgetsForResource(gripperResourceName)
- * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
 export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] => {
 	const api = getResourceAPI(resource)
@@ -248,7 +248,7 @@ export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget
  *
  * @example
  * availableAPIWidgets()[ResourceTriplets.Gripper]
- * // [{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
 export const availableAPIWidgets = (): Record<
 	keyof ResourceWidgetRegistry,

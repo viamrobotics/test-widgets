@@ -183,10 +183,10 @@
 						}}
 					>
 						<div class="flex flex-col gap-4 p-4">
-							{#each apiWidgets as { id: widgetId, components, label } (widgetId)}
+							{#each apiWidgets as { id: widgetId, widgets, label } (widgetId)}
 								<div class="flex flex-col gap-1">
 									<span class="font-bold">{label}</span>
-									{#each components as Widget, index (index)}
+									{#each widgets as Widget, index (index)}
 										<Widget
 											{partID}
 											{resourceName}
