@@ -22,13 +22,13 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 describe('availableAPIWidgets', () => {
 	it('maps each resource with a card to its API widgets', () => {
 		expect(availableAPIWidgets()['rdk:component:gripper']).toEqual([
-			{ id: 'open-grab', label: 'Open / Grab', components: [GripperOpenWidget, GripperGrabWidget] },
+			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] },
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
-				components: [GripperIsHoldingSomethingWidget],
+				widgets: [GripperIsHoldingSomethingWidget],
 			},
-			{ id: 'is-moving', label: 'IsMoving', components: [GripperIsMovingWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
 		])
 	})
 
