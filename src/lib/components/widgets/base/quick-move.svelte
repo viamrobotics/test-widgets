@@ -90,8 +90,11 @@
 		}
 	}
 
+	// stopImmediatePropagation (not stopPropagation) in the capture phase so movement
+	// keys never reach sibling window keydown listeners on the same target — e.g. the
+	// config builder's "A" add-resource hotkey. stopPropagation leaves siblings running.
 	const onKeydown = (event: KeyboardEvent) => {
-		if (!isKeyboardEnabled || event.repeat) {
+		if (!isKeyboardEnabled) {
 			return
 		}
 
@@ -100,8 +103,12 @@
 			return
 		}
 
-		event.stopPropagation()
+		event.stopImmediatePropagation()
 		event.preventDefault()
+
+		if (event.repeat) {
+			return
+		}
 
 		pressedKeys[key] = true
 		onKeyChange()
@@ -117,7 +124,7 @@
 			return
 		}
 
-		event.stopPropagation()
+		event.stopImmediatePropagation()
 		event.preventDefault()
 
 		pressedKeys[key] = false
@@ -132,8 +139,8 @@
 </script>
 
 <svelte:window
-	onkeydown={onKeydown}
-	onkeyup={onKeyup}
+	onkeydowncapture={onKeydown}
+	onkeyupcapture={onKeyup}
 />
 
 <div class="flex grow flex-col gap-6">

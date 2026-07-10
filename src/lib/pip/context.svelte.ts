@@ -14,6 +14,9 @@ interface PipContext {
 
 	setRate(rate: 'live' | number | false): void
 
+	/** Register the media stream from the main camera view when its card is open. */
+	setStream(resourceName: string, stream: MediaStream | null): void
+
 	error: Error | undefined
 
 	/** Whether the PictureInPicture is active */
@@ -38,16 +41,28 @@ export function providePip(partID: () => string): PipContext {
 
 	const img = document.createElement('img')
 
+	const externalStreams = new Map<string, MediaStream>()
+	let externalStreamVersion = $state(0)
+
 	let error = $state<Error>()
 	let readyState = $state<'inactive' | 'loading' | 'active'>('inactive')
 	let rate = $state<'live' | number | false>('live')
 	let activeName = $state<string>()
 
+	const externalStream = $derived.by(() => {
+		void externalStreamVersion
+		return activeName ? externalStreams.get(activeName) : undefined
+	})
+
+	const needsOwnedStream = $derived(activeName !== undefined && !externalStream)
+
 	const cameraClient = $derived(
-		activeName ? createResourceClient(CameraClient, partID, () => activeName ?? '') : undefined
+		needsOwnedStream && activeName
+			? createResourceClient(CameraClient, partID, () => activeName ?? '')
+			: undefined
 	)
 	const streamClient = $derived(
-		activeName ? createStreamClient(partID, () => activeName ?? '') : undefined
+		needsOwnedStream && activeName ? createStreamClient(partID, () => activeName ?? '') : undefined
 	)
 	const imageQuery = $derived(
 		cameraClient?.current
@@ -59,19 +74,41 @@ export function providePip(partID: () => string): PipContext {
 			: undefined
 	)
 
-	const mediaStream = $derived<MediaStream | null>(
-		(rate === 'live' ? streamClient?.mediaStream : canvasStream) ?? null
+	const ownedMediaStream = $derived<MediaStream | null>(
+		needsOwnedStream ? ((rate === 'live' ? streamClient?.mediaStream : canvasStream) ?? null) : null
 	)
+
+	const playbackStream = $derived(externalStream ?? ownedMediaStream)
+
+	const setStream = (resourceName: string, stream: MediaStream | null) => {
+		if (stream) {
+			externalStreams.set(resourceName, stream)
+		} else {
+			externalStreams.delete(resourceName)
+		}
+		externalStreamVersion++
+	}
 
 	$effect(() => {
 		document.body.append(video)
+
+		const handleLeave = () => {
+			readyState = 'inactive'
+			activeName = undefined
+			error = undefined
+		}
+
+		video.addEventListener('leavepictureinpicture', handleLeave)
+
 		return () => {
+			video.removeEventListener('leavepictureinpicture', handleLeave)
 			video.remove()
 		}
 	})
 
 	$effect(() => {
-		video.srcObject = mediaStream
+		video.srcObject = playbackStream
+
 		return () => {
 			video.srcObject = null
 		}
@@ -80,7 +117,7 @@ export function providePip(partID: () => string): PipContext {
 	$effect(() => {
 		const currentRate = rate
 
-		if (currentRate === 'live') return
+		if (!needsOwnedStream || currentRate === 'live') return
 
 		const image = imageQuery?.data?.images[0]
 
@@ -108,14 +145,11 @@ export function providePip(partID: () => string): PipContext {
 		}
 	})
 
-	const toggle = async () => {
-		if (
-			activeName === undefined &&
-			readyState === 'active' &&
-			document.pictureInPictureElement === video
-		) {
+	const toggle = async (resourceName: string) => {
+		if (activeName === resourceName && document.pictureInPictureElement === video) {
 			try {
 				await document.exitPictureInPicture()
+				activeName = undefined
 				readyState = 'inactive'
 				error = undefined
 			} catch (nextError) {
@@ -124,31 +158,34 @@ export function providePip(partID: () => string): PipContext {
 			return
 		}
 
+		activeName = resourceName
 		readyState = 'loading'
 
-		// Wait for the new stream's metadata to load before requesting PiP,
-		// otherwise the browser throws InvalidStateError.
-		if (video.readyState < 1 /* HAVE_METADATA */) {
-			await new Promise<void>((resolve) => {
-				video!.addEventListener('loadedmetadata', () => resolve(), { once: true })
-			})
-		}
-
 		try {
+			const stream = ownedMediaStream
+			video.srcObject = stream
+
+			// Wait for the stream's metadata to load before requesting PiP,
+			// otherwise the browser throws InvalidStateError.
+			if (video.readyState < 1 /* HAVE_METADATA */) {
+				await new Promise<void>((resolve) => {
+					video.addEventListener('loadedmetadata', () => resolve(), { once: true })
+				})
+			}
+
 			await video.requestPictureInPicture()
 			readyState = 'active'
 			error = undefined
 		} catch (nextError) {
+			readyState = 'inactive'
+			activeName = undefined
 			error = nextError as Error
 		}
 	}
 
 	const context: PipContext = {
-		async toggle(resourceName) {
-			activeName = activeName === resourceName ? undefined : resourceName
-
-			await toggle()
-		},
+		toggle,
+		setStream,
 
 		setRate(newRate) {
 			rate = newRate

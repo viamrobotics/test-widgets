@@ -14,6 +14,7 @@
 	import Progress from '$lib/components/progress.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
+	import { usePip } from '$lib/pip/context.svelte'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
@@ -52,7 +53,13 @@
 	let vfcID = 0
 	let liveStreamStart: DOMHighResTimeStamp | undefined
 
+	const pip = usePip()
+
 	const setMediaStream = (mediaStream: MediaStream | null) => {
+		if (mediaStream) {
+			pip.setStream(resourceName, mediaStream)
+		}
+
 		if (videoElement) {
 			// TODO(2025-01-31): Remove these function guards.
 			// Sentry has some error traces where "cancelVideoFrameCallback is not a function".
@@ -190,6 +197,7 @@
 		return () =>
 			untrack(() => {
 				disableStream().then(() => {
+					pip.setStream(resourceName, null)
 					setMediaStream(null)
 				})
 			})
@@ -301,7 +309,6 @@
 	}
 
 	const fps = useMeasureFps()
-
 	$effect(() => {
 		let id: number | undefined
 

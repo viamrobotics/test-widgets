@@ -76,13 +76,36 @@
 		oZ: 'OZ',
 		theta: 'θ',
 	} as const
+	const positionUnits = $derived({
+		x: 'mm',
+		y: 'mm',
+		z: 'mm',
+		oX: '',
+		oY: '',
+		oZ: '',
+		theta: useRadians ? 'rad' : 'deg',
+	} as const satisfies Record<keyof Pose, string>)
+
 	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][]
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
 	<!-- Controls Header -->
 	<div class="flex items-center justify-between">
-		<span class="text-sm">Pose Values</span>
+		<span class="flex flex-row items-center gap-1 text-sm">
+			Pose Values
+			<Tooltip>
+				<Icon
+					name="information-outline"
+					cx="text-gray-6"
+				/>
+
+				<span slot="description">
+					Pose is with respect to the arm origin and does not take into account the motion service
+					or frame system.
+				</span>
+			</Tooltip>
+		</span>
 		<div class="flex gap-1">
 			<AngleUnitToggle
 				{useRadians}
@@ -99,7 +122,7 @@
 		<thead>
 			<tr>
 				<th>Pose</th>
-				<th>Value ({useRadians ? 'radians' : 'degrees'})</th>
+				<th>Value</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -107,7 +130,12 @@
 				{@const [key, label] = labelList}
 				{@const value = Number.parseFloat(formatNumeric(displayPosition[key]))}
 				<tr>
-					<th>{label}</th>
+					<th>
+						<span class="relative inline-flex justify-center">
+							{label}
+							<abbr class="text-subtle-2 absolute left-full ml-1">{positionUnits[key]}</abbr>
+						</span>
+					</th>
 					<th>
 						<NumericInput
 							cx="max-w-[76px]"

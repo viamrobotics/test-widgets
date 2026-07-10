@@ -147,16 +147,15 @@
 						</Select>
 					</Label>
 				</div>
-				<Label
-					cx="w-fit"
-					position="top"
-				>
-					Is remote?
-					<Switch
-						slot="input"
-						bind:on={isRemote}
-					/>
-				</Label>
+				<div class="w-fit">
+					<Label position="top">
+						Is remote?
+						<Switch
+							slot="input"
+							bind:on={isRemote}
+						/>
+					</Label>
+				</div>
 			</div>
 
 			<h6 class="text-subtle-1 font-semibold">Detections/Classifications</h6>
