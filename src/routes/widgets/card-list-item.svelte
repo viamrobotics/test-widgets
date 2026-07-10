@@ -37,7 +37,9 @@
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
-	import { type NamedResourceStatus, ResourceStatusText, widgetForResource } from '$lib/resource'
+	import { type NamedResourceStatus, ResourceStatusText } from '$lib/resource'
+	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { apiWidgetsForResource, widgetForResource } from '$lib/resource-widget'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'
@@ -68,24 +70,34 @@
 		)
 	)
 
-	const name = $derived(resource.name.name)
+	const isApiWidgetsCollapsed = $derived(
+		new PersistedState(
+			`control/${partID}/${getResourceKey(resource.name)}/test/apiWidgets/collapse`,
+			true
+		)
+	)
+
+	const resourceName = $derived(resource.name.name)
 	const namespace = $derived(resource.name.namespace)
 	const type = $derived(resource.name.type)
 	const subtype = $derived(resource.name.subtype)
 	const ResourceTestView = $derived(widgetForResource(resource.name))
+	const apiWidgets = $derived(apiWidgetsForResource(resource.name))
 	const resourceAPI = $derived(getResourceAPI(resource.name))
-	const id = $derived(encodeURIComponent(name))
+	const id = $derived(encodeURIComponent(resourceName))
 	// Exclude the # character
 	const hash = $derived(urlHash.replace(/^#/iu, ''))
 
 	registerCollapseAllCallback(() => {
 		isTestCollapsed.current = true
 		isDoCommandCollapsed.current = true
+		isApiWidgetsCollapsed.current = true
 	})
 
 	registerExpandAllCallback(() => {
 		isTestCollapsed.current = false
 		isDoCommandCollapsed.current = false
+		isApiWidgetsCollapsed.current = false
 	})
 
 	let isActive = $state(false)
@@ -115,13 +127,13 @@
 		'-mx-0.5 w-full scroll-m-4 border-2 transition duration-300 ease-in-out',
 		isActive ? 'border-[#CADAF7]' : 'border-transparent',
 	]}
-	aria-label={name}
+	aria-label={resourceName}
 	use:scrollIntoView
 >
 	<div class="border-light border">
 		<header class="border-light relative flex items-center gap-3 border-b px-3 py-2.5">
 			<ResourceIcon {type} />
-			<span class="text-sm font-semibold">{name}</span>
+			<span class="text-sm font-semibold">{resourceName}</span>
 			<Breadcrumbs crumbs={[namespace, type, subtype]} />
 			<div class="ml-auto">
 				<ResourceStatus {resource} />
@@ -158,11 +170,34 @@
 					>
 						<ResourceTestView
 							{partID}
-							resourceName={name}
+							{resourceName}
 						/>
 					</SectionGroup>
 				{/if}
-				{#if resourceAPI !== 'rdk:service:mlmodel'}
+				{#if apiWidgets.length > 0}
+					<SectionGroup
+						title="API widgets"
+						isCollapsed={isApiWidgetsCollapsed.current ?? true}
+						toggleIsCollapsed={() => {
+							isApiWidgetsCollapsed.current = !isApiWidgetsCollapsed.current
+						}}
+					>
+						<div class="flex flex-col gap-4 p-4">
+							{#each apiWidgets as { id: widgetId, widgets, label } (widgetId)}
+								<div class="flex flex-col gap-1">
+									<span class="font-bold">{label}</span>
+									{#each widgets as Widget, index (index)}
+										<Widget
+											{partID}
+											{resourceName}
+										/>
+									{/each}
+								</div>
+							{/each}
+						</div>
+					</SectionGroup>
+				{/if}
+				{#if resourceAPI !== ResourceTriplets.MLModel}
 					<SectionGroup
 						title="Do Command"
 						isCollapsed={isDoCommandCollapsed.current}

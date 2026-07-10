@@ -39,7 +39,7 @@
 	aria-labelledby={headingID}
 >
 	<div class={twMerge('flex grow flex-row flex-wrap gap-2', className)}>
-		<div class="flex max-w-[200px] grow flex-col gap-0.5 pr-4">
+		<div class="flex max-w-50 grow flex-col gap-0.5 pr-4">
 			{#if api}
 				<SectionTitle
 					{title}

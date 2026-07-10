@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
-	import { EncoderClient, EncoderPositionType, type EncoderProperties } from '@viamrobotics/sdk'
+	import { EncoderClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
@@ -14,6 +14,7 @@
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
+	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'
 
 	interface Props {
@@ -35,24 +36,6 @@
 		'encoder-view'
 	)
 
-	const getPositionArgs = (properties: EncoderProperties | undefined): [EncoderPositionType] => {
-		if (!properties) {
-			return [EncoderPositionType.UNSPECIFIED]
-		}
-
-		const { angleDegreesSupported, ticksCountSupported } = properties
-
-		if (angleDegreesSupported) {
-			return [EncoderPositionType.ANGLE_DEGREES]
-		}
-
-		if (ticksCountSupported) {
-			return [EncoderPositionType.TICKS_COUNT]
-		}
-
-		return [EncoderPositionType.UNSPECIFIED]
-	}
-
 	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
 		refetchInterval: refetchInterval.current,
 	}))
@@ -60,7 +43,7 @@
 	const positionQuery = createResourceQuery(
 		client,
 		'getPosition',
-		() => getPositionArgs(propertiesQuery.data),
+		() => getEncoderPositionArgs(propertiesQuery.data),
 		() => ({
 			enabled: propertiesQuery.data !== undefined,
 			refetchInterval: refetchInterval.current,
