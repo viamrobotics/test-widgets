@@ -1,5 +1,22 @@
 # @viamrobotics/test-widgets
 
+## 0.8.0
+
+### Minor Changes
+
+- bebbe29: Deprecate `hasWidget` for `isKnownResource`
+- 97c3e3f: Add `widgetForResource` and `apiWidgetsForResource` lookups and export granular widgets.
+- 3d9e3c8: Display units of measurement in arm and motor test cards for clarity
+
+### Patch Changes
+
+- 6e1a1ea: Add warning tooltip to move-to-position arm widget about motion service and frame system
+- 9260b41: Fix arm joint position sliders erroring for URDF/XML kinematics files
+- c41481b: APP-17127: scope base quick-move WASD keys to capture phase
+- ae37ee1: Fix "Is remote?" toggle on the vision service test card so its click target no longer spans the full card width
+- eb52cdb: Fix content overflow in motor, gripper, and is-moving test cards by removing fixed-height query content constraints
+- eea1966: fix: re-use camera stream when available for pip
+
 ## 0.7.0
 
 ### Minor Changes
