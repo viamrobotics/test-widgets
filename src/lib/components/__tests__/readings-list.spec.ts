@@ -34,6 +34,36 @@ describe('<ReadingsList>', () => {
 		expect(nestedObj).toBeInTheDocument()
 	})
 
+	it('shows well-known units for standard reading keys', () => {
+		const data = { distance: 1.5 }
+
+		render(Subject, { data })
+		expect(screen.getByText('m')).toBeInTheDocument()
+	})
+
+	it('shows caller-provided units via the units prop', () => {
+		const data = { temperature: 22.5 }
+
+		render(Subject, { data, units: { temperature: '°C' } })
+		expect(screen.getByText('°C')).toBeInTheDocument()
+	})
+
+	it('prefers caller-provided units over well-known units', () => {
+		const data = { distance: 100 }
+
+		render(Subject, { data, units: { distance: 'cm' } })
+		expect(screen.getByText('cm')).toBeInTheDocument()
+		expect(screen.queryByText('m')).not.toBeInTheDocument()
+	})
+
+	it('does not show units for unknown reading keys', () => {
+		const data = { gizmos: 8 }
+
+		const { container } = render(Subject, { data })
+		const dd = container.querySelector('dd')
+		expect(dd?.textContent?.trim()).toBe('8')
+	})
+
 	it('renders nested image', () => {
 		const data = {
 			image:

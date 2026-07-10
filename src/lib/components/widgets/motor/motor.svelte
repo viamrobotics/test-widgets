@@ -171,6 +171,7 @@
 								<Query query={positionQuery}>
 									<p class="font-roboto-mono text-default text-xs">
 										{formatNumeric(positionQuery.data, 4)}
+										<span class="text-subtle-2">rev</span>
 									</p>
 								</Query>
 							</ApiSection>

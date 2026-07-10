@@ -42,7 +42,7 @@
 	</Label>
 	<Label cx="max-w-[96px] grow gap-1 text-xs">
 		<p class="flex flex-row gap-1 whitespace-nowrap">
-			Target position
+			Target position (rev)
 			<Tooltip>
 				<Icon
 					name="information-outline"

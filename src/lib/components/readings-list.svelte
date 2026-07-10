@@ -4,11 +4,20 @@
 
 	import { sortObjectKeys } from '$lib/sort'
 
-	interface Props {
-		data: Record<string, unknown>
+	/** Well-known sensor reading keys with standard units in the Viam API. */
+	const WELL_KNOWN_UNITS: Record<string, string> = {
+		distance: 'm',
 	}
 
-	const { data }: Props = $props()
+	interface Props {
+		data: Record<string, unknown>
+		/** Optional map of reading keys to unit labels (e.g. { distance: 'm' }). Falls back to well-known units. */
+		units?: Record<string, string>
+	}
+
+	const { data, units }: Props = $props()
+
+	const resolveUnit = (key: string): string | undefined => units?.[key] ?? WELL_KNOWN_UNITS[key]
 
 	const sortedData = $derived(Object.entries(sortObjectKeys(data)))
 
@@ -63,7 +72,7 @@
 								alt={key}
 							/>
 						{:else}
-							{truncate(valueString, { length: 300 })}
+							{truncate(valueString, { length: 300 })}{#if resolveUnit(key)}&nbsp;<span class="text-subtle-2">{resolveUnit(key)}</span>{/if}
 						{/if}
 					</dd>
 				</div>
