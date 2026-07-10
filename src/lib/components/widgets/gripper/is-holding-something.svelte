@@ -34,10 +34,7 @@
 	bottomText="Updates automatically"
 	class="grow"
 >
-	<Query
-		{query}
-		contentCx="h-5"
-	>
+	<Query {query}>
 		<div class="flex items-center gap-2">
 			{#if query.data !== undefined}
 				{#if query.data}

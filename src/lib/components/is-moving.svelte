@@ -56,10 +56,7 @@
 	bottomText="Updates automatically"
 	class="grow"
 >
-	<Query
-		{query}
-		contentCx="h-5"
-	>
+	<Query {query}>
 		<StatusPill isActive={query.data ?? false} />
 	</Query>
 

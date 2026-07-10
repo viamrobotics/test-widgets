@@ -148,10 +148,7 @@
   Stepper motors will report ”true” if they are being powered while holding
   a position and while they are turning."
 						>
-							<Query
-								contentCx="h-4"
-								query={isPoweredQuery}
-							>
+							<Query query={isPoweredQuery}>
 								{#if isPoweredQuery.data !== undefined}
 									{@const [isPowered, powerPct] = isPoweredQuery.data}
 									<span class="font-roboto-mono flex flex-row gap-1 text-xs">
@@ -171,10 +168,7 @@
 								class="gap-3 p-0"
 								tooltip="Reports the position of an encoded motor in revolutions from zero/home."
 							>
-								<Query
-									contentCx=""
-									query={positionQuery}
-								>
+								<Query query={positionQuery}>
 									<p class="font-roboto-mono text-default text-xs">
 										{formatNumeric(positionQuery.data, 4)}
 									</p>
