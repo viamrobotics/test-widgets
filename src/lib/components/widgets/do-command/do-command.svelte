@@ -19,9 +19,22 @@
 		resource: ResourceName
 		/** Rendered above the input/output editor row. */
 		header?: Snippet<[{ input: string; setInput: (value: string) => void }]>
+		/**
+		 * Controlled editor value. When set, takes precedence over the widget's
+		 * persisted local state — pair with `onInputChange` to keep parent state in sync.
+		 */
+		input?: string
+		/** Called when the editor value changes (typing or `setInput`). */
+		onInputChange?: (value: string) => void
 	}
 
-	const { partID, resource, header }: Props = $props()
+	const {
+		partID,
+		resource,
+		header,
+		input: controlledInput,
+		onInputChange,
+	}: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -37,19 +50,34 @@
 
 	const uid = $props.id()
 
-	const input = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
+	const persisted = $derived(
+		new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}')
+	)
+
+	const isControlled = $derived(controlledInput !== undefined)
+
+	const displayInput = $derived(
+		isControlled ? (controlledInput ?? '{\n}') : (persisted.current ?? '{\n}')
+	)
 
 	let output = $state('')
 
+	const updateInput = (value: string) => {
+		if (!isControlled) {
+			persisted.current = value
+		}
+		onInputChange?.(value)
+	}
+
 	const setInput = (value: string) => {
-		input.current = value
+		updateInput(value)
 	}
 
 	const execute = async () => {
 		try {
 			lastErr = null
 			output = ''
-			const parsedInput = Struct.fromJsonString(input.current ?? '{}')
+			const parsedInput = Struct.fromJsonString(displayInput ?? '{}')
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
 			lastErr = null
@@ -62,7 +90,7 @@
 {#if isSupported}
 	{#if header}
 		<div class="border-b">
-			{@render header({ input: input.current ?? '{}', setInput })}
+			{@render header({ input: displayInput ?? '{}', setInput })}
 		</div>
 	{/if}
 	<div class="flex flex-row items-center justify-between">
@@ -71,9 +99,9 @@
 			<CodeEditor
 				label="input"
 				language="json"
-				value={input.current ?? '{}'}
+				value={displayInput ?? '{}'}
 				onChange={(nextInput: string) => {
-					input.current = nextInput
+					updateInput(nextInput)
 				}}
 				class="h-56 overflow-y-auto"
 				errorMessageID={lastErr ? uid : undefined}
