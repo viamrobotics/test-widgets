@@ -14,25 +14,21 @@
 	import ErrorDisplay from '../../error.svelte'
 	import { createDoCommandClient } from './create-do-command-client.svelte'
 
-	interface ControlledInput {
-		value: string
-		onChange: (value: string) => void
-	}
-
 	interface Props {
 		partID: string
 		resource: ResourceName
 		/** Rendered above the input/output editor row. */
 		header?: Snippet<[{ input: string; setInput: (value: string) => void }]>
 		/**
-		 * Optional controlled editor binding. When set, takes precedence over the
-		 * widget's persisted local state. Both `value` and `onChange` are required
-		 * so the editor cannot freeze.
+		 * Optional bindable editor value. Use `bind:input` (including function
+		 * bindings) to control it from a parent. When unbound, falls back to the
+		 * widget's persisted local state — assignments still update locally so the
+		 * editor cannot freeze.
 		 */
-		controlledInput?: ControlledInput
+		input?: string
 	}
 
-	const { partID, resource, header, controlledInput }: Props = $props()
+	let { partID, resource, header, input = $bindable() }: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -50,19 +46,13 @@
 
 	const persisted = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
 
-	const isControlled = $derived(controlledInput !== undefined)
-
-	const displayInput = $derived(
-		controlledInput !== undefined ? controlledInput.value : (persisted.current ?? '{\n}')
-	)
+	const displayInput = $derived(input ?? persisted.current ?? '{\n}')
 
 	let output = $state('')
 
 	const updateInput = (value: string) => {
-		if (!isControlled) {
-			persisted.current = value
-		}
-		controlledInput?.onChange(value)
+		input = value
+		persisted.current = value
 	}
 
 	const setInput = (value: string) => {
