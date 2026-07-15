@@ -34,13 +34,6 @@ describe('<ReadingsList>', () => {
 		expect(nestedObj).toBeInTheDocument()
 	})
 
-	it('shows well-known units for standard reading keys', () => {
-		const data = { distance: 1.5 }
-
-		render(Subject, { data })
-		expect(screen.getByText('m')).toBeInTheDocument()
-	})
-
 	it('shows caller-provided units via the units prop', () => {
 		const data = { temperature: 22.5 }
 
@@ -48,12 +41,11 @@ describe('<ReadingsList>', () => {
 		expect(screen.getByText('°C')).toBeInTheDocument()
 	})
 
-	it('prefers caller-provided units over well-known units', () => {
+	it('shows caller-provided units for a key', () => {
 		const data = { distance: 100 }
 
 		render(Subject, { data, units: { distance: 'cm' } })
 		expect(screen.getByText('cm')).toBeInTheDocument()
-		expect(screen.queryByText('m')).not.toBeInTheDocument()
 	})
 
 	it('does not show units for unknown reading keys', () => {
