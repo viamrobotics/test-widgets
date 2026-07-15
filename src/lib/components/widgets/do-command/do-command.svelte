@@ -69,7 +69,7 @@
 		try {
 			lastErr = null
 			output = ''
-			const parsedInput = Struct.fromJsonString(displayInput ?? '{}')
+			const parsedInput = Struct.fromJsonString(displayInput)
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
 			lastErr = null
@@ -82,7 +82,7 @@
 {#if isSupported}
 	{#if header}
 		<div class="border-b">
-			{@render header({ input: displayInput ?? '{}', setInput })}
+			{@render header({ input: displayInput, setInput })}
 		</div>
 	{/if}
 	<div class="flex flex-row items-center justify-between">
@@ -91,7 +91,7 @@
 			<CodeEditor
 				label="input"
 				language="json"
-				value={displayInput ?? '{}'}
+				value={displayInput}
 				onChange={(nextInput: string) => {
 					updateInput(nextInput)
 				}}
