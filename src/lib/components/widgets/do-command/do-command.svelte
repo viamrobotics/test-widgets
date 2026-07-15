@@ -14,21 +14,25 @@
 	import ErrorDisplay from '../../error.svelte'
 	import { createDoCommandClient } from './create-do-command-client.svelte'
 
+	interface ControlledInput {
+		value: string
+		onChange: (value: string) => void
+	}
+
 	interface Props {
 		partID: string
 		resource: ResourceName
 		/** Rendered above the input/output editor row. */
 		header?: Snippet<[{ input: string; setInput: (value: string) => void }]>
 		/**
-		 * Controlled editor value. When set, takes precedence over the widget's
-		 * persisted local state — pair with `onInputChange` to keep parent state in sync.
+		 * Optional controlled editor binding. When set, takes precedence over the
+		 * widget's persisted local state. Both `value` and `onChange` are required
+		 * so the editor cannot freeze.
 		 */
-		input?: string
-		/** Called when the editor value changes (typing or `setInput`). */
-		onInputChange?: (value: string) => void
+		controlledInput?: ControlledInput
 	}
 
-	const { partID, resource, header, input: controlledInput, onInputChange }: Props = $props()
+	const { partID, resource, header, controlledInput }: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -49,7 +53,7 @@
 	const isControlled = $derived(controlledInput !== undefined)
 
 	const displayInput = $derived(
-		isControlled ? (controlledInput ?? '{\n}') : (persisted.current ?? '{\n}')
+		controlledInput !== undefined ? controlledInput.value : (persisted.current ?? '{\n}')
 	)
 
 	let output = $state('')
@@ -58,7 +62,7 @@
 		if (!isControlled) {
 			persisted.current = value
 		}
-		onInputChange?.(value)
+		controlledInput?.onChange(value)
 	}
 
 	const setInput = (value: string) => {
