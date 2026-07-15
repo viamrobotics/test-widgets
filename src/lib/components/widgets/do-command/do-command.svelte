@@ -19,9 +19,16 @@
 		resource: ResourceName
 		/** Rendered above the input/output editor row. */
 		header?: Snippet<[{ input: string; setInput: (value: string) => void }]>
+		/**
+		 * Optional bindable editor value. Use `bind:input` (including function
+		 * bindings) to control it from a parent. When unbound, falls back to the
+		 * widget's persisted local state — assignments still update locally so the
+		 * editor cannot freeze.
+		 */
+		input?: string
 	}
 
-	const { partID, resource, header }: Props = $props()
+	let { partID, resource, header, input = $bindable() }: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -37,19 +44,26 @@
 
 	const uid = $props.id()
 
-	const input = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
+	const persisted = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
+
+	const displayInput = $derived(input ?? persisted.current ?? '{\n}')
 
 	let output = $state('')
 
+	const updateInput = (value: string) => {
+		input = value
+		persisted.current = value
+	}
+
 	const setInput = (value: string) => {
-		input.current = value
+		updateInput(value)
 	}
 
 	const execute = async () => {
 		try {
 			lastErr = null
 			output = ''
-			const parsedInput = Struct.fromJsonString(input.current ?? '{}')
+			const parsedInput = Struct.fromJsonString(displayInput)
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
 			lastErr = null
@@ -62,7 +76,7 @@
 {#if isSupported}
 	{#if header}
 		<div class="border-b">
-			{@render header({ input: input.current ?? '{}', setInput })}
+			{@render header({ input: displayInput, setInput })}
 		</div>
 	{/if}
 	<div class="flex flex-row items-center justify-between">
@@ -71,9 +85,9 @@
 			<CodeEditor
 				label="input"
 				language="json"
-				value={input.current ?? '{}'}
+				value={displayInput}
 				onChange={(nextInput: string) => {
-					input.current = nextInput
+					updateInput(nextInput)
 				}}
 				class="h-56 overflow-y-auto"
 				errorMessageID={lastErr ? uid : undefined}
