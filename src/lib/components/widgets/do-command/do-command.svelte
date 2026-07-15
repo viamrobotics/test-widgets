@@ -28,13 +28,7 @@
 		onInputChange?: (value: string) => void
 	}
 
-	const {
-		partID,
-		resource,
-		header,
-		input: controlledInput,
-		onInputChange,
-	}: Props = $props()
+	const { partID, resource, header, input: controlledInput, onInputChange }: Props = $props()
 
 	const client = createDoCommandClient(
 		() => resource,
@@ -50,9 +44,7 @@
 
 	const uid = $props.id()
 
-	const persisted = $derived(
-		new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}')
-	)
+	const persisted = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
 
 	const isControlled = $derived(controlledInput !== undefined)
 
