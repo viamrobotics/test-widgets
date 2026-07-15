@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Button, Progress } from '@viamrobotics/prime-core'
+	import { Button, Kbd, KbdGroup, Progress } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
@@ -71,7 +71,27 @@
 			lastErr = error as Error
 		}
 	}
+
+	let inputPanel = $state<HTMLElement | undefined>()
+
+	const isMac = globalThis.navigator?.userAgent.includes('Mac') ?? false
+	const modifierGlyph = isMac ? '⌘' : '⌃'
+
+	const onWindowKeydown = (event: KeyboardEvent) => {
+		if (
+			event.key === 'Enter' &&
+			(event.metaKey || event.ctrlKey) &&
+			inputPanel?.contains(event.target as Node)
+		) {
+			event.preventDefault()
+			if (!doCommandMutation.isPending) {
+				void execute()
+			}
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 {#if isSupported}
 	{#if header}
@@ -79,9 +99,12 @@
 			{@render header({ input: displayInput, setInput })}
 		</div>
 	{/if}
-	<div class="flex flex-row items-center justify-between">
-		<div class="flex w-[45%] flex-col gap-2 border-r py-2">
-			<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
+	<div class="flex flex-row">
+		<div
+			class="flex w-1/2 flex-col gap-2 border-r py-2"
+			bind:this={inputPanel}
+		>
+			<span class="text-subtle-1 px-4 font-mono text-xs tracking-wider uppercase">Input</span>
 			<CodeEditor
 				label="input"
 				language="json"
@@ -92,16 +115,21 @@
 				class="h-56 overflow-y-auto"
 				errorMessageID={lastErr ? uid : undefined}
 			/>
+			<div class="flex flex-row items-center justify-end gap-2 px-4">
+				<KbdGroup>
+					<Kbd>{modifierGlyph}</Kbd>
+					<Kbd>⏎</Kbd>
+				</KbdGroup>
+				<Button
+					disabled={doCommandMutation.isPending}
+					onclick={execute}>Execute</Button
+				>
+			</div>
 		</div>
 
-		<Button
-			class="m-auto"
-			onclick={execute}>Execute</Button
-		>
-
-		<div class="flex w-[45%] flex-col gap-2 border-l py-2">
+		<div class="flex w-1/2 flex-col gap-2 py-2">
 			<div class="flex flex-row items-center">
-				<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
+				<span class="text-subtle-1 px-4 font-mono text-xs tracking-wider uppercase">Output</span>
 				{#if doCommandMutation.isPending}
 					<Progress
 						size="medium"
