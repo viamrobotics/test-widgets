@@ -61,6 +61,9 @@ export { default as InputControllerWidget } from './widgets/input-controller/inp
 
 export { default as MLModelServiceWidget } from './widgets/ml-model-service/ml-model-service.svelte'
 
+export { default as MotionServiceWidget } from './widgets/motion/motion.svelte'
+export { default as MotionMoveWidget } from './widgets/motion/move-widget.svelte'
+
 export { default as MotorGoForWidget } from './widgets/motor/go-for-view.svelte'
 export { default as MotorGoToWidget } from './widgets/motor/go-to-view.svelte'
 export { default as MotorWidget } from './widgets/motor/motor.svelte'

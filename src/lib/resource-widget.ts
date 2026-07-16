@@ -38,6 +38,8 @@ import {
 	GripperWidget,
 	InputControllerWidget,
 	MLModelServiceWidget,
+	MotionMoveWidget,
+	MotionServiceWidget,
 	MotorGoForWidget,
 	MotorGoToWidget,
 	MotorIsMovingWidget,
@@ -213,6 +215,10 @@ const resourceWidgetRegistry = {
 	// services
 	[ResourceTriplets.Discovery]: { widget: DiscoveryWidget, apis: [] },
 	[ResourceTriplets.MLModel]: { widget: MLModelServiceWidget, apis: [] },
+	[ResourceTriplets.Motion]: {
+		widget: MotionServiceWidget,
+		apis: [{ id: 'move', label: 'Move', widgets: [MotionMoveWidget] }],
+	},
 	[ResourceTriplets.Navigation]: { widget: NavigationServiceWidget, apis: [] },
 	[ResourceTriplets.Slam]: {
 		widget: SlamWidget,

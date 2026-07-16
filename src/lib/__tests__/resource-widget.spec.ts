@@ -7,6 +7,8 @@ import {
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
 	GripperOpenWidget,
+	MotionMoveWidget,
+	MotionServiceWidget,
 } from '../components'
 import {
 	apiWidgetsForResource,
@@ -42,8 +44,14 @@ describe('availableAPIWidgets', () => {
 		expect(availableAPIWidgets()['rdk:component:camera']).toEqual([])
 	})
 
+	it('maps the motion service to its API widgets', () => {
+		expect(availableAPIWidgets()['rdk:service:motion']).toEqual([
+			{ id: 'move', label: 'Move', widgets: [MotionMoveWidget] },
+		])
+	})
+
 	it('excludes resources that have no test card', () => {
-		expect(availableAPIWidgets()).not.toHaveProperty('rdk:service:motion')
+		expect(availableAPIWidgets()).not.toHaveProperty('rdk:service:shell')
 	})
 })
 
@@ -58,8 +66,14 @@ describe('apiWidgetsForResource', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
 	})
 
+	it("returns the motion service's API widgets", () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'service', 'motion')).map((widget) => widget.id)
+		).toEqual(['move'])
+	})
+
 	it('returns an empty list for an unrecognized resource', () => {
-		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
+		expect(apiWidgetsForResource(resourceName('acme', 'component', 'widget'))).toEqual([])
 	})
 })
 
@@ -68,8 +82,12 @@ describe('widgetForResource', () => {
 		expect(widgetForResource(resourceName('rdk', 'component', 'arm'))).toBe(ArmWidget)
 	})
 
+	it('returns the composite widget for the motion service', () => {
+		expect(widgetForResource(resourceName('rdk', 'service', 'motion'))).toBe(MotionServiceWidget)
+	})
+
 	it('returns undefined for a recognized resource without a widget', () => {
-		expect(widgetForResource(resourceName('rdk', 'service', 'motion'))).toBeUndefined()
+		expect(widgetForResource(resourceName('rdk', 'service', 'shell'))).toBeUndefined()
 	})
 })
 
@@ -89,7 +107,10 @@ describe('isKnownResource', () => {
 describe('showResourceWidget', () => {
 	it('shows recognized resources but hides rdk-internal and confusing services', () => {
 		expect(showResourceWidget(resourceName('rdk', 'component', 'arm'))).toBe(true)
+		// Motion has a widget but is hidden from the control view for now to avoid
+		// surprising downstream users; it is still available via the registry/exports.
 		expect(showResourceWidget(resourceName('rdk', 'service', 'motion'))).toBe(false)
+		expect(showResourceWidget(resourceName('rdk', 'service', 'shell'))).toBe(false)
 		expect(showResourceWidget(resourceName('rdk-internal', 'service', 'foo'))).toBe(false)
 	})
 })
