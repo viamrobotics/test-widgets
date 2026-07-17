@@ -67,6 +67,12 @@ describe('Motion move', () => {
 		expect(inputs[6]).toHaveValue(45)
 	})
 
+	it('pre-fills the reference frame from the parent frame', () => {
+		renderSubject({ currentReferenceFrame: 'base' })
+
+		expect(screen.getByDisplayValue('base')).toBeInTheDocument()
+	})
+
 	it('executes with the pre-filled current pose when unedited', async () => {
 		const onExecute = vi.fn()
 		const currentPose = { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 }

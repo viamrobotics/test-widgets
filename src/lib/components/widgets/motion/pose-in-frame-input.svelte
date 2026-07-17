@@ -1,3 +1,18 @@
+<script
+	lang="ts"
+	module
+>
+	const poseLabelsList = Object.entries({
+		x: 'X',
+		y: 'Y',
+		z: 'Z',
+		oX: 'OX',
+		oY: 'OY',
+		oZ: 'OZ',
+		theta: 'θ',
+	}) as [keyof Pose, string][]
+</script>
+
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
 
@@ -28,8 +43,6 @@
 		theta: useRadians ? degreesToRadians(pose.theta) : pose.theta,
 	})
 
-	// Copy/paste the bare pose (degrees), matching the arm MoveToPosition widget
-	// so values can be moved between the two.
 	const copyData = $derived(JSON.stringify(pose))
 
 	const handlePaste = (data: string): boolean => {
@@ -50,15 +63,6 @@
 		onPoseChange({ x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 })
 	}
 
-	const poseLabels: Record<keyof Pose, string> = {
-		x: 'X',
-		y: 'Y',
-		z: 'Z',
-		oX: 'OX',
-		oY: 'OY',
-		oZ: 'OZ',
-		theta: 'θ',
-	} as const
 	const poseUnits = $derived({
 		x: 'mm',
 		y: 'mm',
@@ -67,9 +71,7 @@
 		oY: '',
 		oZ: '',
 		theta: useRadians ? 'rad' : 'deg',
-	} as const satisfies Record<keyof Pose, string>)
-
-	const poseLabelsList = Object.entries(poseLabels) as [keyof Pose, string][]
+	})
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">

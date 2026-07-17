@@ -2,6 +2,15 @@ import type { Pose } from '@viamrobotics/sdk'
 
 const poseKeys = ['x', 'y', 'z', 'oX', 'oY', 'oZ', 'theta'] as const
 
+const isPose = (value: unknown): value is Pose => {
+	if (typeof value !== 'object' || value === null) {
+		return false
+	}
+
+	const record = value as Record<string, unknown>
+	return poseKeys.every((key) => typeof record[key] === 'number')
+}
+
 /**
  * Parses a clipboard string as a pose. Accepts a JSON object with numeric
  * `x`, `y`, `z`, `oX`, `oY`, `oZ`, and `theta` fields — the same shape the arm
@@ -18,22 +27,10 @@ export const parsePastedPose = (data: string): Pose | undefined => {
 		return undefined
 	}
 
-	if (typeof parsed !== 'object' || parsed === null) {
+	if (!isPose(parsed)) {
 		return undefined
 	}
 
-	const record = parsed as Record<string, unknown>
-	if (!poseKeys.every((key) => typeof record[key] === 'number')) {
-		return undefined
-	}
-
-	return {
-		x: record.x as number,
-		y: record.y as number,
-		z: record.z as number,
-		oX: record.oX as number,
-		oY: record.oY as number,
-		oZ: record.oZ as number,
-		theta: record.theta as number,
-	}
+	const { x, y, z, oX, oY, oZ, theta } = parsed
+	return { x, y, z, oX, oY, oZ, theta }
 }

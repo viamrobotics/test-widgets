@@ -32,6 +32,7 @@ export const parseMoveArgs = (componentName: string, input: MoveInput): MoveArgs
 
 	const worldState =
 		input.worldStateJson.trim() === '' ? undefined : WorldState.fromJsonString(input.worldStateJson)
+
 	const constraints =
 		input.constraintsJson.trim() === ''
 			? undefined

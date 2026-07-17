@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MotionClient, type Transform } from '@viamrobotics/sdk'
+	import { MotionClient, type RobotClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
@@ -8,7 +8,7 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import ComponentNameSelect from './component-name-select.svelte'
-	import { movableFrameNames } from './movable-frame-names'
+	import { movableFrameNames, parentFrame } from './frame-system-config'
 	import Move from './move.svelte'
 	import { type MoveInput, parseMoveArgs } from './parse-move-args'
 
@@ -19,44 +19,44 @@
 
 	const { partID, resourceName }: Props = $props()
 
+	const robotClient = useRobotClient(() => partID)
 	const client = createResourceClient(
 		MotionClient,
 		() => partID,
 		() => resourceName
 	)
 
-	const moveMutation = createResourceMutation(client, 'move')
-
-	// Movable components come from the frame system, not a subtype allow-list:
-	// anything with a configured frame is a valid Move target.
-	const robotClient = useRobotClient(() => partID)
-	const frameSystemQuery = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
+	const move = createResourceMutation(client, 'move')
+	const frameSystem = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
 		refetchInterval: 5000,
 	}))
-	const frameNames = $derived(movableFrameNames(frameSystemQuery.data))
+	const frameNames = $derived(movableFrameNames(frameSystem.data))
 
-	// `undefined` means the user has not picked yet, so default to the first
-	// frame; an explicit choice (including '') takes over.
 	let selectedName = $state<string>()
 	const componentName = $derived(selectedName ?? frameNames[0] ?? '')
 
-	// Pre-fill the pose editor with the selected component's current pose,
-	// expressed in the world frame. Refetches whenever the component changes.
-	const destinationFrame = 'world'
+	const destinationFrame = $derived(parentFrame(frameSystem.data, componentName))
+	const poseArgs = $derived<Parameters<RobotClient['getPose']>>([
+		componentName,
+		destinationFrame,
+		[],
+	])
+
 	const poseQuery = createRobotQuery(
 		robotClient,
 		'getPose',
-		() => [componentName, destinationFrame, []] as [string, string, Transform[]],
+		() => poseArgs,
 		() => ({ enabled: componentName !== '' })
 	)
+
 	const currentPose = $derived(poseQuery.data?.pose)
 
-	let parseError = $state<Error | null>(null)
+	let parseError = $state<Error>()
 
 	const executeMove = (input: MoveInput) => {
 		try {
-			parseError = null
-			moveMutation.mutate(parseMoveArgs(componentName, input), {})
+			parseError = undefined
+			move.mutate(parseMoveArgs(componentName, input), {})
 		} catch (error) {
 			parseError = error instanceof Error ? error : new Error(String(error))
 		}
@@ -74,8 +74,9 @@
 	<Move
 		{componentName}
 		{currentPose}
-		isPending={moveMutation.isPending}
-		lastError={parseError ?? moveMutation.error}
+		currentReferenceFrame={destinationFrame}
+		isPending={move.isPending}
+		lastError={parseError ?? move.error}
 		storageKey={`${partID}/${resourceName}/motion-move`}
 		onExecute={executeMove}
 	/>

@@ -4,11 +4,11 @@
 	interface Props {
 		value: string
 		options: string[]
-		onChange: (value: string) => void
 		label?: string
+		onChange: (value: string) => void
 	}
 
-	const { value, options, onChange, label = 'Component' }: Props = $props()
+	const { value, options, label = 'Component', onChange }: Props = $props()
 </script>
 
 <Label>
