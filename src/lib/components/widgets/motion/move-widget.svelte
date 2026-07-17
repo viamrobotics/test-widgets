@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MotionClient } from '@viamrobotics/sdk'
+	import { MotionClient, type Transform } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
@@ -40,6 +40,17 @@
 	let selectedName = $state<string>()
 	const componentName = $derived(selectedName ?? frameNames[0] ?? '')
 
+	// Pre-fill the pose editor with the selected component's current pose,
+	// expressed in the world frame. Refetches whenever the component changes.
+	const destinationFrame = 'world'
+	const poseQuery = createRobotQuery(
+		robotClient,
+		'getPose',
+		() => [componentName, destinationFrame, []] as [string, string, Transform[]],
+		() => ({ enabled: componentName !== '' })
+	)
+	const currentPose = $derived(poseQuery.data?.pose)
+
 	let parseError = $state<Error | null>(null)
 
 	const executeMove = (input: MoveInput) => {
@@ -62,6 +73,7 @@
 	/>
 	<Move
 		{componentName}
+		{currentPose}
 		isPending={moveMutation.isPending}
 		lastError={parseError ?? moveMutation.error}
 		storageKey={`${partID}/${resourceName}/motion-move`}

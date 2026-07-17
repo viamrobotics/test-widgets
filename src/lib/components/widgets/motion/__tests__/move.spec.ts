@@ -43,7 +43,7 @@ describe('Motion move', () => {
 		)
 	})
 
-	it('calls onExecute with the current pose inputs', async () => {
+	it('calls onExecute with the default pose when no current pose is provided', async () => {
 		const onExecute = vi.fn()
 		renderSubject({ onExecute })
 
@@ -55,6 +55,26 @@ describe('Motion move', () => {
 			worldStateJson: '',
 			constraintsJson: '',
 		})
+	})
+
+	it('pre-fills the pose editor from the current pose', () => {
+		renderSubject({ currentPose: { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 } })
+
+		const inputs = screen.getAllByRole('spinbutton')
+		expect(inputs[0]).toHaveValue(1)
+		expect(inputs[1]).toHaveValue(2)
+		expect(inputs[2]).toHaveValue(3)
+		expect(inputs[6]).toHaveValue(45)
+	})
+
+	it('executes with the pre-filled current pose when unedited', async () => {
+		const onExecute = vi.fn()
+		const currentPose = { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 }
+		renderSubject({ currentPose, onExecute })
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(onExecute).toHaveBeenCalledWith(expect.objectContaining({ pose: currentPose }))
 	})
 
 	it('displays the provided error', () => {

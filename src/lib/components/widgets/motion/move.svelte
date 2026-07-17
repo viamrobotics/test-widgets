@@ -13,6 +13,8 @@
 
 	interface Props {
 		componentName: string
+		/** The component's current pose, used to pre-fill the editor. */
+		currentPose?: Pose
 		isPending: boolean
 		lastError: Error | null
 		/** Namespace for persisting the optional-JSON drafts, e.g. `${partID}/${resourceName}/motion-move`. */
@@ -20,10 +22,19 @@
 		onExecute: (input: MoveInput) => void
 	}
 
-	const { componentName, isPending, lastError, storageKey, onExecute }: Props = $props()
+	const { componentName, currentPose, isPending, lastError, storageKey, onExecute }: Props =
+		$props()
+
+	const zeroPose: Pose = { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 }
 
 	let referenceFrame = $state('world')
-	let pose = $state<Pose>({ x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 })
+
+	// The editor follows the fetched current pose until the user edits it. The
+	// edit is tagged with its component so switching components re-pre-fills.
+	let edit = $state<{ component: string; pose: Pose }>()
+	const pose = $derived(
+		edit && edit.component === componentName ? edit.pose : (currentPose ?? zeroPose)
+	)
 
 	const worldState = $derived(new PersistedState(`${storageKey}/world-state`, ''))
 	const constraints = $derived(new PersistedState(`${storageKey}/constraints`, ''))
@@ -48,7 +59,7 @@
 			referenceFrame = frame
 		}}
 		onPoseChange={(next) => {
-			pose = next
+			edit = { component: componentName, pose: next }
 		}}
 	/>
 
