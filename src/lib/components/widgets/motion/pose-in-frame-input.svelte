@@ -10,6 +10,8 @@
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
+	import { parsePastedPose } from './parse-pasted-pose'
+
 	interface Props {
 		referenceFrame: string
 		pose: Pose
@@ -26,20 +28,16 @@
 		theta: useRadians ? degreesToRadians(pose.theta) : pose.theta,
 	})
 
-	const copyData = $derived(JSON.stringify({ referenceFrame, pose }))
+	// Copy/paste the bare pose (degrees), matching the arm MoveToPosition widget
+	// so values can be moved between the two.
+	const copyData = $derived(JSON.stringify(pose))
 
 	const handlePaste = (data: string): boolean => {
-		try {
-			const parsed = JSON.parse(data) as { referenceFrame?: unknown; pose?: unknown }
-			if (parsed.pose !== undefined) {
-				onPoseChange(parsed.pose as Pose)
-			}
-			if (typeof parsed.referenceFrame === 'string') {
-				onReferenceFrameChange(parsed.referenceFrame)
-			}
-		} catch {
+		const parsed = parsePastedPose(data)
+		if (!parsed) {
 			return false
 		}
+		onPoseChange(parsed)
 		return true
 	}
 
