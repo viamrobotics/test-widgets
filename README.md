@@ -6,16 +6,25 @@ Also includes reusable building blocks for visualizations, such as maps (MapLibr
 
 ## Entry points
 
-Most consumers import widget components directly from the package root and render them statically:
+There is one root entry plus three registry entry points. Which you reach for depends on whether you name widgets **statically** or resolve them **dynamically** at runtime.
+
+### Static use
+
+Import the widget components you need and render them:
 
 ```ts
 import { ArmWidget, CameraWidget } from '@viamrobotics/test-widgets'
 ```
 
-If instead you need to **dynamically** resolve which widgets a resource supports at runtime (for example, a control panel that lists every API of every resource on a scanned machine), import one of the registry entry points:
+The root also exports the dependency-light helpers (`isKnownResource`, `showResourceWidget`, `getResourceAPI`, `ResourceTriplets`) and the widget prop types (`ResourceWidget`, `ResourceAPIWidget`, `ResourceWidgetProps`). The root is tree-shakeable: importing a widget or a helper pulls only that widget's own graph, so a component-only consumer never drags in the service widgets or their heavy peers (`maplibre-gl`, `@viamrobotics/three`, `@threlte/*`). The composed lookups that reference every widget do **not** live here — they are behind `/registry` (below).
 
-- **`@viamrobotics/test-widgets/component-registry`** exposes `componentWidgetRegistry` and its query APIs `componentApiWidgets(resource)` / `componentWidgetForResource(resource)` for `rdk:component:*` resources. Prefer it when you only render component widgets.
-- **`@viamrobotics/test-widgets/service-registry`** exposes `serviceWidgetRegistry` and its query APIs `serviceApiWidgets(resource)` / `serviceWidgetForResource(resource)` for `rdk:service:*` resources (motion, navigation, slam, vision).
+### Dynamic use — the registry entry points
+
+If you resolve widgets at runtime from a resource (for example, a control panel that lists every API of every resource on a scanned machine), import the registry scoped to the kind of resource you actually render. Each exposes its registry object plus its query APIs:
+
+- **`@viamrobotics/test-widgets/registry`** — the composed lookups `apiWidgetsForResource(resource)`, `widgetForResource(resource)`, and `availableAPIWidgets()`, which resolve any resource, component or service. Because it references both registries, importing it pulls **all** widgets and their optional peers into your build; reach for it only when you render both kinds of resource.
+- **`@viamrobotics/test-widgets/component-registry`** — `componentWidgetRegistry`, `componentApiWidgets(resource)`, `componentWidgetForResource(resource)` for `rdk:component:*` resources.
+- **`@viamrobotics/test-widgets/service-registry`** — `serviceWidgetRegistry`, `serviceApiWidgets(resource)`, `serviceWidgetForResource(resource)` for `rdk:service:*` resources (navigation, slam, vision, …).
 
 ```ts
 import {
@@ -24,12 +33,18 @@ import {
 } from '@viamrobotics/test-widgets/component-registry'
 ```
 
-The root's `apiWidgetsForResource` composes both registries, so importing anything from the root pulls the service widgets (and their optional peers) into your build. Import the scoped registry entry point to avoid that.
+The point of the scoped registries is isolation: the two never reference each other, so a component-only consumer that imports `/component-registry` never statically pulls in the service widgets (or the `@viamrobotics/three` peer they need). Reach for a scoped registry — rather than the composed `/registry`, which references both — when you render only one kind of resource and want the other kind's widgets kept out of your build.
 
-These are for dynamic, registry-driven resolution only. To use a specific widget, import the component from the root instead.
+### Optional peer dependencies
 
-> [!NOTE]
-> The navigation service widgets import `maplibre-gl` and `@viamrobotics/three`. Install those (declared as optional peer dependencies) if you use those widgets or the `service-registry`.
+A few widgets depend on optional peers. Install a peer only if you render a widget (or import an entry point) that needs it; otherwise it stays out of your build.
+
+| Optional peer         | Required by                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maplibre-gl`         | `MovementSensorWidget` (a **component** — plots GPS position on a map), `NavigationServiceWidget`, and the `maplibre` / `navigation-map` building blocks |
+| `@viamrobotics/three` | `NavigationServiceWidget` (navigation-map 3D geometry)                                                                                                   |
+
+So a component-only consumer needs `maplibre-gl` only if it renders `MovementSensorWidget`, and never needs `@viamrobotics/three`. A consumer that renders service widgets (or imports `/service-registry` or the composed `/registry`) needs both.
 
 ## Playground
 

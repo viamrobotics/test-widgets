@@ -45,4 +45,8 @@ export const serviceWidgetForResource = (resource: ResourceName): ResourceWidget
 
 // The prop/return types of the APIs above, so service-widget consumers can type their
 // usage without importing from the root entry.
-export type { ResourceAPIWidget, ResourceWidget, ResourceWidgetProps } from './resource-widget-types.ts'
+export type {
+	ResourceAPIWidget,
+	ResourceWidget,
+	ResourceWidgetProps,
+} from './resource-widget-types.ts'

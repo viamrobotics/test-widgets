@@ -57,3 +57,11 @@ export const availableAPIWidgets = (): Partial<Record<ResourceTriplet, ResourceA
 /** Returns the full composite test card for a resource, or `undefined` if none exists. */
 export const widgetForResource = (resource: ResourceName): ResourceWidget | undefined =>
 	componentWidgetForResource(resource) ?? serviceWidgetForResource(resource)
+
+// Re-exported so `/registry` consumers can type the lookups' return values without importing
+// from the root entry.
+export type {
+	ResourceAPIWidget,
+	ResourceWidget,
+	ResourceWidgetProps,
+} from './resource-widget-types.ts'

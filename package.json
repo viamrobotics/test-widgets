@@ -35,6 +35,10 @@
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
 		},
+		"./registry": {
+			"types": "./dist/resource-widget.d.ts",
+			"svelte": "./dist/resource-widget.js"
+		},
 		"./component-registry": {
 			"types": "./dist/component-widget-registry.d.ts",
 			"svelte": "./dist/component-widget-registry.js"
