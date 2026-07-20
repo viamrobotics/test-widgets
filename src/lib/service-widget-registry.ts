@@ -42,3 +42,7 @@ export const serviceApiWidgets = (resource: ResourceName): ResourceAPIWidget[] =
 /** Returns the composite card for a service resource, or `undefined` if none exists. */
 export const serviceWidgetForResource = (resource: ResourceName): ResourceWidget | undefined =>
 	serviceWidgetRegistry[getResourceAPI(resource) as ResourceTriplet]?.widget
+
+// The prop/return types of the APIs above, so service-widget consumers can type their
+// usage without importing from the root entry.
+export type { ResourceAPIWidget, ResourceWidget, ResourceWidgetProps } from './resource-widget-types.ts'
