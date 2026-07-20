@@ -205,8 +205,8 @@ export const componentApiWidgets = (resource: ResourceName): ResourceAPIWidget[]
 export const componentWidgetForResource = (resource: ResourceName): ResourceWidget | undefined =>
 	componentWidgetRegistry[getResourceAPI(resource) as ResourceTriplet]?.widget
 
-// The prop/return types of the APIs above, so component-only consumers can type their
-// usage without importing from the root entry (which pulls in the service widgets).
+// Re-exported so `/component-registry` consumers can type the lookups' return values without
+// importing from the root entry.
 export type {
 	ResourceAPIWidget,
 	ResourceWidget,

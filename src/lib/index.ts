@@ -18,10 +18,6 @@ export {
 } from './is-known-resource'
 export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
-// The composed lookups (`apiWidgetsForResource` / `availableAPIWidgets` / `widgetForResource`)
-// reference both registries, so they live behind the `/registry` entry point rather than the
-// root. Keeping them out of the root means importing a widget or helper here never drags in
-// every widget (and the maplibre/three peers the service widgets need). See ./resource-widget.ts.
 export type {
 	ResourceAPIWidget,
 	ResourceWidget,
