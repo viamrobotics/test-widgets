@@ -16,9 +16,7 @@ Import the widget components you need and render them:
 import { ArmWidget, CameraWidget } from '@viamrobotics/test-widgets'
 ```
 
-The root also exports the dependency-light helpers (`isKnownResource`, `showResourceWidget`, `getResourceAPI`, `ResourceTriplets`) and the widget prop types (`ResourceWidget`, `ResourceAPIWidget`, `ResourceWidgetProps`). The root is tree-shakeable: importing a widget or a helper pulls only that widget's own graph, so a component-only consumer never drags in the service widgets or their heavy peers (`maplibre-gl`, `@viamrobotics/three`, `@threlte/*`). The composed lookups that reference every widget do **not** live here — they are behind `/registry` (below).
-
-### Dynamic use — the registry entry points
+### Dynamic use
 
 If you resolve widgets at runtime from a resource (for example, a control panel that lists every API of every resource on a scanned machine), import the registry scoped to the kind of resource you actually render. Each exposes its registry object plus its query APIs:
 
