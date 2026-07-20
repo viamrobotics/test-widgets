@@ -2,6 +2,8 @@
 	lang="ts"
 	module
 >
+	import type { Pose } from '@viamrobotics/sdk'
+
 	const poseLabelsList = Object.entries({
 		x: 'X',
 		y: 'Y',
@@ -14,8 +16,6 @@
 </script>
 
 <script lang="ts">
-	import type { Pose } from '@viamrobotics/sdk'
-
 	import { Button, Icon, Input, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'

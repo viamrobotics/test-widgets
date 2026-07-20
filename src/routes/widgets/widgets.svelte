@@ -55,13 +55,17 @@
 	// (see hiddenResources in resource-widget.ts) because it always exists and
 	// confused users. Pull it out before filtering so the playground always
 	// surfaces its test widget.
-	const motionResource = $derived(
-		resources.find((resource) => getResourceAPI(resource.name) === ResourceTriplets.Motion)
+	const motionResources = $derived(
+		resources.filter((resource) => getResourceAPI(resource.name) === ResourceTriplets.Motion)
 	)
 
 	const filteredResources = $derived([
-		...(motionResource ? [motionResource] : []),
-		...resources.filter((resource) => showResourceWidget(resource.name)),
+		...motionResources,
+		...resources.filter(
+			(resource) =>
+				showResourceWidget(resource.name) &&
+				getResourceAPI(resource.name) !== ResourceTriplets.Motion
+		),
 	])
 
 	let splitpanesDiv = $state.raw<HTMLDivElement>()
