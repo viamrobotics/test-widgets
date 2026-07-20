@@ -10,17 +10,18 @@ export { clientForResource } from './client-map'
 export * from './components'
 
 export { getResourceAPI } from './get-resource-api'
-
-export { providePip, usePip } from './pip/context.svelte'
-export { ResourceTriplets } from './resource-triplet'
 export {
-	apiWidgetsForResource,
-	availableAPIWidgets,
 	isKnownResource,
 	// TODO: Delete `hasWidget`
 	/** @deprecated use `isKnownResource` instead. Will be deleted in the next release  */
 	isKnownResource as hasWidget,
-	type ResourceAPIWidget,
-	showResourceWidget,
-	widgetForResource,
-} from './resource-widget'
+} from './is-known-resource'
+export { providePip, usePip } from './pip/context.svelte'
+export { ResourceTriplets } from './resource-triplet'
+export { apiWidgetsForResource, availableAPIWidgets, widgetForResource } from './resource-widget'
+export type {
+	ResourceAPIWidget,
+	ResourceWidget,
+	ResourceWidgetProps,
+} from './resource-widget-types'
+export { showResourceWidget } from './show-resource-widget'

@@ -1,0 +1,23 @@
+import { LatheGeometry, Path } from 'three'
+
+/**
+ * An alternate definition of a THREE.CapsuleGeometry: the length
+ * represents the entire length of the capsule, including the rounded ends,
+ * rather than just the midsection, which is the default THREE.CapsuleGeometry definition.
+ */
+export class CapsuleGeometry extends LatheGeometry {
+	override type = 'CapsuleGeometry'
+
+	constructor(r = 1, l = 1, capSegments = 4, radialSegments = 8) {
+		const radius = Math.max(0.0001, r)
+		const length = Math.max(0.0001, l)
+		const path = new Path()
+		const midsectionLength = length - 2 * radius
+
+		path.absarc(0, -midsectionLength / 2, radius, Math.PI * 1.5, 0)
+		path.absarc(0, midsectionLength / 2, radius, 0, Math.PI * 0.5)
+
+		super(path.getPoints(capSegments), radialSegments)
+		this.rotateX(-Math.PI / 2)
+	}
+}

@@ -4,6 +4,33 @@ A library of Svelte components for interacting with Viam-powered machines. Each 
 
 Also includes reusable building blocks for visualizations, such as maps (MapLibre), SLAM mapping, 3D point clouds (Three.js), etc.
 
+## Entry points
+
+Most consumers import widget components directly from the package root and render them statically:
+
+```ts
+import { ArmWidget, CameraWidget } from '@viamrobotics/test-widgets'
+```
+
+If instead you need to **dynamically** resolve which widgets a resource supports at runtime (for example, a control panel that lists every API of every resource on a scanned machine), import one of the registry entry points:
+
+- **`@viamrobotics/test-widgets/component-registry`** exposes `componentWidgetRegistry` and its query APIs `componentApiWidgets(resource)` / `componentWidgetForResource(resource)` for `rdk:component:*` resources. Prefer it when you only render component widgets.
+- **`@viamrobotics/test-widgets/service-registry`** exposes `serviceWidgetRegistry` and its query APIs `serviceApiWidgets(resource)` / `serviceWidgetForResource(resource)` for `rdk:service:*` resources (motion, navigation, slam, vision).
+
+```ts
+import {
+	componentApiWidgets,
+	componentWidgetForResource,
+} from '@viamrobotics/test-widgets/component-registry'
+```
+
+The root's `apiWidgetsForResource` composes both registries, so importing anything from the root pulls the service widgets (and their optional peers) into your build. Import the scoped registry entry point to avoid that.
+
+These are for dynamic, registry-driven resolution only. To use a specific widget, import the component from the root instead.
+
+> [!NOTE]
+> The navigation service widgets import `maplibre-gl` and `@viamrobotics/three`. Install those (declared as optional peer dependencies) if you use those widgets or the `service-registry`.
+
 ## Playground
 
 The playground (`pnpm dev`) can be used to develop the test-cards against prod robots with prod modules.
