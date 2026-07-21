@@ -54,7 +54,6 @@
 		"@viamrobotics/prime-core": ">=0.1",
 		"@viamrobotics/sdk": ">=0.68",
 		"@viamrobotics/svelte-sdk": ">=1.1",
-		"@viamrobotics/three": ">=0.0.9",
 		"lodash-es": ">=4",
 		"maplibre-gl": ">=5",
 		"runed": ">=0.28",
@@ -63,9 +62,6 @@
 		"threlte-uikit": ">=2"
 	},
 	"peerDependenciesMeta": {
-		"@viamrobotics/three": {
-			"optional": true
-		},
 		"maplibre-gl": {
 			"optional": true
 		}
@@ -104,7 +100,6 @@
 		"@viamrobotics/sdk": "^0.69.0",
 		"@viamrobotics/svelte-sdk": "^1.2.1",
 		"@viamrobotics/tailwind-config": "^1.0.0",
-		"@viamrobotics/three": "^0.0.9",
 		"@vitest/browser": "^4.1.8",
 		"@vitest/browser-playwright": "^4.1.5",
 		"@vitest/coverage-v8": "^4.1.5",
