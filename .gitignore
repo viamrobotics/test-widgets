@@ -26,4 +26,10 @@ vite.config.ts.timestamp-*
 # Playwright
 test-results
 
+# Coverage
+/coverage
+
+# wireit
+.wireit
+
 .pnpm-store

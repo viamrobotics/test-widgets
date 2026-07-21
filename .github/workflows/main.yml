@@ -35,6 +35,9 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
 
+      - name: Set up wireit caching
+        uses: google/wireit@setup-github-actions-caching/v2
+
       - name: Install and Build 🔧
         run: |
           pnpm i

@@ -5,20 +5,181 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build && pnpm prepack",
+		"build": "wireit",
+		"vite-build": "wireit",
+		"package": "wireit",
+		"svelte-sync": "wireit",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
-		"prepack": "svelte-kit sync && svelte-package && publint",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+		"prepack": "wireit",
+		"check": "wireit",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "eslint . --concurrency auto",
+		"lint": "wireit",
 		"lint:fix": "eslint . --fix --concurrency auto",
-		"format": "prettier --check .",
+		"format": "wireit",
 		"format:fix": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "pnpm test:unit -- --run",
+		"test": "wireit",
+		"test:coverage": "wireit",
 		"test:e2e": "playwright test",
 		"release": "changeset publish"
+	},
+	"wireit": {
+		"build": {
+			"dependencies": [
+				"vite-build",
+				"package"
+			]
+		},
+		"package": {
+			"command": "svelte-package && publint",
+			"files": [
+				"src/lib/**",
+				"svelte.config.js",
+				"tsconfig.json",
+				"package.json"
+			],
+			"output": [
+				"dist/**"
+			],
+			"dependencies": [
+				"svelte-sync"
+			],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"vite-build": {
+			"command": "vite build",
+			"files": [
+				"src/**",
+				"static/**",
+				".env",
+				".env.*",
+				"vite.config.ts",
+				"svelte.config.js",
+				"postcss.config.js",
+				"tsconfig.json",
+				"package.json"
+			],
+			"output": [
+				"build/**",
+				".svelte-kit/output/**"
+			],
+			"dependencies": [
+				"svelte-sync",
+				"package"
+			],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"svelte-sync": {
+			"command": "svelte-kit sync",
+			"files": [
+				"svelte.config.js",
+				"src/**",
+				"tsconfig.json",
+				"package.json"
+			],
+			"output": [
+				".svelte-kit/generated/**",
+				".svelte-kit/types/**",
+				".svelte-kit/ambient.d.ts",
+				".svelte-kit/non-ambient.d.ts",
+				".svelte-kit/tsconfig.json"
+			],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"prepack": {
+			"dependencies": [
+				"package"
+			]
+		},
+		"check": {
+			"command": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+			"files": [
+				"src/**",
+				"tsconfig.json",
+				"svelte.config.js",
+				"package.json"
+			],
+			"output": [],
+			"dependencies": [
+				"svelte-sync"
+			],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"lint": {
+			"command": "eslint . --concurrency auto",
+			"files": [
+				"**",
+				"!build/**",
+				"!dist/**",
+				"!.svelte-kit/**",
+				"!coverage/**",
+				"!test-results/**",
+				"!.env*",
+				"!**/*.tgz"
+			],
+			"output": [],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"format": {
+			"command": "prettier --check .",
+			"files": [
+				"**",
+				"!build/**",
+				"!dist/**",
+				"!.svelte-kit/**",
+				"!coverage/**",
+				"!test-results/**",
+				"!.env*",
+				"!**/*.tgz"
+			],
+			"output": [],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"test": {
+			"command": "vitest --run",
+			"files": [
+				"src/**",
+				"vite.config.ts",
+				"svelte.config.js",
+				"postcss.config.js",
+				"tsconfig.json",
+				"package.json"
+			],
+			"output": [],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		},
+		"test:coverage": {
+			"command": "vitest run --coverage",
+			"files": [
+				"src/**",
+				"vite.config.ts",
+				"svelte.config.js",
+				"postcss.config.js",
+				"tsconfig.json",
+				"package.json"
+			],
+			"output": [
+				"coverage/**"
+			],
+			"packageLocks": [
+				"pnpm-lock.yaml"
+			]
+		}
 	},
 	"files": [
 		"dist",
@@ -133,7 +294,8 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vite-plugin-glsl": "^1.6.0",
 		"vitest": "^4.1.5",
-		"vitest-browser-svelte": "^2.1.1"
+		"vitest-browser-svelte": "^2.1.1",
+		"wireit": "^0.14.13"
 	},
 	"packageManager": "pnpm@10.33.0",
 	"engines": {
