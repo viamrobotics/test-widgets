@@ -1,5 +1,15 @@
 # @viamrobotics/test-widgets
 
+## 0.10.0
+
+### Minor Changes
+
+- 52a1016: Split the motion widget into `MotionServiceWidget`, which owns the component and destination-frame selects, and a controlled `MotionMoveWidget` that takes `frameName` and `destination` props and renders just the Move controls, so the controls can be embedded alongside an external frame selection. Renames the move target from `componentName` to `frameName`, since targets are frame-system frames (e.g. individual arm links), not only components.
+
+### Patch Changes
+
+- 52a1016: Update motion service widget to have separate `Move` widget and full card with frame and parent select.
+
 ## 0.9.0
 
 ### Minor Changes
