@@ -50,6 +50,7 @@
 	)
 
 	const currentPose = $derived(poseQuery.data?.pose)
+	const poseError = $derived(poseQuery.error instanceof Error ? poseQuery.error : null)
 
 	let parseError = $state<Error>()
 
@@ -76,7 +77,7 @@
 		{currentPose}
 		currentReferenceFrame={destinationFrame}
 		isPending={move.isPending}
-		lastError={parseError ?? move.error}
+		lastError={parseError ?? move.error ?? poseError}
 		storageKey={`${partID}/${resourceName}/motion-move`}
 		onExecute={executeMove}
 	/>

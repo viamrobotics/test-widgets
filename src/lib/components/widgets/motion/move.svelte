@@ -41,6 +41,9 @@
 
 	const pose = $derived(isEdited && edit ? edit.pose : (currentPose ?? zeroPose))
 
+	// PersistedState is created inside $derived so Svelte can track the storageKey
+	// dependency. The localStorage read on construction is benign and idempotent.
+	// storageKey is stable for the lifetime of this component.
 	const worldState = $derived(new PersistedState(`${storageKey}/world-state`, ''))
 	const constraints = $derived(new PersistedState(`${storageKey}/constraints`, ''))
 
