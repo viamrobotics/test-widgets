@@ -1,5 +1,10 @@
 import type { ResourceName } from '@viamrobotics/sdk'
-import type { Component } from 'svelte'
+
+import type {
+	ResourceAPIWidget,
+	ResourceWidget,
+	ResourceWidgetEntry,
+} from './resource-widget-types.ts'
 
 import {
 	ArmGetJointPositionsWidget,
@@ -38,6 +43,8 @@ import {
 	GripperWidget,
 	InputControllerWidget,
 	MLModelServiceWidget,
+	MotionMoveWidget,
+	MotionServiceWidget,
 	MotorGoForWidget,
 	MotorGoToWidget,
 	MotorIsMovingWidget,
@@ -68,25 +75,12 @@ import {
 import { getResourceAPI } from './get-resource-api.ts'
 import { type ResourceTriplet, ResourceTriplets } from './resource-triplet.ts'
 
-/** Every resource widget shares this prop contract and is self-contained. */
-export interface ResourceWidgetProps {
-	partID: string
-	resourceName: string
-}
-
-export type ResourceWidget = Component<ResourceWidgetProps>
-
-/** One of a resource's individual API widgets (e.g. a menu entry); renders one or more self-contained widgets. */
-export interface ResourceAPIWidget {
-	/** Stable identifier, safe to persist. Never rename. e.g. `'move-to-joint-positions'`. */
-	id: string
-	/** Human-readable menu label. e.g. `'MoveToJointPositions'` or `'Quick move'`. */
-	label: string
-	/** The self-contained widget(s) this entry renders, each with `{ partID, resourceName }`. */
-	widgets: ResourceWidget[]
-}
-
-const resourceWidgetRegistry = {
+/**
+ * Maps a resource's API triplet to its composite test card and individual API widgets.
+ * Referencing this pulls every widget (and its optional peers) into the build, which is
+ * why the lookups below live behind the `/registry` entry point rather than the root.
+ */
+const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntry>> = {
 	// components
 	[ResourceTriplets.Arm]: {
 		widget: ArmWidget,
@@ -213,15 +207,17 @@ const resourceWidgetRegistry = {
 	// services
 	[ResourceTriplets.Discovery]: { widget: DiscoveryWidget, apis: [] },
 	[ResourceTriplets.MLModel]: { widget: MLModelServiceWidget, apis: [] },
+	[ResourceTriplets.Motion]: {
+		widget: MotionServiceWidget,
+		apis: [{ id: 'move', label: 'Move', widgets: [MotionMoveWidget] }],
+	},
 	[ResourceTriplets.Navigation]: { widget: NavigationServiceWidget, apis: [] },
 	[ResourceTriplets.Slam]: {
 		widget: SlamWidget,
 		apis: [{ id: 'get-position', label: 'GetPosition', widgets: [SlamGetPositionWidget] }],
 	},
 	[ResourceTriplets.Vision]: { widget: VisionServiceWidget, apis: [] },
-} satisfies Partial<Record<ResourceTriplet, { widget: ResourceWidget; apis: ResourceAPIWidget[] }>>
-
-type ResourceWidgetRegistry = typeof resourceWidgetRegistry
+}
 
 /**
  * Returns a resource's individual API widgets. Each entry carries a stable `id`, a
@@ -234,12 +230,8 @@ type ResourceWidgetRegistry = typeof resourceWidgetRegistry
  * apiWidgetsForResource(gripperResourceName)
  * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] => {
-	const api = getResourceAPI(resource)
-	return api in resourceWidgetRegistry
-		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].apis
-		: []
-}
+export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] =>
+	resourceWidgetRegistry[getResourceAPI(resource) as ResourceTriplet]?.apis ?? []
 
 /**
  * Returns every resource triplet that has a test card, mapped to its API widgets.
@@ -250,39 +242,23 @@ export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget
  * availableAPIWidgets()[ResourceTriplets.Gripper]
  * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
  */
-export const availableAPIWidgets = (): Record<
-	keyof ResourceWidgetRegistry,
-	ResourceAPIWidget[]
-> => {
-	const result = {} as Record<keyof ResourceWidgetRegistry, ResourceAPIWidget[]>
-	for (const triplet of Object.keys(resourceWidgetRegistry) as (keyof ResourceWidgetRegistry)[]) {
-		result[triplet] = resourceWidgetRegistry[triplet].apis
+export const availableAPIWidgets = (): Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> => {
+	const result: Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> = {}
+	for (const [api, entry] of Object.entries(resourceWidgetRegistry)) {
+		if (entry) result[api as ResourceTriplet] = entry.apis
 	}
 
 	return result
 }
 
 /** Returns the full composite test card for a resource, or `undefined` if none exists. */
-export const widgetForResource = (resource: ResourceName): ResourceWidget | undefined => {
-	const api = getResourceAPI(resource)
-	return api in resourceWidgetRegistry
-		? resourceWidgetRegistry[api as keyof ResourceWidgetRegistry].widget
-		: undefined
-}
+export const widgetForResource = (resource: ResourceName): ResourceWidget | undefined =>
+	resourceWidgetRegistry[getResourceAPI(resource) as ResourceTriplet]?.widget
 
-const knownResources = new Set<string>(Object.values(ResourceTriplets))
-
-/** Whether a resource's API is a recognized Viam resource triplet. */
-export const isKnownResource = (resource: ResourceName): boolean =>
-	knownResources.has(getResourceAPI(resource))
-
-const hiddenResources = new Set<string>([
-	ResourceTriplets.DataManager,
-	ResourceTriplets.Motion,
-	ResourceTriplets.Sensors,
-	ResourceTriplets.Shell,
-])
-
-/** Whether the control view should surface a card for this resource. */
-export const showResourceWidget = (resource: ResourceName): boolean =>
-	resource.namespace !== 'rdk-internal' && !hiddenResources.has(getResourceAPI(resource))
+// Re-exported so `/registry` consumers can type the lookups' return values without importing
+// from the root entry.
+export type {
+	ResourceAPIWidget,
+	ResourceWidget,
+	ResourceWidgetProps,
+} from './resource-widget-types.ts'

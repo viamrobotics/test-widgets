@@ -4,6 +4,39 @@ A library of Svelte components for interacting with Viam-powered machines. Each 
 
 Also includes reusable building blocks for visualizations, such as maps (MapLibre), SLAM mapping, 3D point clouds (Three.js), etc.
 
+## Entry points
+
+There is one root entry plus a registry entry point. Which you reach for depends on whether you name widgets **statically** or resolve them **dynamically** at runtime.
+
+### Static use
+
+Import the widget components you need and render them:
+
+```ts
+import { ArmWidget, CameraWidget } from '@viamrobotics/test-widgets'
+```
+
+### Dynamic use
+
+If you resolve widgets at runtime from a resource (for example, a control panel that lists every API of every resource on a scanned machine), import the registry:
+
+```ts
+import { apiWidgetsForResource, widgetForResource } from '@viamrobotics/test-widgets/registry'
+```
+
+- **`@viamrobotics/test-widgets/registry`** — the lookups `apiWidgetsForResource(resource)`, `widgetForResource(resource)`, and `availableAPIWidgets()`, which resolve any resource, component or service. The registry references every widget, so importing it pulls **all** widgets and their optional peers into your build. Keeping these lookups out of the root is what lets the root stay tree-shakeable.
+
+### Optional peer dependencies
+
+A few widgets depend on optional peers. Install a peer only if you render a widget (or import an entry point) that needs it; otherwise it stays out of your build.
+
+| Optional peer         | Required by                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maplibre-gl`         | `MovementSensorWidget` (a **component** — plots GPS position on a map), `NavigationServiceWidget`, and the `maplibre` / `navigation-map` building blocks |
+| `@viamrobotics/three` | `NavigationServiceWidget` (navigation-map 3D geometry)                                                                                                   |
+
+So a consumer that names widgets statically installs a peer only for the widgets it renders: `maplibre-gl` only if it renders `MovementSensorWidget` or `NavigationServiceWidget`, and `@viamrobotics/three` only for `NavigationServiceWidget`. Importing `/registry` references every widget, so it needs both.
+
 ## Playground
 
 The playground (`pnpm dev`) can be used to develop the test-cards against prod robots with prod modules.

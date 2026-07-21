@@ -2,10 +2,9 @@
 	import type { GeoGeometry } from '@viamrobotics/sdk'
 
 	import { T } from '@threlte/core'
-	import { CapsuleGeometry } from '@viamrobotics/motion-tools/lib'
 	import { type BufferGeometry, MathUtils } from 'three'
 
-	import { AxesHelper } from '$lib/components/three'
+	import { AxesHelper, CapsuleGeometry } from '$lib/components/three'
 
 	import { getColor } from './color'
 
