@@ -22,7 +22,7 @@ If you resolve widgets at runtime from a resource (for example, a control panel 
 
 - **`@viamrobotics/test-widgets/registry`** — the composed lookups `apiWidgetsForResource(resource)`, `widgetForResource(resource)`, and `availableAPIWidgets()`, which resolve any resource, component or service. Because it references both registries, importing it pulls **all** widgets and their optional peers into your build; reach for it only when you render both kinds of resource.
 - **`@viamrobotics/test-widgets/component-registry`** — `componentWidgetRegistry`, `componentApiWidgets(resource)`, `componentWidgetForResource(resource)` for `rdk:component:*` resources.
-- **`@viamrobotics/test-widgets/service-registry`** — `serviceWidgetRegistry`, `serviceApiWidgets(resource)`, `serviceWidgetForResource(resource)` for `rdk:service:*` resources (navigation, slam, vision, …).
+- **`@viamrobotics/test-widgets/service-registry`** — `serviceWidgetRegistry`, `serviceApiWidgets(resource)`, `serviceWidgetForResource(resource)` for `rdk:service:*` resources.
 
 ```ts
 import {
@@ -31,7 +31,7 @@ import {
 } from '@viamrobotics/test-widgets/component-registry'
 ```
 
-The point of the scoped registries is isolation: the two never reference each other, so a component-only consumer that imports `/component-registry` never statically pulls in the service widgets (or the `@viamrobotics/three` peer they need). Reach for a scoped registry — rather than the composed `/registry`, which references both — when you render only one kind of resource and want the other kind's widgets kept out of your build.
+The point of the scoped registries is isolation: the two never reference each other, so a component-only consumer that imports `/component-registry` never statically pulls in the service widgets or their peer deps. Reach for a scoped registry over the composed `/registry` when you render only one kind of resource and want the other kind's widgets kept out of your build.
 
 ### Optional peer dependencies
 
