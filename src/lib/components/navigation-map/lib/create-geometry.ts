@@ -1,10 +1,7 @@
-import { ViamObject3D } from '@viamrobotics/three'
-
 import type { BoxGeometry, CapsuleGeometry, Geometry, Shapes, SphereGeometry } from '../types'
 
 export const createGeometry = (type: Shapes, size = 5, rotation = 0): Geometry => {
-	const pose = new ViamObject3D()
-	pose.orientationVector.th = rotation
+	const pose = { orientationVector: { th: rotation } }
 
 	switch (type) {
 		case 'box': {

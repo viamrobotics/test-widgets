@@ -1,8 +1,13 @@
-import type { ViamObject3D } from '@viamrobotics/three'
 import type { LngLat } from 'maplibre-gl'
 
+/** Client-side pose for a navigation-map geometry. Rotation only; never serialized. */
+export interface GeometryPose {
+	/** Orientation vector; only the theta rotation (radians) is used on the map. */
+	orientationVector: { th: number }
+}
+
 interface BaseGeometry {
-	pose: ViamObject3D
+	pose: GeometryPose
 }
 
 export const NavigationTab = {

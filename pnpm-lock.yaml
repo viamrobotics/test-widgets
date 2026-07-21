@@ -114,9 +114,6 @@ importers:
       '@viamrobotics/tailwind-config':
         specifier: ^1.0.0
         version: 1.0.0(tailwindcss@4.2.4)
-      '@viamrobotics/three':
-        specifier: ^0.0.9
-        version: 0.0.9(three@0.183.2)
       '@vitest/browser':
         specifier: ^4.1.8
         version: 4.1.8(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2))(vitest@4.1.5)
@@ -1344,11 +1341,6 @@ packages:
     resolution: {integrity: sha512-KRlWf40Iun7eD4jTF57Wmb2Kpk8EfHukTgNjuAGpDkmM+sUoDdSLlo1HUwFsGiYPWE66vOSvm+mTgjM3lT/m7Q==}
     peerDependencies:
       tailwindcss: '>=4 <5'
-
-  '@viamrobotics/three@0.0.9':
-    resolution: {integrity: sha512-j9uAwmwIQrRVYADalB5vRwj4739f14MU+LISpX/qBoLErcJrVsbJEVHQU39Lin4FYWmPSKDOHvTKgDbHwPvNqQ==}
-    peerDependencies:
-      three: '*'
 
   '@vitest/browser-playwright@4.1.5':
     resolution: {integrity: sha512-CWy0lBQJq97nionyJJdnaU4961IXTl43a7UCu5nHy51IoKxAt6PVIJLo+76rVl7KOOgcWHNkG4kbJu/pW7knvA==}
@@ -4276,10 +4268,6 @@ snapshots:
   '@viamrobotics/tailwind-config@1.0.0(tailwindcss@4.2.4)':
     dependencies:
       tailwindcss: 4.2.4
-
-  '@viamrobotics/three@0.0.9(three@0.183.2)':
-    dependencies:
-      three: 0.183.2
 
   '@vitest/browser-playwright@4.1.5(playwright@1.59.1)(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2))(vitest@4.1.5)':
     dependencies:
