@@ -4,11 +4,11 @@
 	interface Props {
 		value: string
 		options: string[]
-		label?: string
+		label: string
 		onChange: (value: string) => void
 	}
 
-	const { value, options, label = 'Component', onChange }: Props = $props()
+	const { value, options, label, onChange }: Props = $props()
 </script>
 
 <Label>
@@ -21,7 +21,7 @@
 			onChange((event.target as HTMLSelectElement).value)
 		}}
 	>
-		<option value="">Select a component…</option>
+		<option value="">Select a frame…</option>
 		{#each options as name (name)}
 			<option value={name}>{name}</option>
 		{/each}

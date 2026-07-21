@@ -7,7 +7,6 @@ import {
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
 	GripperOpenWidget,
-	MotionMoveWidget,
 	MotionServiceWidget,
 } from '../components'
 import { isKnownResource } from '../is-known-resource'
@@ -40,10 +39,8 @@ describe('availableAPIWidgets', () => {
 		expect(availableAPIWidgets()['rdk:component:camera']).toEqual([])
 	})
 
-	it('maps the motion service to its API widgets', () => {
-		expect(availableAPIWidgets()['rdk:service:motion']).toEqual([
-			{ id: 'move', label: 'Move', widgets: [MotionMoveWidget] },
-		])
+	it('registers the motion service as widget-only (no standalone API widgets)', () => {
+		expect(availableAPIWidgets()['rdk:service:motion']).toEqual([])
 	})
 
 	it('excludes resources that have no test card', () => {
@@ -62,10 +59,8 @@ describe('apiWidgetsForResource', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
 	})
 
-	it("returns the motion service's API widgets", () => {
-		expect(
-			apiWidgetsForResource(resourceName('rdk', 'service', 'motion')).map((widget) => widget.id)
-		).toEqual(['move'])
+	it('returns an empty list for the widget-only motion service', () => {
+		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
 
 	it('returns an empty list for an unrecognized resource', () => {
