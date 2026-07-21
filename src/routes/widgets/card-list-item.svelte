@@ -39,7 +39,7 @@
 	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus, ResourceStatusText } from '$lib/resource'
 	import { ResourceTriplets } from '$lib/resource-triplet'
-	import { apiWidgetsForResource, widgetForResource } from '$lib/resource-widget'
+	import { apiWidgetsForResource, widgetForResource } from '$lib/registry'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'

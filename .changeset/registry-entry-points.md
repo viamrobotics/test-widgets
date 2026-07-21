@@ -2,4 +2,4 @@
 '@viamrobotics/test-widgets': minor
 ---
 
-Split the resource-widget registry into separate entry points and clean up peer dependencies.
+Move the registry lookups (`apiWidgetsForResource`, `widgetForResource`, `availableAPIWidgets`) to a new `/registry` entry point so the package root stays tree-shakeable, and declare `maplibre-gl` and `@viamrobotics/three` as optional peer dependencies.
