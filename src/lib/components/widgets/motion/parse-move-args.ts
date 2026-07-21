@@ -20,11 +20,11 @@ export type MoveArgs = [PoseInFrame, string, WorldState | undefined, Constraints
  * Non-empty JSON is parsed with the generated message classes and throws on
  * invalid input — callers should catch and surface the error.
  *
- * @param componentName - Name of the component to move.
+ * @param frameName - The frame to move.
  * @param input - The pose, reference frame, and optional world-state/constraints JSON.
- * @returns The `[destination, componentName, worldState?, constraints?]` tuple.
+ * @returns The `[destination, frameName, worldState?, constraints?]` tuple.
  */
-export const parseMoveArgs = (componentName: string, input: MoveInput): MoveArgs => {
+export const parseMoveArgs = (frameName: string, input: MoveInput): MoveArgs => {
 	const destination: PoseInFrame = {
 		referenceFrame: input.referenceFrame,
 		pose: input.pose,
@@ -38,5 +38,5 @@ export const parseMoveArgs = (componentName: string, input: MoveInput): MoveArgs
 			? undefined
 			: Constraints.fromJsonString(input.constraintsJson)
 
-	return [destination, componentName, worldState, constraints]
+	return [destination, frameName, worldState, constraints]
 }

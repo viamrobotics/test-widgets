@@ -9,12 +9,14 @@
 
 	import type { MoveInput } from './parse-move-args'
 
-	import PoseInFrameInput from './pose-in-frame-input.svelte'
+	import PoseInput from './pose-input.svelte'
 
 	interface Props {
-		componentName: string
+		/** The frame being moved. Gates execution and re-seeds the editor on change. */
+		frameName: string
+		/** The reference frame the destination pose is expressed in. */
+		destination: string
 		currentPose?: Pose
-		currentReferenceFrame?: string
 		isPending: boolean
 		lastError: Error | null
 		storageKey: string
@@ -22,9 +24,9 @@
 	}
 
 	const {
-		componentName,
+		frameName,
+		destination,
 		currentPose,
-		currentReferenceFrame,
 		isPending,
 		lastError,
 		storageKey,
@@ -33,25 +35,19 @@
 
 	const zeroPose: Pose = { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 }
 
-	let edit = $state<{ component: string; referenceFrame: string; pose: Pose }>()
-	const isEdited = $derived(edit?.component === componentName)
-	const referenceFrame = $derived(
-		isEdited && edit ? edit.referenceFrame : (currentReferenceFrame ?? 'world')
-	)
-
+	const editKey = $derived(JSON.stringify([frameName, destination]))
+	let edit = $state<{ key: string; pose: Pose }>()
+	const isEdited = $derived(edit?.key === editKey)
 	const pose = $derived(isEdited && edit ? edit.pose : (currentPose ?? zeroPose))
 
-	// PersistedState is created inside $derived so Svelte can track the storageKey
-	// dependency. The localStorage read on construction is benign and idempotent.
-	// storageKey is stable for the lifetime of this component.
 	const worldState = $derived(new PersistedState(`${storageKey}/world-state`, ''))
 	const constraints = $derived(new PersistedState(`${storageKey}/constraints`, ''))
 
-	const disabled = $derived(componentName === '' || isPending)
+	const disabled = $derived(frameName === '' || isPending)
 
 	const execute = () => {
 		onExecute({
-			referenceFrame,
+			referenceFrame: destination,
 			pose,
 			worldStateJson: worldState.current,
 			constraintsJson: constraints.current,
@@ -60,14 +56,10 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<PoseInFrameInput
-		{referenceFrame}
+	<PoseInput
 		{pose}
-		onReferenceFrameChange={(frame) => {
-			edit = { component: componentName, referenceFrame: frame, pose }
-		}}
 		onPoseChange={(next) => {
-			edit = { component: componentName, referenceFrame, pose: next }
+			edit = { key: editKey, pose: next }
 		}}
 	/>
 

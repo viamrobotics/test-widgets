@@ -7,17 +7,19 @@
 		useRobotClient,
 	} from '@viamrobotics/svelte-sdk'
 
-	import ComponentNameSelect from './component-name-select.svelte'
-	import { movableFrameNames, parentFrame } from './frame-system-config'
 	import Move from './move.svelte'
 	import { type MoveInput, parseMoveArgs } from './parse-move-args'
 
 	interface Props {
 		partID: string
 		resourceName: string
+		/** The frame to move — a frame from the machine's frame system. */
+		frameName: string
+		/** The reference frame the destination pose is expressed in. */
+		destination: string
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, frameName, destination }: Props = $props()
 
 	const robotClient = useRobotClient(() => partID)
 	const client = createResourceClient(
@@ -27,26 +29,14 @@
 	)
 
 	const move = createResourceMutation(client, 'move')
-	const frameSystem = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
-		refetchInterval: 5000,
-	}))
-	const frameNames = $derived(movableFrameNames(frameSystem.data))
 
-	let selectedName = $state<string>()
-	const componentName = $derived(selectedName ?? frameNames[0] ?? '')
-
-	const destinationFrame = $derived(parentFrame(frameSystem.data, componentName))
-	const poseArgs = $derived<Parameters<RobotClient['getPose']>>([
-		componentName,
-		destinationFrame,
-		[],
-	])
-
+	// Pre-fill the editor with the frame's current pose in the destination frame.
+	const poseArgs = $derived<Parameters<RobotClient['getPose']>>([frameName, destination, []])
 	const poseQuery = createRobotQuery(
 		robotClient,
 		'getPose',
 		() => poseArgs,
-		() => ({ enabled: componentName !== '' })
+		() => ({ enabled: frameName !== '' })
 	)
 
 	const currentPose = $derived(poseQuery.data?.pose)
@@ -57,28 +47,19 @@
 	const executeMove = (input: MoveInput) => {
 		try {
 			parseError = undefined
-			move.mutate(parseMoveArgs(componentName, input), {})
+			move.mutate(parseMoveArgs(frameName, input), {})
 		} catch (error) {
 			parseError = error instanceof Error ? error : new Error(String(error))
 		}
 	}
 </script>
 
-<div class="flex flex-col gap-4">
-	<ComponentNameSelect
-		value={componentName}
-		options={frameNames}
-		onChange={(value) => {
-			selectedName = value
-		}}
-	/>
-	<Move
-		{componentName}
-		{currentPose}
-		currentReferenceFrame={destinationFrame}
-		isPending={move.isPending}
-		lastError={parseError ?? move.error ?? poseError}
-		storageKey={`${partID}/${resourceName}/motion-move`}
-		onExecute={executeMove}
-	/>
-</div>
+<Move
+	{frameName}
+	{destination}
+	{currentPose}
+	isPending={move.isPending}
+	lastError={parseError ?? move.error ?? poseError}
+	storageKey={`${partID}/${resourceName}/motion-move`}
+	onExecute={executeMove}
+/>

@@ -14,9 +14,9 @@ const baseInput: MoveInput = {
 
 describe('parseMoveArgs', () => {
 	it('passes the destination pose and reference frame through unchanged', () => {
-		const [destination, componentName] = parseMoveArgs('my-arm', baseInput)
+		const [destination, frameName] = parseMoveArgs('my-arm', baseInput)
 
-		expect(componentName).toBe('my-arm')
+		expect(frameName).toBe('my-arm')
 		expect(destination).toEqual({ referenceFrame: 'world', pose })
 	})
 

@@ -4,19 +4,19 @@
 >
 	import type { Pose } from '@viamrobotics/sdk'
 
-	const poseLabelsList = Object.entries({
-		x: 'X',
-		y: 'Y',
-		z: 'Z',
-		oX: 'OX',
-		oY: 'OY',
-		oZ: 'OZ',
-		theta: 'θ',
-	}) as [keyof Pose, string][]
+	const poseLabelsList: [keyof Pose, string][] = [
+		['x', 'X'],
+		['y', 'Y'],
+		['z', 'Z'],
+		['oX', 'OX'],
+		['oY', 'OY'],
+		['oZ', 'OZ'],
+		['theta', 'θ'],
+	]
 </script>
 
 <script lang="ts">
-	import { Button, Icon, Input, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
@@ -28,13 +28,11 @@
 	import { parsePastedPose } from './parse-pasted-pose'
 
 	interface Props {
-		referenceFrame: string
 		pose: Pose
-		onReferenceFrameChange: (frame: string) => void
 		onPoseChange: (pose: Pose) => void
 	}
 
-	const { referenceFrame, pose, onReferenceFrameChange, onPoseChange }: Props = $props()
+	const { pose, onPoseChange }: Props = $props()
 
 	let useRadians = $state(false)
 
@@ -85,7 +83,8 @@
 				/>
 
 				<span slot="description">
-					The target pose expressed in the given reference frame. Translations are in millimeters.
+					The target pose expressed in the selected reference frame. Translations are in
+					millimeters.
 				</span>
 			</Tooltip>
 		</span>
@@ -100,19 +99,6 @@
 			<PasteButton onPaste={handlePaste} />
 		</div>
 	</div>
-
-	<Label>
-		Reference frame
-
-		<Input
-			slot="input"
-			value={referenceFrame}
-			placeholder="world"
-			on:input={(event) => {
-				onReferenceFrameChange((event.target as HTMLInputElement).value)
-			}}
-		/>
-	</Label>
 
 	<Table>
 		<thead>

@@ -17,7 +17,8 @@ describe('Motion move', () => {
 
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>> = {}) =>
 		render(Subject, {
-			componentName: 'my-arm',
+			frameName: 'my-arm',
+			destination: 'world',
 			isPending: false,
 			lastError: null,
 			storageKey: `test-move-${keySeq++}`,
@@ -25,8 +26,8 @@ describe('Motion move', () => {
 			...props,
 		})
 
-	it('disables Execute when no component name is set', () => {
-		renderSubject({ componentName: '' })
+	it('disables Execute when no frame is set', () => {
+		renderSubject({ frameName: '' })
 
 		expect(screen.getByRole('button', { name: /execute/iu })).toHaveAttribute(
 			'aria-disabled',
@@ -57,6 +58,15 @@ describe('Motion move', () => {
 		})
 	})
 
+	it('uses the destination frame as the reference frame on execute', async () => {
+		const onExecute = vi.fn()
+		renderSubject({ destination: 'base', onExecute })
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(onExecute).toHaveBeenCalledWith(expect.objectContaining({ referenceFrame: 'base' }))
+	})
+
 	it('pre-fills the pose editor from the current pose', () => {
 		renderSubject({ currentPose: { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 } })
 
@@ -65,12 +75,6 @@ describe('Motion move', () => {
 		expect(inputs[1]).toHaveValue(2)
 		expect(inputs[2]).toHaveValue(3)
 		expect(inputs[6]).toHaveValue(45)
-	})
-
-	it('pre-fills the reference frame from the parent frame', () => {
-		renderSubject({ currentReferenceFrame: 'base' })
-
-		expect(screen.getByDisplayValue('base')).toBeInTheDocument()
 	})
 
 	it('executes with the pre-filled current pose when unedited', async () => {
