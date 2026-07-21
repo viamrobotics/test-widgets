@@ -67,7 +67,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
       - name: Test
-        run: npx vitest run --coverage
+        run: pnpm test:coverage
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
