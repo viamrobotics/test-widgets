@@ -1,5 +1,13 @@
 # @viamrobotics/test-widgets
 
+## 0.9.0
+
+### Minor Changes
+
+- 6148810: Add optional controlled `input` and `onInputChange` props to `DoCommandWidget` so callers can set the editor value without going through the header snippet
+- 09dc32c: Move the registry lookups (`apiWidgetsForResource`, `widgetForResource`, `availableAPIWidgets`) to a new `/registry` entry point so the package root stays tree-shakeable, and declare `maplibre-gl` and `@viamrobotics/three` as optional peer dependencies.
+- f9ffc76: Add motion service move widget
+
 ## 0.8.0
 
 ### Minor Changes
