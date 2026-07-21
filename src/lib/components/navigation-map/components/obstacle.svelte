@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
-	import { AxesHelper, CapsuleGeometry } from '@viamrobotics/motion-tools/lib'
 	import { theme } from '@viamrobotics/prime-core/theme'
 	import {
 		LngLat,
@@ -10,6 +9,8 @@
 	} from 'maplibre-gl'
 	import { fromStore } from 'svelte/store'
 	import { type BufferGeometry, Vector2 } from 'three'
+
+	import { AxesHelper, CapsuleGeometry } from '$lib/components/three'
 
 	import type { Obstacle } from '../types'
 

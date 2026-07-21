@@ -12,7 +12,7 @@
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { type NamedResourceStatus } from '$lib/resource'
 	import { ResourceTriplets } from '$lib/resource-triplet'
-	import { showResourceWidget } from '$lib/resource-widget'
+	import { showResourceWidget } from '$lib/show-resource-widget'
 
 	import { collapseAll, expandAll } from './card-list-item.svelte'
 	import CardList from './card-list.svelte'
@@ -52,7 +52,7 @@
 	})
 
 	// The machine's builtin motion service is hidden from the generic control view
-	// (see hiddenResources in resource-widget.ts) because it always exists and
+	// (see hiddenResources in show-resource-widget.ts) because it always exists and
 	// confused users. Pull it out before filtering so the playground always
 	// surfaces its test widget.
 	const motionResource = $derived(

@@ -10,13 +10,9 @@ import {
 	MotionMoveWidget,
 	MotionServiceWidget,
 } from '../components'
-import {
-	apiWidgetsForResource,
-	availableAPIWidgets,
-	isKnownResource,
-	showResourceWidget,
-	widgetForResource,
-} from '../resource-widget'
+import { isKnownResource } from '../is-known-resource'
+import { apiWidgetsForResource, availableAPIWidgets, widgetForResource } from '../resource-widget'
+import { showResourceWidget } from '../show-resource-widget'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
 	new ResourceName({ namespace, type, subtype, name: 'test' })
@@ -35,7 +31,7 @@ describe('availableAPIWidgets', () => {
 	})
 
 	it('folds the query views in alongside the action views', () => {
-		const armIds = availableAPIWidgets()['rdk:component:arm'].map((widget) => widget.id)
+		const armIds = availableAPIWidgets()['rdk:component:arm']?.map((widget) => widget.id) ?? []
 		expect(armIds).toContain('move-to-joint-positions')
 		expect(armIds).toContain('get-joint-positions')
 	})
