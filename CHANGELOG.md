@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.9.2
+
+### Patch Changes
+
+- d0d6746: deps: remove `@viamrobotics/three` dependency
+
 ## 0.9.1
 
 ### Patch Changes
