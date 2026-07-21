@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.9.1
+
+### Patch Changes
+
+- 52a1016: Update motion service widget to have separate `Move` widget and full card with frame and parent select.
+
 ## 0.9.0
 
 ### Minor Changes
