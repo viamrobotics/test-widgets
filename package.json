@@ -36,16 +36,8 @@
 			"svelte": "./dist/index.js"
 		},
 		"./registry": {
-			"types": "./dist/resource-widget.d.ts",
-			"svelte": "./dist/resource-widget.js"
-		},
-		"./component-registry": {
-			"types": "./dist/component-widget-registry.d.ts",
-			"svelte": "./dist/component-widget-registry.js"
-		},
-		"./service-registry": {
-			"types": "./dist/service-widget-registry.d.ts",
-			"svelte": "./dist/service-widget-registry.js"
+			"types": "./dist/registry.d.ts",
+			"svelte": "./dist/registry.js"
 		}
 	},
 	"publishConfig": {

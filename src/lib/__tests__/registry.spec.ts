@@ -11,7 +11,7 @@ import {
 	MotionServiceWidget,
 } from '../components'
 import { isKnownResource } from '../is-known-resource'
-import { apiWidgetsForResource, availableAPIWidgets, widgetForResource } from '../resource-widget'
+import { apiWidgetsForResource, availableAPIWidgets, widgetForResource } from '../registry'
 import { showResourceWidget } from '../show-resource-widget'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
