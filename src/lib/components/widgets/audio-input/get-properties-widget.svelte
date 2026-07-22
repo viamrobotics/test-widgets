@@ -3,9 +3,8 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import Properties from '$lib/components/audio-properties.svelte'
 	import Query from '$lib/components/query.svelte'
-
-	import Properties from './properties.svelte'
 
 	interface Props {
 		partID: string

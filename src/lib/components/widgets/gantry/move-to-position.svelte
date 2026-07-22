@@ -4,6 +4,7 @@
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import Table from '$lib/components/table.svelte'
+	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	import { matchArrayLength } from './match-array-length'
 
@@ -36,12 +37,16 @@
 	})
 
 	const onChangePos = (index: number, event: Event) => {
-		const target = event.target as HTMLInputElement
-		desiredPositions[index] = target.valueAsNumber
+		const value = numberValueFromEvent(event)
+		if (value !== undefined) {
+			desiredPositions[index] = value
+		}
 	}
 	const onChangeSpeed = (index: number, event: Event) => {
-		const target = event.target as HTMLInputElement
-		desiredSpeeds[index] = target.valueAsNumber
+		const value = numberValueFromEvent(event)
+		if (value !== undefined) {
+			desiredSpeeds[index] = value
+		}
 	}
 	const resetToZero = () => {
 		desiredSpeeds = matchArrayLength([], positions, 50)

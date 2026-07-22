@@ -16,7 +16,7 @@
 </script>
 
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
@@ -24,15 +24,18 @@
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
-
-	import { parsePastedPose } from './parse-pasted-pose'
+	import { parsePastedPose } from '$lib/parse-pasted-pose'
 
 	interface Props {
 		pose: Pose
 		onPoseChange: (pose: Pose) => void
+		/** Heading shown above the input table. */
+		title: string
+		/** Optional info-tooltip text shown next to the title. */
+		description?: string
 	}
 
-	const { pose, onPoseChange }: Props = $props()
+	const { pose, onPoseChange, title, description }: Props = $props()
 
 	let useRadians = $state(false)
 
@@ -41,6 +44,8 @@
 		theta: useRadians ? degreesToRadians(pose.theta) : pose.theta,
 	})
 
+	// Copy the stored pose (theta in degrees) so it round-trips through paste
+	// regardless of the display unit currently selected.
 	const copyData = $derived(JSON.stringify(pose))
 
 	const handlePaste = (data: string): boolean => {
@@ -57,10 +62,6 @@
 		onPoseChange({ ...pose, [key]: nextValue })
 	}
 
-	const zero = () => {
-		onPoseChange({ x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 })
-	}
-
 	const poseUnits = $derived({
 		x: 'mm',
 		y: 'mm',
@@ -75,18 +76,17 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
-			Destination pose
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
+			{title}
+			{#if description}
+				<Tooltip>
+					<Icon
+						name="information-outline"
+						cx="text-gray-6"
+					/>
 
-				<span slot="description">
-					The target pose expressed in the selected reference frame. Translations are in
-					millimeters.
-				</span>
-			</Tooltip>
+					<span slot="description">{description}</span>
+				</Tooltip>
+			{/if}
 		</span>
 		<div class="flex gap-1">
 			<AngleUnitToggle
@@ -131,24 +131,4 @@
 			{/each}
 		</tbody>
 	</Table>
-
-	<div class="flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<span slot="description"> Will update the pose values but will not execute </span>
-			</Tooltip>
-		</span>
-		<Button
-			class="w-fit"
-			onclick={zero}
-		>
-			Zero
-		</Button>
-	</div>
 </div>

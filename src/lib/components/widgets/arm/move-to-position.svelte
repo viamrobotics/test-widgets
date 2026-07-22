@@ -1,15 +1,10 @@
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
 
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import PasteButton from '$lib/components/paste-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import PoseEditor from '$lib/components/pose-editor.svelte'
 
 	interface Props {
 		endPosition: Pose
@@ -21,7 +16,6 @@
 
 	// svelte-ignore state_referenced_locally
 	let desiredPosition = $state({ ...endPosition })
-	let useRadians = $state(false)
 
 	const resetToZero = () => {
 		desiredPosition = {
@@ -38,118 +32,17 @@
 	const resetToCurrent = () => {
 		desiredPosition = { ...endPosition }
 	}
-
-	const displayPosition = $derived({
-		x: desiredPosition.x,
-		y: desiredPosition.y,
-		z: desiredPosition.z,
-		oX: desiredPosition.oX,
-		oY: desiredPosition.oY,
-		oZ: desiredPosition.oZ,
-		theta: useRadians ? degreesToRadians(desiredPosition.theta) : desiredPosition.theta,
-	})
-
-	const copyData = $derived(JSON.stringify(displayPosition))
-	const handlePaste = (data: string): boolean => {
-		try {
-			desiredPosition = JSON.parse(data) as Pose
-		} catch {
-			return false
-		}
-		return true
-	}
-
-	const handleAngleInputChange = (key: keyof Pose, inputValue: number) => {
-		if (key === 'theta') {
-			desiredPosition[key] = useRadians ? radiansToDegrees(inputValue) : inputValue
-		} else {
-			desiredPosition[key] = inputValue
-		}
-	}
-
-	const positionLabels: Record<keyof Pose, string> = {
-		x: 'X',
-		y: 'Y',
-		z: 'Z',
-		oX: 'OX',
-		oY: 'OY',
-		oZ: 'OZ',
-		theta: 'θ',
-	} as const
-	const positionUnits = $derived({
-		x: 'mm',
-		y: 'mm',
-		z: 'mm',
-		oX: '',
-		oY: '',
-		oZ: '',
-		theta: useRadians ? 'rad' : 'deg',
-	} as const satisfies Record<keyof Pose, string>)
-
-	const positionLabelsList = Object.entries(positionLabels) as [keyof Pose, string][]
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<!-- Controls Header -->
-	<div class="flex items-center justify-between">
-		<span class="flex flex-row items-center gap-1 text-sm">
-			Pose Values
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<span slot="description">
-					Pose is with respect to the arm origin and does not take into account the motion service
-					or frame system.
-				</span>
-			</Tooltip>
-		</span>
-		<div class="flex gap-1">
-			<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
-			<CopyButton data={copyData} />
-			<PasteButton onPaste={handlePaste} />
-		</div>
-	</div>
-
-	<Table>
-		<thead>
-			<tr>
-				<th>Pose</th>
-				<th>Value</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each positionLabelsList as labelList (labelList)}
-				{@const [key, label] = labelList}
-				{@const value = Number.parseFloat(formatNumeric(displayPosition[key]))}
-				<tr>
-					<th>
-						<span class="relative inline-flex justify-center">
-							{label}
-							<abbr class="text-subtle-2 absolute left-full ml-1">{positionUnits[key]}</abbr>
-						</span>
-					</th>
-					<th>
-						<NumericInput
-							cx="max-w-[76px]"
-							{value}
-							on:change={(event) => {
-								const inputValue = numberValueFromEvent(event) ?? 0
-								handleAngleInputChange(key, inputValue)
-							}}
-						/>
-					</th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
+	<PoseEditor
+		pose={desiredPosition}
+		onPoseChange={(next) => {
+			desiredPosition = next
+		}}
+		title="Pose Values"
+		description="Pose is with respect to the arm origin and does not take into account the motion service or frame system."
+	/>
 
 	<div class="mb-2 flex flex-col gap-2">
 		<span class="flex flex-row gap-2">

@@ -7,11 +7,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { assertExists } from '$lib/assert'
 
-import Subject from '../pose-input.svelte'
+import Subject from '../pose-editor.svelte'
 
 const defaultPose: Pose = { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 90 }
 
-describe('Motion pose input', () => {
+describe('PoseEditor', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {
@@ -22,6 +22,7 @@ describe('Motion pose input', () => {
 		render(Subject, {
 			pose: defaultPose,
 			onPoseChange: vi.fn(),
+			title: 'Pose',
 			...props,
 		})
 
@@ -29,6 +30,12 @@ describe('Motion pose input', () => {
 		renderSubject()
 
 		expect(screen.getAllByRole('spinbutton')).toHaveLength(7)
+	})
+
+	it('shows the description in an info tooltip when provided', () => {
+		renderSubject({ description: 'expressed in the reference frame' })
+
+		expect(screen.getByText(/expressed in the reference frame/iu)).toBeInTheDocument()
 	})
 
 	it('emits pose changes when a value is edited', async () => {

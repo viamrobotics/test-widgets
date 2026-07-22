@@ -13,8 +13,8 @@ const isPose = (value: unknown): value is Pose => {
 
 /**
  * Parses a clipboard string as a pose. Accepts a JSON object with numeric
- * `x`, `y`, `z`, `oX`, `oY`, `oZ`, and `theta` fields — the same shape the arm
- * `MoveToPosition` widget copies, so poses can be pasted between the two.
+ * `x`, `y`, `z`, `oX`, `oY`, `oZ`, and `theta` fields — the same shape the pose
+ * editor copies, so poses can be pasted between any widget that edits one.
  *
  * @param data - The pasted string.
  * @returns The parsed pose, or `undefined` if it is not a valid pose.
