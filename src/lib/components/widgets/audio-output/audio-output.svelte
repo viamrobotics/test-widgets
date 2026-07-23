@@ -4,6 +4,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import Properties from '$lib/components/audio-properties.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Query from '$lib/components/query.svelte'
@@ -13,7 +14,6 @@
 
 	import { ExtToCodec, MimeToCodec } from './codec.ts'
 	import { createAudioPlayer } from './create-audio-player.svelte.ts'
-	import Properties from './properties.svelte'
 
 	interface Props {
 		partID: string

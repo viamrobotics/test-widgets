@@ -3,7 +3,7 @@ import type { ComponentProps } from 'svelte'
 import { render, screen } from '@testing-library/svelte'
 import { describe, expect, it } from 'vitest'
 
-import Subject from '../properties.svelte'
+import Subject from '../audio-properties.svelte'
 
 const renderSubject = (props: Partial<ComponentProps<typeof Subject>> = {}) =>
 	render(Subject, {
@@ -13,7 +13,7 @@ const renderSubject = (props: Partial<ComponentProps<typeof Subject>> = {}) =>
 		...props,
 	})
 
-describe('AudioOutput Properties', () => {
+describe('AudioProperties', () => {
 	it('displays supported codecs', () => {
 		renderSubject({ supportedCodecs: ['mp3', 'pcm16'] })
 		expect(screen.getByText('mp3, pcm16')).toBeInTheDocument()
@@ -25,12 +25,12 @@ describe('AudioOutput Properties', () => {
 	})
 
 	it('displays sample rate', () => {
-		renderSubject({ sampleRateHz: 44100 })
-		expect(screen.getByText('44100 Hz')).toBeInTheDocument()
+		renderSubject({ sampleRateHz: 48000 })
+		expect(screen.getByText('48000 Hz')).toBeInTheDocument()
 	})
 
 	it('displays number of channels', () => {
-		renderSubject({ numChannels: 1 })
-		expect(screen.getByText('1')).toBeInTheDocument()
+		renderSubject({ numChannels: 2 })
+		expect(screen.getByText('2')).toBeInTheDocument()
 	})
 })

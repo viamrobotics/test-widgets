@@ -1,15 +1,14 @@
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
 
-	import { Button, Progress } from '@viamrobotics/prime-core'
+	import { Button, Icon, Progress, Tooltip } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { PersistedState } from 'runed'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
+	import PoseEditor from '$lib/components/pose-editor.svelte'
 
 	import type { MoveInput } from './parse-move-args'
-
-	import PoseInput from './pose-input.svelte'
 
 	interface Props {
 		/** The frame being moved. Gates execution and re-seeds the editor on change. */
@@ -56,12 +55,36 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<PoseInput
+	<PoseEditor
 		{pose}
 		onPoseChange={(next) => {
 			edit = { key: editKey, pose: next }
 		}}
+		title="Destination pose"
+		description="The target pose expressed in the selected reference frame. Translations are in millimeters."
 	/>
+
+	<div class="flex flex-col gap-2">
+		<span class="flex flex-row gap-2">
+			<h4 class="text-xs font-semibold">Quick set</h4>
+			<Tooltip>
+				<Icon
+					name="information-outline"
+					cx="text-gray-6"
+				/>
+
+				<span slot="description"> Will update the pose values but will not execute </span>
+			</Tooltip>
+		</span>
+		<Button
+			class="w-fit"
+			onclick={() => {
+				edit = { key: editKey, pose: zeroPose }
+			}}
+		>
+			Zero
+		</Button>
+	</div>
 
 	<div class="flex flex-col gap-1">
 		<span class="text-xs font-medium">

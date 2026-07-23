@@ -3,6 +3,8 @@
 
 	import { Label, NumericInput, Select } from '@viamrobotics/prime-core'
 
+	import { numberValueFromEvent } from '$lib/event-handlers'
+
 	import Download from './download.svelte'
 
 	interface Props {
@@ -25,8 +27,9 @@
 	] as const
 
 	const handlePointSizeChange = (event: Event) => {
-		if (event.target instanceof HTMLInputElement) {
-			onPointSizeChange(event.target.valueAsNumber)
+		const value = numberValueFromEvent(event)
+		if (value !== undefined) {
+			onPointSizeChange(value)
 		}
 	}
 
