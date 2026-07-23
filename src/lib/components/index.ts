@@ -38,6 +38,7 @@ export type {
 export { default as DiscoveryWidget } from './widgets/discovery/discovery.svelte'
 
 export { default as DoCommandWidget } from './widgets/do-command/do-command.svelte'
+export { default as ResourceDoCommandWidget } from './widgets/do-command/resource-do-command.svelte'
 
 export { default as EncoderWidget } from './widgets/encoder/encoder.svelte'
 export { default as EncoderGetPositionWidget } from './widgets/encoder/get-position-widget.svelte'
