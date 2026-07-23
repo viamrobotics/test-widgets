@@ -1,5 +1,12 @@
 # @viamrobotics/test-widgets
 
+## 0.10.1
+
+### Patch Changes
+
+- 02ed7e0: Export `supportsDoCommand` utility, helpful for building dynamic APIs with the registry
+- b622997: Add `ResourceDoCommandWidget`, a registry-conforming DoCommand widget that takes `{ partID, resourceName }` and resolves the full `ResourceName` internally, so it can be dropped into the resource widget registry alongside the other `ResourceWidget`s.
+
 ## 0.10.0
 
 ### Minor Changes
