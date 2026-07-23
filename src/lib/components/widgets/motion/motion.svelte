@@ -43,6 +43,8 @@
 					options={frameNames}
 					onChange={(value) => {
 						selectedFrame = value
+						// reset the destination to the newly selected frame's parent
+						selectedDestination = undefined
 					}}
 				/>
 				<FrameSelect
