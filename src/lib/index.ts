@@ -6,7 +6,7 @@ export {
 
 export { apiDocsHref } from './api-docs-href'
 
-export { clientForResource } from './client-map'
+export { clientForResource, supportsDoCommand } from './client-map'
 export * from './components'
 
 export { getResourceAPI } from './get-resource-api'
