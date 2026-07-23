@@ -3,6 +3,7 @@
 	import { Button, Label, Select, Switch, ToggleButtons } from '@viamrobotics/prime-core'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import { PersistedState } from 'runed'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
@@ -37,14 +38,12 @@
 		() => resourceName,
 		'camera'
 	)
-	let isPlaying = $state(false)
-	$effect(() => {
-		// Reset the play gate whenever the camera identity changes so a swapped
-		// resource doesn't auto-start using the previous instance's state.
-		void resourceName
-		void partID
-		isPlaying = false
-	})
+
+	const waitToStartFeed = $derived(
+		new PersistedState(`camera-wait-to-start-feed/${partID}/${resourceName}`, false)
+	)
+
+	let isPlaying = $derived(!waitToStartFeed.current)
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
@@ -167,6 +166,19 @@
 					api="rdk:component:camera"
 					headingId={getImagesHeadingID}
 				/>
+			</div>
+			<div class="flex gap-4 px-4 pt-3">
+				<Label position="left">
+					Wait to start feed
+					<Switch
+						slot="input"
+						annotated
+						on={waitToStartFeed.current}
+						on:change={(event) => {
+							waitToStartFeed.current = event.detail
+						}}
+					/>
+				</Label>
 			</div>
 			{#if isPlaying}
 				<div class="flex gap-4 p-4 pb-3">
