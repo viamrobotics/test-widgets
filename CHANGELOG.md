@@ -1,5 +1,16 @@
 # @viamrobotics/test-widgets
 
+## 0.10.0
+
+### Minor Changes
+
+- 14aa9d9: Auto-show the camera feed by default and add an opt-in "Wait to start feed" toggle persisted per part and component
+
+### Patch Changes
+
+- 99e9828: Reset destination to parent frame on frame select in motion widget
+- 9c0912d: Consolidate components into reusable units and bug fix events on the pcd widget
+
 ## 0.9.2
 
 ### Patch Changes
