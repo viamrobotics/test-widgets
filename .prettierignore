@@ -9,3 +9,9 @@ bun.lockb
 /static/
 
 .changeset/*
+
+# >>> claude-config (managed) >>>
+# Claude Code (managed by claude-config; byte-diffed by `claude-config doctor`)
+.claude/
+.mcp.json
+# <<< claude-config (managed) <<<

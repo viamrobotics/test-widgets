@@ -33,3 +33,9 @@ test-results
 .wireit
 
 .pnpm-store
+
+# >>> claude-config (managed) >>>
+# Claude Code
+.claude/worktrees
+.claude/settings.local.json
+# <<< claude-config (managed) <<<

@@ -1,5 +1,21 @@
 # test-widgets
 
+<!-- claude-config:rules-table start -->
+
+| Rule                    | Loads when                                          |
+| ----------------------- | --------------------------------------------------- |
+| `svelte.md`             | editing `.svelte`, `.svelte.ts`, `.svelte.js`       |
+| `typescript.md`         | editing `.ts`                                       |
+| `testing-frontend.md`   | editing test files (`**/*.spec.ts`)                 |
+| `pr-description.md`     | editing files under `.changeset/`                   |
+| `changesets.md`         | editing files under `.changeset/` or `CHANGELOG.md` |
+| `code-comments.md`      | editing any code file                               |
+| `editing-discipline.md` | every session (edit from current state, in scope)   |
+| `verification.md`       | every session (verify before reporting done)        |
+| `design-system.md`      | every session (design system context)               |
+
+<!-- claude-config:rules-table end -->
+
 A library of Svelte components for interacting with Viam-powered machines. Each widget provides a test interface for a specific resource type — arms, bases, cameras, motors, sensors, and more — allowing users to send commands, view live data, and control hardware directly from the browser.
 
 ## Tech stack
@@ -30,18 +46,6 @@ pnpm test:e2e      # Playwright E2E
 ## Code organization
 
 Organize code by feature with **one focused unit per file**. File names should describe what the code does. Avoid generic bucket files (`utils`, `helpers`, `constants`).
-
-## Topic-specific rules
-
-Detailed guidance lives in `.claude/rules/`. Path-scoped rules load when Claude reads matching files; rules without `paths` load every session.
-
-| Rule                  | Loads when                                          |
-| --------------------- | --------------------------------------------------- |
-| `svelte.md`           | editing `.svelte`, `.svelte.ts`, `.svelte.js`       |
-| `typescript.md`       | editing `.ts`                                       |
-| `testing-frontend.md` | editing frontend test files (`src/**/*.spec.ts`)    |
-| `pr-description.md`   | editing files under `.changeset/`                   |
-| `changesets.md`       | editing files under `.changeset/` or `CHANGELOG.md` |
 
 ---
 

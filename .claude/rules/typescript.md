@@ -1,6 +1,6 @@
 ---
 paths:
-  - '**/*.ts'
+  - "**/*.ts"
 ---
 
 # TypeScript Best Practices
@@ -12,13 +12,12 @@ Use TypeScript with `strict: true`. See the [TypeScript Handbook](https://www.ty
 Prefer `interface` for object shapes (extendable), `type` for unions and computed types:
 
 ```typescript
-interface Pose {
-	x: number
-	y: number
-	z: number
+interface ButtonOptions {
+  variant: "primary" | "secondary" | "danger";
+  disabled?: boolean;
 }
 
-type GeometryKind = 'box' | 'sphere' | 'capsule'
+type ConnectionStatus = "connected" | "disconnected" | "connecting";
 ```
 
 ## NEVER Use `any` — Use `unknown`
@@ -27,21 +26,12 @@ type GeometryKind = 'box' | 'sphere' | 'capsule'
 
 ```typescript
 // BAD
-const data: any = JSON.parse(raw)
+const data: any = JSON.parse(raw);
 
 // GOOD
-const data: unknown = JSON.parse(raw)
-if (isPose(data)) {
-	console.log(data.x) // safely typed
-}
-```
-
-## Assertion Functions & Type Guards
-
-```typescript
-// Assert value exists (narrows to NonNullable<T>)
-export const assertExists = <T>(value: T, message: string): asserts value is NonNullable<T> => {
-	if (value == null) throw new Error(message)
+const data: unknown = JSON.parse(raw);
+if (isPayload(data)) {
+  console.log(data.name); // safely typed
 }
 ```
 
@@ -57,14 +47,14 @@ Write pure functions with JSDoc `@param`, `@returns`, and `@example` for non-obv
  * @example safeParseInt('42') // 42
  */
 export const safeParseInt = (value: string): number | undefined => {
-	const parsed = Number.parseInt(value, 10)
-	return Number.isNaN(parsed) ? undefined : parsed
-}
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
 ```
 
 ## Verify Your Work
 
 ```
-pnpm check    # svelte-check + go vet
+pnpm check    # svelte-check
 pnpm test     # vitest unit tests
 ```
