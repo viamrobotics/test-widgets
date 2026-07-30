@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.10.2
+
+### Patch Changes
+
+- 5202b79: Dedupe errors in `Queries` so widgets passing multiple queries against one client no longer crash with `each_key_duplicate` when those queries fail identically
+
 ## 0.10.1
 
 ### Patch Changes
