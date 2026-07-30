@@ -96,3 +96,47 @@ describe('<Queries> serializeErrors guard', () => {
 		expect(screen.getByText('TestError: Duplicate content')).toBe(element)
 	})
 })
+
+describe('<Queries> duplicate errors', () => {
+	// Queries sharing a client fail identically when the resource is missing or unhealthy.
+	// Before deduping, the keyed each threw each_key_duplicate and took down the boundary.
+	it('renders a single error when multiple queries fail identically', () => {
+		render(Subject, {
+			queries: [
+				createErrorQuery('ConnectionError', 'Resource not found'),
+				createErrorQuery('ConnectionError', 'Resource not found'),
+			],
+		})
+
+		expect(screen.getAllByText('ConnectionError: Resource not found')).toHaveLength(1)
+	})
+
+	it('renders every distinct error when multiple queries fail differently', () => {
+		render(Subject, {
+			queries: [
+				createErrorQuery('ConnectionError', 'Resource not found'),
+				createErrorQuery('ConnectionError', 'Resource unhealthy'),
+			],
+		})
+
+		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
+		expect(screen.getByText('ConnectionError: Resource unhealthy')).toBeInTheDocument()
+	})
+
+	it('keeps a single error after a duplicate arrives on a later poll', async () => {
+		const { rerender } = render(Subject, {
+			queries: [createErrorQuery('ConnectionError', 'Resource not found'), createSuccessQuery()],
+		})
+		expect(screen.getAllByText('ConnectionError: Resource not found')).toHaveLength(1)
+
+		// The second query catches up and fails the same way on the next poll
+		await rerender({
+			queries: [
+				createErrorQuery('ConnectionError', 'Resource not found'),
+				createErrorQuery('ConnectionError', 'Resource not found'),
+			],
+		})
+
+		expect(screen.getAllByText('ConnectionError: Resource not found')).toHaveLength(1)
+	})
+})
