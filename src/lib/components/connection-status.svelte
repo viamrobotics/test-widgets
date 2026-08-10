@@ -78,9 +78,7 @@
 				}}>{isErrorExpanded ? 'Hide' : 'Show'} error</button
 			>
 			{#if isErrorExpanded}
-				<pre class="font-mono text-xs text-wrap">
-          {error}
-        </pre>
+				<pre class="font-mono text-xs text-wrap">{error}</pre>
 			{/if}
 		</div>
 	{/snippet}

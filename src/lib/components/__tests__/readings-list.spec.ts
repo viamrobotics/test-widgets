@@ -34,6 +34,26 @@ describe('<ReadingsList>', () => {
 		expect(nestedObj).toBeInTheDocument()
 	})
 
+	it('renders nested readings without leading indentation', () => {
+		const data = {
+			location: { x: 1, y: 2 },
+		}
+
+		const { container } = render(Subject, { data })
+		// exact match: whitespace between <pre> and <code> is preserved and would fail here
+		expect(container.querySelector('pre')?.textContent).toBe('{\n  "x": 1,\n  "y": 2\n}')
+	})
+
+	it('renders null readings as plain text rather than a code block', () => {
+		const data = {
+			nearest_fingerprint: null,
+		}
+
+		const { container } = render(Subject, { data })
+		expect(screen.getByRole('definition')).toHaveTextContent('null')
+		expect(container.querySelector('pre')).toBeNull()
+	})
+
 	it('renders nested image', () => {
 		const data = {
 			image:

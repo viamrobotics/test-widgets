@@ -50,11 +50,9 @@
 						{key}
 					</dt>
 					<dd class="text-subtle-1 min-w-50">
-						{#if typeof value === 'object'}
+						{#if value !== null && typeof value === 'object'}
 							<div class="border-light bg-extralight min-w-50 border px-3 py-2">
-								<pre class="whitespace-pre-wrap">
-                  <code>{valueString}</code>
-                </pre>
+								<pre class="whitespace-pre-wrap"><code>{valueString}</code></pre>
 							</div>
 						{:else if typeof value === 'string' && value.startsWith('data:image/')}
 							<img
