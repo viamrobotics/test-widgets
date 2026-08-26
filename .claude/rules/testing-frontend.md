@@ -21,7 +21,7 @@ A cold run can fail while Vite optimizes dependencies. Re-run once before invest
 
 ## Config already handles teardown
 
-`vite.config.ts` sets `mockReset`, `restoreMocks`, and `unstubGlobals`, so `vi.clearAllMocks()` in a `beforeEach` is redundant. `expect.requireAssertions` is on, so a test with no assertion fails. DOM cleanup between tests comes from the `svelteTesting()` plugin. jest-dom matchers such as `toBeInTheDocument` come from `@vitest/browser`, not from a setup file. `src/vitest.setup.ts` is referenced by no config and does nothing.
+`vite.config.ts` sets `mockReset`, `restoreMocks`, and `unstubGlobals`, so `vi.clearAllMocks()` in a `beforeEach` is redundant. `expect.requireAssertions` is on, so a test with no assertion fails. DOM cleanup between tests comes from the `svelteTesting()` plugin. jest-dom matchers such as `toBeInTheDocument` come from `@vitest/browser`, not from a setup file.
 
 ## What to mock here
 
