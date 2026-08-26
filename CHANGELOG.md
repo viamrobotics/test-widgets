@@ -1,5 +1,15 @@
 # @viamrobotics/test-widgets
 
+## 0.11.0
+
+### Minor Changes
+
+- c412787: Responsive design pass
+
+### Patch Changes
+
+- 94cb1e1: Fix whitespace in <pre/>
+
 ## 0.10.2
 
 ### Patch Changes
