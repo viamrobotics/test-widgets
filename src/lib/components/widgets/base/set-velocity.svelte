@@ -15,7 +15,7 @@
 	let angularVelocity = $state<Vector3>({ x: 0, y: 0, z: 15 })
 </script>
 
-<div class="flex flex-row gap-4">
+<div class="flex flex-wrap gap-4">
 	<Vec3Builder
 		title="Linear velocity"
 		titleUnits="(mm/s)"

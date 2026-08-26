@@ -13,7 +13,7 @@
 	let rpm = $state(10)
 </script>
 
-<div class="flex flex-row gap-4">
+<div class="flex flex-wrap gap-4">
 	<Label cx="max-w-[96px] grow gap-1 text-xs">
 		<p class="flex flex-row gap-1">
 			RPM
