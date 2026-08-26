@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.11.2
+
+### Patch Changes
+
+- b6b24b3: Arm, encoder, and power-sensor widgets collapse to one column in narrow cards via container queries; input-controller, ML model, and camera header rows wrap; operations and sessions tables scroll horizontally inside their box instead of truncating
+
 ## 0.11.1
 
 ### Patch Changes
