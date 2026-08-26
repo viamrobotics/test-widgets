@@ -1,5 +1,12 @@
 # @viamrobotics/test-widgets
 
+## 0.11.3
+
+### Patch Changes
+
+- e301ca9: SLAM, navigation, and movement-sensor widgets stack their controls above the map in narrow cards, with the map keeping an explicit height, using container queries
+- dd37db9: Arm widget switches between Joint Positions and Quick Move with visible toggle buttons.
+
 ## 0.11.2
 
 ### Patch Changes
