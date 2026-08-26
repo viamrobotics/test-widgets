@@ -61,42 +61,44 @@
 			/>
 		</div>
 
-		<div class="grid w-full grid-cols-2 divide-x">
-			<ApiSection
-				title="GetPosition"
-				api="rdk:component:encoder"
-				tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
-				class="gap-3"
-			>
-				<Queries queries={[propertiesQuery, positionQuery]}>
-					{#if positionQuery.data !== undefined}
-						{@const [position, encoderPositionType] = positionQuery.data}
-						<div class="font-roboto-mono flex flex-col gap-2 text-sm">
-							<Position
-								{position}
-								{encoderPositionType}
-							/>
-						</div>
-					{/if}
-				</Queries>
-			</ApiSection>
-
-			<ApiSection
-				title="ResetPosition"
-				api="rdk:component:encoder"
-				description="Set the current position as the new zero position"
-			>
-				<Button
-					icon="play-circle-outline"
-					class="w-fit"
-					onclick={() => {
-						resetMutation.mutate([], {})
-					}}
+		<div class="@container">
+			<div class="grid w-full grid-cols-1 divide-y @lg:grid-cols-2 @lg:divide-x @lg:divide-y-0">
+				<ApiSection
+					title="GetPosition"
+					api="rdk:component:encoder"
+					tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
+					class="gap-3"
 				>
-					Execute
-				</Button>
-				<ErrorDisplay lastError={resetMutation.error} />
-			</ApiSection>
+					<Queries queries={[propertiesQuery, positionQuery]}>
+						{#if positionQuery.data !== undefined}
+							{@const [position, encoderPositionType] = positionQuery.data}
+							<div class="font-roboto-mono flex flex-col gap-2 text-sm">
+								<Position
+									{position}
+									{encoderPositionType}
+								/>
+							</div>
+						{/if}
+					</Queries>
+				</ApiSection>
+
+				<ApiSection
+					title="ResetPosition"
+					api="rdk:component:encoder"
+					description="Set the current position as the new zero position"
+				>
+					<Button
+						icon="play-circle-outline"
+						class="w-fit"
+						onclick={() => {
+							resetMutation.mutate([], {})
+						}}
+					>
+						Execute
+					</Button>
+					<ErrorDisplay lastError={resetMutation.error} />
+				</ApiSection>
+			</div>
 		</div>
 	{/snippet}
 </ConnectionStatus>

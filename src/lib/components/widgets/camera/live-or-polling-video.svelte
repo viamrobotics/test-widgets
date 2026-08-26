@@ -405,7 +405,7 @@
 		lastError={resolutionMutation.error}
 		class="-m-4 mt-4"
 	>
-		<div class="flex w-full flex-row justify-between">
+		<div class="flex w-full flex-wrap justify-between gap-2">
 			<Label cx="max-w-[96px] gap-1 text-xs">
 				<span class="flex gap-1 whitespace-nowrap">
 					Resolution

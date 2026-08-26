@@ -63,49 +63,51 @@
 			/>
 		</div>
 
-		<div class="grid w-full grid-cols-3 divide-x">
-			<ApiSection
-				title="GetCurrent"
-				api="rdk:component:power_sensor"
-				class="pb-5"
-			>
-				<Query
-					query={currentQuery}
-					contentCx="h-6"
+		<div class="@container">
+			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
+				<ApiSection
+					title="GetCurrent"
+					api="rdk:component:power_sensor"
+					class="pb-5"
 				>
-					{#if currentQuery.data !== undefined}
-						<CurrentReading data={currentQuery.data} />
-					{/if}
-				</Query>
-			</ApiSection>
-			<ApiSection
-				title="GetVoltage"
-				api="rdk:component:power_sensor"
-				class="pb-5"
-			>
-				<Query
-					query={voltageQuery}
-					contentCx="h-6"
+					<Query
+						query={currentQuery}
+						contentCx="h-6"
+					>
+						{#if currentQuery.data !== undefined}
+							<CurrentReading data={currentQuery.data} />
+						{/if}
+					</Query>
+				</ApiSection>
+				<ApiSection
+					title="GetVoltage"
+					api="rdk:component:power_sensor"
+					class="pb-5"
 				>
-					{#if voltageQuery.data !== undefined}
-						<VoltageReading data={voltageQuery.data} />
-					{/if}
-				</Query>
-			</ApiSection>
-			<ApiSection
-				title="GetPower"
-				api="rdk:component:power_sensor"
-				class="pb-5"
-			>
-				<Query
-					query={powerQuery}
-					contentCx="h-6"
+					<Query
+						query={voltageQuery}
+						contentCx="h-6"
+					>
+						{#if voltageQuery.data !== undefined}
+							<VoltageReading data={voltageQuery.data} />
+						{/if}
+					</Query>
+				</ApiSection>
+				<ApiSection
+					title="GetPower"
+					api="rdk:component:power_sensor"
+					class="pb-5"
 				>
-					{#if powerQuery.data !== undefined}
-						<PowerReading data={powerQuery.data} />
-					{/if}
-				</Query>
-			</ApiSection>
+					<Query
+						query={powerQuery}
+						contentCx="h-6"
+					>
+						{#if powerQuery.data !== undefined}
+							<PowerReading data={powerQuery.data} />
+						{/if}
+					</Query>
+				</ApiSection>
+			</div>
 		</div>
 
 		<ApiSection

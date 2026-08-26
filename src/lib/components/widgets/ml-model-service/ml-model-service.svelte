@@ -43,7 +43,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex gap-4 p-4 pb-3">
+		<div class="flex flex-wrap gap-4 p-4 pb-3">
 			<RefetchController
 				allowLive
 				{refetchInterval}
