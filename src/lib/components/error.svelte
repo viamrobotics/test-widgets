@@ -39,18 +39,23 @@
 	<div class="flex items-center justify-between gap-1">
 		<p
 			{id}
-			class={twMerge('font-roboto-mono text-danger-dark text-xs', className)}
+			class={twMerge(
+				'font-roboto-mono text-danger-dark min-w-0 overflow-auto text-xs wrap-break-word',
+				className
+			)}
 		>
 			{errorText}
 		</p>
-		<Tooltip let:tooltipID>
-			<IconButton
-				aria-describedby={tooltipID}
-				icon={showCopySuccess ? 'check' : 'content-copy'}
-				label="Copy error"
-				on:click={copyErrorToClipboard}
-			/>
-			<div slot="description">Copy error</div>
-		</Tooltip>
+		<div class="shrink-0">
+			<Tooltip let:tooltipID>
+				<IconButton
+					aria-describedby={tooltipID}
+					icon={showCopySuccess ? 'check' : 'content-copy'}
+					label="Copy error"
+					on:click={copyErrorToClipboard}
+				/>
+				<div slot="description">Copy error</div>
+			</Tooltip>
+		</div>
 	</div>
 {/if}
