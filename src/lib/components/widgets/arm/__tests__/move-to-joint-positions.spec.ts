@@ -187,6 +187,43 @@ describe('Arm move-to-joint-positions', () => {
 		await user.click(screen.getByRole('button', { name: /quick move/iu }))
 	}
 
+	describe('control mode toggle', () => {
+		it('marks the selected mode as pressed', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			const jointPositions = screen.getByRole('button', { name: /joint positions/iu })
+			const quickMove = screen.getByRole('button', { name: /quick move/iu })
+
+			expect(jointPositions).toHaveAttribute('aria-pressed', 'true')
+			expect(quickMove).toHaveAttribute('aria-pressed', 'false')
+
+			await switchToQuickMove()
+
+			expect(jointPositions).toHaveAttribute('aria-pressed', 'false')
+			expect(quickMove).toHaveAttribute('aria-pressed', 'true')
+		})
+
+		it('returns to the slider editor when Joint Positions is selected', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
+			await switchToQuickMove()
+			expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+
+			await user.click(screen.getByRole('button', { name: /joint positions/iu }))
+
+			expect(screen.getByRole('textbox')).toBeInTheDocument()
+			expect(
+				screen.queryByRole('button', { name: /increase joint 0 by 5 degrees/iu })
+			).not.toBeInTheDocument()
+		})
+	})
+
 	describe('quick move mode', () => {
 		it('renders ±5° buttons only after switching to quick move', async () => {
 			renderSubject({

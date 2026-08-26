@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
@@ -11,7 +11,9 @@
 	import { type JointLimit } from './joint-position-limits'
 	import JointPositionQuickMove from './joint-position-quick-move.svelte'
 
-	type ControlMode = 'jointPositions' | 'quickMove'
+	type ControlMode = 'Joint Positions' | 'Quick Move'
+
+	const CONTROL_MODES: ControlMode[] = ['Joint Positions', 'Quick Move']
 
 	interface Props {
 		positions: number[]
@@ -32,9 +34,9 @@
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions]) // in degrees
 	let useRadians = $state(false)
-	let controlMode = $state<ControlMode>('jointPositions')
+	let controlMode = $state<ControlMode>('Joint Positions')
 
-	const isQuickMoveMode = $derived(controlMode === 'quickMove')
+	const isQuickMoveMode = $derived(controlMode === 'Quick Move')
 
 	const getJointMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
 	const getJointMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
@@ -44,8 +46,11 @@
 	const displayPositions = $derived(desiredPositions.map((degrees) => toDisplayAngle(degrees)))
 	const copyData = $derived(`[${displayPositions.map((v) => formatNumeric(v)).join(', ')}]`)
 
-	const toggleMode = () => {
-		controlMode = isQuickMoveMode ? 'jointPositions' : 'quickMove'
+	const handleModeChange = ({ detail }: CustomEvent<string>) => {
+		const nextMode = CONTROL_MODES.find((mode) => mode === detail)
+		if (nextMode) {
+			controlMode = nextMode
+		}
 	}
 
 	const handlePaste = (data: string): boolean => {
@@ -63,48 +68,35 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
-	<div class="flex items-center justify-between">
-		<span class="flex flex-row items-center gap-1 text-sm">
-			Joint Positions
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-				<span slot="description">
-					Joint position limits are based solely on the arm kinematics and do not take into account
-					motion service limit overrides.
-				</span>
-			</Tooltip>
-		</span>
+	<div class="flex flex-wrap items-center justify-between gap-2">
+		<ToggleButtons
+			role="group"
+			aria-label="Control mode"
+			options={CONTROL_MODES}
+			selected={controlMode}
+			on:input={handleModeChange}
+		/>
 		<div class="flex items-center gap-1">
-			<div class="flex gap-1">
-				{#if !isQuickMoveMode}
-					<CopyButton data={copyData} />
-					<PasteButton onPaste={handlePaste} />
-				{/if}
-				<AngleUnitToggle
-					{useRadians}
-					onToggle={() => {
-						useRadians = !useRadians
-					}}
-				/>
-			</div>
-			<Tooltip>
-				<button
-					onclick={toggleMode}
-					aria-label={isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
-					class={[
-						'hover:border-medium hover:bg-medium active:bg-gray-2 rounded p-0.5',
-						isQuickMoveMode ? 'text-amber-600' : 'text-gray-6',
-					]}
-				>
-					<Icon name="lightning-bolt-outline" />
-				</button>
-				<span slot="description">
-					{isQuickMoveMode ? 'Exit quick move mode' : 'Enter quick move mode'}
-				</span>
-			</Tooltip>
+			{#if !isQuickMoveMode}
+				<Tooltip>
+					<Icon
+						name="information-outline"
+						cx="text-gray-6"
+					/>
+					<span slot="description">
+						Joint position limits are based solely on the arm kinematics and do not take into
+						account motion service limit overrides.
+					</span>
+				</Tooltip>
+				<CopyButton data={copyData} />
+				<PasteButton onPaste={handlePaste} />
+			{/if}
+			<AngleUnitToggle
+				{useRadians}
+				onToggle={() => {
+					useRadians = !useRadians
+				}}
+			/>
 		</div>
 	</div>
 
