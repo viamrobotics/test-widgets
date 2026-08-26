@@ -103,150 +103,152 @@
 			query={propertiesQuery}
 			contentCx="p-4 h-14"
 		>
-			<div class="flex flex-wrap text-xs lg:flex-nowrap">
-				<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 lg:w-1/4">
-					{#if propertiesQuery.data?.positionSupported}
+			<div class="@container">
+				<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
+					<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 @4xl:w-1/4">
+						{#if propertiesQuery.data?.positionSupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetPosition"
+									api={MS_API}
+								/>
+								<Query
+									query={positionQuery}
+									contentCx="h-6"
+								>
+									{#if positionQuery.data !== undefined}
+										<Position data={positionQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+
+						{#if propertiesQuery.data?.orientationSupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetOrientation"
+									api={MS_API}
+								>
+									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
+										>{/snippet}
+								</SectionTitle>
+								<Query
+									query={orientationQuery}
+									contentCx="h-6"
+								>
+									{#if orientationQuery.data !== undefined}
+										<Orientation data={orientationQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+
+						{#if propertiesQuery.data?.compassHeadingSupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetCompassHeading"
+									api={MS_API}
+								>
+									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
+										>{/snippet}
+								</SectionTitle>
+								<Query
+									query={compassHeadingQuery}
+									contentCx="h-6"
+								>
+									{#if compassHeadingQuery.data !== undefined}
+										<CompassHeading data={compassHeadingQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+					</div>
+
+					<div class="flex w-full flex-col gap-5 p-4 @4xl:w-1/4">
+						{#if propertiesQuery.data?.angularVelocitySupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetAngularVelocity"
+									api={MS_API}
+								>
+									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
+										>{/snippet}
+								</SectionTitle>
+								<Query
+									query={angularVelocityQuery}
+									contentCx="h-6"
+								>
+									{#if angularVelocityQuery.data !== undefined}
+										<Vector3 data={angularVelocityQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+
+						{#if propertiesQuery.data?.linearVelocitySupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetLinearVelocity"
+									api={MS_API}
+								>
+									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
+										>{/snippet}
+								</SectionTitle>
+								<Query
+									query={linearVelocityQuery}
+									contentCx="h-6"
+								>
+									{#if linearVelocityQuery.data !== undefined}
+										<Vector3 data={linearVelocityQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+
+						{#if propertiesQuery.data?.linearAccelerationSupported}
+							<div class="flex flex-col gap-2">
+								<SectionTitle
+									title="GetLinearAcceleration"
+									api={MS_API}
+								>
+									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
+											>(m/s<sup>2</sup>)</span
+										>{/snippet}
+								</SectionTitle>
+								<Query
+									query={linearAccelerationQuery}
+									contentCx="h-6"
+								>
+									{#if linearAccelerationQuery.data !== undefined}
+										<Vector3 data={linearAccelerationQuery.data} />
+									{/if}
+								</Query>
+							</div>
+						{/if}
+
 						<div class="flex flex-col gap-2">
 							<SectionTitle
-								title="GetPosition"
+								title="GetAccuracy"
 								api={MS_API}
 							/>
 							<Query
-								query={positionQuery}
+								query={accuracyQuery}
 								contentCx="h-6"
 							>
-								{#if positionQuery.data !== undefined}
-									<Position data={positionQuery.data} />
+								{#if accuracyQuery.data !== undefined}
+									<Accuracy data={accuracyQuery.data} />
 								{/if}
 							</Query>
 						</div>
-					{/if}
-
-					{#if propertiesQuery.data?.orientationSupported}
-						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetOrientation"
-								api={MS_API}
-							>
-								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
-									>{/snippet}
-							</SectionTitle>
-							<Query
-								query={orientationQuery}
-								contentCx="h-6"
-							>
-								{#if orientationQuery.data !== undefined}
-									<Orientation data={orientationQuery.data} />
-								{/if}
-							</Query>
-						</div>
-					{/if}
-
-					{#if propertiesQuery.data?.compassHeadingSupported}
-						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetCompassHeading"
-								api={MS_API}
-							>
-								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
-									>{/snippet}
-							</SectionTitle>
-							<Query
-								query={compassHeadingQuery}
-								contentCx="h-6"
-							>
-								{#if compassHeadingQuery.data !== undefined}
-									<CompassHeading data={compassHeadingQuery.data} />
-								{/if}
-							</Query>
-						</div>
-					{/if}
-				</div>
-
-				<div class="flex w-full flex-col gap-5 p-4 lg:w-1/4">
-					{#if propertiesQuery.data?.angularVelocitySupported}
-						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetAngularVelocity"
-								api={MS_API}
-							>
-								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
-									>{/snippet}
-							</SectionTitle>
-							<Query
-								query={angularVelocityQuery}
-								contentCx="h-6"
-							>
-								{#if angularVelocityQuery.data !== undefined}
-									<Vector3 data={angularVelocityQuery.data} />
-								{/if}
-							</Query>
-						</div>
-					{/if}
-
-					{#if propertiesQuery.data?.linearVelocitySupported}
-						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetLinearVelocity"
-								api={MS_API}
-							>
-								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
-									>{/snippet}
-							</SectionTitle>
-							<Query
-								query={linearVelocityQuery}
-								contentCx="h-6"
-							>
-								{#if linearVelocityQuery.data !== undefined}
-									<Vector3 data={linearVelocityQuery.data} />
-								{/if}
-							</Query>
-						</div>
-					{/if}
-
-					{#if propertiesQuery.data?.linearAccelerationSupported}
-						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetLinearAcceleration"
-								api={MS_API}
-							>
-								{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
-										>(m/s<sup>2</sup>)</span
-									>{/snippet}
-							</SectionTitle>
-							<Query
-								query={linearAccelerationQuery}
-								contentCx="h-6"
-							>
-								{#if linearAccelerationQuery.data !== undefined}
-									<Vector3 data={linearAccelerationQuery.data} />
-								{/if}
-							</Query>
-						</div>
-					{/if}
-
-					<div class="flex flex-col gap-2">
-						<SectionTitle
-							title="GetAccuracy"
-							api={MS_API}
-						/>
-						<Query
-							query={accuracyQuery}
-							contentCx="h-6"
-						>
-							{#if accuracyQuery.data !== undefined}
-								<Accuracy data={accuracyQuery.data} />
-							{/if}
-						</Query>
 					</div>
-				</div>
 
-				{#if propertiesQuery.data?.positionSupported}
-					<Map
-						coordinate={positionQuery.data?.coordinate}
-						rotation={orientationQuery.data?.oZ}
-					/>
-				{/if}
+					{#if propertiesQuery.data?.positionSupported}
+						<Map
+							coordinate={positionQuery.data?.coordinate}
+							rotation={orientationQuery.data?.oZ}
+						/>
+					{/if}
+				</div>
 			</div>
 		</Query>
 

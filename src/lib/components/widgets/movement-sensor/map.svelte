@@ -24,7 +24,7 @@
 	const lng = $derived(safeReadCoordinate(coordinate?.longitude))
 </script>
 
-<div class="relative h-[300px] w-full lg:h-auto lg:w-1/2">
+<div class="relative h-[300px] w-full @4xl:h-auto @4xl:w-1/2">
 	<MapLibre
 		zoom={15}
 		options={{ attributionControl: { compact: false } }}

@@ -49,7 +49,7 @@
 			End position
 			<abbr class="text-disabled">(m)</abbr>
 		</h4>
-		<div class="flex flex-row gap-2 px-3 py-2.5">
+		<div class="flex flex-wrap gap-2 px-3 py-2.5">
 			<Label>
 				X
 

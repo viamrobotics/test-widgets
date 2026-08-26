@@ -191,78 +191,86 @@
 					>.
 				</div>
 			{:else}
-				<div class="flex divide-x">
-					<div class="divide-y">
-						<div class="m-4">
-							<RefetchController
-								{refetchInterval}
-								queries={[positionQuery, pointCloudMapQuery]}
+				<div class="@container">
+					<div class="flex flex-col @2xl:flex-row @2xl:divide-x">
+						<div class="divide-y">
+							<div class="m-4">
+								<RefetchController
+									{refetchInterval}
+									queries={[positionQuery, pointCloudMapQuery]}
+								/>
+							</div>
+
+							<ApiSection
+								title="GetPosition"
+								api="rdk:service:slam"
+							>
+								<Queries
+									queries={[propertiesQuery, positionQuery]}
+									contentCx="h-6"
+								>
+									{#if positionQuery.data !== undefined}
+										<Position position={positionQuery.data} />
+									{/if}
+								</Queries>
+							</ApiSection>
+
+							<ApiSection title="Motion">
+								<Label>
+									Base name
+
+									<Input
+										slot="input"
+										bind:value={baseName}
+									/>
+								</Label>
+								<Label>
+									Motion name
+
+									<Input
+										slot="input"
+										placeholder="builtin"
+										bind:value={motionName}
+									/>
+								</Label>
+							</ApiSection>
+
+							<MoveOnMap
+								{destination}
+								{updateDestination}
+								{moveOnMap}
+								{stopPlan}
+								lastError={moveOnMapMutation.error ?? stopPlanMutation.error}
 							/>
 						</div>
 
-						<ApiSection
-							title="GetPosition"
-							api="rdk:service:slam"
-						>
+						<div class="flex w-full">
 							<Queries
-								queries={[propertiesQuery, positionQuery]}
-								contentCx="h-6"
+								queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
+								contentCx="p-4 h-auto"
 							>
-								{#if positionQuery.data !== undefined}
-									<Position position={positionQuery.data} />
+								{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
+									<div class="h-80 w-full @2xl:h-full">
+										<SlamMap2D
+											pointcloud={pointCloudMapQuery.data}
+											basePose={{
+												// Position is returned in millimeters, but the map uses meters
+												x: positionQuery.data.pose.x / 1000,
+												y: positionQuery.data.pose.y / 1000,
+												theta: positionQuery.data.pose.theta,
+											}}
+											{motionPath}
+											destination={destination
+												? new Vector2(destination.x, destination.y)
+												: undefined}
+											helpers={true}
+											onClick={handleClick}
+										/>
+									</div>
 								{/if}
 							</Queries>
-						</ApiSection>
-
-						<ApiSection title="Motion">
-							<Label>
-								Base name
-
-								<Input
-									slot="input"
-									bind:value={baseName}
-								/>
-							</Label>
-							<Label>
-								Motion name
-
-								<Input
-									slot="input"
-									placeholder="builtin"
-									bind:value={motionName}
-								/>
-							</Label>
-						</ApiSection>
-
-						<MoveOnMap
-							{destination}
-							{updateDestination}
-							{moveOnMap}
-							{stopPlan}
-							lastError={moveOnMapMutation.error ?? stopPlanMutation.error}
-						/>
+						</div>
 					</div>
-
-					<Queries
-						queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
-						contentCx="p-4 h-auto"
-					>
-						{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
-							<SlamMap2D
-								pointcloud={pointCloudMapQuery.data}
-								basePose={{
-									// Position is returned in millimeters, but the map uses meters
-									x: positionQuery.data.pose.x / 1000,
-									y: positionQuery.data.pose.y / 1000,
-									theta: positionQuery.data.pose.theta,
-								}}
-								{motionPath}
-								destination={destination ? new Vector2(destination.x, destination.y) : undefined}
-								helpers={true}
-								onClick={handleClick}
-							/>
-						{/if}
-					</Queries>
 				</div>
 			{/if}
 		</Query>
