@@ -39,7 +39,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-row items-center justify-between p-4 pb-3">
+		<div class="flex flex-wrap items-center justify-between gap-2 p-4 pb-3">
 			<RefetchController
 				{refetchInterval}
 				queries={[eventsQuery]}

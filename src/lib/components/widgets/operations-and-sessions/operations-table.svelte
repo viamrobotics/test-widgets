@@ -34,49 +34,58 @@
 {#if formattedOperations.length === 0}
 	<p class="text-subtle-2 text-xs">No operations currently available</p>
 {:else}
-	<table class="w-full table-fixed">
-		<thead>
-			<tr class="bg-light text-subtle-1 border text-left text-xs">
-				<th class="w-1/4 p-2 font-normal">ID</th>
-				<th class="w-1/4 p-2 font-normal">Session</th>
-				<th class="w-1/4 p-2 font-normal">Method</th>
-				<th class="w-1/6 p-2 font-normal">Elapsed Time</th>
-				<th class="w-16"></th>
-			</tr>
-		</thead>
-		<tbody class="text-xs">
-			{#each formattedOperations as operation (operation.id)}
-				<tr class="border border-b text-left">
-					<td
-						class="truncate p-2"
-						title={operation.id}
-						>{operation.id}
-					</td>
-					<td
-						class="truncate p-2"
-						title={operation.sessionId}
-						>{operation.sessionId}
-					</td>
-					<td
-						class="truncate p-2"
-						title={operation.method}
-						>{operation.method}
-					</td>
-					<td
-						class="truncate p-2"
-						title={`${formatNumeric(operation.elapsedTime, 0)} ms`}
-					>
-						{formatNumeric(operation.elapsedTime, 0)} ms
-					</td>
-					<td class="p-2">
-						<Tooltip hoverDelayMS={500}>
-							<Button onclick={() => cancelOperation(operation.id)}>Kill</Button>
-
-							<span slot="description"> Request cancellation of the operation. </span>
-						</Tooltip>
-					</td>
+	<!-- Scroll region: keyboard users need focus on the wrapper to scroll the overflow (WCAG 2.1.1). -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div
+		class="overflow-x-auto"
+		role="region"
+		aria-label="Operations"
+		tabindex="0"
+	>
+		<table class="w-full min-w-md table-fixed">
+			<thead>
+				<tr class="bg-light text-subtle-1 border text-left text-xs">
+					<th class="w-1/4 p-2 font-normal">ID</th>
+					<th class="w-1/4 p-2 font-normal">Session</th>
+					<th class="w-1/4 p-2 font-normal">Method</th>
+					<th class="w-1/6 p-2 font-normal">Elapsed Time</th>
+					<th class="w-16"></th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody class="text-xs">
+				{#each formattedOperations as operation (operation.id)}
+					<tr class="border border-b text-left">
+						<td
+							class="truncate p-2"
+							title={operation.id}
+							>{operation.id}
+						</td>
+						<td
+							class="truncate p-2"
+							title={operation.sessionId}
+							>{operation.sessionId}
+						</td>
+						<td
+							class="truncate p-2"
+							title={operation.method}
+							>{operation.method}
+						</td>
+						<td
+							class="truncate p-2"
+							title={`${formatNumeric(operation.elapsedTime, 0)} ms`}
+						>
+							{formatNumeric(operation.elapsedTime, 0)} ms
+						</td>
+						<td class="p-2">
+							<Tooltip hoverDelayMS={500}>
+								<Button onclick={() => cancelOperation(operation.id)}>Kill</Button>
+
+								<span slot="description"> Request cancellation of the operation. </span>
+							</Tooltip>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 {/if}

@@ -57,75 +57,77 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-col gap-4 lg:flex-row lg:gap-0 lg:divide-x">
-			<!-- Main control sections -->
-			<div
-				class="flex flex-col gap-4 lg:grid lg:grow lg:grid-cols-2 lg:gap-0 lg:divide-x xl:grid-cols-3"
-			>
-				<ApiSection
-					title="GetJointPositions"
-					api="rdk:component:arm"
-					bottomText="Updates automatically"
+		<div class="@container">
+			<div class="flex flex-col gap-4 @2xl:flex-row @2xl:gap-0 @2xl:divide-x">
+				<!-- Main control sections -->
+				<div
+					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
 				>
-					<Query query={jointPositionsQuery}>
-						{#if jointPositionsQuery.data}
-							<GetJointPositions positions={jointPositionsQuery.data.values} />
-						{/if}
-					</Query>
-				</ApiSection>
-				<ApiSection
-					title="MoveToJointPositions"
-					api="rdk:component:arm"
-				>
-					<Query query={jointPositionsQuery}>
-						{#if jointPositionsQuery.data}
-							<MoveToJointPositions
-								positions={jointPositionsQuery.data.values}
-								{moveToJointPositions}
-								lastError={moveToJointPosMutation.error}
-								{jointLimitsDegrees}
-								isMoving={isMovingQuery.data ?? false}
-							/>
-						{/if}
-					</Query>
-				</ApiSection>
-				<ApiSection
-					title="MoveToPosition"
-					api="rdk:component:arm"
-				>
-					<Query query={endPositionQuery}>
-						{#if endPositionQuery.data}
-							<MoveToPosition
-								endPosition={endPositionQuery.data}
-								{moveToPosition}
-								lastError={moveToPosMutation.error}
-							/>
-						{/if}
-					</Query>
-				</ApiSection>
-			</div>
+					<ApiSection
+						title="GetJointPositions"
+						api="rdk:component:arm"
+						bottomText="Updates automatically"
+					>
+						<Query query={jointPositionsQuery}>
+							{#if jointPositionsQuery.data}
+								<GetJointPositions positions={jointPositionsQuery.data.values} />
+							{/if}
+						</Query>
+					</ApiSection>
+					<ApiSection
+						title="MoveToJointPositions"
+						api="rdk:component:arm"
+					>
+						<Query query={jointPositionsQuery}>
+							{#if jointPositionsQuery.data}
+								<MoveToJointPositions
+									positions={jointPositionsQuery.data.values}
+									{moveToJointPositions}
+									lastError={moveToJointPosMutation.error}
+									{jointLimitsDegrees}
+									isMoving={isMovingQuery.data ?? false}
+								/>
+							{/if}
+						</Query>
+					</ApiSection>
+					<ApiSection
+						title="MoveToPosition"
+						api="rdk:component:arm"
+					>
+						<Query query={endPositionQuery}>
+							{#if endPositionQuery.data}
+								<MoveToPosition
+									endPosition={endPositionQuery.data}
+									{moveToPosition}
+									lastError={moveToPosMutation.error}
+								/>
+							{/if}
+						</Query>
+					</ApiSection>
+				</div>
 
-			<!-- Control actions sidebar -->
-			<div
-				class="flex flex-row gap-4 lg:ml-auto lg:w-full lg:max-w-40 lg:flex-col lg:gap-0 lg:divide-y"
-			>
-				<ApiSection
-					title="Stop"
-					api="rdk:component:arm"
+				<!-- Control actions sidebar -->
+				<div
+					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
 				>
-					<StopButton
-						error={stopMutation.error}
-						onStop={() => {
-							stopMutation.mutate([], {})
-						}}
+					<ApiSection
+						title="Stop"
+						api="rdk:component:arm"
+					>
+						<StopButton
+							error={stopMutation.error}
+							onStop={() => {
+								stopMutation.mutate([], {})
+							}}
+						/>
+					</ApiSection>
+					<IsMoving
+						client={ArmClient}
+						api="rdk:component:arm"
+						{partID}
+						{resourceName}
 					/>
-				</ApiSection>
-				<IsMoving
-					client={ArmClient}
-					api="rdk:component:arm"
-					{partID}
-					{resourceName}
-				/>
+				</div>
 			</div>
 		</div>
 	{/snippet}
