@@ -15,6 +15,25 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore')
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	{
+		// houserules-owned files, refreshed by `pnpm exec houserules update`
+		ignores: [
+			'**/.claude/agents/**',
+			'**/.claude/debug/**',
+			'.claude/houserules.config.json',
+			'.claude/houserules.manifest.json',
+			'**/.claude/mcp/**',
+			'**/.claude/output-styles/**',
+			'**/.claude/plans/**',
+			'**/.claude/reference/**',
+			'**/.claude/rules/**',
+			'**/.claude/scripts/**',
+			'.claude/settings.ci.json',
+			'**/.claude/skills/**',
+			'**/.claude/state/**',
+			'**/.claude/templates/**',
+		],
+	},
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,

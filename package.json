@@ -124,7 +124,8 @@
 				"!coverage/**",
 				"!test-results/**",
 				"!.env*",
-				"!**/*.tgz"
+				"!**/*.tgz",
+				"!.claude/**"
 			],
 			"output": [],
 			"packageLocks": [
@@ -141,7 +142,8 @@
 				"!coverage/**",
 				"!test-results/**",
 				"!.env*",
-				"!**/*.tgz"
+				"!**/*.tgz",
+				"!.claude/**"
 			],
 			"output": [],
 			"packageLocks": [
@@ -237,12 +239,22 @@
 		"@fontsource-variable/public-sans": "^5.2.7",
 		"@fontsource-variable/roboto-mono": "^5.2.8",
 		"@fontsource-variable/space-grotesk": "^5.2.10",
+		"@houserules/cli": "^0.4.1",
+		"@houserules/plugin-accessibility": "^0.1.3",
+		"@houserules/plugin-changesets": "^0.2.2",
+		"@houserules/plugin-design": "^0.2.2",
+		"@houserules/plugin-prose": "^0.1.4",
+		"@houserules/plugin-svelte": "^0.1.2",
+		"@houserules/plugin-testing": "^0.2.1",
+		"@houserules/plugin-three": "^0.2.1",
+		"@houserules/plugin-typescript": "^0.1.2",
 		"@playwright/test": "^1.59.1",
 		"@sentry/svelte": "^10.50.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.69.1",
 		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
+		"@tailwindcss/oxide": "^4.2.4",
 		"@tailwindcss/postcss": "^4.2.4",
 		"@tailwindcss/vite": "^4.2.4",
 		"@tanstack/svelte-query": "^6.1.25",
