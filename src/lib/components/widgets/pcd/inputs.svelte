@@ -40,7 +40,7 @@
 	}
 </script>
 
-<div class="flex w-1/3 flex-col gap-2">
+<div class="flex flex-col gap-2 @2xl:w-1/3">
 	<Label>
 		Point size
 

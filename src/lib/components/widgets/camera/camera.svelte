@@ -181,7 +181,7 @@
 				</Label>
 			</div>
 			{#if isPlaying}
-				<div class="flex gap-4 p-4 pb-3">
+				<div class="flex flex-wrap gap-4 p-4 pb-3">
 					<RefetchController
 						{refetchInterval}
 						allowLive
@@ -216,8 +216,8 @@
 					{/if}
 				</div>
 			{/if}
-			<div class="flex h-full w-full gap-4 p-4">
-				<div class="grow">
+			<div class="flex h-full w-full flex-wrap gap-4 p-4">
+				<div class="min-w-0 grow basis-80">
 					{#if isPlaying}
 						{#if displayAs360}
 							{#if isLive}
@@ -242,6 +242,7 @@
 								{partID}
 								{resourceName}
 								showResolutionOptions
+								videoClass="h-auto max-w-full"
 								{isLive}
 								data={imageQuery.data}
 								error={imageQuery.error}
@@ -252,7 +253,7 @@
 							/>
 						{/if}
 					{:else}
-						<div class="bg-medium flex h-64 w-80 items-center justify-center">
+						<div class="bg-medium flex h-64 w-full max-w-80 items-center justify-center">
 							<Button
 								icon="play-circle-outline"
 								variant="dark"
@@ -266,7 +267,7 @@
 					{/if}
 				</div>
 				{#if isPlaying}
-					<div class="flex flex-col items-start gap-2">
+					<div class="flex shrink-0 flex-col items-start gap-2">
 						<ExportScreenshot
 							name={client.current?.name ?? ''}
 							sourceName={selectedSource}

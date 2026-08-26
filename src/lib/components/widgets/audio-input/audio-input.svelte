@@ -58,97 +58,99 @@
 			/>
 		</div>
 
-		<div class="flex flex-row divide-x">
-			<div class="flex w-full flex-col divide-y">
-				<MutationSection
-					title="GetAudio"
-					api="rdk:component:audio_input"
-					description="Capture audio from the device"
-					lastError={capture.error}
-				>
-					<div class="flex flex-col gap-2">
-						<Label cx="gap-1 text-xs">
-							Codec
-							<Select
-								slot="input"
-								value={selectedCodec}
-								on:change={(e) => {
-									captureCodec = (e.target as HTMLSelectElement).value
-								}}
-							>
-								{#each availableCodecs as codec (codec)}
-									<option value={codec}>{codec}</option>
-								{/each}
-							</Select>
-						</Label>
-						<Label cx="gap-1 text-xs">
-							Duration (seconds, 0 = stream until stopped)
-							<NumericInput
-								slot="input"
-								value={captureDuration}
-								on:change={(e) => {
-									captureDuration = numberValueFromEvent(e) ?? 3
-								}}
-							/>
-						</Label>
-					</div>
+		<div class="@container">
+			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
+				<div class="flex w-full flex-col divide-y">
+					<MutationSection
+						title="GetAudio"
+						api="rdk:component:audio_input"
+						description="Capture audio from the device"
+						lastError={capture.error}
+					>
+						<div class="flex flex-col gap-2">
+							<Label cx="gap-1 text-xs">
+								Codec
+								<Select
+									slot="input"
+									value={selectedCodec}
+									on:change={(e) => {
+										captureCodec = (e.target as HTMLSelectElement).value
+									}}
+								>
+									{#each availableCodecs as codec (codec)}
+										<option value={codec}>{codec}</option>
+									{/each}
+								</Select>
+							</Label>
+							<Label cx="gap-1 text-xs">
+								Duration (seconds, 0 = stream until stopped)
+								<NumericInput
+									slot="input"
+									value={captureDuration}
+									on:change={(e) => {
+										captureDuration = numberValueFromEvent(e) ?? 3
+									}}
+								/>
+							</Label>
+						</div>
 
-					<div class="mt-auto flex flex-col items-start gap-2">
-						{#if capture.status === 'recording'}
-							<p class="font-roboto-mono text-subtle-1 text-xs">
-								{(capture.totalBytes / 1024).toFixed(1)} kB captured
-							</p>
-							<Button
-								icon="stop-circle-outline"
-								onclick={capture.stop}
-							>
-								Stop
-							</Button>
-						{:else}
-							{#if capture.downloadUrl}
+						<div class="mt-auto flex flex-col items-start gap-2">
+							{#if capture.status === 'recording'}
 								<p class="font-roboto-mono text-subtle-1 text-xs">
 									{(capture.totalBytes / 1024).toFixed(1)} kB captured
 								</p>
-								<a
-									href={capture.downloadUrl}
-									download="audio-capture.{selectedCodec}"
-									rel="external"
+								<Button
+									icon="stop-circle-outline"
+									onclick={capture.stop}
 								>
-									<Button icon="download">Download</Button>
-								</a>
+									Stop
+								</Button>
+							{:else}
+								{#if capture.downloadUrl}
+									<p class="font-roboto-mono text-subtle-1 text-xs">
+										{(capture.totalBytes / 1024).toFixed(1)} kB captured
+									</p>
+									<a
+										href={capture.downloadUrl}
+										download="audio-capture.{selectedCodec}"
+										rel="external"
+									>
+										<Button icon="download">Download</Button>
+									</a>
+								{/if}
+								<Button
+									icon="play-circle-outline"
+									onclick={() => capture.start(selectedCodec, captureDuration)}
+									disabled={!client.current}
+								>
+									{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
+								</Button>
 							{/if}
-							<Button
-								icon="play-circle-outline"
-								onclick={() => capture.start(selectedCodec, captureDuration)}
-								disabled={!client.current}
-							>
-								{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
-							</Button>
-						{/if}
-					</div>
-				</MutationSection>
-			</div>
+						</div>
+					</MutationSection>
+				</div>
 
-			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
-				<ApiSection
-					title="GetProperties"
-					api="rdk:component:audio_input"
-					description="Audio input properties"
-					class="relative"
-				>
-					<Query
-						query={propertiesQuery}
-						contentCx="h-6"
+				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
+					<ApiSection
+						title="GetProperties"
+						api="rdk:component:audio_input"
+						description="Audio input properties"
+						class="relative"
 					>
-						{#if propertiesQuery.data !== undefined}
-							<Properties
-								supportedCodecs={propertiesQuery.data.supportedCodecs}
-								sampleRateHz={propertiesQuery.data.sampleRateHz}
-								numChannels={propertiesQuery.data.numChannels}
-							/>
-						{/if}
-					</Query>
-				</ApiSection>
+						<Query
+							query={propertiesQuery}
+							contentCx="h-6"
+						>
+							{#if propertiesQuery.data !== undefined}
+								<Properties
+									supportedCodecs={propertiesQuery.data.supportedCodecs}
+									sampleRateHz={propertiesQuery.data.sampleRateHz}
+									numChannels={propertiesQuery.data.numChannels}
+								/>
+							{/if}
+						</Query>
+					</ApiSection>
+				</div>
 			</div>
 		</div>
 	{/snippet}

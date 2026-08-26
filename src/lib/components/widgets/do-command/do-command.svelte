@@ -79,51 +79,54 @@
 			{@render header({ input: displayInput, setInput })}
 		</div>
 	{/if}
-	<div class="flex flex-row items-center justify-between">
-		<div class="flex w-[45%] flex-col gap-2 border-r py-2">
-			<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
-			<CodeEditor
-				label="input"
-				language="json"
-				value={displayInput}
-				onChange={(nextInput: string) => {
-					updateInput(nextInput)
-				}}
-				class="h-56 overflow-y-auto"
-				errorMessageID={lastErr ? uid : undefined}
-			/>
-		</div>
+	<div class="@container">
+		<div class="flex flex-col @2xl:flex-row">
+			<div class="flex min-w-0 flex-col gap-2 py-2 @2xl:flex-1">
+				<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
+				<CodeEditor
+					label="input"
+					language="json"
+					value={displayInput}
+					onChange={(nextInput: string) => {
+						updateInput(nextInput)
+					}}
+					class="h-40 overflow-y-auto @2xl:h-56"
+					errorMessageID={lastErr ? uid : undefined}
+				/>
+			</div>
 
-		<Button
-			class="m-auto"
-			onclick={execute}>Execute</Button
-		>
+			<div
+				class="flex shrink-0 items-center justify-center border-y px-4 py-2 @2xl:border-x @2xl:border-y-0 @2xl:py-0"
+			>
+				<Button onclick={execute}>Execute</Button>
+			</div>
 
-		<div class="flex w-[45%] flex-col gap-2 border-l py-2">
-			<div class="flex flex-row items-center">
-				<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
-				{#if doCommandMutation.isPending}
-					<Progress
-						size="medium"
-						variant="dark"
+			<div class="flex min-w-0 flex-col gap-2 py-2 @2xl:flex-1">
+				<div class="flex flex-row items-center">
+					<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
+					{#if doCommandMutation.isPending}
+						<Progress
+							size="medium"
+							variant="dark"
+						/>
+					{/if}
+				</div>
+				{#if !lastErr}
+					<CodeEditor
+						label="output"
+						language="json"
+						value={output}
+						readonly
+						class="h-40 overflow-y-auto @2xl:h-56"
+					/>
+				{:else}
+					<ErrorDisplay
+						id={uid}
+						class="h-40 px-4 @2xl:h-56"
+						lastError={lastErr}
 					/>
 				{/if}
 			</div>
-			{#if !lastErr}
-				<CodeEditor
-					label="output"
-					language="json"
-					value={output}
-					readonly
-					class="h-56 overflow-y-auto"
-				/>
-			{:else}
-				<ErrorDisplay
-					id={uid}
-					class="h-56 px-4"
-					lastError={lastErr}
-				/>
-			{/if}
 		</div>
 	</div>
 {:else}

@@ -70,6 +70,9 @@
 
 	let container = $state<HTMLElement>()
 	let size = $state<Size>()
+	let isStacked = $state(false)
+
+	const STACK_WIDTH_PX = 672
 
 	useResizeObserver(
 		() => container,
@@ -80,6 +83,7 @@
 
 	const setSize = () => {
 		if (container) {
+			isStacked = container.clientWidth < STACK_WIDTH_PX
 			size = getImageSize(img, container)
 		}
 	}
@@ -101,7 +105,10 @@
 </script>
 
 <div
-	class="flex h-full min-h-0 w-full min-w-0 gap-2 py-2 pl-2"
+	class={[
+		'flex min-h-0 w-full min-w-0 gap-2 py-2 pl-2',
+		isStacked ? 'flex-col' : 'h-full flex-row',
+	]}
 	bind:this={container}
 >
 	{#if !size}
@@ -129,8 +136,8 @@
 			</Canvas>
 		</div>
 		<div
-			class="flex grow flex-col pr-2"
-			style:height={`${size.height.toString()}px`}
+			class={['flex grow flex-col pr-2', isStacked && 'min-h-40']}
+			style:height={isStacked ? undefined : `${size.height.toString()}px`}
 		>
 			<Legend
 				classifications={data?.classifications}

@@ -91,8 +91,8 @@
 	})
 </script>
 
-<div class="text-default flex flex-row gap-2 text-xs">
-	<div class="w-50">
+<div class="text-default flex flex-wrap gap-2 text-xs">
+	<div class="w-50 max-w-full">
 		<Select on:change={onChange}>
 			{#each refetchOptions as option (option)}
 				<option selected={selectedOption === option}>{option}</option>

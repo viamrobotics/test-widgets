@@ -39,33 +39,35 @@
 				<div slot="description">Copy JSON</div>
 			</Tooltip>
 		</div>
-		<dl class="font-roboto-mono flex flex-col gap-y-2">
-			{#each sortedData as [key, value] (key)}
-				{@const valueString = JSON.stringify(value, null, 2)}
-				<div class="flex flex-row">
-					<dt
-						class="text-default w-50 min-w-50 truncate pr-2 font-medium"
-						title={key}
-					>
-						{key}
-					</dt>
-					<dd class="text-subtle-1 min-w-50">
-						{#if value !== null && typeof value === 'object'}
-							<div class="border-light bg-extralight min-w-50 border px-3 py-2">
-								<pre class="whitespace-pre-wrap"><code>{valueString}</code></pre>
-							</div>
-						{:else if typeof value === 'string' && value.startsWith('data:image/')}
-							<img
-								class="max-h-80"
-								src={value}
-								alt={key}
-							/>
-						{:else}
-							{truncate(valueString, { length: 300 })}
-						{/if}
-					</dd>
-				</div>
-			{/each}
-		</dl>
+		<div class="@container">
+			<dl class="font-roboto-mono flex flex-col gap-y-2">
+				{#each sortedData as [key, value] (key)}
+					{@const valueString = JSON.stringify(value, null, 2)}
+					<div class="flex flex-col gap-y-1 @lg:flex-row @lg:gap-y-0">
+						<dt
+							class="text-default truncate pr-2 font-medium @lg:w-50 @lg:min-w-50"
+							title={key}
+						>
+							{key}
+						</dt>
+						<dd class="text-subtle-1 min-w-0 grow wrap-break-word">
+							{#if value !== null && typeof value === 'object'}
+								<div class="border-light bg-extralight border px-3 py-2">
+									<pre class="whitespace-pre-wrap"><code>{valueString}</code></pre>
+								</div>
+							{:else if typeof value === 'string' && value.startsWith('data:image/')}
+								<img
+									class="max-h-80 max-w-full"
+									src={value}
+									alt={key}
+								/>
+							{:else}
+								{truncate(valueString, { length: 300 })}
+							{/if}
+						</dd>
+					</div>
+				{/each}
+			</dl>
+		</div>
 	</div>
 {/if}

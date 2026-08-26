@@ -31,7 +31,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex shrink-0 flex-col gap-4">
 	<Label>
 		Pin
 
