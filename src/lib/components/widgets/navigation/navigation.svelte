@@ -134,7 +134,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex w-full justify-between p-4">
+		<div class="flex w-full flex-wrap justify-between gap-2 p-4">
 			<RefetchController
 				{refetchInterval}
 				queries={[locationQuery, obstaclesQuery, waypointsQuery]}
@@ -152,85 +152,89 @@
 			</div>
 		</div>
 
-		<div class="relative h-120 w-full items-stretch p-2 sm:flex">
-			<div class="w-full max-w-62.5 p-2">
-				<TabsBar variant="secondary">
-					<Tab
-						title="Obstacles"
-						selected={tab.current === 'obstacles'}
-						selectTab={() => (tab.current = 'obstacles')}
-					/>
-					<Tab
-						title="Waypoints"
-						selected={tab.current === 'waypoints'}
-						selectTab={() => (tab.current = 'waypoints')}
-					/>
-				</TabsBar>
-
-				<ul class="h-[calc(100%-32px)] overflow-auto">
-					{#if tab.current === 'obstacles'}
-						<ObstaclesLegend
-							{map}
-							{hovered}
-							{obstacles}
-							onEnter={setHovered}
-							onLeave={setHovered}
+		<div class="@container">
+			<div class="relative flex w-full flex-col items-stretch p-2 @2xl:h-120 @2xl:flex-row">
+				<div class="w-full p-2 @2xl:max-w-62.5">
+					<TabsBar variant="secondary">
+						<Tab
+							title="Obstacles"
+							selected={tab.current === 'obstacles'}
+							selectTab={() => (tab.current = 'obstacles')}
 						/>
-					{:else if tab.current === 'waypoints'}
-						<WaypointsLegend
-							{map}
-							{hovered}
-							{waypoints}
-							onEnter={setHovered}
-							onLeave={setHovered}
-							onRemove={async (id) => {
-								await removeWaypointMutation.mutateAsync([id])
-								await waypointsQuery.refetch()
-							}}
+						<Tab
+							title="Waypoints"
+							selected={tab.current === 'waypoints'}
+							selectTab={() => (tab.current = 'waypoints')}
 						/>
-					{/if}
-				</ul>
-			</div>
+					</TabsBar>
 
-			<MapLibre
-				class="relative grow"
-				maxPitch={view === '3D' ? 60 : 0}
-				mapProvider={MapProviders.googleMaps}
-				mapProviderKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-				bind:map
-			>
-				<NavigationControls showZoom={false} />
-
-				<div class="absolute top-5 right-14 z-10 flex items-center gap-2">
-					<ToggleButtons
-						options={['2D', '3D']}
-						selected={view}
-						on:input={handleViewSelect}
-					/>
-					<SatelliteControls />
-					<CenterControls />
+					<ul class="max-h-60 overflow-auto @2xl:h-[calc(100%-32px)] @2xl:max-h-none">
+						{#if tab.current === 'obstacles'}
+							<ObstaclesLegend
+								{map}
+								{hovered}
+								{obstacles}
+								onEnter={setHovered}
+								onLeave={setHovered}
+							/>
+						{:else if tab.current === 'waypoints'}
+							<WaypointsLegend
+								{map}
+								{hovered}
+								{waypoints}
+								onEnter={setHovered}
+								onLeave={setHovered}
+								onRemove={async (id) => {
+									await removeWaypointMutation.mutateAsync([id])
+									await waypointsQuery.refetch()
+								}}
+							/>
+						{/if}
+					</ul>
 				</div>
 
-				{#if locationQuery.data}
-					<DirectionalMarker position={locationQuery.data} />
-				{/if}
+				<div class="relative h-80 @2xl:h-auto @2xl:grow">
+					<MapLibre
+						class="relative"
+						maxPitch={view === '3D' ? 60 : 0}
+						mapProvider={MapProviders.googleMaps}
+						mapProviderKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+						bind:map
+					>
+						<NavigationControls showZoom={false} />
 
-				<Waypoints
-					{waypoints}
-					{addWayPoint}
-					tab={tab.current ?? 'obstacles'}
-					{hovered}
-				/>
+						<div class="absolute top-5 right-14 z-10 flex items-center gap-2">
+							<ToggleButtons
+								options={['2D', '3D']}
+								selected={view}
+								on:input={handleViewSelect}
+							/>
+							<SatelliteControls />
+							<CenterControls />
+						</div>
 
-				{#snippet layer()}
-					<Obstacles
-						{obstacles}
-						{hovered}
-						{setHovered}
-						{view}
-					/>
-				{/snippet}
-			</MapLibre>
+						{#if locationQuery.data}
+							<DirectionalMarker position={locationQuery.data} />
+						{/if}
+
+						<Waypoints
+							{waypoints}
+							{addWayPoint}
+							tab={tab.current ?? 'obstacles'}
+							{hovered}
+						/>
+
+						{#snippet layer()}
+							<Obstacles
+								{obstacles}
+								{hovered}
+								{setHovered}
+								{view}
+							/>
+						{/snippet}
+					</MapLibre>
+				</div>
+			</div>
 		</div>
 	{/snippet}
 </ConnectionStatus>
