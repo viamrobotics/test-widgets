@@ -13,7 +13,7 @@
 	let degsPerSec = $state(45)
 </script>
 
-<div class="flex flex-row gap-4">
+<div class="flex flex-wrap gap-4">
 	<Label cx="max-w-[96px] gap-1 text-xs">
 		<span class="flex gap-1">
 			Angle

@@ -13,7 +13,7 @@
 	let mmPerSec = $state(100)
 </script>
 
-<div class="flex flex-row gap-4">
+<div class="flex flex-wrap gap-4">
 	<Label cx="max-w-[96px] gap-1 text-xs whitespace-nowrap">
 		<span class="flex gap-1">
 			Distance

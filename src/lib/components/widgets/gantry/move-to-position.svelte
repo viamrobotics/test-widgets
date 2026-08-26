@@ -109,7 +109,7 @@
 				</span>
 			</Tooltip>
 		</span>
-		<div class="flex flex-row gap-2">
+		<div class="flex flex-wrap gap-2">
 			<Button onclick={resetToZero}>Zero</Button>
 			<Button onclick={resetToCurrent}>Current position</Button>
 		</div>

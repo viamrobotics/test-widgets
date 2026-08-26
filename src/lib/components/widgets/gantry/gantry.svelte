@@ -45,113 +45,117 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-row divide-x">
-			<div class="flex grow flex-row divide-x">
-				<ApiSection
-					bottomText="Updates automatically"
-					aria-labelledby={positionHeadingID}
-				>
-					<h3
-						class="text-subtle-2 flex flex-row items-center gap-1 text-sm"
-						id={positionHeadingID}
-					>
-						<a
-							href={apiDocsHref('rdk:component:gantry', 'getPosition')}
-							target="_blank"
-							rel="noopener noreferrer external"
-							class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+		<div class="@container">
+			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
+				<div class="@container grow">
+					<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
+						<ApiSection
+							bottomText="Updates automatically"
+							aria-labelledby={positionHeadingID}
 						>
-							GetPosition
-						</a>
-						and
-						<a
-							href={apiDocsHref('rdk:component:gantry', 'getLengths')}
-							target="_blank"
-							rel="noopener noreferrer external"
-							class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+							<h3
+								class="text-subtle-2 flex flex-row items-center gap-1 text-sm"
+								id={positionHeadingID}
+							>
+								<a
+									href={apiDocsHref('rdk:component:gantry', 'getPosition')}
+									target="_blank"
+									rel="noopener noreferrer external"
+									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+								>
+									GetPosition
+								</a>
+								and
+								<a
+									href={apiDocsHref('rdk:component:gantry', 'getLengths')}
+									target="_blank"
+									rel="noopener noreferrer external"
+									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
+								>
+									GetLengths
+								</a>
+							</h3>
+							<Queries queries={[positionQuery, lengthsQuery]}>
+								{@const positions = positionQuery.data}
+								{@const lengths = lengthsQuery.data ?? []}
+								{#if positions !== undefined}
+									<PositionAndLengths
+										{positions}
+										{lengths}
+									/>
+								{/if}
+							</Queries>
+						</ApiSection>
+						<ApiSection
+							title="MoveToPosition"
+							api="rdk:component:gantry"
 						>
-							GetLengths
-						</a>
-					</h3>
-					<Queries queries={[positionQuery, lengthsQuery]}>
-						{@const positions = positionQuery.data}
-						{@const lengths = lengthsQuery.data ?? []}
-						{#if positions !== undefined}
-							<PositionAndLengths
-								{positions}
-								{lengths}
-							/>
-						{/if}
-					</Queries>
-				</ApiSection>
-				<ApiSection
-					title="MoveToPosition"
-					api="rdk:component:gantry"
-				>
-					<Query query={positionQuery}>
-						{@const positions = positionQuery.data}
-						{#if positions !== undefined}
-							<MoveToPosition
-								{positions}
-								lastError={moveMutation.error}
-								moveTo={(newPos: number[], speeds: number[]) => {
-									moveMutation.mutate([newPos, speeds], {})
-								}}
-							/>
-						{/if}
-					</Query>
-				</ApiSection>
-				<div class="flex grow flex-col divide-y">
-					<ApiSection
-						title="Quick move"
-						bottomText="Press a button to execute"
-					>
-						<Query
-							query={positionQuery}
-							contentCx="h-6"
-						>
-							{@const positions = positionQuery.data}
-							{#if positions !== undefined}
-								<QuickMove
-									{positions}
-									lastError={quickMoveMutation.error}
-									moveTo={(newPos: number[], speeds: number[]) => {
-										quickMoveMutation.mutate([newPos, speeds], {})
-									}}
+							<Query query={positionQuery}>
+								{@const positions = positionQuery.data}
+								{#if positions !== undefined}
+									<MoveToPosition
+										{positions}
+										lastError={moveMutation.error}
+										moveTo={(newPos: number[], speeds: number[]) => {
+											moveMutation.mutate([newPos, speeds], {})
+										}}
+									/>
+								{/if}
+							</Query>
+						</ApiSection>
+						<div class="flex grow flex-col divide-y">
+							<ApiSection
+								title="Quick move"
+								bottomText="Press a button to execute"
+							>
+								<Query
+									query={positionQuery}
+									contentCx="h-6"
+								>
+									{@const positions = positionQuery.data}
+									{#if positions !== undefined}
+										<QuickMove
+											{positions}
+											lastError={quickMoveMutation.error}
+											moveTo={(newPos: number[], speeds: number[]) => {
+												quickMoveMutation.mutate([newPos, speeds], {})
+											}}
+										/>
+									{/if}
+								</Query>
+							</ApiSection>
+							<ApiSection
+								title="Home"
+								api="rdk:component:gantry"
+								description="Run the homing sequence"
+							>
+								<Home
+									{partID}
+									{resourceName}
 								/>
-							{/if}
-						</Query>
-					</ApiSection>
+							</ApiSection>
+						</div>
+					</div>
+				</div>
+				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
-						title="Home"
+						title="Stop"
 						api="rdk:component:gantry"
-						description="Run the homing sequence"
 					>
-						<Home
-							{partID}
-							{resourceName}
+						<StopButton
+							error={stopMutation.error}
+							onStop={() => {
+								stopMutation.mutate([])
+							}}
 						/>
 					</ApiSection>
-				</div>
-			</div>
-			<div class="ml-auto flex w-full max-w-40 flex-col divide-y">
-				<ApiSection
-					title="Stop"
-					api="rdk:component:gantry"
-				>
-					<StopButton
-						error={stopMutation.error}
-						onStop={() => {
-							stopMutation.mutate([])
-						}}
+					<IsMoving
+						client={GantryClient}
+						api="rdk:component:gantry"
+						{partID}
+						{resourceName}
 					/>
-				</ApiSection>
-				<IsMoving
-					client={GantryClient}
-					api="rdk:component:gantry"
-					{partID}
-					{resourceName}
-				/>
+				</div>
 			</div>
 		</div>
 	{/snippet}

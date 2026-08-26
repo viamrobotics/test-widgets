@@ -15,7 +15,7 @@
 	let angularPower = $state<Vector3>({ x: 0, y: 0, z: 0.75 })
 </script>
 
-<div class="flex flex-row gap-4">
+<div class="flex flex-wrap gap-4">
 	<Vec3Builder
 		title="Linear power"
 		titleTooltip="The percentage of max power of the base’s linear propulsion. In the range of –1.0 to 1.0, with 1.0 meaning 100% power."

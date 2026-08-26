@@ -60,46 +60,48 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-row divide-x">
-			<MutationSection
-				title="Quick move"
-				lastError={quickSetPowerMutation.error}
-			>
-				{#snippet titleInput()}
-					<Label>
-						Keyboard control
-
-						<Switch
-							slot="input"
-							on={quickMoveKeyboardControl}
-							on:change={() => (quickMoveKeyboardControl = !quickMoveKeyboardControl)}
-						/>
-					</Label>
-				{/snippet}
-
-				<QuickMove
-					isKeyboardEnabled={quickMoveKeyboardControl}
-					setPower={quickSetPower}
-				/>
-			</MutationSection>
-			<div class="ml-auto flex w-full max-w-40 grow flex-col divide-y">
-				<ApiSection
-					title="Stop"
-					api="rdk:component:base"
+		<div class="@container">
+			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
+				<MutationSection
+					title="Quick move"
+					lastError={quickSetPowerMutation.error}
 				>
-					<StopButton
-						error={stopMutation.error}
-						onStop={() => {
-							stopMutation.mutate([])
-						}}
+					{#snippet titleInput()}
+						<Label>
+							Keyboard control
+
+							<Switch
+								slot="input"
+								on={quickMoveKeyboardControl}
+								on:change={() => (quickMoveKeyboardControl = !quickMoveKeyboardControl)}
+							/>
+						</Label>
+					{/snippet}
+
+					<QuickMove
+						isKeyboardEnabled={quickMoveKeyboardControl}
+						setPower={quickSetPower}
 					/>
-				</ApiSection>
-				<IsMoving
-					client={BaseClient}
-					api="rdk:component:base"
-					{partID}
-					{resourceName}
-				/>
+				</MutationSection>
+				<div class="flex grow flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
+					<ApiSection
+						title="Stop"
+						api="rdk:component:base"
+					>
+						<StopButton
+							error={stopMutation.error}
+							onStop={() => {
+								stopMutation.mutate([])
+							}}
+						/>
+					</ApiSection>
+					<IsMoving
+						client={BaseClient}
+						api="rdk:component:base"
+						{partID}
+						{resourceName}
+					/>
+				</div>
 			</div>
 		</div>
 		<MutationSection
