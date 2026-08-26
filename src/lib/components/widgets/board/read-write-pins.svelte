@@ -33,7 +33,7 @@
 </script>
 
 <div class="flex w-full flex-col gap-6">
-	<div class="flex w-full gap-16">
+	<div class="flex w-full flex-wrap gap-x-16 gap-y-6">
 		<PinSelector
 			value={pinSelection}
 			onChange={handleChangedPinSelection}

@@ -103,99 +103,101 @@
 			/>
 		</div>
 
-		<div class="flex flex-row divide-x">
-			<div class="flex w-full flex-col divide-y">
-				<MutationSection
-					title="Play"
-					api="rdk:component:audio_output"
-					description="Send audio data to the device"
-					lastError={playContext.error}
-				>
-					<div class="flex flex-col gap-2">
-						<Label cx="gap-1 text-xs">
-							Audio file
-							<input
-								slot="input"
-								type="file"
-								accept={availableCodecs.map((c) => `.${c}`).join(',')}
-								class="text-xs"
-								onchange={handleFileChange}
-							/>
-						</Label>
-						{#if fileInputError}
-							<p class="text-xs text-red-500">{fileInputError}</p>
-						{/if}
-						{#if selectedFile}
-							<p class="font-roboto-mono text-subtle-1 text-xs">{selectedFile.name}</p>
-						{/if}
-						<Label cx="gap-1 text-xs">
-							Codec
-							<Select
-								slot="input"
-								value={selectedCodec}
-								on:change={(e) => {
-									playCodec = (e.target as HTMLSelectElement).value
-								}}
-							>
-								{#each availableCodecs as codec (codec)}
-									<option value={codec}>{codec}</option>
-								{/each}
-							</Select>
-						</Label>
-						<Label cx="gap-1 text-xs">
-							Sample rate (Hz)
-							<NumericInput
-								slot="input"
-								value={selectedSampleRateHz}
-								on:change={(e) => {
-									playSampleRateHz = numberValueFromEvent(e) ?? null
-								}}
-							/>
-						</Label>
-						<Label cx="gap-1 text-xs">
-							Channels
-							<NumericInput
-								slot="input"
-								value={selectedNumChannels}
-								on:change={(e) => {
-									playNumChannels = numberValueFromEvent(e) ?? null
-								}}
-							/>
-						</Label>
-					</div>
-
-					<div class="mt-auto">
-						<Button
-							icon="play-circle-outline"
-							onclick={play}
-							disabled={!client.current || playContext.status === 'playing'}
-						>
-							{playButtonLabel}
-						</Button>
-					</div>
-				</MutationSection>
-			</div>
-
-			<div class="ml-auto flex w-full max-w-1/2 flex-col divide-y sm:max-w-1/3">
-				<ApiSection
-					title="GetProperties"
-					api="rdk:component:audio_output"
-					description="Audio output properties"
-					class="relative"
-				>
-					<Query
-						query={propertiesQuery}
-						contentCx="h-6"
+		<div class="@container">
+			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
+				<div class="flex w-full flex-col divide-y">
+					<MutationSection
+						title="Play"
+						api="rdk:component:audio_output"
+						description="Send audio data to the device"
+						lastError={playContext.error}
 					>
-						{#if propertiesQuery.data !== undefined}
-							<Properties
-								supportedCodecs={propertiesQuery.data.supportedCodecs}
-								sampleRateHz={propertiesQuery.data.sampleRateHz}
-								numChannels={propertiesQuery.data.numChannels}
-							/>
-						{/if}
-					</Query>
-				</ApiSection>
+						<div class="flex flex-col gap-2">
+							<Label cx="gap-1 text-xs">
+								Audio file
+								<input
+									slot="input"
+									type="file"
+									accept={availableCodecs.map((c) => `.${c}`).join(',')}
+									class="text-xs"
+									onchange={handleFileChange}
+								/>
+							</Label>
+							{#if fileInputError}
+								<p class="text-xs text-red-500">{fileInputError}</p>
+							{/if}
+							{#if selectedFile}
+								<p class="font-roboto-mono text-subtle-1 text-xs">{selectedFile.name}</p>
+							{/if}
+							<Label cx="gap-1 text-xs">
+								Codec
+								<Select
+									slot="input"
+									value={selectedCodec}
+									on:change={(e) => {
+										playCodec = (e.target as HTMLSelectElement).value
+									}}
+								>
+									{#each availableCodecs as codec (codec)}
+										<option value={codec}>{codec}</option>
+									{/each}
+								</Select>
+							</Label>
+							<Label cx="gap-1 text-xs">
+								Sample rate (Hz)
+								<NumericInput
+									slot="input"
+									value={selectedSampleRateHz}
+									on:change={(e) => {
+										playSampleRateHz = numberValueFromEvent(e) ?? null
+									}}
+								/>
+							</Label>
+							<Label cx="gap-1 text-xs">
+								Channels
+								<NumericInput
+									slot="input"
+									value={selectedNumChannels}
+									on:change={(e) => {
+										playNumChannels = numberValueFromEvent(e) ?? null
+									}}
+								/>
+							</Label>
+						</div>
+
+						<div class="mt-auto">
+							<Button
+								icon="play-circle-outline"
+								onclick={play}
+								disabled={!client.current || playContext.status === 'playing'}
+							>
+								{playButtonLabel}
+							</Button>
+						</div>
+					</MutationSection>
+				</div>
+
+				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
+					<ApiSection
+						title="GetProperties"
+						api="rdk:component:audio_output"
+						description="Audio output properties"
+						class="relative"
+					>
+						<Query
+							query={propertiesQuery}
+							contentCx="h-6"
+						>
+							{#if propertiesQuery.data !== undefined}
+								<Properties
+									supportedCodecs={propertiesQuery.data.supportedCodecs}
+									sampleRateHz={propertiesQuery.data.sampleRateHz}
+									numChannels={propertiesQuery.data.numChannels}
+								/>
+							{/if}
+						</Query>
+					</ApiSection>
+				</div>
 			</div>
 		</div>
 	{/snippet}

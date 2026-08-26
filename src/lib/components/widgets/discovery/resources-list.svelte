@@ -66,44 +66,46 @@
 				<div slot="description">Copy JSON</div>
 			</Tooltip>
 		</div>
-		<dl class="font-roboto-mono flex flex-col gap-y-4">
-			{#each sortedData as value (value)}
-				{@const valueString = JSON.stringify(value, null, 2)}
-				{@const preview = previews[value.name]}
-				<div class="flex flex-col gap-y-2">
-					<div class="flex flex-row">
-						<dt class="text-default flex w-50 min-w-50 flex-col gap-2 pr-2 font-medium">
-							<span class="truncate">{value.name}</span>
-							{#if onAddComponent}
+		<div class="@container">
+			<dl class="font-roboto-mono flex flex-col gap-y-4">
+				{#each sortedData as value (value)}
+					{@const valueString = JSON.stringify(value, null, 2)}
+					{@const preview = previews[value.name]}
+					<div class="flex flex-col gap-y-2">
+						<div class="flex flex-col gap-y-2 @lg:flex-row @lg:gap-y-0">
+							<dt class="text-default flex flex-col gap-2 pr-2 font-medium @lg:w-50 @lg:min-w-50">
+								<span class="truncate">{value.name}</span>
+								{#if onAddComponent}
+									<Button
+										class="w-fit"
+										icon="plus"
+										onclick={() => onAddComponent(parseComponentConfig(value))}
+									>
+										Add component
+									</Button>
+								{/if}
 								<Button
 									class="w-fit"
-									icon="plus"
-									onclick={() => onAddComponent(parseComponentConfig(value))}
+									icon="content-copy"
+									onclick={async () => copyAttributes(value)}
 								>
-									Add component
+									Copy attributes
 								</Button>
-							{/if}
-							<Button
-								class="w-fit"
-								icon="content-copy"
-								onclick={async () => copyAttributes(value)}
-							>
-								Copy attributes
-							</Button>
-						</dt>
-						<dd class="text-subtle-1 min-w-50">
-							<div class="border-light bg-extralight relative min-w-50 border px-3 py-2">
-								<pre class="whitespace-pre-wrap"><code>{valueString}</code></pre>
-							</div>
-						</dd>
-					</div>
-					{#if preview}
-						<div class="flex w-full pl-50">
-							{@render componentPreview?.(preview)}
+							</dt>
+							<dd class="text-subtle-1 min-w-0 grow">
+								<div class="border-light bg-extralight relative border px-3 py-2">
+									<pre class="wrap-break-word whitespace-pre-wrap"><code>{valueString}</code></pre>
+								</div>
+							</dd>
 						</div>
-					{/if}
-				</div>
-			{/each}
-		</dl>
+						{#if preview}
+							<div class="flex w-full @lg:pl-50">
+								{@render componentPreview?.(preview)}
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</dl>
+		</div>
 	</div>
 {/if}

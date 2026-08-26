@@ -29,51 +29,53 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-row divide-x">
-			<span class="flex grow flex-row gap-4">
-				<ApiSection
-					title="Open"
-					api="rdk:component:gripper"
-					class="grow-0 gap-3 pr-0"
-				>
-					<Open
+		<div class="@container">
+			<div class="flex flex-col divide-y @lg:flex-row @lg:divide-x @lg:divide-y-0">
+				<span class="flex grow flex-wrap gap-4">
+					<ApiSection
+						title="Open"
+						api="rdk:component:gripper"
+						class="grow-0 gap-3 @xs:pr-0"
+					>
+						<Open
+							{partID}
+							{resourceName}
+						/>
+					</ApiSection>
+					<ApiSection
+						title="Grab"
+						api="rdk:component:gripper"
+						class="grow-0 gap-3 @xs:pl-0"
+					>
+						<Grab
+							{partID}
+							{resourceName}
+						/>
+					</ApiSection>
+				</span>
+				<div class="flex flex-col divide-y">
+					<ApiSection
+						title="Stop"
+						api="rdk:component:gripper"
+					>
+						<StopButton
+							error={stopMutation.error}
+							onStop={() => {
+								stopMutation.mutate([])
+							}}
+						/>
+					</ApiSection>
+					<IsMoving
+						client={GripperClient}
+						api="rdk:component:gripper"
 						{partID}
 						{resourceName}
 					/>
-				</ApiSection>
-				<ApiSection
-					title="Grab"
-					api="rdk:component:gripper"
-					class="grow-0 gap-3 pl-0"
-				>
-					<Grab
+					<IsHoldingSomething
 						{partID}
 						{resourceName}
 					/>
-				</ApiSection>
-			</span>
-			<div class="flex flex-col divide-y">
-				<ApiSection
-					title="Stop"
-					api="rdk:component:gripper"
-				>
-					<StopButton
-						error={stopMutation.error}
-						onStop={() => {
-							stopMutation.mutate([])
-						}}
-					/>
-				</ApiSection>
-				<IsMoving
-					client={GripperClient}
-					api="rdk:component:gripper"
-					{partID}
-					{resourceName}
-				/>
-				<IsHoldingSomething
-					{partID}
-					{resourceName}
-				/>
+				</div>
 			</div>
 		</div>
 	{/snippet}

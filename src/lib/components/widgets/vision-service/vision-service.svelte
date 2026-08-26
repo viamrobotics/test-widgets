@@ -122,8 +122,8 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="flex flex-col gap-2 px-4 pt-4 pb-3">
-			<div class="flex flex-row gap-4">
-				<div class="w-50">
+			<div class="flex flex-wrap gap-4">
+				<div class="w-50 max-w-full">
 					<Label position="top">
 						Camera
 						<Select
@@ -160,7 +160,7 @@
 
 			<h6 class="text-subtle-1 font-semibold">Detections/Classifications</h6>
 
-			<div class="flex gap-4">
+			<div class="flex flex-wrap gap-4">
 				<RefetchController
 					allowLive
 					{refetchInterval}
@@ -218,8 +218,8 @@
 			</Queries>
 
 			<h6 class="text-subtle-1 mt-4 font-semibold">Object point clouds</h6>
-			<div class="flex items-center gap-4">
-				<div class="w-50">
+			<div class="flex flex-wrap items-center gap-4">
+				<div class="w-50 max-w-full">
 					<Label position="left">
 						Show object point clouds
 						<Switch

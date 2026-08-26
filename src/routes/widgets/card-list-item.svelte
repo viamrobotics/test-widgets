@@ -133,9 +133,14 @@
 	<div class="border-light border">
 		<header class="border-light relative flex items-center gap-3 border-b px-3 py-2.5">
 			<ResourceIcon {type} />
-			<span class="text-sm font-semibold">{resourceName}</span>
-			<Breadcrumbs crumbs={[namespace, type, subtype]} />
-			<div class="ml-auto">
+			<div class="flex min-w-0 grow flex-wrap items-center gap-x-3 gap-y-1.5">
+				<span class="min-w-0 text-sm font-semibold wrap-break-word">{resourceName}</span>
+				<Breadcrumbs
+					crumbs={[namespace, type, subtype]}
+					cx="max-w-full shrink-0"
+				/>
+			</div>
+			<div class="shrink-0">
 				<ResourceStatus {resource} />
 			</div>
 		</header>
