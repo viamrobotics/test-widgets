@@ -7,6 +7,8 @@
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ExtraParamsInput from '$lib/components/extra-params-input.svelte'
+	import { createExtraParamsStore } from '$lib/components/extra-params-store.svelte'
 	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
@@ -62,27 +64,31 @@
 
 	const isLive = $derived(refetchInterval.current === RefetchIntervals.LIVE)
 
-	const imageQuery = createResourceQuery(
-		client,
-		'getImages',
-		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
-		() => ({
-			enabled: isPlaying && !isLive,
-			refetchInterval: refetchInterval.current,
-		})
+	const extraParams = createExtraParamsStore(
+		() => partID,
+		() => resourceName,
+		'camera-getImages'
 	)
+
+	const getImagesArgs = (): [string[]?, Record<string, unknown>?] => {
+		const filterSourceNames = selectedSource ? [selectedSource] : []
+		if (extraParams.current) {
+			return [filterSourceNames, extraParams.current]
+		}
+		return selectedSource ? [filterSourceNames] : []
+	}
+
+	const imageQuery = createResourceQuery(client, 'getImages', getImagesArgs, () => ({
+		enabled: isPlaying && !isLive,
+		refetchInterval: refetchInterval.current,
+	}))
 
 	// The live WebRTC stream carries no XMP, so when live we fetch a single frame
 	// to learn the GPano crop geometry needed to render the stream on the right band.
-	const liveCoverageProbe = createResourceQuery(
-		client,
-		'getImages',
-		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
-		() => ({
-			enabled: isPlaying && isLive,
-			refetchInterval: false,
-		})
-	)
+	const liveCoverageProbe = createResourceQuery(client, 'getImages', getImagesArgs, () => ({
+		enabled: isPlaying && isLive,
+		refetchInterval: false,
+	}))
 
 	$effect(() => {
 		if (sourceNames.length === 0 && imageQuery.data?.images) {
@@ -125,15 +131,10 @@
 	// A separate, disabled query for exporting a screenshot
 	// since this button should work regardless of refetch
 	// interval and not affect the image feed.
-	const exportScreenshotQuery = createResourceQuery(
-		client,
-		'getImages',
-		() => (selectedSource ? ([[selectedSource]] as [string[]]) : ([] as [])),
-		{
-			enabled: false,
-			refetchInterval: false,
-		}
-	)
+	const exportScreenshotQuery = createResourceQuery(client, 'getImages', getImagesArgs, {
+		enabled: false,
+		refetchInterval: false,
+	})
 
 	// Firefox has native support for picture-in-picture and does not need
 	// to be requested separately. Don't show a "toggle pip" button in Firefox.
@@ -213,6 +214,14 @@
 								}}
 							/>
 						</Label>
+					{/if}
+				</div>
+				<div class="px-4 pb-3">
+					<ExtraParamsInput store={extraParams} />
+					{#if isLive && extraParams.current}
+						<p class="text-subtle-2 pt-1 text-xs">
+							Additional parameters do not apply to the live stream, only to fetched frames.
+						</p>
 					{/if}
 				</div>
 			{/if}

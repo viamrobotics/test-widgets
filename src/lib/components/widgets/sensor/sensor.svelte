@@ -4,6 +4,8 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ExtraParamsInput from '$lib/components/extra-params-input.svelte'
+	import { createExtraParamsStore } from '$lib/components/extra-params-store.svelte'
 	import Query from '$lib/components/query.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
@@ -28,18 +30,30 @@
 		() => resourceName
 	)
 
-	const readingsQuery = createResourceQuery(client, 'getReadings', () => ({
-		refetchInterval: refetchInterval.current,
-	}))
+	const extraParams = createExtraParamsStore(
+		() => partID,
+		() => resourceName,
+		'sensor-getReadings'
+	)
+
+	const readingsQuery = createResourceQuery(
+		client,
+		'getReadings',
+		(): [Record<string, unknown>?] => (extraParams.current ? [extraParams.current] : []),
+		() => ({
+			refetchInterval: refetchInterval.current,
+		})
+	)
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="p-4 pb-3">
+		<div class="flex flex-col gap-3 p-4 pb-3">
 			<RefetchController
 				{refetchInterval}
 				queries={[readingsQuery]}
 			/>
+			<ExtraParamsInput store={extraParams} />
 		</div>
 
 		<ApiSection
