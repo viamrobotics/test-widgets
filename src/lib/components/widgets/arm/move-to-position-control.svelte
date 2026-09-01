@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Banner, Label, Select, ToggleButtons } from '@viamrobotics/prime-core'
+	import { Banner, Icon, Label, Select, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
 	import { ArmClient, MotionClient, type Pose, type RobotClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
@@ -100,11 +100,28 @@
 
 <div class="flex flex-col gap-4">
 	{#if hasMotionService}
-		<ToggleButtons
-			options={['Motion service', 'Direct arm']}
-			selected={mode === 'motion' ? 'Motion service' : 'Direct arm'}
-			on:input={handleModeInput}
-		/>
+		<Label position="top">
+			<span class="flex items-center gap-1 text-xs">
+				Control mode
+				<Tooltip>
+					<Icon
+						name="information-outline"
+						size="sm"
+					/>
+					<span slot="description">
+						Using a motion service will include motion planning and obstacle avoidance. Direct arm
+						control will move the arm without any planning and regardless of obstacles.
+					</span>
+				</Tooltip>
+			</span>
+
+			<ToggleButtons
+				slot="input"
+				options={['Motion service', 'Arm']}
+				selected={mode === 'motion' ? 'Motion service' : 'Arm'}
+				on:input={handleModeInput}
+			/>
+		</Label>
 	{/if}
 	{#if showServiceSelect}
 		<Label>
