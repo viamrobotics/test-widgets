@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { Pose } from '@viamrobotics/sdk'
-
 	import { ArmClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
@@ -17,7 +15,7 @@
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
-	import MoveToPosition from './move-to-position.svelte'
+	import MoveToPositionControl from './move-to-position-control.svelte'
 
 	interface Props {
 		partID: string
@@ -34,20 +32,14 @@
 
 	const options = { refetchInterval: 500 }
 	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
-	const endPositionQuery = createResourceQuery(client, 'getEndPosition', options)
 	const kinematicsQuery = createResourceQuery(client, 'getKinematics', options)
 	const isMovingQuery = createResourceQuery(client, 'isMoving', options)
 
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
 	const stopMutation = createResourceMutation(client, 'stop')
-	const moveToPosMutation = createResourceMutation(client, 'moveToPosition')
 
 	const moveToJointPositions = (jointPositionsList: number[]) => {
 		moveToJointPosMutation.mutate([jointPositionsList], {})
-	}
-
-	const moveToPosition = (position: Pose) => {
-		moveToPosMutation.mutate([position], {})
 	}
 
 	const jointLimitsDegrees = $derived(
@@ -94,15 +86,10 @@
 						title="MoveToPosition"
 						api="rdk:component:arm"
 					>
-						<Query query={endPositionQuery}>
-							{#if endPositionQuery.data}
-								<MoveToPosition
-									endPosition={endPositionQuery.data}
-									{moveToPosition}
-									lastError={moveToPosMutation.error}
-								/>
-							{/if}
-						</Query>
+						<MoveToPositionControl
+							{partID}
+							{resourceName}
+						/>
 					</ApiSection>
 				</div>
 
