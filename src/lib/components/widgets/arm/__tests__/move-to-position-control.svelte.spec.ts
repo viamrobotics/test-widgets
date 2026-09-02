@@ -96,7 +96,7 @@ describe('MoveToPositionControl', () => {
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
 		expect(screen.queryByRole('button', { name: 'Motion service' })).not.toBeInTheDocument()
-		expect(screen.queryByRole('button', { name: 'Direct arm' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: 'Arm' })).not.toBeInTheDocument()
 		expect(
 			screen.getByText(/the arm will not avoid obstacles when moving\. use with caution/iu)
 		).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		await user.click(screen.getByRole('button', { name: 'Direct arm' }))
+		await user.click(screen.getByRole('button', { name: 'Arm' }))
 
 		expect(
 			screen.getByText(/the arm will not avoid obstacles when moving\. use with caution/iu)
@@ -130,7 +130,7 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		await user.click(screen.getByRole('button', { name: 'Direct arm' }))
+		await user.click(screen.getByRole('button', { name: 'Arm' }))
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(moveToPositionMutate).toHaveBeenCalledWith([defaultPose], {})
