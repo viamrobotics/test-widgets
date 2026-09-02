@@ -10,9 +10,15 @@
 		endPosition: Pose
 		moveToPosition: (position: Pose) => void
 		lastError: Error | null
+		description?: string
 	}
 
-	const { endPosition, moveToPosition, lastError }: Props = $props()
+	const {
+		endPosition,
+		moveToPosition,
+		lastError,
+		description = 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.',
+	}: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPosition = $state({ ...endPosition })
@@ -41,7 +47,7 @@
 			desiredPosition = next
 		}}
 		title="Pose Values"
-		description="Pose is with respect to the arm origin and does not take into account the motion service or frame system."
+		{description}
 	/>
 
 	<div class="mb-2 flex flex-col gap-2">
