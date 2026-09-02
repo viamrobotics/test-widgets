@@ -79,11 +79,15 @@
 	}
 </script>
 
-<Button
-	icon="camera-outline"
-	onclick={handleExport}>Export screenshot</Button
->
-<ErrorDisplay
-	class="max-w-50"
-	{lastError}
-/>
+<div class="flex flex-col items-start gap-1">
+	<Button
+		icon="camera-outline"
+		onclick={handleExport}
+	>
+		Screenshot
+	</Button>
+	<ErrorDisplay
+		class="max-w-50"
+		{lastError}
+	/>
+</div>

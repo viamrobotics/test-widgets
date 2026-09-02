@@ -5,7 +5,7 @@
 	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
 	import { useResizeObserver } from 'runed'
-	import { untrack } from 'svelte'
+	import { type Snippet, untrack } from 'svelte'
 
 	import { assertExists } from '$lib/assert'
 	import ContentRect from '$lib/components/content-rect.svelte'
@@ -31,6 +31,8 @@
 		showMousePositionTooltip?: boolean
 		sourceName?: string
 		refetch: () => Promise<unknown>
+		/** Rendered between the video and the SetStreamOptions section. */
+		actions?: Snippet
 	}
 
 	const {
@@ -45,6 +47,7 @@
 		showMousePositionTooltip = false,
 		sourceName = '',
 		refetch,
+		actions,
 	}: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
@@ -396,6 +399,8 @@
 		)}%)
 	</div>
 {/if}
+
+{@render actions?.()}
 
 {#if showResolutionOptions && isLive}
 	<MutationSection

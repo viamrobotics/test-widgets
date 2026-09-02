@@ -21,15 +21,16 @@
 	})
 </script>
 
-<Button
-	icon="picture-in-picture-top-right"
-	onclick={() => pip.toggle(resourceName)}
-	progress={pip.readyState === 'loading' ? 'indeterminate' : undefined}
->
-	Toggle picture-in-picture
-</Button>
-
-<ErrorDisplay
-	class="max-w-50"
-	lastError={pip.error}
-/>
+<div class="flex flex-col items-start gap-1">
+	<Button
+		icon="picture-in-picture-top-right"
+		onclick={() => pip.toggle(resourceName)}
+		progress={pip.readyState === 'loading' ? 'indeterminate' : undefined}
+	>
+		Picture-in-picture
+	</Button>
+	<ErrorDisplay
+		class="max-w-50"
+		lastError={pip.error}
+	/>
+</div>

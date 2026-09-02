@@ -167,28 +167,37 @@
 					headingId={getImagesHeadingID}
 				/>
 			</div>
-			<div class="flex gap-4 px-4 pt-3">
-				<Label position="left">
-					Wait to start feed
-					<Switch
-						slot="input"
-						annotated
-						on={waitToStartFeed.current}
-						on:change={(event) => {
-							waitToStartFeed.current = event.detail
-						}}
-					/>
-				</Label>
-			</div>
 			{#if isPlaying}
-				<div class="flex flex-wrap gap-4 p-4 pb-3">
+				<div class="flex flex-col gap-4 p-4 pb-3">
 					<RefetchController
 						{refetchInterval}
 						allowLive
 						queries={[imageQuery, pointcloudQuery]}
 					/>
+					<div class="flex w-full max-w-80 items-start gap-4">
+						<Label>
+							Start feed automatically
+							<ToggleButtons
+								slot="input"
+								options={['Yes', 'No']}
+								selected={waitToStartFeed.current ? 'No' : 'Yes'}
+								on:input={(event) => {
+									waitToStartFeed.current = event.detail === 'No'
+								}}
+							/>
+						</Label>
+						<Label>
+							Mouse position tooltip
+							<ToggleButtons
+								slot="input"
+								options={['On', 'Off']}
+								selected={mousePostionTooltip}
+								on:input={setMousePostionTooltip}
+							/>
+						</Label>
+					</div>
 					{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-						<Label position="left">
+						<Label>
 							Source
 							<Select
 								value={selectedSource}
@@ -216,10 +225,58 @@
 					{/if}
 				</div>
 			{/if}
-			<div class="flex h-full w-full flex-wrap gap-4 p-4">
-				<div class="min-w-0 grow basis-80">
-					{#if isPlaying}
-						{#if displayAs360}
+			{#snippet actions()}
+				<div class="mt-3 flex flex-wrap items-start gap-2">
+					<ExportScreenshot
+						name={client.current?.name ?? ''}
+						sourceName={selectedSource}
+						getImage={exportScreenshotQuery.refetch}
+					/>
+					{#if addImageToDataset}
+						<Button
+							icon="layers-triple-outline"
+							onclick={async () => {
+								let imgData
+								if (refetchInterval.current === RefetchIntervals.LIVE) {
+									const { isSuccess, data } = await imageQuery.refetch()
+									if (!isSuccess) return
+									imgData = data
+								} else {
+									imgData = imageQuery.data
+								}
+
+								const matchingImage = pickImageForSource(imgData?.images, selectedSource)
+								const image = matchingImage?.image
+								const mimeType = matchingImage?.mimeType
+
+								if (image) {
+									addImageToDataset({
+										binaryData: new Uint8Array(image),
+										partID,
+										componentType: 'camera',
+										componentName: resourceName,
+										methodName: 'captureAllFromCamera',
+										mimeType: mimeType ?? 'image/png',
+										dataRequestTimes: [new Date(), new Date()],
+									})
+								}
+							}}
+						>
+							Add to dataset
+						</Button>
+					{/if}
+					{#if !isFirefox}
+						<PictureInPictureButton
+							{resourceName}
+							rate={refetchInterval.current}
+						/>
+					{/if}
+				</div>
+			{/snippet}
+			<div class="p-4">
+				{#if isPlaying}
+					{#if displayAs360}
+						<div class="h-80 w-full">
 							{#if isLive}
 								<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
 								<Canvas renderMode="always">
@@ -237,91 +294,35 @@
 									/>
 								</Canvas>
 							{/if}
-						{:else}
-							<LiveOrPollingVideo
-								{partID}
-								{resourceName}
-								showResolutionOptions
-								videoClass="h-auto max-w-full"
-								{isLive}
-								data={imageQuery.data}
-								error={imageQuery.error}
-								isLoading={imageQuery.isLoading}
-								refetch={imageQuery.refetch}
-								showMousePositionTooltip={mousePostionTooltip === 'On'}
-								sourceName={selectedSource}
-							/>
-						{/if}
-					{:else}
-						<div class="bg-medium flex h-64 w-full max-w-80 items-center justify-center">
-							<Button
-								icon="play-circle-outline"
-								variant="dark"
-								onclick={() => {
-									isPlaying = true
-								}}
-							>
-								Start feed
-							</Button>
 						</div>
-					{/if}
-				</div>
-				{#if isPlaying}
-					<div class="flex shrink-0 flex-col items-start gap-2">
-						<ExportScreenshot
-							name={client.current?.name ?? ''}
+						{@render actions()}
+					{:else}
+						<LiveOrPollingVideo
+							{partID}
+							{resourceName}
+							showResolutionOptions
+							videoClass="h-auto max-w-full"
+							{isLive}
+							data={imageQuery.data}
+							error={imageQuery.error}
+							isLoading={imageQuery.isLoading}
+							refetch={imageQuery.refetch}
+							showMousePositionTooltip={mousePostionTooltip === 'On'}
 							sourceName={selectedSource}
-							getImage={exportScreenshotQuery.refetch}
+							{actions}
 						/>
-						{#if addImageToDataset}
-							<Button
-								icon="layers-triple-outline"
-								onclick={async () => {
-									let imgData
-									if (refetchInterval.current === RefetchIntervals.LIVE) {
-										const { isSuccess, data } = await imageQuery.refetch()
-										if (!isSuccess) return
-										imgData = data
-									} else {
-										imgData = imageQuery.data
-									}
-
-									const matchingImage = pickImageForSource(imgData?.images, selectedSource)
-									const image = matchingImage?.image
-									const mimeType = matchingImage?.mimeType
-
-									if (image) {
-										addImageToDataset({
-											binaryData: new Uint8Array(image),
-											partID,
-											componentType: 'camera',
-											componentName: resourceName,
-											methodName: 'captureAllFromCamera',
-											mimeType: mimeType ?? 'image/png',
-											dataRequestTimes: [new Date(), new Date()],
-										})
-									}
-								}}
-							>
-								Add current image to dataset
-							</Button>
-						{/if}
-						{#if !isFirefox}
-							<PictureInPictureButton
-								{resourceName}
-								rate={refetchInterval.current}
-							/>
-						{/if}
-						<Label>
-							Mouse Position Tooltip
-
-							<ToggleButtons
-								slot="input"
-								options={['On', 'Off']}
-								selected={mousePostionTooltip}
-								on:input={setMousePostionTooltip}
-							/>
-						</Label>
+					{/if}
+				{:else}
+					<div class="bg-medium flex h-64 w-full max-w-80 items-center justify-center">
+						<Button
+							icon="play-circle-outline"
+							variant="dark"
+							onclick={() => {
+								isPlaying = true
+							}}
+						>
+							Start feed
+						</Button>
 					</div>
 				{/if}
 			</div>
