@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useResourceNames } from '@viamrobotics/svelte-sdk'
+	import { useResourceStatuses } from '@viamrobotics/svelte-sdk'
 
 	import DoCommand from './do-command.svelte'
 
@@ -10,9 +10,9 @@
 
 	const { partID, resourceName }: Props = $props()
 
-	const resourceNames = useResourceNames(() => partID)
+	const statuses = useResourceStatuses(() => partID)
 	const resource = $derived(
-		resourceNames.current.find((candidate) => candidate.name === resourceName)
+		statuses.current.find((status) => status.name?.name === resourceName)?.name
 	)
 </script>
 
