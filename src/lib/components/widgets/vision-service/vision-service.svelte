@@ -4,7 +4,7 @@
 	import {
 		createResourceClient,
 		createResourceQuery,
-		useResourceNames,
+		useResourceStatuses,
 	} from '@viamrobotics/svelte-sdk'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
@@ -46,12 +46,18 @@
 	let showObjectPointClouds = $state(false)
 	let isRemote = $state(false)
 
-	const cameras = useResourceNames(() => partID, 'camera')
+	const cameraStatuses = useResourceStatuses(() => partID, 'camera')
+
+	const cameras = $derived(
+		cameraStatuses.current
+			.map((status) => status.name?.name)
+			.filter((name): name is string => name !== undefined)
+	)
 
 	$effect.pre(() => {
-		if (cameras.current.length > 0 && !initialFetchComplete) {
+		if (cameras.length > 0 && !initialFetchComplete) {
 			initialFetchComplete = true
-			cameraName = cameras.current[0]?.name ?? ''
+			cameraName = cameras[0] ?? ''
 		}
 	})
 
@@ -136,7 +142,7 @@
 							>
 								Default camera
 							</option>
-							{#each cameras.current as { name } (name)}
+							{#each cameras as name (name)}
 								<option
 									selected={cameraName === name}
 									value={name}

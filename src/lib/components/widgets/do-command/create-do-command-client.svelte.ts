@@ -1,5 +1,9 @@
 import { MachineConnectionEvent, MLModelClient, ResourceName } from '@viamrobotics/sdk'
-import { useConnectionStatus, useRobotClient } from '@viamrobotics/svelte-sdk'
+import {
+	type ResourceClientContext,
+	useConnectionStatus,
+	useRobotClient,
+} from '@viamrobotics/svelte-sdk'
 
 import { clientForResource, clientMap } from '$lib/client-map'
 
@@ -11,7 +15,7 @@ export const createDoCommandClient = (
 	resource: () => ResourceName,
 	partID: () => string,
 	resourceName: () => string
-): { current: DoCommandable | undefined } => {
+): ResourceClientContext<DoCommandable> => {
 	const robotClient = useRobotClient(partID)
 	const connectionStatus = useConnectionStatus(partID)
 
@@ -33,6 +37,12 @@ export const createDoCommandClient = (
 	return {
 		get current() {
 			return resourceClient
+		},
+		get partID() {
+			return partID()
+		},
+		get name() {
+			return resourceName()
 		},
 	}
 }

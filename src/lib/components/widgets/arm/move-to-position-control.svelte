@@ -6,7 +6,7 @@
 		createResourceMutation,
 		createResourceQuery,
 		createRobotQuery,
-		useResourceNames,
+		useResourceStatuses,
 		useRobotClient,
 	} from '@viamrobotics/svelte-sdk'
 
@@ -27,8 +27,12 @@
 
 	const { partID, resourceName }: Props = $props()
 
-	const motionServices = useResourceNames(() => partID, 'motion')
-	const motionServiceNames = $derived(motionServices.current.map((service) => service.name))
+	const motionServices = useResourceStatuses(() => partID, 'motion')
+	const motionServiceNames = $derived(
+		motionServices.current
+			.map((service) => service.name?.name)
+			.filter((name): name is string => name !== undefined)
+	)
 	const hasMotionService = $derived(motionServiceNames.length > 0)
 
 	let userChoice = $state<MoveControlMode>()

@@ -3,7 +3,7 @@ import type { Pose } from '@viamrobotics/sdk'
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MotionClient } from '@viamrobotics/sdk'
-import { createResourceClient, useResourceNames } from '@viamrobotics/svelte-sdk'
+import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../move-to-position-control.svelte'
@@ -49,14 +49,15 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		isSuccess: true,
 	})),
 	useRobotClient: vi.fn(() => ({ current: {} })),
-	useResourceNames: vi.fn(() => ({ current: [], query: undefined })),
+	useResourceStatuses: vi.fn(() => ({ current: [] })),
 }))
 
 const mockMotionServiceNames = (names: string[]) => {
-	vi.mocked(useResourceNames).mockReturnValue({
-		current: names.map((name) => ({ name, namespace: 'rdk', type: 'service', subtype: 'motion' })),
-		query: undefined,
-	})
+	vi.mocked(useResourceStatuses).mockReturnValue({
+		current: names.map((name) => ({
+			name: { name, namespace: 'rdk', type: 'service', subtype: 'motion' },
+		})),
+	} as never)
 }
 
 const currentMotionServiceName = (): string => {
