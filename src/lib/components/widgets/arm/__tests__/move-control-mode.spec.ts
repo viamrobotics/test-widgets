@@ -1,22 +1,31 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-	defaultMoveControlMode,
-	motionServiceOptions,
-	moveMotionServiceName,
-} from '../move-control-mode'
+import type { FrameConfigEntry } from '../../motion/frame-system-config'
 
-describe('defaultMoveControlMode', () => {
-	it('is direct when no motion service exists', () => {
-		expect(defaultMoveControlMode([])).toBe('direct')
+import { canPlanMotion, motionServiceOptions, moveMotionServiceName } from '../move-control-mode'
+
+const frameSystemOf = (...frameNames: string[]): FrameConfigEntry[] =>
+	frameNames.map((referenceFrame) => ({ frame: { referenceFrame } }))
+
+describe('canPlanMotion', () => {
+	it('is false when no motion service exists', () => {
+		expect(canPlanMotion([], frameSystemOf('arm-1'), 'arm-1')).toBe(false)
 	})
 
-	it('is motion when a motion service exists', () => {
-		expect(defaultMoveControlMode(['builtin'])).toBe('motion')
+	it('is false when the arm has no frame in the frame system', () => {
+		expect(canPlanMotion(['builtin'], frameSystemOf('other-arm'), 'arm-1')).toBe(false)
 	})
 
-	it('is motion when a non-builtin motion service exists', () => {
-		expect(defaultMoveControlMode(['custom-motion'])).toBe('motion')
+	it('is false when the frame system is empty', () => {
+		expect(canPlanMotion(['builtin'], [], 'arm-1')).toBe(false)
+	})
+
+	it('is true when a motion service exists and the arm has a frame', () => {
+		expect(canPlanMotion(['builtin'], frameSystemOf('other-arm', 'arm-1'), 'arm-1')).toBe(true)
+	})
+
+	it('is true for a non-builtin motion service', () => {
+		expect(canPlanMotion(['custom-motion'], frameSystemOf('arm-1'), 'arm-1')).toBe(true)
 	})
 })
 
