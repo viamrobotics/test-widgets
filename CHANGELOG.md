@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.13.0
+
+### Minor Changes
+
+- 3df988e: The camera GetImages widget now gives the whole width to the image. The Screenshot, Add to dataset, and Picture-in-picture buttons sit in a wrapping row under the stream and above SetStreamOptions instead of a column beside it, and the mouse position tooltip toggle moved up next to the other view controls. LiveOrPollingVideo accepts an optional `actions` snippet rendered between the video and SetStreamOptions.
+
 ## 0.12.0
 
 ### Minor Changes
