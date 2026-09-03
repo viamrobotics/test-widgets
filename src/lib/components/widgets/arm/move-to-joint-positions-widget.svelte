@@ -33,8 +33,8 @@
 
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
 
-	const moveToJointPositions = (jointPositionsList: number[]) => {
-		moveToJointPosMutation.mutate([jointPositionsList], {})
+	const moveToJointPositions = async (jointPositionsList: number[]) => {
+		await moveToJointPosMutation.mutateAsync([jointPositionsList])
 	}
 
 	const jointLimitsDegrees = $derived(

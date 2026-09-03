@@ -8,16 +8,17 @@
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
 	import JointPositionEditor from './joint-position-editor.svelte'
+	import JointPositionJogging from './joint-position-jogging.svelte'
 	import { type JointLimit } from './joint-position-limits'
-	import JointPositionQuickMove from './joint-position-quick-move.svelte'
 
-	type ControlMode = 'Joint Positions' | 'Quick Move'
+	type ControlMode = 'Jogging' | 'Joint Positions'
 
-	const CONTROL_MODES: ControlMode[] = ['Joint Positions', 'Quick Move']
+	const CONTROL_MODES: ControlMode[] = ['Jogging', 'Joint Positions']
 
 	interface Props {
 		positions: number[]
-		moveToJointPositions: (jointPositions: number[]) => void
+		/** Sends the move. Rejects when it fails. */
+		moveToJointPositions: (jointPositions: number[]) => Promise<void>
 		lastError: Error | null
 		jointLimitsDegrees: JointLimit[]
 		isMoving?: boolean
@@ -34,9 +35,9 @@
 	// svelte-ignore state_referenced_locally
 	let desiredPositions = $state([...positions]) // in degrees
 	let useRadians = $state(false)
-	let controlMode = $state<ControlMode>('Joint Positions')
+	let controlMode = $state<ControlMode>('Jogging')
 
-	const isQuickMoveMode = $derived(controlMode === 'Quick Move')
+	const isJoggingMode = $derived(controlMode === 'Jogging')
 
 	const getJointMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
 	const getJointMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
@@ -77,7 +78,7 @@
 			on:input={handleModeChange}
 		/>
 		<div class="flex items-center gap-1">
-			{#if !isQuickMoveMode}
+			{#if !isJoggingMode}
 				<Tooltip>
 					<Icon
 						name="information-outline"
@@ -100,8 +101,8 @@
 		</div>
 	</div>
 
-	{#if isQuickMoveMode}
-		<JointPositionQuickMove
+	{#if isJoggingMode}
+		<JointPositionJogging
 			{positions}
 			{moveToJointPositions}
 			{useRadians}
