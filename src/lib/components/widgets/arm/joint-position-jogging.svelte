@@ -151,7 +151,7 @@
 
 <div class="flex flex-wrap items-center justify-between gap-2">
 	<Label
-		position="left"
+		position="top"
 		cx="w-auto"
 	>
 		Jog amount
