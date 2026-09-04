@@ -1,11 +1,11 @@
 export type JogQueueStatus = 'queuing' | 'sending' | 'sent' | 'failed'
-export type JogDirection = 'decrease' | 'increase'
 
 export interface JogQueueEntry {
 	jointIndex: number
+	/** Where the joint was when the entry started, in degrees. */
+	startDegrees: number
 	/** Sum of every queued step in degrees. Negative when decreasing. */
 	deltaDegrees: number
-	anchor: JogDirection
 	status: JogQueueStatus
 }
 
@@ -29,114 +29,151 @@ export const DEFAULT_JOG_QUEUE_TIMING: JogQueueTiming = {
 
 interface JogQueueOptions {
 	timing?: JogQueueTiming
-	/** Moves one joint by `deltaDegrees`. Rejects when the move fails. */
-	send: (jointIndex: number, deltaDegrees: number) => Promise<void>
+	/**
+	 * Moves every joint in `targetsByJoint` to its target, in degrees. The map
+	 * holds the joint being sent plus any joint whose earlier move is still in
+	 * flight or just finished, so a new move never drags those joints back to a
+	 * stale polled position. Rejects when the move fails.
+	 */
+	send: (targetsByJoint: ReadonlyMap<number, number>) => Promise<void>
 }
 
+/** The position the entry moves its joint to, in degrees. */
+export const jogTargetDegrees = (entry: JogQueueEntry) => entry.startDegrees + entry.deltaDegrees
+
 /**
- * Collects jog presses on a single joint into one move. Presses within the
- * debounce window, and repeats while a button is held, add to the same
- * entry. The total is sent once the input goes quiet. Pressing a different
- * joint sends the pending total right away and starts a new entry.
+ * Collects jog presses into one move per joint. Presses within the debounce
+ * window, and repeats while a button is held, add to that joint's entry. The
+ * total is sent once the joint's input goes quiet. Each joint has its own
+ * entry and timers, so jogging a second joint leaves the first joint's badge
+ * to run through sending, its result, and clearing on its own.
  */
 export const useJogQueue = ({ send, timing = DEFAULT_JOG_QUEUE_TIMING }: JogQueueOptions) => {
-	let entry = $state.raw<JogQueueEntry | undefined>()
-	let debounceTimer: ReturnType<typeof setTimeout> | undefined
+	// $state.raw: the map is replaced wholesale on every change so readers re-run without deep proxies.
+	let entries = $state.raw<ReadonlyMap<number, JogQueueEntry>>(new Map())
+	const debounceTimers = new Map<number, ReturnType<typeof setTimeout>>()
+	const resultTimers = new Map<number, ReturnType<typeof setTimeout>>()
 	let holdDelayTimer: ReturnType<typeof setTimeout> | undefined
 	let holdRepeatTimer: ReturnType<typeof setInterval> | undefined
-	let resultTimer: ReturnType<typeof setTimeout> | undefined
+	let heldJointIndex: number | undefined
+
+	const setEntry = (jointIndex: number, entry: JogQueueEntry | undefined) => {
+		const next = new Map(entries)
+		if (entry) {
+			next.set(jointIndex, entry)
+		} else {
+			next.delete(jointIndex)
+		}
+		entries = next
+	}
 
 	const clearHoldTimers = () => {
 		clearTimeout(holdDelayTimer)
 		clearInterval(holdRepeatTimer)
 	}
 
-	const flush = async () => {
-		clearTimeout(debounceTimer)
+	const committedTargets = () => {
+		const targets = new Map<number, number>()
+		for (const entry of entries.values()) {
+			if (entry.status === 'sending' || entry.status === 'sent') {
+				targets.set(entry.jointIndex, jogTargetDegrees(entry))
+			}
+		}
+		return targets
+	}
+
+	const flush = async (jointIndex: number) => {
+		clearTimeout(debounceTimers.get(jointIndex))
+		const entry = entries.get(jointIndex)
 		if (entry?.status !== 'queuing') return
 		if (entry.deltaDegrees === 0) {
-			entry = undefined
+			setEntry(jointIndex, undefined)
 			return
 		}
 
 		const sending: JogQueueEntry = { ...entry, status: 'sending' }
-		entry = sending
+		setEntry(jointIndex, sending)
 
 		let status: JogQueueStatus = 'sent'
 		try {
-			await send(sending.jointIndex, sending.deltaDegrees)
+			await send(committedTargets())
 		} catch {
 			status = 'failed'
 		}
 
-		// A press on another joint replaced this entry while the move was in flight.
-		if (entry !== sending) return
-
-		entry = { ...sending, status }
-		resultTimer = setTimeout(() => {
-			entry = undefined
-		}, timing.resultDisplayMs)
+		setEntry(jointIndex, { ...sending, status })
+		resultTimers.set(
+			jointIndex,
+			setTimeout(() => {
+				setEntry(jointIndex, undefined)
+			}, timing.resultDisplayMs)
+		)
 	}
 
-	const add = (jointIndex: number, stepDegrees: number) => {
-		clearTimeout(debounceTimer)
-		if (entry?.status === 'sending') return
+	const add = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
+		clearTimeout(debounceTimers.get(jointIndex))
+		const current = entries.get(jointIndex)
+		if (current?.status === 'sending') return
 
-		clearTimeout(resultTimer)
-
-		const anchor: JogDirection = stepDegrees < 0 ? 'decrease' : 'increase'
-		if (entry?.status === 'queuing') {
-			if (entry.jointIndex === jointIndex) {
-				entry = { ...entry, deltaDegrees: entry.deltaDegrees + stepDegrees, anchor }
-				return
-			}
-			void flush()
+		clearTimeout(resultTimers.get(jointIndex))
+		if (current?.status === 'queuing') {
+			setEntry(jointIndex, { ...current, deltaDegrees: current.deltaDegrees + stepDegrees })
+			return
 		}
-		entry = { jointIndex, deltaDegrees: stepDegrees, anchor, status: 'queuing' }
+		setEntry(jointIndex, { jointIndex, startDegrees, deltaDegrees: stepDegrees, status: 'queuing' })
 	}
 
-	const scheduleSend = () => {
-		clearTimeout(debounceTimer)
-		if (entry?.status !== 'queuing') return
+	const scheduleSend = (jointIndex: number) => {
+		clearTimeout(debounceTimers.get(jointIndex))
+		if (entries.get(jointIndex)?.status !== 'queuing') return
 
-		debounceTimer = setTimeout(() => {
-			void flush()
-		}, timing.sendDebounceMs)
+		debounceTimers.set(
+			jointIndex,
+			setTimeout(() => {
+				void flush(jointIndex)
+			}, timing.sendDebounceMs)
+		)
 	}
 
-	/** One discrete press, such as a keyboard or assistive-technology activation. */
-	const tap = (jointIndex: number, stepDegrees: number) => {
-		add(jointIndex, stepDegrees)
-		scheduleSend()
+	/**
+	 * One discrete press, such as a keyboard or assistive-technology activation.
+	 * `startDegrees` is the joint's current position and is only used when the
+	 * press starts a new entry.
+	 */
+	const tap = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
+		add(jointIndex, stepDegrees, startDegrees)
+		scheduleSend(jointIndex)
 	}
 
 	/** A pointer press. Queues one step now and keeps adding while held. */
-	const beginHold = (jointIndex: number, stepDegrees: number) => {
+	const beginHold = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
 		clearHoldTimers()
-		add(jointIndex, stepDegrees)
+		heldJointIndex = jointIndex
+		add(jointIndex, stepDegrees, startDegrees)
 		holdDelayTimer = setTimeout(() => {
 			holdRepeatTimer = setInterval(() => {
-				add(jointIndex, stepDegrees)
+				add(jointIndex, stepDegrees, startDegrees)
 			}, timing.holdRepeatIntervalMs)
 		}, timing.holdRepeatDelayMs)
 	}
 
-	/** A pointer release. Stops repeating and schedules the send. */
+	/** A pointer release. Stops repeating and schedules the held joint's send. */
 	const endHold = () => {
 		clearHoldTimers()
-		scheduleSend()
+		if (heldJointIndex === undefined) return
+
+		scheduleSend(heldJointIndex)
+		heldJointIndex = undefined
 	}
 
 	const dispose = () => {
 		clearHoldTimers()
-		clearTimeout(debounceTimer)
-		clearTimeout(resultTimer)
+		for (const timer of debounceTimers.values()) clearTimeout(timer)
+		for (const timer of resultTimers.values()) clearTimeout(timer)
 	}
 
 	return {
-		get entry() {
-			return entry
-		},
+		entryFor: (jointIndex: number) => entries.get(jointIndex),
 		tap,
 		beginHold,
 		endHold,

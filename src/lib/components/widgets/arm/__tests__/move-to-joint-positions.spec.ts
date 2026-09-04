@@ -317,13 +317,13 @@ describe('Arm move-to-joint-positions', () => {
 			).not.toBeInTheDocument()
 		})
 
-		it('explains that jogging moves the arm on release', () => {
+		it('warns that jogging executes immediately', () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			expect(screen.getByText(/jogging moves the arm on release/iu)).toBeInTheDocument()
+			expect(screen.getByText(/jogging executes immediately on release/iu)).toBeInTheDocument()
 		})
 	})
 })

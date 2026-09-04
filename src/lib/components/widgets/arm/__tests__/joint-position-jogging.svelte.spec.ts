@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { tick } from 'svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -31,22 +31,41 @@ describe('Arm joint-position-jogging', () => {
 			...props,
 		})
 
-	const jogAmountSelect = () => screen.getByRole('combobox', { name: /jog amount/iu })
+	const jogStepSelect = () => screen.getByRole('combobox', { name: /jog step/iu })
 
 	const increaseButton = (jointIndex: number, degrees: number) =>
 		screen.getByRole('button', { name: `Increase joint ${jointIndex} by ${degrees} degrees` })
 
-	const popoverText = (text: string) =>
-		screen.getAllByText(text).filter((element) => element.closest('[role="tooltip"]'))
+	const row = (jointIndex: number) => screen.getAllByRole('listitem')[jointIndex]!
 
-	it('defaults the jog amount to 5 degrees', () => {
+	const rowStatus = (jointIndex: number) => within(row(jointIndex)).getByRole('status')
+
+	it('defaults the jog step to 5 degrees', () => {
 		renderSubject()
 
-		expect(jogAmountSelect()).toHaveValue('5')
+		expect(jogStepSelect()).toHaveValue('5')
 		expect(increaseButton(0, 5)).toHaveTextContent('+5°')
 	})
 
-	it('offers 1, 5, 10, and 15 degree jog amounts', () => {
+	it('labels each joint and shows its current position', () => {
+		renderSubject({ positions: [12, -4.5] })
+
+		const rows = screen.getAllByRole('listitem')
+		expect(rows).toHaveLength(2)
+		expect(rows[0]).toHaveTextContent('Joint 0')
+		expect(rows[0]).toHaveTextContent('12.00°')
+		expect(rows[1]).toHaveTextContent('Joint 1')
+		expect(rows[1]).toHaveTextContent('-4.50°')
+	})
+
+	it('explains tapping and holding on each jog button', () => {
+		renderSubject()
+
+		expect(screen.getByText('Tap or hold to add 5°')).toBeInTheDocument()
+		expect(screen.getByText('Tap or hold to subtract 5°')).toBeInTheDocument()
+	})
+
+	it('offers 1, 5, 10, and 15 degree jog steps', () => {
 		renderSubject()
 
 		const labels = screen.getAllByRole('option').map((option) => option.textContent?.trim())
@@ -57,7 +76,7 @@ describe('Arm joint-position-jogging', () => {
 		const moveToJointPositions = vi.fn().mockResolvedValue(undefined)
 		renderSubject({ positions: [10], moveToJointPositions })
 
-		await user.selectOptions(jogAmountSelect(), '10')
+		await user.selectOptions(jogStepSelect(), '10')
 		await user.click(increaseButton(0, 10))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
@@ -80,24 +99,31 @@ describe('Arm joint-position-jogging', () => {
 		expect(moveToJointPositions).toHaveBeenCalledWith([15])
 	})
 
-	it('keeps adding while a button is held and shows the queued total above it', async () => {
+	it('keeps adding while a button is held and shows the expected position in the row', async () => {
 		const moveToJointPositions = vi.fn().mockResolvedValue(undefined)
-		renderSubject({ moveToJointPositions })
+		renderSubject({ positions: [30], moveToJointPositions })
 
 		await user.pointer({ target: increaseButton(0, 5), keys: '[MouseLeft>]' })
-		expect(popoverText('+5°')).toHaveLength(1)
-		expect(screen.getByText('Queued +5° for joint 0')).toBeInTheDocument()
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 35.00°')
 
 		vi.advanceTimersByTime(timing.holdRepeatDelayMs + timing.holdRepeatIntervalMs * 2)
 		await tick()
-		expect(popoverText('+15°')).toHaveLength(1)
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 45.00°')
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 
 		await user.pointer({ keys: '[/MouseLeft]' })
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(moveToJointPositions).toHaveBeenCalledTimes(1)
-		expect(moveToJointPositions).toHaveBeenCalledWith([15])
+		expect(moveToJointPositions).toHaveBeenCalledWith([45])
+	})
+
+	it('shows the expected position in radians when the toggle is on', async () => {
+		renderSubject({ positions: [90], useRadians: true })
+
+		await user.click(increaseButton(0, 5))
+
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 1.66 rad')
 	})
 
 	it('queues from a keyboard activation', async () => {
@@ -126,8 +152,8 @@ describe('Arm joint-position-jogging', () => {
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		await tick()
 
-		expect(screen.getByLabelText('Progress spinner')).toBeInTheDocument()
-		expect(screen.getByText('Sending +5° to joint 0')).toBeInTheDocument()
+		expect(within(rowStatus(0)).getByLabelText('Progress spinner')).toBeInTheDocument()
+		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
 		expect(increaseButton(0, 5)).toBeDisabled()
 
 		resolveMove()
@@ -135,12 +161,13 @@ describe('Arm joint-position-jogging', () => {
 		await tick()
 
 		expect(screen.queryByLabelText('Progress spinner')).not.toBeInTheDocument()
-		expect(screen.getByText('Moved joint 0 by +5°')).toBeInTheDocument()
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 moved to 5.00°')
 		expect(increaseButton(0, 5)).not.toBeDisabled()
 
 		vi.advanceTimersByTime(timing.resultDisplayMs)
 		await tick()
-		expect(screen.queryByText('Moved joint 0 by +5°')).not.toBeInTheDocument()
+		expect(within(row(0)).queryByRole('status')).not.toBeInTheDocument()
+		expect(row(0)).toHaveTextContent('0.00°')
 	})
 
 	it('reports a failed move', async () => {
@@ -151,7 +178,7 @@ describe('Arm joint-position-jogging', () => {
 		await vi.advanceTimersByTimeAsync(timing.sendDebounceMs)
 		await tick()
 
-		expect(screen.getByText('Move of +5° on joint 0 failed')).toBeInTheDocument()
+		expect(rowStatus(0)).toHaveTextContent('Move of joint 0 to 5.00° failed')
 	})
 
 	it('does not queue while the arm is moving', async () => {
@@ -165,18 +192,39 @@ describe('Arm joint-position-jogging', () => {
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
-		expect(screen.queryByText(/queued/iu)).not.toBeInTheDocument()
+		expect(within(row(0)).queryByRole('status')).not.toBeInTheDocument()
 	})
 
-	it('sends the pending joint when another joint is pressed', async () => {
-		const moveToJointPositions = vi.fn().mockResolvedValue(undefined)
+	it('keeps the badge of the first joint while a second joint is jogged', async () => {
+		const resolvers: (() => void)[] = []
+		const moveToJointPositions = vi.fn(
+			() =>
+				new Promise<void>((resolve) => {
+					resolvers.push(resolve)
+				})
+		)
 		renderSubject({ positions: [0, 0], moveToJointPositions })
 
 		await user.click(increaseButton(0, 5))
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+		await tick()
+		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
+		expect(increaseButton(0, 5)).toBeDisabled()
+		expect(increaseButton(1, 5)).not.toBeDisabled()
+
 		await user.click(increaseButton(1, 5))
-		expect(moveToJointPositions).toHaveBeenCalledWith([5, 0])
+		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
+		expect(rowStatus(1)).toHaveTextContent('Joint 1 will move to 5.00°')
 
 		vi.advanceTimersByTime(timing.sendDebounceMs)
-		expect(moveToJointPositions).toHaveBeenCalledWith([0, 5])
+		expect(moveToJointPositions).toHaveBeenCalledTimes(2)
+		expect(moveToJointPositions).toHaveBeenNthCalledWith(1, [5, 0])
+		expect(moveToJointPositions).toHaveBeenNthCalledWith(2, [5, 5])
+
+		for (const resolve of resolvers) resolve()
+		await vi.advanceTimersByTimeAsync(0)
+		await tick()
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 moved to 5.00°')
+		expect(rowStatus(1)).toHaveTextContent('Joint 1 moved to 5.00°')
 	})
 })
