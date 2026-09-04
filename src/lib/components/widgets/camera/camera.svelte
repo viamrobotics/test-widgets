@@ -167,66 +167,63 @@
 					headingId={getImagesHeadingID}
 				/>
 			</div>
-			{#if isPlaying}
-				<div class="flex flex-col gap-4 p-4 pb-3">
+			<div class="p-4">
+				{#if isPlaying}
+					{#if displayAs360}
+						<div class="h-80 w-full">
+							{#if isLive}
+								<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
+								<Canvas renderMode="always">
+									<LiveThreeSixtyCameraView
+										{partID}
+										{resourceName}
+										coverage={panoCoverage}
+									/>
+								</Canvas>
+							{:else}
+								<Canvas>
+									<ThreeSixtyCameraView
+										data={imageQuery.data}
+										coverage={panoCoverage}
+									/>
+								</Canvas>
+							{/if}
+						</div>
+					{:else}
+						<LiveOrPollingVideo
+							{partID}
+							{resourceName}
+							showResolutionOptions
+							videoClass="h-auto max-w-full"
+							{isLive}
+							data={imageQuery.data}
+							error={imageQuery.error}
+							isLoading={imageQuery.isLoading}
+							refetch={imageQuery.refetch}
+							showMousePositionTooltip={mousePostionTooltip === 'On'}
+							sourceName={selectedSource}
+						/>
+					{/if}
+				{:else}
+					<div class="bg-medium flex h-64 w-full items-center justify-center">
+						<Button
+							icon="play-circle-outline"
+							variant="dark"
+							onclick={() => {
+								isPlaying = true
+							}}
+						>
+							Start feed
+						</Button>
+					</div>
+				{/if}
+
+				<div class="mt-3 flex flex-wrap items-start gap-2">
 					<RefetchController
 						{refetchInterval}
 						allowLive
 						queries={[imageQuery, pointcloudQuery]}
 					/>
-					<div class="flex w-full max-w-80 items-start gap-4">
-						<Label>
-							Start feed automatically
-							<ToggleButtons
-								slot="input"
-								options={['Yes', 'No']}
-								selected={waitToStartFeed.current ? 'No' : 'Yes'}
-								on:input={(event) => {
-									waitToStartFeed.current = event.detail === 'No'
-								}}
-							/>
-						</Label>
-						<Label>
-							Mouse position tooltip
-							<ToggleButtons
-								slot="input"
-								options={['On', 'Off']}
-								selected={mousePostionTooltip}
-								on:input={setMousePostionTooltip}
-							/>
-						</Label>
-					</div>
-					{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-						<Label>
-							Source
-							<Select
-								value={selectedSource}
-								on:change={onSourceSelect}
-								slot="input"
-							>
-								{#each sourceNames as name (name)}
-									<option value={name}>{name}</option>
-								{/each}
-							</Select>
-						</Label>
-					{/if}
-					{#if panoCoverage}
-						<Label>
-							{panoToggleLabel}
-							<ToggleButtons
-								slot="input"
-								options={['On', 'Off']}
-								selected={displayAs360 ? 'On' : 'Off'}
-								on:input={(event) => {
-									displayAs360 = event.detail === 'On'
-								}}
-							/>
-						</Label>
-					{/if}
-				</div>
-			{/if}
-			{#snippet actions()}
-				<div class="mt-3 flex flex-wrap items-start gap-2">
 					<ExportScreenshot
 						name={client.current?.name ?? ''}
 						sourceName={selectedSource}
@@ -272,59 +269,59 @@
 						/>
 					{/if}
 				</div>
-			{/snippet}
-			<div class="p-4">
-				{#if isPlaying}
-					{#if displayAs360}
-						<div class="h-80 w-full">
-							{#if isLive}
-								<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
-								<Canvas renderMode="always">
-									<LiveThreeSixtyCameraView
-										{partID}
-										{resourceName}
-										coverage={panoCoverage}
-									/>
-								</Canvas>
-							{:else}
-								<Canvas>
-									<ThreeSixtyCameraView
-										data={imageQuery.data}
-										coverage={panoCoverage}
-									/>
-								</Canvas>
-							{/if}
-						</div>
-						{@render actions()}
-					{:else}
-						<LiveOrPollingVideo
-							{partID}
-							{resourceName}
-							showResolutionOptions
-							videoClass="h-auto max-w-full"
-							{isLive}
-							data={imageQuery.data}
-							error={imageQuery.error}
-							isLoading={imageQuery.isLoading}
-							refetch={imageQuery.refetch}
-							showMousePositionTooltip={mousePostionTooltip === 'On'}
-							sourceName={selectedSource}
-							{actions}
-						/>
-					{/if}
-				{:else}
-					<div class="bg-medium flex h-64 w-full max-w-80 items-center justify-center">
-						<Button
-							icon="play-circle-outline"
-							variant="dark"
-							onclick={() => {
-								isPlaying = true
-							}}
-						>
-							Start feed
-						</Button>
+				<div class="flex flex-col gap-4">
+					<div class="flex w-full max-w-80 items-start gap-4">
+						{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
+							<Label>
+								Source
+								<Select
+									value={selectedSource}
+									on:change={onSourceSelect}
+									slot="input"
+								>
+									{#each sourceNames as name (name)}
+										<option value={name}>{name}</option>
+									{/each}
+								</Select>
+							</Label>
+						{/if}
+						{#if panoCoverage}
+							<Label>
+								{panoToggleLabel}
+								<ToggleButtons
+									slot="input"
+									options={['On', 'Off']}
+									selected={displayAs360 ? 'On' : 'Off'}
+									on:input={(event) => {
+										displayAs360 = event.detail === 'On'
+									}}
+								/>
+							</Label>
+						{/if}
 					</div>
-				{/if}
+					<div class="flex w-full max-w-80 items-start gap-4">
+						<Label>
+							Start feed automatically
+							<ToggleButtons
+								slot="input"
+								options={['Yes', 'No']}
+								selected={waitToStartFeed.current ? 'No' : 'Yes'}
+								on:input={(event) => {
+									waitToStartFeed.current = event.detail === 'No'
+								}}
+							/>
+						</Label>
+						<Label>
+							Mouse position tooltip
+							<ToggleButtons
+								slot="input"
+								options={['On', 'Off']}
+								selected={mousePostionTooltip}
+								on:input={setMousePostionTooltip}
+							/>
+						</Label>
+					</div>
+				</div>
 			</div>
 		</section>
 
