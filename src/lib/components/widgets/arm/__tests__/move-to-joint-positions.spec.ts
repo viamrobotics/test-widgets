@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte'
 
-import { fireEvent, render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -31,8 +31,18 @@ describe('Arm move-to-joint-positions', () => {
 		})
 	}
 
-	it('renders a slider with text input for each joint', () => {
-		renderSubject({
+	const switchToJointPositions = async () => {
+		await user.click(screen.getByRole('button', { name: /joint positions/iu }))
+	}
+
+	const renderJointPositionsEditor = async (props: Partial<ComponentProps<typeof Subject>>) => {
+		const result = renderSubject(props)
+		await switchToJointPositions()
+		return result
+	}
+
+	it('renders a slider with text input for each joint', async () => {
+		await renderJointPositionsEditor({
 			positions: [1, 2, 3],
 			jointLimitsDegrees: jointLimitsForCount(3),
 		})
@@ -40,8 +50,8 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getAllByRole('textbox')).toHaveLength(3)
 	})
 
-	it('labels each slider with its joint index', () => {
-		renderSubject({
+	it('labels each slider with its joint index', async () => {
+		await renderJointPositionsEditor({
 			positions: [0, 0],
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
@@ -50,9 +60,9 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getByRole('rowheader', { name: '1' })).toBeInTheDocument()
 	})
 
-	it('does not execute when a slider value is changed', () => {
+	it('does not execute when a slider value is changed', async () => {
 		const moveToJointPositions = vi.fn()
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [0],
 			moveToJointPositions,
 			jointLimitsDegrees: jointLimitsForCount(1),
@@ -64,9 +74,9 @@ describe('Arm move-to-joint-positions', () => {
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 	})
 
-	it('does not execute when a large slider change is staged', () => {
+	it('does not execute when a large slider change is staged', async () => {
 		const moveToJointPositions = vi.fn()
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [0],
 			moveToJointPositions,
 			jointLimitsDegrees: jointLimitsForCount(1),
@@ -81,7 +91,7 @@ describe('Arm move-to-joint-positions', () => {
 
 	it('Execute button calls moveToJointPositions with current desired positions', async () => {
 		const moveToJointPositions = vi.fn()
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [0],
 			moveToJointPositions,
 			jointLimitsDegrees: jointLimitsForCount(1),
@@ -99,7 +109,7 @@ describe('Arm move-to-joint-positions', () => {
 	})
 
 	it('resets all sliders to zero when Zero button is clicked', async () => {
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [10, 20],
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
@@ -114,7 +124,7 @@ describe('Arm move-to-joint-positions', () => {
 
 	it('Zero button does not auto-execute', async () => {
 		const moveToJointPositions = vi.fn()
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [30],
 			moveToJointPositions,
 			jointLimitsDegrees: jointLimitsForCount(1),
@@ -126,7 +136,7 @@ describe('Arm move-to-joint-positions', () => {
 	})
 
 	it('resets sliders to current position when Current position button is clicked', async () => {
-		renderSubject({
+		await renderJointPositionsEditor({
 			positions: [10, 20],
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
@@ -154,7 +164,7 @@ describe('Arm move-to-joint-positions', () => {
 		it('does not auto-execute when values are pasted', async () => {
 			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[30]')
 			const moveToJointPositions = vi.fn()
-			renderSubject({
+			await renderJointPositionsEditor({
 				positions: [0],
 				moveToJointPositions,
 				jointLimitsDegrees: jointLimitsForCount(1),
@@ -167,7 +177,7 @@ describe('Arm move-to-joint-positions', () => {
 
 		it('clamps pasted values to jointLimitsDegrees', async () => {
 			vi.mocked(navigator.clipboard.readText).mockResolvedValue('[200]')
-			renderSubject({
+			await renderJointPositionsEditor({
 				positions: [0],
 				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
 			})
@@ -183,59 +193,68 @@ describe('Arm move-to-joint-positions', () => {
 		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 
-	const switchToQuickMove = async () => {
-		await user.click(screen.getByRole('button', { name: /quick move/iu }))
-	}
-
 	describe('control mode toggle', () => {
-		it('marks the selected mode as pressed', async () => {
+		it('defaults to Jogging and marks the selected mode as pressed', async () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
+			const jogging = screen.getByRole('button', { name: /jogging/iu })
 			const jointPositions = screen.getByRole('button', { name: /joint positions/iu })
-			const quickMove = screen.getByRole('button', { name: /quick move/iu })
 
-			expect(jointPositions).toHaveAttribute('aria-pressed', 'true')
-			expect(quickMove).toHaveAttribute('aria-pressed', 'false')
-
-			await switchToQuickMove()
-
+			expect(jogging).toHaveAttribute('aria-pressed', 'true')
 			expect(jointPositions).toHaveAttribute('aria-pressed', 'false')
-			expect(quickMove).toHaveAttribute('aria-pressed', 'true')
+
+			await switchToJointPositions()
+
+			expect(jogging).toHaveAttribute('aria-pressed', 'false')
+			expect(jointPositions).toHaveAttribute('aria-pressed', 'true')
 		})
 
-		it('returns to the slider editor when Joint Positions is selected', async () => {
+		it('lists Jogging before Joint Positions', () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await switchToQuickMove()
+			const modeGroup = screen.getByRole('group', { name: /control mode/iu })
+			const labels = within(modeGroup)
+				.getAllByRole('button')
+				.map((button) => button.textContent?.trim())
+			expect(labels).toEqual(['Jogging', 'Joint Positions'])
+		})
+
+		it('shows the slider editor only after Joint Positions is selected', async () => {
+			renderSubject({
+				positions: [0],
+				jointLimitsDegrees: jointLimitsForCount(1),
+			})
+
 			expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
 
-			await user.click(screen.getByRole('button', { name: /joint positions/iu }))
+			await switchToJointPositions()
 
 			expect(screen.getByRole('textbox')).toBeInTheDocument()
 			expect(
 				screen.queryByRole('button', { name: /increase joint 0 by 5 degrees/iu })
 			).not.toBeInTheDocument()
+
+			await user.click(screen.getByRole('button', { name: /jogging/iu }))
+
+			expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+			expect(
+				screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu })
+			).toBeInTheDocument()
 		})
 	})
 
-	describe('quick move mode', () => {
-		it('renders ±5° buttons only after switching to quick move', async () => {
+	describe('jogging mode', () => {
+		it('renders a jog button pair for each joint by default', () => {
 			renderSubject({
 				positions: [0, 0],
 				jointLimitsDegrees: jointLimitsForCount(2),
 			})
-
-			expect(
-				screen.queryByRole('button', { name: /decrease joint \d by 5 degrees/iu })
-			).not.toBeInTheDocument()
-
-			await switchToQuickMove()
 
 			expect(
 				screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })
@@ -245,7 +264,7 @@ describe('Arm move-to-joint-positions', () => {
 			).toHaveLength(2)
 		})
 
-		it('+5° button executes immediately with current position plus 5', async () => {
+		it('+5° sends the current position plus 5 once the queue settles', async () => {
 			const moveToJointPositions = vi.fn()
 			renderSubject({
 				positions: [10],
@@ -253,13 +272,15 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await switchToQuickMove()
 			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
 
-			expect(moveToJointPositions).toHaveBeenCalledWith([15])
+			expect(moveToJointPositions).not.toHaveBeenCalled()
+			await vi.waitFor(() => {
+				expect(moveToJointPositions).toHaveBeenCalledWith([15])
+			})
 		})
 
-		it('-5° button executes immediately with current position minus 5', async () => {
+		it('−5° sends the current position minus 5 once the queue settles', async () => {
 			const moveToJointPositions = vi.fn()
 			renderSubject({
 				positions: [10],
@@ -267,49 +288,42 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await switchToQuickMove()
 			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
 
-			expect(moveToJointPositions).toHaveBeenCalledWith([5])
+			await vi.waitFor(() => {
+				expect(moveToJointPositions).toHaveBeenCalledWith([5])
+			})
 		})
 
-		it('disables ±5° buttons while the arm is moving', async () => {
+		it('disables the jog buttons while the arm is moving', () => {
 			renderSubject({
 				positions: [0],
 				isMoving: true,
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
-
-			await switchToQuickMove()
 
 			expect(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu })).toBeDisabled()
 			expect(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu })).toBeDisabled()
 		})
 
-		it('does not execute quick move when the arm is moving', async () => {
-			const moveToJointPositions = vi.fn()
+		it('hides the copy and paste controls', () => {
 			renderSubject({
 				positions: [0],
-				moveToJointPositions,
-				isMoving: true,
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await switchToQuickMove()
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
-
-			expect(moveToJointPositions).not.toHaveBeenCalled()
+			expect(
+				screen.queryByRole('button', { name: /paste from clipboard/iu })
+			).not.toBeInTheDocument()
 		})
 
-		it('shows a warning that quick move executes immediately', async () => {
+		it('warns that jogging executes immediately', () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await switchToQuickMove()
-
-			expect(screen.getByText(/quick move executes immediately/iu)).toBeInTheDocument()
+			expect(screen.getByText(/jogging executes immediately on release/iu)).toBeInTheDocument()
 		})
 	})
 })
