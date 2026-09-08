@@ -14,6 +14,7 @@
 
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
+	import ManualModeWidget from './manual-mode-widget.svelte'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPositionControl from './move-to-position-control.svelte'
 
@@ -50,6 +51,13 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="@container">
+			<!-- Full-width manual mode band, rendered only when the arm supports it -->
+			<ManualModeWidget
+				{partID}
+				{resourceName}
+				band
+			/>
+
 			<div class="flex flex-col gap-4 @2xl:flex-row @2xl:gap-0 @2xl:divide-x">
 				<!-- Main control sections -->
 				<div

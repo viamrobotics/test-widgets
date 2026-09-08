@@ -9,6 +9,7 @@ import type {
 import {
 	ArmGetJointPositionsWidget,
 	ArmIsMovingWidget,
+	ArmManualModeWidget,
 	ArmMoveToJointPositionsWidget,
 	ArmMoveToPositionWidget,
 	ArmQuickMoveWidget,
@@ -97,6 +98,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				widgets: [ArmGetJointPositionsWidget],
 			},
 			{ id: 'is-moving', label: 'IsMoving', widgets: [ArmIsMovingWidget] },
+			{ id: 'manual-mode', label: 'SetManualMode', widgets: [ArmManualModeWidget] },
 		],
 	},
 	[ResourceTriplets.AudioInput]: {
