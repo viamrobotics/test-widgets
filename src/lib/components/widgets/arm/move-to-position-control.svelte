@@ -48,8 +48,21 @@
 		frameSystem !== undefined && canPlanMotion(motionServiceNames, frameSystem, resourceName)
 	)
 
+	const armClient = createResourceClient(
+		ArmClient,
+		() => partID,
+		() => resourceName
+	)
+	// An arm that reports it cannot take direct cartesian commands can only be
+	// moved through the motion service, so lock the toggle onto that mode.
+	const propertiesQuery = createResourceQuery(armClient, 'getProperties')
+	const cartesianUnsupported = $derived(propertiesQuery.data?.supportCartesianCommands === false)
+
 	let userChoice = $state<MoveControlMode>()
-	const mode = $derived<MoveControlMode>(motionAvailable ? (userChoice ?? 'motion') : 'direct')
+	const preferredMode = $derived<MoveControlMode>(
+		motionAvailable ? (userChoice ?? 'motion') : 'direct'
+	)
+	const mode = $derived<MoveControlMode>(cartesianUnsupported ? 'motion' : preferredMode)
 
 	let userServiceChoice = $state<string>()
 	const activeMotionServiceName = $derived(
@@ -58,11 +71,6 @@
 	const serviceOptions = $derived(motionServiceOptions(motionServiceNames))
 	const showServiceSelect = $derived(mode === 'motion' && serviceOptions.length > 1)
 
-	const armClient = createResourceClient(
-		ArmClient,
-		() => partID,
-		() => resourceName
-	)
 	const motionClient = createResourceClient(
 		MotionClient,
 		() => partID,
@@ -135,6 +143,7 @@
 				slot="input"
 				options={['Motion service', 'Arm']}
 				selected={mode === 'motion' ? 'Motion service' : 'Arm'}
+				disabled={cartesianUnsupported}
 				on:input={handleModeInput}
 			/>
 		</Label>

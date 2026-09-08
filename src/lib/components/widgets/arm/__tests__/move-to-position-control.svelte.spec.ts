@@ -15,10 +15,13 @@ interface PollOptions {
 	refetchInterval?: number
 }
 
-const { moveMutate, moveToPositionMutate, robotQueryOptions } = vi.hoisted(() => ({
+const { moveMutate, moveToPositionMutate, robotQueryOptions, properties } = vi.hoisted(() => ({
 	moveMutate: vi.fn(),
 	moveToPositionMutate: vi.fn(),
 	robotQueryOptions: new Map<string, unknown>(),
+	// Mutable so a test can flip supportCartesianCommands; undefined by default
+	// so existing tests behave as before (Arm mode available).
+	properties: { current: undefined as { supportCartesianCommands: boolean } | undefined },
 }))
 
 /** The pose the motion service reports in the world frame. */
@@ -58,8 +61,8 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		}
 		return { error: null, isPending: false, mutate: moveToPositionMutate }
 	}),
-	createResourceQuery: vi.fn(() => ({
-		data: armPose,
+	createResourceQuery: vi.fn((_client: unknown, method: string) => ({
+		data: method === 'getProperties' ? properties.current : armPose,
 		error: null,
 		isLoading: false,
 		isSuccess: true,
@@ -118,6 +121,7 @@ describe('MoveToPositionControl', () => {
 		moveMutate.mockClear()
 		moveToPositionMutate.mockClear()
 		robotQueryOptions.clear()
+		properties.current = undefined
 		mockMotionServiceNames([])
 		mockFrameSystem(['arm-1'])
 	})
@@ -207,6 +211,26 @@ describe('MoveToPositionControl', () => {
 
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
+		expect(moveMutate).toHaveBeenCalledWith(
+			[{ referenceFrame: 'world', pose: worldPose }, 'arm-1'],
+			{}
+		)
+		expect(moveToPositionMutate).not.toHaveBeenCalled()
+	})
+
+	it('locks the toggle to motion mode when the arm does not support cartesian commands', async () => {
+		properties.current = { supportCartesianCommands: false }
+		mockMotionServiceNames(['builtin'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		const armButton = screen.getByRole('button', { name: 'Arm' })
+		expect(armButton).toBeDisabled()
+		expect(screen.getByRole('button', { name: 'Motion service' })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		)
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
 		expect(moveMutate).toHaveBeenCalledWith(
 			[{ referenceFrame: 'world', pose: worldPose }, 'arm-1'],
 			{}
