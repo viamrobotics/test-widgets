@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DEFAULT_JOG_QUEUE_TIMING, useJogQueue } from '../useJogQueue.svelte'
+import { DEFAULT_JOG_QUEUE_TIMING, type JogJointRange, useJogQueue } from '../useJogQueue.svelte'
 
 const timing = DEFAULT_JOG_QUEUE_TIMING
+
+const from = (
+	startDegrees: number,
+	minDegrees = Number.NEGATIVE_INFINITY,
+	maxDegrees = Number.POSITIVE_INFINITY
+): JogJointRange => ({ startDegrees, minDegrees, maxDegrees })
 
 describe('useJogQueue', () => {
 	beforeEach(() => {
@@ -35,11 +41,13 @@ describe('useJogQueue', () => {
 	it('queues one step on tap and sends the target after the debounce', () => {
 		const { send, queue } = createSubject()
 
-		queue.tap(0, 5, 30)
+		queue.tap(0, 5, from(30))
 
 		expect(queue.entryFor(0)).toEqual({
 			jointIndex: 0,
 			startDegrees: 30,
+			minDegrees: Number.NEGATIVE_INFINITY,
+			maxDegrees: Number.POSITIVE_INFINITY,
 			deltaDegrees: 5,
 			status: 'queuing',
 		})
@@ -53,11 +61,11 @@ describe('useJogQueue', () => {
 	it('adds taps within the debounce window into one send from the starting position', () => {
 		const { send, queue } = createSubject()
 
-		queue.tap(0, 5, 30)
+		queue.tap(0, 5, from(30))
 		vi.advanceTimersByTime(timing.sendDebounceMs - 1)
-		queue.tap(0, 5, 30)
+		queue.tap(0, 5, from(30))
 		vi.advanceTimersByTime(timing.sendDebounceMs - 1)
-		queue.tap(0, -1, 30)
+		queue.tap(0, -1, from(30))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(send).toHaveBeenCalledTimes(1)
@@ -67,7 +75,7 @@ describe('useJogQueue', () => {
 	it('keeps adding while held and sends once after release', () => {
 		const { send, queue } = createSubject()
 
-		queue.beginHold(0, 5, 30)
+		queue.beginHold(0, 5, from(30))
 		expect(queue.entryFor(0)?.deltaDegrees).toBe(5)
 
 		vi.advanceTimersByTime(timing.holdRepeatDelayMs - 1)
@@ -89,9 +97,9 @@ describe('useJogQueue', () => {
 	it('keeps each joint on its own entry and debounce', () => {
 		const { send, queue } = createSubject()
 
-		queue.tap(0, 5, 10)
+		queue.tap(0, 5, from(10))
 		vi.advanceTimersByTime(100)
-		queue.tap(1, -5, 20)
+		queue.tap(1, -5, from(20))
 
 		expect(queue.entryFor(0)).toMatchObject({ deltaDegrees: 5, status: 'queuing' })
 		expect(queue.entryFor(1)).toMatchObject({ deltaDegrees: -5, status: 'queuing' })
@@ -109,11 +117,11 @@ describe('useJogQueue', () => {
 		const { send, resolveMoves } = pendingSend()
 		const { queue } = createSubject(send)
 
-		queue.tap(0, 5, 10)
+		queue.tap(0, 5, from(10))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		expect(queue.entryFor(0)?.status).toBe('sending')
 
-		queue.tap(1, 5, 20)
+		queue.tap(1, 5, from(20))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(send).toHaveBeenLastCalledWith(
@@ -132,11 +140,11 @@ describe('useJogQueue', () => {
 	it('lets a sent joint finish its result display while another joint is jogged', async () => {
 		const { queue } = createSubject()
 
-		queue.tap(0, 5, 10)
+		queue.tap(0, 5, from(10))
 		await vi.advanceTimersByTimeAsync(timing.sendDebounceMs)
 		expect(queue.entryFor(0)?.status).toBe('sent')
 
-		queue.tap(1, 5, 20)
+		queue.tap(1, 5, from(20))
 		expect(queue.entryFor(0)?.status).toBe('sent')
 
 		vi.advanceTimersByTime(timing.resultDisplayMs)
@@ -144,10 +152,43 @@ describe('useJogQueue', () => {
 		expect(queue.entryFor(1)).toBeDefined()
 	})
 
+	it('clamps a step that would cross the joint limit to the limit', () => {
+		const { send, queue } = createSubject()
+
+		queue.tap(0, 15, from(350, -360, 360))
+
+		expect(queue.entryFor(0)?.deltaDegrees).toBe(10)
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+		expect(send).toHaveBeenCalledWith(new Map([[0, 360]]))
+	})
+
+	it('stops growing at the limit while held', () => {
+		const { send, queue } = createSubject()
+
+		queue.beginHold(0, 5, from(350, -360, 360))
+		vi.advanceTimersByTime(timing.holdRepeatDelayMs + timing.holdRepeatIntervalMs * 5)
+
+		expect(queue.entryFor(0)?.deltaDegrees).toBe(10)
+
+		queue.endHold()
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+		expect(send).toHaveBeenCalledWith(new Map([[0, 360]]))
+	})
+
+	it('does not send when the joint is already at its limit', () => {
+		const { send, queue } = createSubject()
+
+		queue.tap(0, 5, from(360, -360, 360))
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+
+		expect(send).not.toHaveBeenCalled()
+		expect(queue.entryFor(0)).toBeUndefined()
+	})
+
 	it('marks the entry failed when the move rejects', async () => {
 		const { queue } = createSubject(vi.fn().mockRejectedValue(new Error('arm offline')))
 
-		queue.tap(0, 5, 0)
+		queue.tap(0, 5, from(0))
 		await vi.advanceTimersByTimeAsync(timing.sendDebounceMs)
 
 		expect(queue.entryFor(0)?.status).toBe('failed')
@@ -157,19 +198,19 @@ describe('useJogQueue', () => {
 		const { send } = pendingSend()
 		const { queue } = createSubject(send)
 
-		queue.tap(0, 5, 0)
+		queue.tap(0, 5, from(0))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		expect(queue.entryFor(0)?.status).toBe('sending')
 
-		queue.tap(0, 5, 0)
+		queue.tap(0, 5, from(0))
 		expect(queue.entryFor(0)).toMatchObject({ deltaDegrees: 5, status: 'sending' })
 	})
 
 	it('drops a queue that nets to zero without sending', () => {
 		const { send, queue } = createSubject()
 
-		queue.tap(0, 5, 0)
-		queue.tap(0, -5, 0)
+		queue.tap(0, 5, from(0))
+		queue.tap(0, -5, from(0))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(send).not.toHaveBeenCalled()
@@ -179,8 +220,8 @@ describe('useJogQueue', () => {
 	it('dispose cancels the pending sends', () => {
 		const { send, queue } = createSubject()
 
-		queue.tap(0, 5, 0)
-		queue.tap(1, 5, 0)
+		queue.tap(0, 5, from(0))
+		queue.tap(1, 5, from(0))
 		queue.dispose()
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 

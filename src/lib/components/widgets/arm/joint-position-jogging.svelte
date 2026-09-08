@@ -11,7 +11,10 @@
 
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
+	import type { JointLimit } from './joint-position-limits'
+
 	import {
+		type JogJointRange,
 		type JogQueueEntry,
 		type JogQueueStatus,
 		jogTargetDegrees,
@@ -38,13 +41,16 @@
 
 	interface Props {
 		positions: number[]
+		/** Per-joint limits a jog target is clamped to. A joint with no entry is not clamped. */
+		jointLimitsDegrees: JointLimit[]
 		useRadians: boolean
 		isMoving: boolean
 		/** Sends the move. Rejects when it fails. */
 		moveToJointPositions: (jointPositions: number[]) => Promise<void>
 	}
 
-	const { positions, useRadians, isMoving, moveToJointPositions }: Props = $props()
+	const { positions, jointLimitsDegrees, useRadians, isMoving, moveToJointPositions }: Props =
+		$props()
 
 	let jogStepDegrees = $state<JogStepDegrees>(DEFAULT_JOG_STEP_DEGREES)
 
@@ -63,7 +69,11 @@
 	const formatAngle = (degrees: number) =>
 		useRadians ? `${formatNumeric(degreesToRadians(degrees))} rad` : `${formatNumeric(degrees)}°`
 
-	const positionOf = (jointIndex: number) => positions[jointIndex] ?? 0
+	const rangeFor = (jointIndex: number): JogJointRange => ({
+		startDegrees: positions[jointIndex] ?? 0,
+		minDegrees: jointLimitsDegrees[jointIndex]?.minDegrees ?? Number.NEGATIVE_INFINITY,
+		maxDegrees: jointLimitsDegrees[jointIndex]?.maxDegrees ?? Number.POSITIVE_INFINITY,
+	})
 
 	const stepFor = (direction: JogDirection) =>
 		direction === 'decrease' ? -jogStepDegrees : jogStepDegrees
@@ -79,7 +89,7 @@
 	const handlePointerDown = (event: PointerEvent, jointIndex: number, direction: JogDirection) => {
 		if (isJointDisabled(jointIndex) || event.button !== 0) return
 
-		queue.beginHold(jointIndex, stepFor(direction), positionOf(jointIndex))
+		queue.beginHold(jointIndex, stepFor(direction), rangeFor(jointIndex))
 	}
 
 	// Keyboard and assistive-technology activation arrive as a click with `detail` 0. Pointer
@@ -87,7 +97,7 @@
 	const handleClick = (event: MouseEvent, jointIndex: number, direction: JogDirection) => {
 		if (isJointDisabled(jointIndex) || event.detail !== 0) return
 
-		queue.tap(jointIndex, stepFor(direction), positionOf(jointIndex))
+		queue.tap(jointIndex, stepFor(direction), rangeFor(jointIndex))
 	}
 
 	const formatTarget = (entry: JogQueueEntry) => formatAngle(jogTargetDegrees(entry))

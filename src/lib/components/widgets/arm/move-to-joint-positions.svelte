@@ -105,6 +105,7 @@
 		<JointPositionJogging
 			{positions}
 			{moveToJointPositions}
+			{jointLimitsDegrees}
 			{useRadians}
 			{isMoving}
 		/>

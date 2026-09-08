@@ -25,6 +25,7 @@ describe('Arm joint-position-jogging', () => {
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>> = {}) =>
 		render(Subject, {
 			positions: [0],
+			jointLimitsDegrees: [],
 			moveToJointPositions: vi.fn().mockResolvedValue(undefined),
 			useRadians: false,
 			isMoving: false,
@@ -124,6 +125,23 @@ describe('Arm joint-position-jogging', () => {
 		await user.click(increaseButton(0, 5))
 
 		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 1.66 rad')
+	})
+
+	it('clamps the jog to the joint limit and shows the clamped target', async () => {
+		const moveToJointPositions = vi.fn().mockResolvedValue(undefined)
+		renderSubject({
+			positions: [350],
+			jointLimitsDegrees: [{ minDegrees: -360, maxDegrees: 360 }],
+			moveToJointPositions,
+		})
+
+		await user.selectOptions(jogStepSelect(), '15')
+		await user.click(increaseButton(0, 15))
+
+		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 360.00°')
+
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+		expect(moveToJointPositions).toHaveBeenCalledWith([360])
 	})
 
 	it('queues from a keyboard activation', async () => {

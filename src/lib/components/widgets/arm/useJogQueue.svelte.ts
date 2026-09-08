@@ -1,10 +1,15 @@
 export type JogQueueStatus = 'queuing' | 'sending' | 'sent' | 'failed'
 
-export interface JogQueueEntry {
-	jointIndex: number
-	/** Where the joint was when the entry started, in degrees. */
+/** The joint's position when an entry starts, and the limits its target is clamped to, in degrees. */
+export interface JogJointRange {
 	startDegrees: number
-	/** Sum of every queued step in degrees. Negative when decreasing. */
+	minDegrees: number
+	maxDegrees: number
+}
+
+export interface JogQueueEntry extends JogJointRange {
+	jointIndex: number
+	/** Sum of every queued step in degrees, clamped so the target stays inside the limits. */
 	deltaDegrees: number
 	status: JogQueueStatus
 }
@@ -40,6 +45,11 @@ interface JogQueueOptions {
 
 /** The position the entry moves its joint to, in degrees. */
 export const jogTargetDegrees = (entry: JogQueueEntry) => entry.startDegrees + entry.deltaDegrees
+
+// A step that would cross a joint limit is cut at the limit, so 350° jogged by 15° toward a 360° limit moves the remaining 10°.
+const clampDelta = (range: JogJointRange, deltaDegrees: number) =>
+	Math.min(Math.max(range.startDegrees + deltaDegrees, range.minDegrees), range.maxDegrees) -
+	range.startDegrees
 
 /**
  * Collects jog presses into one move per joint. Presses within the debounce
@@ -110,17 +120,25 @@ export const useJogQueue = ({ send, timing = DEFAULT_JOG_QUEUE_TIMING }: JogQueu
 		)
 	}
 
-	const add = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
+	const add = (jointIndex: number, stepDegrees: number, range: JogJointRange) => {
 		clearTimeout(debounceTimers.get(jointIndex))
 		const current = entries.get(jointIndex)
 		if (current?.status === 'sending') return
 
 		clearTimeout(resultTimers.get(jointIndex))
 		if (current?.status === 'queuing') {
-			setEntry(jointIndex, { ...current, deltaDegrees: current.deltaDegrees + stepDegrees })
+			setEntry(jointIndex, {
+				...current,
+				deltaDegrees: clampDelta(current, current.deltaDegrees + stepDegrees),
+			})
 			return
 		}
-		setEntry(jointIndex, { jointIndex, startDegrees, deltaDegrees: stepDegrees, status: 'queuing' })
+		setEntry(jointIndex, {
+			jointIndex,
+			...range,
+			deltaDegrees: clampDelta(range, stepDegrees),
+			status: 'queuing',
+		})
 	}
 
 	const scheduleSend = (jointIndex: number) => {
@@ -137,22 +155,22 @@ export const useJogQueue = ({ send, timing = DEFAULT_JOG_QUEUE_TIMING }: JogQueu
 
 	/**
 	 * One discrete press, such as a keyboard or assistive-technology activation.
-	 * `startDegrees` is the joint's current position and is only used when the
+	 * `range` is the joint's current position and limits and is only read when the
 	 * press starts a new entry.
 	 */
-	const tap = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
-		add(jointIndex, stepDegrees, startDegrees)
+	const tap = (jointIndex: number, stepDegrees: number, range: JogJointRange) => {
+		add(jointIndex, stepDegrees, range)
 		scheduleSend(jointIndex)
 	}
 
 	/** A pointer press. Queues one step now and keeps adding while held. */
-	const beginHold = (jointIndex: number, stepDegrees: number, startDegrees: number) => {
+	const beginHold = (jointIndex: number, stepDegrees: number, range: JogJointRange) => {
 		clearHoldTimers()
 		heldJointIndex = jointIndex
-		add(jointIndex, stepDegrees, startDegrees)
+		add(jointIndex, stepDegrees, range)
 		holdDelayTimer = setTimeout(() => {
 			holdRepeatTimer = setInterval(() => {
-				add(jointIndex, stepDegrees, startDegrees)
+				add(jointIndex, stepDegrees, range)
 			}, timing.holdRepeatIntervalMs)
 		}, timing.holdRepeatDelayMs)
 	}
