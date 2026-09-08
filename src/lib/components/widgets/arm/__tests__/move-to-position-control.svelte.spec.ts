@@ -6,14 +6,23 @@ import { MotionClient } from '@viamrobotics/sdk'
 import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { FrameConfigEntry } from '../../motion/frame-system-config'
+
 import Subject from '../move-to-position-control.svelte'
 
-const { moveMutate, moveToPositionMutate } = vi.hoisted(() => ({
+interface PollOptions {
+	enabled?: boolean
+	refetchInterval?: number
+}
+
+const { moveMutate, moveToPositionMutate, robotQueryOptions } = vi.hoisted(() => ({
 	moveMutate: vi.fn(),
 	moveToPositionMutate: vi.fn(),
+	robotQueryOptions: new Map<string, unknown>(),
 }))
 
-const defaultPose: Pose = {
+/** The pose the motion service reports in the world frame. */
+const worldPose: Pose = {
 	x: 1,
 	y: 2,
 	z: 3,
@@ -22,6 +31,19 @@ const defaultPose: Pose = {
 	oZ: 6,
 	theta: 7,
 }
+
+/** The pose the arm reports about its own origin, deliberately distinct from `worldPose`. */
+const armPose: Pose = {
+	x: 11,
+	y: 12,
+	z: 13,
+	oX: 14,
+	oY: 15,
+	oZ: 16,
+	theta: 17,
+}
+
+let frameSystem: FrameConfigEntry[] = []
 
 vi.mock('@viamrobotics/sdk', () => ({
 	ArmClient: class {},
@@ -37,17 +59,23 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		return { error: null, isPending: false, mutate: moveToPositionMutate }
 	}),
 	createResourceQuery: vi.fn(() => ({
-		data: defaultPose,
+		data: armPose,
 		error: null,
 		isLoading: false,
 		isSuccess: true,
 	})),
-	createRobotQuery: vi.fn(() => ({
-		data: { pose: defaultPose, referenceFrame: 'world' },
-		error: null,
-		isLoading: false,
-		isSuccess: true,
-	})),
+	createRobotQuery: vi.fn((_client: unknown, method: string, ...rest: unknown[]) => {
+		robotQueryOptions.set(method, rest.at(-1))
+		if (method === 'frameSystemConfig') {
+			return { data: frameSystem, error: null, isLoading: false, isSuccess: true }
+		}
+		return {
+			data: { pose: worldPose, referenceFrame: 'world' },
+			error: null,
+			isLoading: false,
+			isSuccess: true,
+		}
+	}),
 	useRobotClient: vi.fn(() => ({ current: {} })),
 	useResourceStatuses: vi.fn(() => ({ current: [] })),
 }))
@@ -60,6 +88,10 @@ const mockMotionServiceNames = (names: string[]) => {
 	} as never)
 }
 
+const mockFrameSystem = (frameNames: string[]) => {
+	frameSystem = frameNames.map((referenceFrame) => ({ frame: { referenceFrame } }))
+}
+
 const currentMotionServiceName = (): string => {
 	const calls = vi.mocked(createResourceClient).mock.calls
 	const motionClientCall = calls.findLast(([resourceClient]) => resourceClient === MotionClient)
@@ -70,6 +102,14 @@ const currentMotionServiceName = (): string => {
 	return nameGetter()
 }
 
+const queryOptionsFor = (method: string): PollOptions => {
+	const options = robotQueryOptions.get(method)
+	return typeof options === 'function' ? (options() as PollOptions) : (options as PollOptions)
+}
+
+const poseInputValues = (): (number | null)[] =>
+	screen.getAllByRole('spinbutton').map((input) => (input as HTMLInputElement).valueAsNumber)
+
 describe('MoveToPositionControl', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
@@ -77,10 +117,12 @@ describe('MoveToPositionControl', () => {
 		user = userEvent.setup()
 		moveMutate.mockClear()
 		moveToPositionMutate.mockClear()
+		robotQueryOptions.clear()
 		mockMotionServiceNames([])
+		mockFrameSystem(['arm-1'])
 	})
 
-	it('defaults to motion mode when a motion service exists', () => {
+	it('defaults to motion mode when a motion service can plan for the arm', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
@@ -103,6 +145,51 @@ describe('MoveToPositionControl', () => {
 		).toBeInTheDocument()
 	})
 
+	it('offers direct control only, and says why, when the arm has no frame', () => {
+		mockMotionServiceNames(['builtin'])
+		mockFrameSystem(['some-other-arm'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(screen.queryByRole('button', { name: 'Motion service' })).not.toBeInTheDocument()
+		expect(
+			screen.getByText(/arm-1 has no frame, so the motion service cannot plan for it/iu)
+		).toBeInTheDocument()
+	})
+
+	it('still renders the pose editor when the arm has no frame', () => {
+		mockMotionServiceNames(['builtin'])
+		mockFrameSystem([])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(poseInputValues()).toEqual([11, 12, 13, 14, 15, 16, 17])
+	})
+
+	it('never asks for a world-frame pose the machine cannot resolve', () => {
+		mockMotionServiceNames(['builtin'])
+		mockFrameSystem([])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(queryOptionsFor('getPose').enabled).toBe(false)
+	})
+
+	it('polls the world-frame pose so Current position does not go stale', () => {
+		mockMotionServiceNames(['builtin'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 500 })
+	})
+
+	it('reseeds the pose editor from the newly active frame when the mode changes', async () => {
+		mockMotionServiceNames(['builtin'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(poseInputValues()).toEqual([1, 2, 3, 4, 5, 6, 7])
+
+		await user.click(screen.getByRole('button', { name: 'Arm' }))
+
+		expect(poseInputValues()).toEqual([11, 12, 13, 14, 15, 16, 17])
+	})
+
 	it('shows the danger banner after toggling to direct mode', async () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
@@ -121,7 +208,7 @@ describe('MoveToPositionControl', () => {
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(moveMutate).toHaveBeenCalledWith(
-			[{ referenceFrame: 'world', pose: defaultPose }, 'arm-1'],
+			[{ referenceFrame: 'world', pose: worldPose }, 'arm-1'],
 			{}
 		)
 		expect(moveToPositionMutate).not.toHaveBeenCalled()
@@ -134,7 +221,7 @@ describe('MoveToPositionControl', () => {
 		await user.click(screen.getByRole('button', { name: 'Arm' }))
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
-		expect(moveToPositionMutate).toHaveBeenCalledWith([defaultPose], {})
+		expect(moveToPositionMutate).toHaveBeenCalledWith([armPose], {})
 		expect(moveMutate).not.toHaveBeenCalled()
 	})
 
@@ -143,7 +230,7 @@ describe('MoveToPositionControl', () => {
 
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
-		expect(moveToPositionMutate).toHaveBeenCalledWith([defaultPose], {})
+		expect(moveToPositionMutate).toHaveBeenCalledWith([armPose], {})
 		expect(moveMutate).not.toHaveBeenCalled()
 	})
 

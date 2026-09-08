@@ -10,10 +10,10 @@
 		useRobotClient,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
+	import Queries from '$lib/components/queries.svelte'
 
 	import {
-		defaultMoveControlMode,
+		canPlanMotion,
 		motionServiceOptions,
 		type MoveControlMode,
 		moveMotionServiceName,
@@ -27,16 +27,29 @@
 
 	const { partID, resourceName }: Props = $props()
 
+	// Both modes read the live pose back at this rate, so `Current position` is never stale.
+	const POSE_REFETCH_INTERVAL_MS = 500
+	const FRAME_SYSTEM_REFETCH_INTERVAL_MS = 5000
+
 	const motionServices = useResourceStatuses(() => partID, 'motion')
 	const motionServiceNames = $derived(
 		motionServices.current
 			.map((service) => service.name?.name)
 			.filter((name): name is string => name !== undefined)
 	)
+
+	const robotClient = useRobotClient(() => partID)
+	const frameSystemQuery = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
+		refetchInterval: FRAME_SYSTEM_REFETCH_INTERVAL_MS,
+	}))
+	const frameSystem = $derived(frameSystemQuery.data)
 	const hasMotionService = $derived(motionServiceNames.length > 0)
+	const motionAvailable = $derived(
+		frameSystem !== undefined && canPlanMotion(motionServiceNames, frameSystem, resourceName)
+	)
 
 	let userChoice = $state<MoveControlMode>()
-	const mode = $derived(userChoice ?? defaultMoveControlMode(motionServiceNames))
+	const mode = $derived<MoveControlMode>(motionAvailable ? (userChoice ?? 'motion') : 'direct')
 
 	let userServiceChoice = $state<string>()
 	const activeMotionServiceName = $derived(
@@ -45,7 +58,6 @@
 	const serviceOptions = $derived(motionServiceOptions(motionServiceNames))
 	const showServiceSelect = $derived(mode === 'motion' && serviceOptions.length > 1)
 
-	const robotClient = useRobotClient(() => partID)
 	const armClient = createResourceClient(
 		ArmClient,
 		() => partID,
@@ -63,10 +75,10 @@
 		robotClient,
 		'getPose',
 		() => poseArgs,
-		() => ({ enabled: mode === 'motion' })
+		() => ({ refetchInterval: POSE_REFETCH_INTERVAL_MS, enabled: mode === 'motion' })
 	)
 	const endPositionQuery = createResourceQuery(armClient, 'getEndPosition', () => ({
-		refetchInterval: 500,
+		refetchInterval: POSE_REFETCH_INTERVAL_MS,
 		enabled: mode === 'direct',
 	}))
 
@@ -103,7 +115,7 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	{#if hasMotionService}
+	{#if motionAvailable}
 		<Label position="top">
 			<span class="flex items-center gap-1 text-xs">
 				Control mode
@@ -142,23 +154,31 @@
 			</Select>
 		</Label>
 	{/if}
-	<Banner variant={mode === 'motion' ? 'info' : 'danger'}>
-		{#snippet subtitle()}
-			{#if mode === 'motion'}
-				Movement goes through motion planning and attempts to avoid obstacles.
-			{:else}
-				The arm will not avoid obstacles when moving. Use with caution.
+	{#if frameSystem !== undefined}
+		<Banner variant={mode === 'motion' ? 'info' : 'danger'}>
+			{#snippet subtitle()}
+				{#if mode === 'motion'}
+					Movement goes through motion planning and attempts to avoid obstacles.
+				{:else if hasMotionService && !motionAvailable}
+					{resourceName} has no frame, so the motion service cannot plan for it. The arm will not avoid
+					obstacles when moving. Use with caution.
+				{:else}
+					The arm will not avoid obstacles when moving. Use with caution.
+				{/if}
+			{/snippet}
+		</Banner>
+	{/if}
+	<Queries queries={[frameSystemQuery, activeQuery]}>
+		<!-- Re-seed the editor on a mode change: the two modes report the pose in different frames. -->
+		{#key mode}
+			{#if endPosition}
+				<MoveToPosition
+					{endPosition}
+					{moveToPosition}
+					{lastError}
+					{description}
+				/>
 			{/if}
-		{/snippet}
-	</Banner>
-	<Query query={activeQuery}>
-		{#if endPosition}
-			<MoveToPosition
-				{endPosition}
-				{moveToPosition}
-				{lastError}
-				{description}
-			/>
-		{/if}
-	</Query>
+		{/key}
+	</Queries>
 </div>

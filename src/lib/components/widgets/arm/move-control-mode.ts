@@ -1,12 +1,20 @@
+import { type FrameConfigEntry, movableFrameNames } from '../motion/frame-system-config'
+
 /** How the arm MoveToPosition widget executes a move. */
 export type MoveControlMode = 'motion' | 'direct'
 
 /**
- * The mode the widget starts in: motion planning whenever the machine has a
- * motion service, direct arm control only when it has none.
+ * Whether the widget can offer motion planning for `resourceName`.
+ *
+ * The machine needs a motion service, and the arm needs a frame in the machine's frame system.
+ * rdk leaves a component configured without a `frame` out of the frame system entirely, and
+ * neither `GetPose` nor a motion `Move` can resolve an arm it cannot find there.
  */
-export const defaultMoveControlMode = (motionServiceNames: string[]): MoveControlMode =>
-	motionServiceNames.length > 0 ? 'motion' : 'direct'
+export const canPlanMotion = (
+	motionServiceNames: string[],
+	frameSystem: FrameConfigEntry[],
+	resourceName: string
+): boolean => motionServiceNames.length > 0 && movableFrameNames(frameSystem).includes(resourceName)
 
 /**
  * The motion service a `Move` call targets: `builtin` when present, otherwise
