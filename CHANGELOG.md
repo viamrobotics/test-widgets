@@ -1,5 +1,18 @@
 # @viamrobotics/test-widgets
 
+## 0.13.0
+
+### Minor Changes
+
+- 3df988e: The camera GetImages widget now gives the whole width to the image. The Screenshot, Add to dataset, and Picture-in-picture buttons sit in a wrapping row under the stream instead of a column beside it.
+- 9410738: Arm Jogging mode replaces Quick move with selectable jog amounts and hold-to-queue moves.
+
+### Patch Changes
+
+- e9ffbb2: Arm MoveToPosition polls the world-frame pose so Current position stays live.
+- e9ffbb2: Arm MoveToPosition offers motion planning only for arms with a frame.
+- e9ffbb2: Arm MoveToPosition reseeds its pose editor when the control mode changes.
+
 ## 0.12.0
 
 ### Minor Changes
