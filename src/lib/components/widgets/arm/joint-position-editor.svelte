@@ -11,7 +11,8 @@
 		positions: number[]
 		jointLimitsDegrees: JointLimit[]
 		useRadians: boolean
-		moveToJointPositions: (jointPositions: number[]) => void
+		/** Sends the move. Rejects when it fails. */
+		moveToJointPositions: (jointPositions: number[]) => Promise<void>
 	}
 
 	let {
@@ -25,8 +26,12 @@
 	const getSliderMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
 	const getSliderMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
 
-	const execute = () => {
-		moveToJointPositions([...desiredPositions])
+	const execute = async () => {
+		try {
+			await moveToJointPositions([...desiredPositions])
+		} catch {
+			// The parent renders the failure from the mutation's error state.
+		}
 	}
 
 	const resetToZero = () => {

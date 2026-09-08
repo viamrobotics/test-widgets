@@ -90,7 +90,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				widgets: [ArmMoveToJointPositionsWidget],
 			},
 			{ id: 'move-to-position', label: 'MoveToPosition', widgets: [ArmMoveToPositionWidget] },
-			{ id: 'quick-move', label: 'Quick move', widgets: [ArmQuickMoveWidget] },
+			{ id: 'quick-move', label: 'Jogging', widgets: [ArmQuickMoveWidget] },
 			{
 				id: 'get-joint-positions',
 				label: 'GetJointPositions',
