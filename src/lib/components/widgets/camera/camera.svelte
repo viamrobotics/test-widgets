@@ -4,6 +4,7 @@
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
+	import { untrack } from 'svelte'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
@@ -29,9 +30,11 @@
 	interface Props {
 		partID: string
 		resourceName: string
+		/** Start the feed on mount even when "Start feed automatically" is off, e.g. the user just expanded the card. */
+		autoplay?: boolean
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, autoplay = false }: Props = $props()
 
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
@@ -44,6 +47,10 @@
 	)
 
 	let isPlaying = $derived(!waitToStartFeed.current)
+	// Read once on purpose: mounting with autoplay is the same override as pressing
+	// "Start feed", so later prop changes do not restart the feed.
+	if (untrack(() => autoplay)) isPlaying = true
+
 	let isShowingPointcloud = $state(false)
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
