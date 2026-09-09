@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.14.0
+
+### Minor Changes
+
+- 2e9154b: The camera widget accepts an `autoplay` prop. A host passes it when the user expands a collapsed card so the feed starts even though "Start feed automatically" is off; the saved preference itself is left as is.
+
 ## 0.13.0
 
 ### Minor Changes
