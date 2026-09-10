@@ -1,5 +1,12 @@
 # @viamrobotics/test-widgets
 
+## 0.15.0
+
+### Minor Changes
+
+- 68758f1: The arm MoveToPosition control now uses the arm's `GetProperties` to lock the control-mode toggle to the motion service when the arm reports it cannot take direct cartesian commands.
+- 6b9f7dc: Add manual mode controls to the arm widget. Requires `@viamrobotics/sdk` >= 0.75.1 for the arm manual mode API.
+
 ## 0.14.0
 
 ### Minor Changes
