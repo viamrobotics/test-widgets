@@ -35,8 +35,8 @@ describe('<ResourcesList>', () => {
 		// Check if resources are rendered and sorted
 		const items = screen.getAllByRole('term')
 		expect(items).toHaveLength(2)
-		expect(items[0]).toHaveTextContent('resource-a')
-		expect(items[1]).toHaveTextContent('resource-b')
+		expect(items[0]).toMatchTextContent('resource-a')
+		expect(items[1]).toMatchTextContent('resource-b')
 
 		// Verify JSON content is rendered
 		expect(screen.getByText(/"name":\s*"resource-a"/u)).toBeInTheDocument()

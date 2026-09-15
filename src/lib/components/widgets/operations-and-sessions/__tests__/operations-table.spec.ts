@@ -64,10 +64,10 @@ describe('OperationsTable', () => {
 		})
 
 		const cells = screen.getAllByRole('cell')
-		expect(cells[0]).toHaveTextContent('test-id')
-		expect(cells[1]).toHaveTextContent('session-test-id')
-		expect(cells[2]).toHaveTextContent('test-method')
-		expect(cells[3]).toHaveTextContent(/\d+ ms/u)
+		expect(cells[0]).toMatchTextContent('test-id')
+		expect(cells[1]).toMatchTextContent('session-test-id')
+		expect(cells[2]).toMatchTextContent('test-method')
+		expect(cells[3]).toMatchTextContent(/\d+ ms/u)
 	})
 
 	it('calls cancelOperation when Kill button is clicked', async () => {
@@ -96,8 +96,8 @@ describe('OperationsTable', () => {
 
 		// Exclude header row
 		const rows = screen.getAllByRole('row').slice(1)
-		expect(rows[0]).toHaveTextContent('op-1')
-		expect(rows[1]).toHaveTextContent('op-3')
-		expect(rows[2]).toHaveTextContent('op-2')
+		expect(rows[0]).toMatchTextContent('op-1')
+		expect(rows[1]).toMatchTextContent('op-3')
+		expect(rows[2]).toMatchTextContent('op-2')
 	})
 })

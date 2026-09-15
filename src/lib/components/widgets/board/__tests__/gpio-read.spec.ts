@@ -90,11 +90,11 @@ describe('Board GPIO Read', () => {
 		})
 		const frequencyOutput = within(frequencySection).getByRole('status')
 		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toHaveTextContent(/––/iu)
+		expect(stateOutput).toMatchTextContent(/––/iu)
 		expect(dutyCycleOutput).toBeInTheDocument()
-		expect(dutyCycleOutput).toHaveTextContent(/––/iu)
+		expect(dutyCycleOutput).toMatchTextContent(/––/iu)
 		expect(frequencyOutput).toBeInTheDocument()
-		expect(frequencyOutput).toHaveTextContent(/––/iu)
+		expect(frequencyOutput).toMatchTextContent(/––/iu)
 	})
 
 	it('displays state==high', () => {
@@ -105,7 +105,7 @@ describe('Board GPIO Read', () => {
 		const stateSection = screen.getByRole('region', { name: /State/iu })
 		const stateOutput = within(stateSection).getByRole('status')
 		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toHaveTextContent(/High/iu)
+		expect(stateOutput).toMatchTextContent(/High/iu)
 	})
 
 	it('displays state==low', () => {
@@ -116,7 +116,7 @@ describe('Board GPIO Read', () => {
 		const stateSection = screen.getByRole('region', { name: /State/iu })
 		const stateOutput = within(stateSection).getByRole('status')
 		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toHaveTextContent(/Low/iu)
+		expect(stateOutput).toMatchTextContent(/Low/iu)
 	})
 
 	it('displays PWM duty cycle', () => {
@@ -129,7 +129,7 @@ describe('Board GPIO Read', () => {
 		})
 		const dutyCycleOutput = within(dutyCycleSection).getByRole('status')
 		expect(dutyCycleOutput).toBeInTheDocument()
-		expect(dutyCycleOutput).toHaveTextContent(/50.0000/iu)
+		expect(dutyCycleOutput).toMatchTextContent(/50.0000/iu)
 	})
 
 	it('displays PWM frequency', () => {
@@ -142,6 +142,6 @@ describe('Board GPIO Read', () => {
 		})
 		const frequencyOutput = within(frequencySection).getByRole('status')
 		expect(frequencyOutput).toBeInTheDocument()
-		expect(frequencyOutput).toHaveTextContent(/1000.00/iu)
+		expect(frequencyOutput).toMatchTextContent(/1000.00/iu)
 	})
 })

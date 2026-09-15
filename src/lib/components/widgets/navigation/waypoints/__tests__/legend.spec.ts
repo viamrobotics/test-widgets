@@ -2,8 +2,8 @@ import type { Map } from 'maplibre-gl'
 import type { ComponentProps } from 'svelte'
 
 import { render } from '@testing-library/svelte'
-import { page } from '@vitest/browser/context'
 import { describe, expect, it, vi } from 'vitest'
+import { page } from 'vitest/browser'
 
 import { assertExists } from '../../../../../assert.ts'
 import Subject from '../legend.svelte'

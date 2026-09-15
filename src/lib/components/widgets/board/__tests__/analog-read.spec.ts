@@ -43,7 +43,7 @@ describe('Board Analog Read', () => {
 		})
 		const valueOutput = within(valueSection).getByRole('status')
 		expect(valueOutput).toBeInTheDocument()
-		expect(valueOutput).toHaveTextContent(/––/iu)
+		expect(valueOutput).toMatchTextContent(/––/iu)
 	})
 
 	it('displays value', () => {
@@ -56,6 +56,6 @@ describe('Board Analog Read', () => {
 		})
 		const valueOutput = within(valueSection).getByRole('status')
 		expect(valueOutput).toBeInTheDocument()
-		expect(valueOutput).toHaveTextContent('50')
+		expect(valueOutput).toMatchTextContent('50')
 	})
 })
