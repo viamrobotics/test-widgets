@@ -29,8 +29,8 @@ describe('<ReadingsList>', () => {
 		const terms = screen.getAllByRole('term')
 
 		expect(terms).toHaveLength(2)
-		expect(terms[0]).toHaveTextContent('a')
-		expect(terms[1]).toHaveTextContent('b')
+		expect(terms[0]).toMatchTextContent('a')
+		expect(terms[1]).toMatchTextContent('b')
 		expect(nestedObj).toBeInTheDocument()
 	})
 
@@ -50,7 +50,7 @@ describe('<ReadingsList>', () => {
 		}
 
 		const { container } = render(Subject, { data })
-		expect(screen.getByRole('definition')).toHaveTextContent('null')
+		expect(screen.getByRole('definition')).toMatchTextContent('null')
 		expect(container.querySelector('pre')).toBeNull()
 	})
 

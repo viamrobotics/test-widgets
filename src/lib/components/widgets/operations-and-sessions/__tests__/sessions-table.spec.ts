@@ -63,10 +63,10 @@ describe('SessionsTable', () => {
 		})
 
 		const cells = screen.getAllByRole('cell')
-		expect(cells[0]).toHaveTextContent('test-id')
-		expect(cells[1]).toHaveTextContent('gRPC')
-		expect(cells[2]).toHaveTextContent('test-remote')
-		expect(cells[3]).toHaveTextContent('test-local')
+		expect(cells[0]).toMatchTextContent('test-id')
+		expect(cells[1]).toMatchTextContent('gRPC')
+		expect(cells[2]).toMatchTextContent('test-remote')
+		expect(cells[3]).toMatchTextContent('test-local')
 	})
 
 	it('highlights our session', () => {
@@ -81,7 +81,7 @@ describe('SessionsTable', () => {
 		})
 
 		const rows = screen.getAllByRole('row')
-		expect(rows[2]).toHaveTextContent('(Ours)')
+		expect(rows[2]).toMatchTextContent('(Ours)')
 	})
 
 	it('sorts sessions by id', () => {
@@ -97,8 +97,8 @@ describe('SessionsTable', () => {
 
 		// Exclude header row
 		const rows = screen.getAllByRole('row').slice(1)
-		expect(rows[0]).toHaveTextContent('1')
-		expect(rows[1]).toHaveTextContent('2')
-		expect(rows[2]).toHaveTextContent('3')
+		expect(rows[0]).toMatchTextContent('1')
+		expect(rows[1]).toMatchTextContent('2')
+		expect(rows[2]).toMatchTextContent('3')
 	})
 })

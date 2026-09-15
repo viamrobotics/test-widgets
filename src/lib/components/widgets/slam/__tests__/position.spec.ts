@@ -30,10 +30,10 @@ describe('Slam position', () => {
 		expect(defs).toHaveLength(7)
 
 		// Pose position is displayed in meters, not millimeters
-		expect(defs[0]).toHaveTextContent('1.2')
-		expect(defs[1]).toHaveTextContent('2.3')
+		expect(defs[0]).toMatchTextContent('1.2')
+		expect(defs[1]).toMatchTextContent('2.3')
 		// 3.456 is rounded to 3.5
-		expect(defs[2]).toHaveTextContent('3.5')
+		expect(defs[2]).toMatchTextContent('3.5')
 	})
 
 	it('renders empty position', () => {
@@ -43,7 +43,7 @@ describe('Slam position', () => {
 
 		expect(defs).toHaveLength(7)
 
-		expect(defs[0]).toHaveTextContent('–')
+		expect(defs[0]).toMatchTextContent('–')
 	})
 
 	it('copies position', async () => {
