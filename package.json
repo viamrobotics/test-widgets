@@ -218,16 +218,11 @@
 		"@viamrobotics/sdk": ">=0.75.1",
 		"@viamrobotics/svelte-sdk": ">=1.1",
 		"lodash-es": ">=4",
-		"maplibre-gl": ">=5",
+		"maplibre-gl": ">=6",
 		"runed": ">=0.28",
 		"svelte": ">=5",
 		"three": ">=0.178",
 		"threlte-uikit": ">=2"
-	},
-	"peerDependenciesMeta": {
-		"maplibre-gl": {
-			"optional": true
-		}
 	},
 	"devDependencies": {
 		"@ag-grid-community/client-side-row-model": "^32.3.9",
@@ -283,7 +278,7 @@
 		"eslint-plugin-unicorn": "^64.0.0",
 		"globals": "^17.5.0",
 		"lodash-es": "^4.18.1",
-		"maplibre-gl": "^5.24.0",
+		"maplibre-gl": "^6.9.1",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.1",

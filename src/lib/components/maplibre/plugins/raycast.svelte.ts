@@ -15,9 +15,11 @@ export const useMapLibreThreeRaycast = (cameraSignal: { current: Camera }) => {
 	const pointer = new Vector2()
 
 	const handleMouseMove = (event: MapMouseEvent) => {
+		// `event.point` is measured against the canvas, so normalize by the canvas' own CSS size.
+		const canvas = map.current.getCanvas()
 		pointer.set(
-			(event.point.x / map.current.transform.width) * 2 - 1,
-			-(event.point.y / map.current.transform.height) * 2 + 1
+			(event.point.x / canvas.clientWidth) * 2 - 1,
+			-(event.point.y / canvas.clientHeight) * 2 + 1
 		)
 	}
 
