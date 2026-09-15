@@ -45,7 +45,7 @@ describe('Arm joint-position-jogging', () => {
 		renderSubject()
 
 		expect(jogStepSelect()).toHaveValue('5')
-		expect(increaseButton(0, 5)).toHaveTextContent('+5°')
+		expect(increaseButton(0, 5)).toMatchTextContent('+5°')
 	})
 
 	it('labels each joint and shows its current position', () => {
@@ -53,10 +53,10 @@ describe('Arm joint-position-jogging', () => {
 
 		const rows = screen.getAllByRole('listitem')
 		expect(rows).toHaveLength(2)
-		expect(rows[0]).toHaveTextContent('Joint 0')
-		expect(rows[0]).toHaveTextContent('12.00°')
-		expect(rows[1]).toHaveTextContent('Joint 1')
-		expect(rows[1]).toHaveTextContent('-4.50°')
+		expect(rows[0]).toMatchTextContent('Joint 0')
+		expect(rows[0]).toMatchTextContent('12.00°')
+		expect(rows[1]).toMatchTextContent('Joint 1')
+		expect(rows[1]).toMatchTextContent('-4.50°')
 	})
 
 	it('explains tapping and holding on each jog button', () => {
@@ -105,11 +105,11 @@ describe('Arm joint-position-jogging', () => {
 		renderSubject({ positions: [30], moveToJointPositions })
 
 		await user.pointer({ target: increaseButton(0, 5), keys: '[MouseLeft>]' })
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 35.00°')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 will move to 35.00°')
 
 		vi.advanceTimersByTime(timing.holdRepeatDelayMs + timing.holdRepeatIntervalMs * 2)
 		await tick()
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 45.00°')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 will move to 45.00°')
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 
 		await user.pointer({ keys: '[/MouseLeft]' })
@@ -124,7 +124,7 @@ describe('Arm joint-position-jogging', () => {
 
 		await user.click(increaseButton(0, 5))
 
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 1.66 rad')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 will move to 1.66 rad')
 	})
 
 	it('clamps the jog to the joint limit and shows the clamped target', async () => {
@@ -138,7 +138,7 @@ describe('Arm joint-position-jogging', () => {
 		await user.selectOptions(jogStepSelect(), '15')
 		await user.click(increaseButton(0, 15))
 
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 will move to 360.00°')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 will move to 360.00°')
 
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		expect(moveToJointPositions).toHaveBeenCalledWith([360])
@@ -171,7 +171,7 @@ describe('Arm joint-position-jogging', () => {
 		await tick()
 
 		expect(within(rowStatus(0)).getByLabelText('Progress spinner')).toBeInTheDocument()
-		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
+		expect(rowStatus(0)).toMatchTextContent('Moving joint 0 to 5.00°')
 		expect(increaseButton(0, 5)).toBeDisabled()
 
 		resolveMove()
@@ -179,13 +179,13 @@ describe('Arm joint-position-jogging', () => {
 		await tick()
 
 		expect(screen.queryByLabelText('Progress spinner')).not.toBeInTheDocument()
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 moved to 5.00°')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 moved to 5.00°')
 		expect(increaseButton(0, 5)).not.toBeDisabled()
 
 		vi.advanceTimersByTime(timing.resultDisplayMs)
 		await tick()
 		expect(within(row(0)).queryByRole('status')).not.toBeInTheDocument()
-		expect(row(0)).toHaveTextContent('0.00°')
+		expect(row(0)).toMatchTextContent('0.00°')
 	})
 
 	it('reports a failed move', async () => {
@@ -196,7 +196,7 @@ describe('Arm joint-position-jogging', () => {
 		await vi.advanceTimersByTimeAsync(timing.sendDebounceMs)
 		await tick()
 
-		expect(rowStatus(0)).toHaveTextContent('Move of joint 0 to 5.00° failed')
+		expect(rowStatus(0)).toMatchTextContent('Move of joint 0 to 5.00° failed')
 	})
 
 	it('does not queue while the arm is moving', async () => {
@@ -226,13 +226,13 @@ describe('Arm joint-position-jogging', () => {
 		await user.click(increaseButton(0, 5))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		await tick()
-		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
+		expect(rowStatus(0)).toMatchTextContent('Moving joint 0 to 5.00°')
 		expect(increaseButton(0, 5)).toBeDisabled()
 		expect(increaseButton(1, 5)).not.toBeDisabled()
 
 		await user.click(increaseButton(1, 5))
-		expect(rowStatus(0)).toHaveTextContent('Moving joint 0 to 5.00°')
-		expect(rowStatus(1)).toHaveTextContent('Joint 1 will move to 5.00°')
+		expect(rowStatus(0)).toMatchTextContent('Moving joint 0 to 5.00°')
+		expect(rowStatus(1)).toMatchTextContent('Joint 1 will move to 5.00°')
 
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		expect(moveToJointPositions).toHaveBeenCalledTimes(2)
@@ -242,7 +242,7 @@ describe('Arm joint-position-jogging', () => {
 		for (const resolve of resolvers) resolve()
 		await vi.advanceTimersByTimeAsync(0)
 		await tick()
-		expect(rowStatus(0)).toHaveTextContent('Joint 0 moved to 5.00°')
-		expect(rowStatus(1)).toHaveTextContent('Joint 1 moved to 5.00°')
+		expect(rowStatus(0)).toMatchTextContent('Joint 0 moved to 5.00°')
+		expect(rowStatus(1)).toMatchTextContent('Joint 1 moved to 5.00°')
 	})
 })

@@ -26,6 +26,9 @@ vite.config.ts.timestamp-*
 # Playwright
 test-results
 
+# Vitest artifacts (failure screenshots, reports)
+/.vitest
+
 # Coverage
 /coverage
 
