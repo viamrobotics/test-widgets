@@ -1,10 +1,4 @@
-import type {
-	LngLat,
-	Map,
-	MapLayerEventType,
-	MapLayerMouseEvent,
-	MapLayerTouchEvent,
-} from 'maplibre-gl'
+import type { LngLat, Map, MapEventType } from 'maplibre-gl'
 
 import { getContext, setContext } from 'svelte'
 import { fromStore, type Writable, writable } from 'svelte/store'
@@ -96,9 +90,9 @@ export const useMapLibre = (): MapContext => {
 /**
  * Allows attaching events to a <MapLibre> instance. Must be called within a child of this component.
  */
-export const useMapLibreEvent = (
-	event: keyof MapLayerEventType | 'move' | 'resize',
-	listener: (ev: MapLayerMouseEvent | MapLayerTouchEvent) => void
+export const useMapLibreEvent = <T extends keyof MapEventType>(
+	event: T,
+	listener: (ev: MapEventType[T]) => void
 ) => {
 	const context = useMapLibre()
 
