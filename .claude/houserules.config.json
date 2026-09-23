@@ -108,6 +108,11 @@
     }
   ],
   "moduleOptions": {
+    "orchestrate": [
+      "low",
+      "xhigh",
+      "research"
+    ],
     "svelte/svelte": [],
     "three/three": [
       "threlte"

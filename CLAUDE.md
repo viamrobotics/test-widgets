@@ -45,7 +45,7 @@ Detailed guidance lives in `.claude/rules/`. Path-scoped rules load when Claude 
 | `testing-frontend.md`    | editing `src/**/*.spec.ts` or `vite.config.ts` |
 | `frontend-aesthetics.md` | editing `.svelte` or `.css`                    |
 | `threlte-widgets.md`     | editing `.svelte` or `.svelte.ts` under `src/` |
-| `viam-context.md`        | every session (no path scope)                  |
+| `viam-context.md`        | editing anything under `src/`                  |
 
 <!-- houserules:claude-md start -->
 
@@ -71,6 +71,10 @@ in `.claude/templates/`.
   have it open. A tool's report and the file on disk can disagree within seconds.
 - **Do not rewrite what is not yours to change.** When the user presents a file as their own
   finished work, or has it open mid-edit, surface the problem and let them decide.
+- **Watch for the missing `[houserules]` SessionStart banner.** Every session start prints a
+  `[houserules] branch:` line. If this session shows none, it started below the repo root and
+  the installed hooks, including the Bash guard, are not active, so tell the user and suggest
+  relaunching Claude Code from the repo root.
 
 ### Cost & verification discipline
 
@@ -94,6 +98,9 @@ in `.claude/templates/`.
   | "I know this fact from memory" | State it only after running the command that could falsify it. |
   | "It passed earlier" | A stale or cached pass is not this change's pass. Re-run on current bytes. |
   | "The subagent reported success" | The tree is the evidence. Check it before believing the report. |
+- In a live loop where the user is blocked on each turn, a cheap reversible action is itself
+  the check: run it and let its result falsify, instead of multi-call pre-verification (doc
+  fetches, code surveys). Cap pre-action checks at the single cheapest one.
 - Derive empirical constants by parsing the artifact itself, not screenshot-and-iterate loops.
 - On AskUserQuestion timeout, stop and re-ask later. Never carry tentative selections forward.
 - Read the repo's own docs + targeted greps before fanning out Explore/Plan agents.
@@ -101,7 +108,10 @@ in `.claude/templates/`.
 ### Tool-use efficiency
 
 - `grep -n` to locate, then `Read` with `offset`/`limit`. Never read big files whole.
+  Grep output is location data, not content: never judge text against a grep listing of it.
 - Never `git stash` to baseline-check. Use `git diff --name-only` / `git show HEAD:<path>`.
+- Never `git checkout -- <path>` / `git restore` to undo an edit. They revert the whole file
+  to HEAD, discarding every uncommitted change in it. Undo with the inverse Edit.
 - Pipe long command output through `grep`, and batch related greps into one call.
 
 <!-- houserules:claude-md end -->

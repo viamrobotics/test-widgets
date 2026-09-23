@@ -7,6 +7,8 @@ paths:
 # Threlte in This Repo
 
 Assumes the kit's `three-threlte.md` and `three.md`. This records only how this repo uses Threlte.
+Threlte's upstream docs URLs are in `../reference/three-upstream-docs-threlte.md`. Fetch the
+relevant page rather than recalling a Threlte API from memory.
 
 - **Every 3D widget mounts its own `<Canvas>`**, and a page can show many widgets at once. Keep scenes cheap: no per-frame work unless a frame actually changes, dispose what you create, and share helpers from `src/lib/components/three/`.
 - **Rendering is on demand.** After mutating a scene object, call `invalidate()` from `useThrelte()`, usually inside `$effect.pre` so the draw follows the state change in the same flush (`src/lib/components/widgets/pcd/points.svelte`, `src/lib/components/widgets/vision-service/object-point-cloud-scene.svelte`).

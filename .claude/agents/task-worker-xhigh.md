@@ -1,9 +1,9 @@
 ---
-name: task-worker
-description: Implements ONE tightly-scoped slice of a planned phase and reports back in a fixed format. Dispatched by the /orchestrate skill, one worker per slice, in waves. Not for open-ended work. It needs an explicit objective, an owned path set, and an acceptance command.
+name: task-worker-xhigh
+description: Same contract as task-worker at xhigh effort. Dispatched by /orchestrate with an objective, owned paths, and an acceptance command.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
-effort: medium
+effort: xhigh
 ---
 
 You implement **one slice** of a larger plan and report back to an orchestrator who will review your

@@ -8,12 +8,11 @@ allowed-tools: Read, Edit, Write, Grep, Glob, Bash, Agent, SendMessage
 Drive planned work to done as **planner → orchestrator → reviewer**: **$ARGUMENTS**
 
 You stay expensive and small. The implementation happens in cheap, tightly-scoped `task-worker`
-subagents, and what comes back to you is a **report**, not a diff. Your context holds the plan, the
-seam, and N one-screen reports. It never holds the code the workers wrote.
-
-**The economy, stated once:** you pay `O(slices × report)` plus the seam you write yourself. A worker
-that reads twelve files and writes six pays for that itself, in a context that dies when its slice
-does.
+subagents, and a worker that reads twelve files and writes six pays for that itself, in a context
+that dies with its slice. What comes back to you is a **report**, not a diff. Your context holds the
+plan, the seam you write yourself, and N one-screen reports. It never holds worker diffs, full file
+dumps, per-file logs, or the match set of anything. If you're reading implementation here, you've
+stopped orchestrating and started working.
 
 ## 0. Preconditions and arguments
 
@@ -52,7 +51,7 @@ No slug given? In order:
 1. **One workspace under `.claude/plans/`** → that's it. (Ignore `blast-radius-*` impact maps. They
    are archives, not plans.)
 2. **The conversation names one.** The user just planned it, or you're resuming work you were already
-   doing on it. Use it, and **say which one you picked** in your first line of output.
+   doing on it.
 3. **Exactly one has `Status: IN PROGRESS`** → that one.
 4. **Otherwise ask.** Two half-finished plans is precisely when guessing wrong is expensive. List the
    slugs with their status lines and let the user pick.
@@ -61,7 +60,7 @@ Never infer a plan from mtime or from which directory sorts first. State the res
 before you slice anything. That one line is what lets the user stop you cheaply if you picked wrong.
 
 **Default is check-in.** After each phase closes, report what landed and stop for the user. `--auto`
-suppresses only that pause. It never suppresses a `BLOCKED` stop (§7).
+suppresses only that pause.
 
 **Gates.** A gate is a named stop condition that halts an `--auto` run at a phase boundary for
 user input. `--ignore-gates <key,key>` disables the named gates, for a run whose owner accepts
@@ -91,7 +90,7 @@ A well-formed slice has:
 - **a brief that fits on one screen.** If it needs more than ~8 steps or touches more than ~6 files,
   split it.
 - **both bounds on a numeric or set-valued criterion, and a named source for one over observed
-  values.** Miss either and the brief is the defect, not the model. `references/slicing.md` has both.
+  values.** Miss either and the brief is the defect, not the model.
 
 Then apply four rules to the set you drew:
 
@@ -123,11 +122,9 @@ change there **request it in their report**. They don't reach for it.
 
 Contract-first is what makes parallel slices safe. Before dispatching a wave, **you** write the shared
 surface it depends on: interfaces, type signatures, function stubs, config keys, the migration, the
-route table. Commit it to disk before fanning out, so workers implement **against a fixed seam**
-instead of guessing at each other's shapes.
-
-If a wave's slices would have to negotiate an interface between themselves, the seam isn't written
-yet. Write it, then dispatch.
+route table. Commit it to disk before fanning out, so workers implement **against a fixed seam**. If
+a wave's slices would have to negotiate an interface between themselves, the seam isn't written yet.
+Write it, then dispatch.
 
 ## 3. Record the slice table (state on disk)
 
@@ -149,10 +146,9 @@ Status vocabulary is fixed and greppable, extending the ROADMAP's:
 Update it **in place** at every transition, in the same pass as the transition. A slice table that
 lags the truth is worse than none.
 
-`.claude/scripts/plan-lint.mjs`, if installed, checks a status cell against this exact vocabulary
-and cross-checks the ROADMAP line against the sub-plan header it links to. Run
-`node .claude/scripts/plan-lint.mjs` after writing or updating the table, so a typo'd status does
-not silently break the resume grep in §9.
+Run `node .claude/scripts/plan-lint.mjs`, if installed, after writing or updating the table. It
+checks the status vocabulary and the ROADMAP cross-link, so a typo'd status does not silently break
+the resume grep in §9.
 
 ## 4. Dispatch a wave — one message, one worker per slice
 
@@ -162,9 +158,29 @@ Send every slice in the wave as parallel `Agent` calls **in a single message**, 
 
 Mark the slices `DISPATCHED` before you send.
 
+If the host repo installed effort variants, pick `subagent_type` by the slice's shape instead
+of defaulting every slice to `task-worker`. A mechanical or wide slice (sweeps, boilerplate,
+many small files) takes `task-worker-low`. A judgment-heavy slice (architecture calls, tricky
+seams) takes `task-worker-high`. The rare slice you would otherwise pull into your own context
+takes `task-worker-xhigh`. Everything else stays on the `task-worker` default. A variant exists
+only if `.claude/agents/task-worker-<effort>.md` is installed. If it is absent, fall back to
+`task-worker`.
+
+A slice whose steps must fetch a page or search the web takes `task-worker-research`, which
+carries `WebFetch` and `WebSearch` on top of the standing task-worker tools. If
+`.claude/agents/task-worker-research.md` is absent, dispatch `general-purpose` with
+`model: sonnet` and paste `agents/task-worker.md` inline ahead of the brief, the same fallback
+as a missing `task-worker`.
+
+Before dispatching, check whether a rule scoped to the wave's paths requires an MCP tool. If it
+does, confirm `orchestrate.workerTools` in `.claude/houserules.config.json` names it by its full
+callable name, `mcp__<server>__<tool>`, and that the installed `task-worker.md` `tools:` line
+carries it, which `npx houserules update` refreshes after the key is added. Otherwise run that
+tool yourself over each worker's files at wave close, before the fixer.
+
 `task-worker.md` carries the standing rules. Each brief adds only what's specific to this slice,
 and **never restates or overrides a standing rule**. The one most often violated is the fixer
-prohibition, covered in `references/fixer-and-residue.md`.
+prohibition (below).
 
 > **Slice `<id>` — `<name>`.** Objective: `<the falsifiable done>`.
 > You own **only** these paths: `<owns>`. Do not edit anything outside them.
@@ -244,6 +260,9 @@ than reslicing. Mark the slice `IN REVIEW` and judge it against the brief:
 - **Did it satisfy the letter and worsen the artifact?** A worker optimizes for the acceptance you
   wrote. Ask what the change does to the shipped thing, not just to the check.
 - **Deviations.** Did it depart from the seam, the constraints, or the plan's architecture?
+  Before a `REVISE` that accuses the worker of departing from the brief, the spec, or the plan,
+  `Read` the cited step in full. A grep listing of a numbered list shows only each item's first
+  line, and a revise grounded on an extraction the worker can refute costs a full round.
 - **Ownership.** Did it touch anything outside `owns`? Confirm cheaply with
   `git diff --name-only` (names, not content).
 - **Spot-read only what's load-bearing**, with `offset`/`limit`. A full diff read here forfeits the
@@ -285,14 +304,14 @@ where the tree is quiet enough to touch globally:
    that is finally consistent.
 2. **Tidy once.** Run `/tidy` over the wave's diff, if that skill is installed, after the fixer
    and before verify so its edits are proven by the same verification. Never inside a worker, for
-   the same reason as the fixer: it rewrites files siblings may still have open.
+   the same reason as the fixer.
 3. **Verify what actually changed.** Run `/verify-changed` if installed (it scopes to the changed
    packages plus dependents, off-context), otherwise the repo's verify on the touched packages.
 4. **Update the slice table** in place, then print the status table (§4), the wave-close printing.
 5. **Snapshot the state nothing can regenerate**, into a scratch directory: the plan workspace and
    anything else gitignored that no command can rebuild. `references/closing.md` says what to copy.
-6. **Then** open the next wave. Never dispatch wave N+1 with an unreviewed slice from wave N. That is
-   precisely how the architecture drifts while you aren't looking.
+6. **Then** open the next wave. Dispatching over an unreviewed slice is precisely how the
+   architecture drifts while you aren't looking.
 
 **Residue** is what auto-fix couldn't fix, and it's yours by default. Never send it back to the slice
 workers, whose briefs are spent. `references/fixer-and-residue.md` has the routing table for when it
@@ -314,8 +333,7 @@ both files.
 (components, styles, templates), or its sub-plan carries a `ui` signal on its `**Signals:**`
 line, run `/accessibility-review` and `/design-review`, each skipped silently when not
 installed. Their findings route like worker reports: a fix-worthy item becomes one revise pass
-over the owning slice's paths, and the rest go to `/backlog-add`, or to the sub-plan's
-`## Deferred` section when no backlog skill is installed (§5).
+over the owning slice's paths, and the rest route per §5's out-of-scope rule.
 
 **The last phase also hands over the PR description.** When this close flips the ROADMAP to
 DONE and `/pr-description` is installed, produce the description alongside the acceptance
@@ -365,12 +383,9 @@ assume a `DISPATCHED` slice did nothing.
 
 ## Notes
 
-- **What must never enter this context:** worker diffs, full file dumps, per-file logs, the match set
-  of anything. If you're reading implementation here, you've stopped orchestrating and started
-  working.
 - **No worker accumulates another slice's history**, which is the anti-rot argument for this shape.
 - **Worktree isolation** (`isolation: 'worktree'`) exists for waves that genuinely can't be made
   disjoint. Default to not using it. Correct slicing is cheaper than merging, and needing it usually
   means §1 was done wrong.
-- This skill executes plans. It does not make them. Design decisions belong in `/plan-project` and
-  plan mode, where the user is in the loop.
+- **Design decisions belong in `/plan-project`** and plan mode, where the user is in the loop, not
+  in an orchestration run.

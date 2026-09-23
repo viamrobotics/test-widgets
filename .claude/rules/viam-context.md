@@ -1,3 +1,8 @@
+---
+paths:
+  - 'src/**'
+---
+
 When reviewing or writing code that touches Viam APIs or SDK types, use the tools below to verify behavior against the authoritative sources before commenting or making changes. Limit lookups to 2–3 per session to avoid wasting turns.
 
 ## Viam docs

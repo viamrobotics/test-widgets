@@ -1,7 +1,7 @@
 ---
-name: task-worker
-description: Implements ONE tightly-scoped slice of a planned phase and reports back in a fixed format. Dispatched by the /orchestrate skill, one worker per slice, in waves. Not for open-ended work. It needs an explicit objective, an owned path set, and an acceptance command.
-tools: Read, Edit, Write, Grep, Glob, Bash
+name: task-worker-research
+description: Same contract as task-worker, plus WebFetch and WebSearch for a slice that must read a page or source not on disk. Dispatched by /orchestrate with an objective, owned paths, and an acceptance command.
+tools: Read, Edit, Write, Grep, Glob, Bash, WebFetch, WebSearch
 model: sonnet
 effort: medium
 ---
