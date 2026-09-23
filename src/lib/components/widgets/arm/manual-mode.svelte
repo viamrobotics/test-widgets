@@ -12,14 +12,14 @@
 		title?: string
 		isManualMode: boolean
 		isPending: boolean
-		setManualMode: (manualMode: boolean, enabledFor: number) => void
 		lastError: Error | null
+		setManualMode: (manualMode: boolean, enabledFor: number) => void
 	}
 
 	const { title, isManualMode, isPending, setManualMode, lastError }: Props = $props()
 
 	let enabledFor = $state(90)
-	let enableAfter = $state(20)
+	let enableAfter = $state(5)
 	let lastAction = $state<'enter' | 'exit' | undefined>()
 
 	const countdown = useCountdown(() => {

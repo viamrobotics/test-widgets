@@ -29,10 +29,10 @@ describe('Arm manual mode', () => {
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
 
-		expect(screen.getByText('Enabling in 20s')).toBeInTheDocument()
+		expect(screen.getByText('Enabling in 5s')).toBeInTheDocument()
 		expect(setManualMode).not.toHaveBeenCalled()
 
-		await vi.advanceTimersByTimeAsync(20_000)
+		await vi.advanceTimersByTimeAsync(5000)
 
 		expect(setManualMode).toHaveBeenCalledTimes(1)
 		expect(setManualMode).toHaveBeenCalledWith(true, 90)
@@ -66,7 +66,7 @@ describe('Arm manual mode', () => {
 		renderSubject({ setManualMode })
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
-		await vi.advanceTimersByTimeAsync(5000)
+		await vi.advanceTimersByTimeAsync(2500)
 		await fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
 		await vi.advanceTimersByTimeAsync(60_000)
 
