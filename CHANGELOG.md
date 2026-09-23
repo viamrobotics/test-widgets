@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.15.1
+
+### Patch Changes
+
+- e7c6680: Reduce Arm's ManualMode widget's "Enable after" to 5 seconds
+
 ## 0.15.0
 
 ### Minor Changes
