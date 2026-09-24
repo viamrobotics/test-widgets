@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@lucide/svelte':
+        specifier: 1.48.0
+        version: 1.48.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))
       svelte-tweakpane-ui:
         specifier: ^1.5.17
         version: 1.5.17(svelte@5.56.3(@typescript-eslint/types@8.59.1))
@@ -851,6 +854,11 @@ packages:
   '@loglayer/transport@3.0.2':
     resolution: {integrity: sha512-5t0lj/ibQQxGPpghNta8u10zl8owU0my/i2fHF/LdcCAtpw/IHblmpKSgOzdH9XE19Ub/i0VYj0JrFrFv8/NXw==}
     engines: {node: '>=18'}
+
+  '@lucide/svelte@1.48.0':
+    resolution: {integrity: sha512-bLimVDjehxu3fpu9XEUpqEkBk2sJAHAT2sVcLHhlM70EdNsXuj9ZnYENWv5xgw3+05h4i5TirAxTiTgnZZf8gw==}
+    peerDependencies:
+      svelte: ^5
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -3823,6 +3831,10 @@ snapshots:
   '@loglayer/transport@3.0.2':
     dependencies:
       '@loglayer/shared': 4.1.0
+
+  '@lucide/svelte@1.48.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))':
+    dependencies:
+      svelte: 5.56.3(@typescript-eslint/types@8.59.1)
 
   '@manypkg/find-root@1.1.0':
     dependencies:

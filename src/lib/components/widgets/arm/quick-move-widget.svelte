@@ -1,14 +1,10 @@
+<!--
+@component
+@deprecated Use `ArmMoveToJointPositionsWidget`. Its jogging mode covers the same per-joint moves,
+with joint limits and a jog queue. This widget renders that one and will be removed in a future major.
+-->
 <script lang="ts">
-	import { ArmClient } from '@viamrobotics/sdk'
-	import {
-		createResourceClient,
-		createResourceMutation,
-		createResourceQuery,
-	} from '@viamrobotics/svelte-sdk'
-
-	import Query from '$lib/components/query.svelte'
-
-	import QuickMove from './quick-move.svelte'
+	import MoveToJointPositionsWidget from './move-to-joint-positions-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -16,30 +12,9 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const client = createResourceClient(
-		ArmClient,
-		() => partID,
-		() => resourceName
-	)
-
-	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', {
-		refetchInterval: 500,
-	})
-
-	const quickMoveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
-
-	const quickMoveToJointPositions = (jointPositionsList: number[]) => {
-		quickMoveToJointPosMutation.mutate([jointPositionsList], {})
-	}
 </script>
 
-<Query query={jointPositionsQuery}>
-	{#if jointPositionsQuery.data}
-		<QuickMove
-			positions={jointPositionsQuery.data.values}
-			moveToJointPositions={quickMoveToJointPositions}
-			lastError={quickMoveToJointPosMutation.error}
-		/>
-	{/if}
-</Query>
+<MoveToJointPositionsWidget
+	{partID}
+	{resourceName}
+/>

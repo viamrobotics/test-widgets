@@ -4,8 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
-
-	import GetJointPositions from './get-joint-positions.svelte'
+	import StatusPill from '$lib/components/status-pill.svelte'
 
 	interface Props {
 		partID: string
@@ -20,18 +19,19 @@
 		() => resourceName
 	)
 
-	const query = createResourceQuery(client, 'getJointPositions', { refetchInterval: 500 })
+	const query = $derived(createResourceQuery(client, 'getManualMode', { refetchInterval: 500 }))
 </script>
 
 <ApiSection
-	title="GetJointPositions"
+	title="GetManualMode"
 	api="rdk:component:arm"
 	bottomText="Updates automatically"
-	class="grow"
 >
 	<Query {query}>
-		{#if query.data}
-			<GetJointPositions positions={query.data.values} />
-		{/if}
+		<StatusPill
+			isActive={query.data ?? false}
+			activeText="Enabled"
+			inactiveText="Disabled"
+		/>
 	</Query>
 </ApiSection>

@@ -3,9 +3,9 @@ import type { ComponentProps } from 'svelte'
 import { fireEvent, render, screen } from '@testing-library/svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import Subject from '../manual-mode.svelte'
+import Subject from '../set-manual-mode.svelte'
 
-describe('Arm manual mode', () => {
+describe('Arm set manual mode', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
 	})
@@ -19,15 +19,17 @@ describe('Arm manual mode', () => {
 			isManualMode: false,
 			isPending: false,
 			setManualMode: vi.fn(),
-			lastError: null,
 			...props,
 		})
+
+	const enterButton = () => screen.getByRole('button', { name: /^enter$/iu })
+	const exitButton = () => screen.getByRole('button', { name: /^exit$/iu })
 
 	it('counts down from the enable-after delay and enters manual mode at 0', async () => {
 		const setManualMode = vi.fn()
 		renderSubject({ setManualMode })
 
-		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
+		await fireEvent.click(enterButton())
 
 		expect(screen.getByText('Enabling in 5s')).toBeInTheDocument()
 		expect(setManualMode).not.toHaveBeenCalled()
@@ -44,7 +46,7 @@ describe('Arm manual mode', () => {
 
 		const [, enableAfterInput] = screen.getAllByRole('spinbutton')
 		await fireEvent.change(enableAfterInput!, { target: { value: '0' } })
-		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
+		await fireEvent.click(enterButton())
 
 		expect(setManualMode).toHaveBeenCalledWith(true, 90)
 	})
@@ -56,7 +58,7 @@ describe('Arm manual mode', () => {
 		const [enabledForInput, enableAfterInput] = screen.getAllByRole('spinbutton')
 		await fireEvent.change(enabledForInput!, { target: { value: '30' } })
 		await fireEvent.change(enableAfterInput!, { target: { value: '0' } })
-		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
+		await fireEvent.click(enterButton())
 
 		expect(setManualMode).toHaveBeenCalledWith(true, 30)
 	})
@@ -65,9 +67,9 @@ describe('Arm manual mode', () => {
 		const setManualMode = vi.fn()
 		renderSubject({ setManualMode })
 
-		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
+		await fireEvent.click(enterButton())
 		await vi.advanceTimersByTimeAsync(2500)
-		await fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
+		await fireEvent.click(exitButton())
 		await vi.advanceTimersByTimeAsync(60_000)
 
 		expect(setManualMode).not.toHaveBeenCalled()
@@ -77,7 +79,7 @@ describe('Arm manual mode', () => {
 		const setManualMode = vi.fn()
 		renderSubject({ isManualMode: true, setManualMode })
 
-		await fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
+		await fireEvent.click(exitButton())
 
 		expect(setManualMode).toHaveBeenCalledWith(false, 0)
 	})
@@ -86,7 +88,7 @@ describe('Arm manual mode', () => {
 		const setManualMode = vi.fn()
 		renderSubject({ setManualMode })
 
-		await fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
+		await fireEvent.click(exitButton())
 
 		expect(setManualMode).not.toHaveBeenCalled()
 	})
@@ -94,29 +96,7 @@ describe('Arm manual mode', () => {
 	it('disables both buttons while a set is pending', () => {
 		renderSubject({ isPending: true })
 
-		expect(screen.getByRole('button', { name: 'Enter' })).toBeDisabled()
-		expect(screen.getByRole('button', { name: 'Exit' })).toBeDisabled()
-	})
-
-	it('shows the enabled status pill when manual mode is active', () => {
-		renderSubject({ isManualMode: true })
-
-		expect(screen.getByText('Enabled')).toBeInTheDocument()
-	})
-
-	it('shows the disabled status pill when manual mode is inactive', () => {
-		renderSubject({})
-
-		expect(screen.getByText('Disabled')).toBeInTheDocument()
-	})
-
-	it('explains gravity compensation below the controls', () => {
-		renderSubject({})
-
-		expect(
-			screen.getByText(
-				'Manual mode puts the arm into gravity compensation or servo release mode so the arm can be moved by hand.'
-			)
-		).toBeInTheDocument()
+		expect(enterButton()).toBeDisabled()
+		expect(exitButton()).toBeDisabled()
 	})
 })

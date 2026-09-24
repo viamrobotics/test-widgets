@@ -215,7 +215,7 @@
 		"@threlte/core": ">=8",
 		"@threlte/extras": ">=9",
 		"@viamrobotics/prime-core": ">=0.1",
-		"@viamrobotics/sdk": ">=0.75.1",
+		"@viamrobotics/sdk": ">=0.76",
 		"@viamrobotics/svelte-sdk": ">=1.1",
 		"lodash-es": ">=4",
 		"maplibre-gl": ">=6",
@@ -311,6 +311,7 @@
 		}
 	},
 	"dependencies": {
+		"@lucide/svelte": "1.48.0",
 		"svelte-tweakpane-ui": "^1.5.17"
 	}
 }

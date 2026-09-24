@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { FrameConfigEntry } from '../../motion/frame-system-config'
 
-import Subject from '../move-to-position-control.svelte'
+import Subject from '../move-to-position-widget.svelte'
 
 interface PollOptions {
 	enabled?: boolean
@@ -113,7 +113,7 @@ const queryOptionsFor = (method: string): PollOptions => {
 const poseInputValues = (): (number | null)[] =>
 	screen.getAllByRole('spinbutton').map((input) => (input as HTMLInputElement).valueAsNumber)
 
-describe('MoveToPositionControl', () => {
+describe('Arm MoveToPosition widget', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
 	beforeEach(() => {
@@ -124,6 +124,12 @@ describe('MoveToPositionControl', () => {
 		properties.current = undefined
 		mockMotionServiceNames([])
 		mockFrameSystem(['arm-1'])
+	})
+
+	it('renders the controls inside a MoveToPosition API section', () => {
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(screen.getByRole('heading', { name: 'MoveToPosition' })).toBeInTheDocument()
 	})
 
 	it('defaults to motion mode when a motion service can plan for the arm', () => {

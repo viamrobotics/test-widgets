@@ -1,22 +1,16 @@
 <script lang="ts">
 	import { ArmClient } from '@viamrobotics/sdk'
-	import {
-		createResourceClient,
-		createResourceMutation,
-		createResourceQuery,
-	} from '@viamrobotics/svelte-sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import Query from '$lib/components/query.svelte'
-	import StopButton from '$lib/components/stop-button.svelte'
 
-	import GetJointPositions from './get-joint-positions.svelte'
-	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
-	import ManualModeWidget from './manual-mode-widget.svelte'
-	import MoveToJointPositions from './move-to-joint-positions.svelte'
-	import MoveToPositionControl from './move-to-position-control.svelte'
+	import GetJointPositionsWidget from './get-joint-positions-widget.svelte'
+	import GetManualModeWidget from './get-manual-mode-widget.svelte'
+	import IsMovingWidget from './is-moving-widget.svelte'
+	import MoveToJointPositionsWidget from './move-to-joint-positions-widget.svelte'
+	import MoveToPositionWidget from './move-to-position-widget.svelte'
+	import SetManualModeWidget from './set-manual-mode-widget.svelte'
+	import StopWidget from './stop-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -31,94 +25,59 @@
 		() => resourceName
 	)
 
-	const options = { refetchInterval: 500 }
-	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
-	const kinematicsQuery = createResourceQuery(client, 'getKinematics', options)
-	const isMovingQuery = createResourceQuery(client, 'isMoving', options)
-
-	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
-	const stopMutation = createResourceMutation(client, 'stop')
-
-	const moveToJointPositions = async (jointPositionsList: number[]) => {
-		await moveToJointPosMutation.mutateAsync([jointPositionsList])
-	}
-
-	const jointLimitsDegrees = $derived(
-		kinematicsQuery.data ? getJointPositionLimits(kinematicsQuery.data as KinematicsJSON) : []
-	)
+	const properties = createResourceQuery(client, 'getProperties')
+	const supportsManualMode = $derived(properties.data?.supportManualMode === true)
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="@container">
-			<!-- Full-width manual mode band, rendered only when the arm supports it -->
-			<ManualModeWidget
-				{partID}
-				{resourceName}
-				band
-			/>
-
-			<div class="flex flex-col gap-4 @2xl:flex-row @2xl:gap-0 @2xl:divide-x">
-				<!-- Main control sections -->
-				<div
-					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
-				>
-					<ApiSection
-						title="GetJointPositions"
-						api="rdk:component:arm"
-						bottomText="Updates automatically"
-					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<GetJointPositions positions={jointPositionsQuery.data.values} />
-							{/if}
-						</Query>
-					</ApiSection>
-					<ApiSection
-						title="MoveToJointPositions"
-						api="rdk:component:arm"
-					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<MoveToJointPositions
-									positions={jointPositionsQuery.data.values}
-									{moveToJointPositions}
-									lastError={moveToJointPosMutation.error}
-									{jointLimitsDegrees}
-									isMoving={isMovingQuery.data ?? false}
-								/>
-							{/if}
-						</Query>
-					</ApiSection>
-					<ApiSection
-						title="MoveToPosition"
-						api="rdk:component:arm"
-					>
-						<MoveToPositionControl
+			{#if supportsManualMode}
+				<div class="flex flex-col border-b">
+					<div class="flex min-w-0 flex-col gap-4 @2xl:flex-row @2xl:gap-0">
+						<GetManualModeWidget
 							{partID}
 							{resourceName}
 						/>
-					</ApiSection>
+						<SetManualModeWidget
+							{partID}
+							{resourceName}
+						/>
+					</div>
+
+					<p class="text-subtle-2 px-4 pb-4 text-xs">
+						Manual mode puts the arm into gravity compensation or servo release mode so the arm can
+						be moved by hand.
+					</p>
+				</div>
+			{/if}
+
+			<div class="flex flex-col gap-4 @2xl:flex-row @2xl:gap-0 @2xl:divide-x">
+				<div
+					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
+				>
+					<GetJointPositionsWidget
+						{partID}
+						{resourceName}
+					/>
+					<MoveToJointPositionsWidget
+						{partID}
+						{resourceName}
+					/>
+					<MoveToPositionWidget
+						{partID}
+						{resourceName}
+					/>
 				</div>
 
-				<!-- Control actions sidebar -->
 				<div
 					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
 				>
-					<ApiSection
-						title="Stop"
-						api="rdk:component:arm"
-					>
-						<StopButton
-							error={stopMutation.error}
-							onStop={() => {
-								stopMutation.mutate([], {})
-							}}
-						/>
-					</ApiSection>
-					<IsMoving
-						client={ArmClient}
-						api="rdk:component:arm"
+					<StopWidget
+						{partID}
+						{resourceName}
+					/>
+					<IsMovingWidget
 						{partID}
 						{resourceName}
 					/>

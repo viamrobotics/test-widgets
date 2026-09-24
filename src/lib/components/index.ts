@@ -3,11 +3,14 @@ export { default as SectionTitle } from './section-title.svelte'
 
 export { default as ArmWidget } from './widgets/arm/arm.svelte'
 export { default as ArmGetJointPositionsWidget } from './widgets/arm/get-joint-positions-widget.svelte'
+export { default as ArmGetManualModeWidget } from './widgets/arm/set-manual-mode-widget.svelte'
 export { default as ArmIsMovingWidget } from './widgets/arm/is-moving-widget.svelte'
-export { default as ArmManualModeWidget } from './widgets/arm/manual-mode-widget.svelte'
 export { default as ArmMoveToJointPositionsWidget } from './widgets/arm/move-to-joint-positions-widget.svelte'
 export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-position-widget.svelte'
+/** @deprecated Use ArmMoveToJointPositionsWidget, whose jogging mode covers the same moves. Slated for removal. */
 export { default as ArmQuickMoveWidget } from './widgets/arm/quick-move-widget.svelte'
+export { default as ArmSetManualModeWidget } from './widgets/arm/set-manual-mode-widget.svelte'
+export { default as ArmStopWidget } from './widgets/arm/stop-widget.svelte'
 
 export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
 export { default as AudioInputGetPropertiesWidget } from './widgets/audio-input/get-properties-widget.svelte'

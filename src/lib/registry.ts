@@ -8,11 +8,12 @@ import type {
 
 import {
 	ArmGetJointPositionsWidget,
+	ArmGetManualModeWidget,
 	ArmIsMovingWidget,
-	ArmManualModeWidget,
 	ArmMoveToJointPositionsWidget,
 	ArmMoveToPositionWidget,
-	ArmQuickMoveWidget,
+	ArmSetManualModeWidget,
+	ArmStopWidget,
 	ArmWidget,
 	AudioInputGetPropertiesWidget,
 	AudioInputWidget,
@@ -86,19 +87,20 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: ArmWidget,
 		apis: [
 			{
+				id: 'get-joint-positions',
+				label: 'GetJointPositions',
+				widgets: [ArmGetJointPositionsWidget],
+			},
+			{ id: 'get-manual-mode', label: 'GetManualMode', widgets: [ArmGetManualModeWidget] },
+			{ id: 'is-moving', label: 'IsMoving', widgets: [ArmIsMovingWidget] },
+			{
 				id: 'move-to-joint-positions',
 				label: 'MoveToJointPositions',
 				widgets: [ArmMoveToJointPositionsWidget],
 			},
 			{ id: 'move-to-position', label: 'MoveToPosition', widgets: [ArmMoveToPositionWidget] },
-			{ id: 'quick-move', label: 'Jogging', widgets: [ArmQuickMoveWidget] },
-			{
-				id: 'get-joint-positions',
-				label: 'GetJointPositions',
-				widgets: [ArmGetJointPositionsWidget],
-			},
-			{ id: 'is-moving', label: 'IsMoving', widgets: [ArmIsMovingWidget] },
-			{ id: 'manual-mode', label: 'SetManualMode', widgets: [ArmManualModeWidget] },
+			{ id: 'set-manual-mode', label: 'SetManualMode', widgets: [ArmSetManualModeWidget] },
+			{ id: 'stop', label: 'Stop', widgets: [ArmStopWidget] },
 		],
 	},
 	[ResourceTriplets.AudioInput]: {
