@@ -7,6 +7,7 @@ import {
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
 	GripperOpenWidget,
+	GripperStopWidget,
 	MotionServiceWidget,
 } from '../components'
 import { isKnownResource } from '../is-known-resource'
@@ -26,6 +27,7 @@ describe('availableAPIWidgets', () => {
 				widgets: [GripperIsHoldingSomethingWidget],
 			},
 			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
+			{ id: 'stop', label: 'Stop', widgets: [GripperStopWidget] },
 		])
 	})
 
@@ -52,7 +54,7 @@ describe('apiWidgetsForResource', () => {
 	it("returns the targeted resource's API widgets", () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'gripper')).map((widget) => widget.id)
-		).toEqual(['open-grab', 'is-holding-something', 'is-moving'])
+		).toEqual(['open-grab', 'is-holding-something', 'is-moving', 'stop'])
 	})
 
 	it('returns an empty list for a recognized resource with no API widgets', () => {

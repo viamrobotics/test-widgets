@@ -2,7 +2,8 @@
 	import { BaseClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import MutationSection from '$lib/components/mutation-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Spin from './spin.svelte'
 
@@ -22,10 +23,15 @@
 	const spinMutation = createResourceMutation(client, 'spin')
 </script>
 
-<MutationView lastError={spinMutation.error}>
+<MutationSection
+	title="Spin"
+	api={ResourceTriplets.Base}
+	description="Turn to a given angle at a given velocity"
+	lastError={spinMutation.error}
+>
 	<Spin
 		spin={(angleDeg: number, degsPerSec: number) => {
 			spinMutation.mutate([angleDeg, degsPerSec], {})
 		}}
 	/>
-</MutationView>
+</MutationSection>

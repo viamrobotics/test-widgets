@@ -3,7 +3,7 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import MutationSection from '$lib/components/mutation-section.svelte'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -29,7 +29,10 @@
 	let isKeyboardEnabled = $state(false)
 </script>
 
-<MutationView lastError={quickSetPowerMutation.error}>
+<MutationSection
+	title="Quick move"
+	lastError={quickSetPowerMutation.error}
+>
 	{#snippet titleInput()}
 		<Label cx="w-fit!">
 			Keyboard control
@@ -46,4 +49,4 @@
 		setPower={quickSetPower}
 		{isKeyboardEnabled}
 	/>
-</MutationView>
+</MutationSection>

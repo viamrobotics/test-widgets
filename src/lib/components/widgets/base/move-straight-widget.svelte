@@ -2,7 +2,8 @@
 	import { BaseClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import MutationSection from '$lib/components/mutation-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import MoveStraight from './move-straight.svelte'
 
@@ -26,6 +27,11 @@
 	}
 </script>
 
-<MutationView lastError={moveStraightMutation.error}>
+<MutationSection
+	title="MoveStraight"
+	api={ResourceTriplets.Base}
+	description="Move across a given distance at a given velocity"
+	lastError={moveStraightMutation.error}
+>
 	<MoveStraight {moveStraight} />
-</MutationView>
+</MutationSection>

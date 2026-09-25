@@ -19,13 +19,15 @@ export { default as AudioInputGetPropertiesWidget } from './widgets/audio-input/
 export { default as AudioOutputWidget } from './widgets/audio-output/audio-output.svelte'
 export { default as AudioOutputGetPropertiesWidget } from './widgets/audio-output/get-properties-widget.svelte'
 
-export { default as BaseWidget } from './widgets/base/base.svelte'
+/** @todo rename this export to BaseApis when BaseControls is introduced. */
+export { default as BaseWidget } from './widgets/base/base-apis.svelte'
 export { default as BaseIsMovingWidget } from './widgets/base/is-moving-widget.svelte'
 export { default as BaseMoveStraightWidget } from './widgets/base/move-straight-widget.svelte'
 export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-widget.svelte'
 export { default as BaseSetPowerWidget } from './widgets/base/set-power-widget.svelte'
 export { default as BaseSetVelocityWidget } from './widgets/base/set-velocity-widget.svelte'
 export { default as BaseSpinWidget } from './widgets/base/spin-widget.svelte'
+export { default as BaseStopWidget } from './widgets/base/stop-widget.svelte'
 
 export { default as BoardWidget } from './widgets/board/board.svelte'
 export { default as BoardReadWritePinsWidget } from './widgets/board/read-write-pins-widget.svelte'
@@ -57,11 +59,13 @@ export { default as GantryQuickMoveWidget } from './widgets/gantry/quick-move-wi
 
 export { default as GenericWidget } from './widgets/generic/generic.svelte'
 
-export { default as GripperGrabWidget } from './widgets/gripper/grab.svelte'
-export { default as GripperWidget } from './widgets/gripper/gripper.svelte'
-export { default as GripperIsHoldingSomethingWidget } from './widgets/gripper/is-holding-something.svelte'
+export { default as GripperGrabWidget } from './widgets/gripper/grab-widget.svelte'
+/** @todo rename this export to GripperApis when GripperControls is introduced. */
+export { default as GripperWidget } from './widgets/gripper/gripper-apis.svelte'
+export { default as GripperIsHoldingSomethingWidget } from './widgets/gripper/is-holding-something-widget.svelte'
 export { default as GripperIsMovingWidget } from './widgets/gripper/is-moving-widget.svelte'
-export { default as GripperOpenWidget } from './widgets/gripper/open.svelte'
+export { default as GripperOpenWidget } from './widgets/gripper/open-widget.svelte'
+export { default as GripperStopWidget } from './widgets/gripper/stop-widget.svelte'
 
 export { default as InputControllerWidget } from './widgets/input-controller/input-controller.svelte'
 
@@ -93,10 +97,13 @@ export { default as PowerSensorGetPowerWidget } from './widgets/power-sensor/get
 
 export { default as SensorWidget } from './widgets/sensor/sensor.svelte'
 
+export { default as ServoGetPositionWidget } from './widgets/servo/get-position-widget.svelte'
 export { default as ServoMoveWidget } from './widgets/servo/move-widget.svelte'
 export { default as ServoQuickMoveWidget } from './widgets/servo/quick-move-widget.svelte'
-export { default as ServoWidget } from './widgets/servo/servo.svelte'
+/** @todo rename this export to ServoApis when ServoControls is introduced. */
+export { default as ServoWidget } from './widgets/servo/servo-apis.svelte'
 export { default as ServoIsMovingWidget } from './widgets/servo/is-moving-widget.svelte'
+export { default as ServoStopWidget } from './widgets/servo/stop-widget.svelte'
 
 export { default as SlamMap2D } from './slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/slam/slam.svelte'

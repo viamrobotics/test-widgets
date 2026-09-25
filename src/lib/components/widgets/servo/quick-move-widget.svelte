@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
 
 	import QuickMove from './quick-move.svelte'
@@ -33,12 +34,17 @@
 	}
 </script>
 
-<Query query={positionQuery}>
-	{#if positionQuery.data !== undefined}
-		<QuickMove
-			currentPosition={positionQuery.data}
-			moveTo={quickMoveTo}
-			lastError={quickMoveMutation.error}
-		/>
-	{/if}
-</Query>
+<ApiSection
+	title="Quick move"
+	bottomText="Press a button to execute"
+>
+	<Query query={positionQuery}>
+		{#if positionQuery.data !== undefined}
+			<QuickMove
+				currentPosition={positionQuery.data}
+				moveTo={quickMoveTo}
+				lastError={quickMoveMutation.error}
+			/>
+		{/if}
+	</Query>
+</ApiSection>

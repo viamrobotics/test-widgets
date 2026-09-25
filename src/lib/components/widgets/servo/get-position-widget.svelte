@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { ServoClient } from '@viamrobotics/sdk'
-	import {
-		createResourceClient,
-		createResourceMutation,
-		createResourceQuery,
-	} from '@viamrobotics/svelte-sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { formatNumeric } from '$lib/format'
 	import { ResourceTriplets } from '$lib/resource-triplet'
-
-	import Move from './move.svelte'
 
 	interface Props {
 		partID: string
@@ -28,24 +23,20 @@
 	const positionQuery = createResourceQuery(client, 'getPosition', {
 		refetchInterval: 500,
 	})
-	const moveMutation = createResourceMutation(client, 'move')
-
-	const moveTo = (angle: number) => {
-		moveMutation.mutate([angle], {})
-	}
 </script>
 
 <ApiSection
-	title="Move"
+	title="GetPosition"
 	api={ResourceTriplets.Servo}
+	bottomText="Updates automatically"
 >
 	<Query query={positionQuery}>
 		{#if positionQuery.data !== undefined}
-			<Move
-				currentPosition={positionQuery.data}
-				{moveTo}
-				lastError={moveMutation.error}
-			/>
+			<!-- span required to get unit closer to position reading -->
+			<span class="flex flex-row gap-1">
+				<span class="font-roboto-mono font-normal">{formatNumeric(positionQuery.data)}</span>
+				<abbr class="text-subtle-2">º</abbr>
+			</span>
 		{/if}
 	</Query>
 </ApiSection>

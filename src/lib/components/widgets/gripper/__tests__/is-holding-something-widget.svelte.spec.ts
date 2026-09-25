@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { describe, expect, it, vi } from 'vitest'
 
-import Subject from '../is-holding-something.svelte'
+import Subject from '../is-holding-something-widget.svelte'
 
 vi.mock('@viamrobotics/sdk', () => ({
 	GripperClient: class {},
