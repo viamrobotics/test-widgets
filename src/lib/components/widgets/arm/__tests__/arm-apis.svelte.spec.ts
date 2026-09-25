@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { describe, expect, it, vi } from 'vitest'
 
-import Subject from '../arm.svelte'
+import Subject from '../arm-apis.svelte'
 
 vi.mock('@viamrobotics/svelte-sdk', async () => {
 	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')

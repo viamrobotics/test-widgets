@@ -1,7 +1,8 @@
 export { default as ConnectionStatus } from './connection-status.svelte'
 export { default as SectionTitle } from './section-title.svelte'
 
-export { default as ArmWidget } from './widgets/arm/arm.svelte'
+/** @todo rename this export to ArmApis when ArmControls is introduced. */
+export { default as ArmWidget } from './widgets/arm/arm-apis.svelte'
 export { default as ArmGetJointPositionsWidget } from './widgets/arm/get-joint-positions-widget.svelte'
 export { default as ArmGetManualModeWidget } from './widgets/arm/set-manual-mode-widget.svelte'
 export { default as ArmIsMovingWidget } from './widgets/arm/is-moving-widget.svelte'
