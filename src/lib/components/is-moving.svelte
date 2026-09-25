@@ -54,7 +54,6 @@
 	title="IsMoving"
 	{api}
 	bottomText="Updates automatically"
-	class="grow"
 >
 	<Query {query}>
 		<StatusPill isActive={query.data ?? false} />

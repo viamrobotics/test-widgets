@@ -40,7 +40,7 @@ describe('<ConnectionStatus>', () => {
 		expect(screen.getByText(/connected/iu)).toBeInTheDocument()
 	})
 
-	it('Catches errors with the error boundary', () => {
+	it('catches an error thrown outside any section as a last resort', () => {
 		render(ErrorSubject)
 
 		expect(screen.getByText(/something went wrong/iu)).toBeInTheDocument()

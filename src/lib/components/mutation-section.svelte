@@ -3,6 +3,7 @@
 
 	import { twMerge } from 'tailwind-merge'
 
+	import Boundary from './boundary.svelte'
 	import ErrorDisplay from './error.svelte'
 	import SectionTitle from './section-title.svelte'
 
@@ -62,7 +63,7 @@
 		</div>
 
 		<div class="flex grow flex-wrap justify-between gap-2">
-			{@render children?.()}
+			<Boundary {children} />
 		</div>
 	</div>
 	{#if error}

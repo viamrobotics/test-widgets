@@ -13,24 +13,30 @@
 		Servo,
 		ServoClient,
 	} from '@viamrobotics/sdk'
+	import type { Snippet } from 'svelte'
 
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
+	import ApiSection from './api-section.svelte'
 	import StopButton from './stop-button.svelte'
 
+	type Client =
+		| typeof ArmClient
+		| typeof BaseClient
+		| typeof GantryClient
+		| typeof GripperClient
+		| typeof MotorClient
+		| typeof ServoClient
+
 	interface Props {
+		client: Client
 		partID: string
 		resourceName: string
-		client:
-			| typeof ArmClient
-			| typeof BaseClient
-			| typeof GantryClient
-			| typeof GripperClient
-			| typeof MotorClient
-			| typeof ServoClient
+		api: string
+		children?: Snippet
 	}
 
-	const { partID, resourceName, client: clientClass }: Props = $props()
+	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
 
 	const client = $derived(
 		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
@@ -43,9 +49,17 @@
 	const stopMutation = $derived(createResourceMutation(client, 'stop'))
 </script>
 
-<StopButton
-	error={stopMutation.error}
-	onStop={() => {
-		stopMutation.mutate([])
-	}}
-/>
+<ApiSection
+	title="Stop"
+	{api}
+>
+	<StopButton
+		error={stopMutation.error}
+		onStop={() => {
+			stopMutation.mutate([])
+		}}
+	/>
+
+	<!-- slot for additional actuation info Ex: Motor's IsPowered & GetPosition -->
+	{@render children?.()}
+</ApiSection>

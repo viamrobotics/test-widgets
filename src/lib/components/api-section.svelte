@@ -4,6 +4,7 @@
 
 	import { twMerge } from 'tailwind-merge'
 
+	import Boundary from './boundary.svelte'
 	import SectionTitle from './section-title.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
@@ -32,7 +33,7 @@
 </script>
 
 <section
-	class={twMerge('flex grow flex-col gap-4 p-4', className)}
+	class={twMerge('flex flex-col gap-4 p-4', className)}
 	aria-labelledby={title ? headingID : undefined}
 	{...rest}
 >
@@ -59,7 +60,7 @@
 		</div>
 	{/if}
 
-	{@render children?.()}
+	<Boundary {children} />
 
 	{#if bottomText}
 		<p class="text-subtle-2 mt-auto text-xs">{bottomText}</p>

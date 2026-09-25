@@ -13,9 +13,7 @@
 	status={MachineConnectionEvent.CONNECTED}
 >
 	{#snippet connected()}
-		{@const foo = throwError()}
-		<div>
-			{foo}
-		</div>
+		{@const message = throwError()}
+		<div>{message}</div>
 	{/snippet}
 </ConnectionStatus>
