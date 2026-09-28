@@ -29,10 +29,7 @@
 	api={ResourceTriplets.PowerSensor}
 	class="grow flex-col gap-4"
 >
-	<Query
-		{query}
-		class="h-6"
-	>
+	<Query {query}>
 		{#if query.data !== undefined}
 			<VoltageReading data={query.data} />
 		{/if}

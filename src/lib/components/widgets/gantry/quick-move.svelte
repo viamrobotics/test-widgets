@@ -38,7 +38,7 @@
 			<tr>
 				<th> {index} </th>
 				<th>
-					<div class="flex h-full max-h-6.5 gap-1.5">
+					<div class="flex h-full gap-1.5">
 						<Button
 							aria-label="minus-ten-degrees"
 							class="px-2.5!"

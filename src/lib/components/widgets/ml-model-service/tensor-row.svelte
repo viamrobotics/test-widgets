@@ -10,24 +10,28 @@
 	const { type, tensor, index }: Props = $props()
 </script>
 
-<div class="border-b-light grid grid-cols-2 border-b">
-	<dt class="table-header table-header-cell">
-		{type} tensor {index}
+{#snippet row(term: string, def: string)}
+	<dt
+		class="border-light wrap-break-words content-center items-center border-r border-b p-1 whitespace-normal"
+	>
+		{term}
 	</dt>
-	<dd>
-		<dl class="grid grid-cols-2">
-			<dt class="border-l-light flex! table-cell min-h-6! border-l py-0!">name</dt>
-			<dd class="border-l-light flex! table-cell min-h-6! border-l py-0!">
-				{tensor.name || '-'}
-			</dd>
-			<dt class="border-l-light flex! table-cell min-h-6! border-l py-0!">shape</dt>
-			<dd class="border-l-light flex! table-cell min-h-6! border-l py-0!">
-				{tensor.shape || '-'}
-			</dd>
-			<dt class="border-l-light flex! table-cell min-h-6! border-b-0 border-l py-0!">type</dt>
-			<dd class="border-l-light flex! table-cell min-h-6! border-b-0 border-l py-0!">
-				{tensor.dataType || '-'}
-			</dd>
-		</dl>
+	<dd
+		class="border-light wrap-break-words content-center items-center border-b p-1 pl-3 whitespace-normal"
+	>
+		{def || '-'}
 	</dd>
-</div>
+{/snippet}
+
+<figure class="border-light w-full border-b-0">
+	<figcaption
+		class="bg-light border-light text-subtle-1 wrap-break-words content-center items-center border-b p-1 whitespace-normal"
+	>
+		{type} tensor {index}
+	</figcaption>
+	<dl class="grid grid-cols-2">
+		{@render row('name', tensor.name)}
+		{@render row('shape', `${tensor.shape}`)}
+		{@render row('type', tensor.dataType)}
+	</dl>
+</figure>

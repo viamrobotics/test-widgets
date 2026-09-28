@@ -139,10 +139,7 @@
 			method="DiscoverResources"
 			api={ResourceTriplets.Discovery}
 		>
-			<Query
-				query={discoveryQuery}
-				class="h-6"
-			>
+			<Query query={discoveryQuery}>
 				{#if discoveryQuery.data !== undefined}
 					<ResourcesList
 						data={discoveryQuery.data}

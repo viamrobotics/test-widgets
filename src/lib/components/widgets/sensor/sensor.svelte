@@ -48,10 +48,7 @@
 			api={ResourceTriplets.Sensor}
 			class="relative flex-col gap-4"
 		>
-			<Query
-				query={readingsQuery}
-				class="h-6"
-			>
+			<Query query={readingsQuery}>
 				{#if readingsQuery.data !== undefined}
 					<ReadingsList data={readingsQuery.data} />
 				{/if}

@@ -2,10 +2,12 @@
 	import { type Metadata, MLModelClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import ResultsTable from './results-table.svelte'
 
@@ -43,7 +45,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-wrap gap-4 p-4 pb-3">
+		<div class="flex p-4">
 			<RefetchController
 				allowLive
 				{refetchInterval}
@@ -51,15 +53,16 @@
 			/>
 		</div>
 
-		<Queries
-			queries={[metadataQuery]}
-			class="h-14 p-4"
+		<ApiSection
+			method="Metadata"
+			api={ResourceTriplets.MLModel}
+			class="flex-col gap-4"
 		>
-			{#if metadata !== undefined}
-				<div class="p-4">
+			<Queries queries={[metadataQuery]}>
+				{#if metadata !== undefined}
 					<ResultsTable {metadata} />
-				</div>
-			{/if}
-		</Queries>
+				{/if}
+			</Queries>
+		</ApiSection>
 	{/snippet}
 </ConnectionStatus>

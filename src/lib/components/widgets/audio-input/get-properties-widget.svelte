@@ -29,10 +29,7 @@
 	api={ResourceTriplets.AudioInput}
 >
 	{#snippet subheading()}Audio input properties{/snippet}
-	<Query
-		{query}
-		class="h-6"
-	>
+	<Query {query}>
 		{#if query.data !== undefined}
 			<Properties
 				supportedCodecs={query.data.supportedCodecs}

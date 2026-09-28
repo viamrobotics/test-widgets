@@ -179,10 +179,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<Query
-			query={propertiesQuery}
-			class="h-14 p-4"
-		>
+		<Query query={propertiesQuery}>
 			{#if propertiesQuery.data?.cloudSlam}
 				<div class="p-4 text-sm">
 					This resource is using Cloud SLAM. <a
@@ -207,10 +204,7 @@
 								method="GetPosition"
 								api={ResourceTriplets.Slam}
 							>
-								<Queries
-									queries={[propertiesQuery, positionQuery]}
-									class="h-6"
-								>
+								<Queries queries={[propertiesQuery, positionQuery]}>
 									{#if positionQuery.data !== undefined}
 										<Position position={positionQuery.data} />
 									{/if}

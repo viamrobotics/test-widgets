@@ -16,22 +16,26 @@
 	const outputInfo = $derived(metadata.outputInfo)
 </script>
 
-<dl class="table-container grid min-w-0! grid-cols-2 text-xs">
-	<dt class="table-header table-header-cell h-auto min-h-6">model name</dt>
-	<dd class="border-l-light flex! table-cell min-h-6! border-l py-0!">
-		{name || '-'}
+{#snippet row(term: string, def: string)}
+	<dt
+		class="bg-light border-light text-subtle-1 wrap-break-words content-center items-center border-r border-b px-1 whitespace-normal nth-last-[2]:border-b-0"
+	>
+		model {term}
+	</dt>
+	<dd
+		class="border-light wrap-break-words content-center items-center border-r border-b p-1 whitespace-normal last:border-b-0"
+	>
+		{def || '-'}
 	</dd>
-	<dt class="table-header table-header-cell h-auto min-h-6">model description</dt>
-	<dd class="border-l-light flex! table-cell min-h-6! border-l py-0!">
-		{description || '-'}
-	</dd>
-	<dt class="table-header table-header-cell h-auto min-h-6 border-b-0">model type</dt>
-	<dd class="border-l-light flex! table-cell min-h-6! border-b-0 border-l py-0!">
-		{type || '-'}
-	</dd>
+{/snippet}
+
+<dl class="border-light grid grid-cols-2 flex-col border border-b-0 text-xs">
+	{@render row('name', name)}
+	{@render row('description', description)}
+	{@render row('type', type)}
 </dl>
 
-<dl class="table-container min-w-0! text-xs">
+<dl class="border-light border border-b-0 text-xs">
 	{#each inputInfo as tensor, index (index)}
 		<TensorRow
 			type="input"

@@ -71,10 +71,7 @@
 					api={ResourceTriplets.PowerSensor}
 					class="flex-col gap-4 pb-5"
 				>
-					<Query
-						query={currentQuery}
-						class="h-6"
-					>
+					<Query query={currentQuery}>
 						{#if currentQuery.data !== undefined}
 							<CurrentReading data={currentQuery.data} />
 						{/if}
@@ -85,10 +82,7 @@
 					api={ResourceTriplets.PowerSensor}
 					class="flex-col gap-4 pb-5"
 				>
-					<Query
-						query={voltageQuery}
-						class="h-6"
-					>
+					<Query query={voltageQuery}>
 						{#if voltageQuery.data !== undefined}
 							<VoltageReading data={voltageQuery.data} />
 						{/if}
@@ -99,10 +93,7 @@
 					api={ResourceTriplets.PowerSensor}
 					class="flex-col gap-4 pb-5"
 				>
-					<Query
-						query={powerQuery}
-						class="h-6"
-					>
+					<Query query={powerQuery}>
 						{#if powerQuery.data !== undefined}
 							<PowerReading data={powerQuery.data} />
 						{/if}
@@ -127,10 +118,7 @@
 					transition:slide={{ duration: 150 }}
 					class="pt-2"
 				>
-					<Query
-						query={readingsQuery}
-						class="h-6"
-					>
+					<Query query={readingsQuery}>
 						{#if readingsQuery.data !== undefined}
 							<ReadingsList data={readingsQuery.data} />
 						{/if}

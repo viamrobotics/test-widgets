@@ -343,10 +343,7 @@
 			/>
 
 			{#if isShowingPointcloud}
-				<Query
-					query={pointcloudQuery}
-					class="h-6"
-				>
+				<Query query={pointcloudQuery}>
 					{#if pointcloudQuery.data}
 						<PCDWidget data={pointcloudQuery.data} />
 					{/if}

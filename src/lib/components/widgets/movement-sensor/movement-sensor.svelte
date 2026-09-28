@@ -96,10 +96,7 @@
 			/>
 		</div>
 
-		<Query
-			query={propertiesQuery}
-			class="h-14 p-4"
-		>
+		<Query query={propertiesQuery}>
 			<div class="@container">
 				<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
 					<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 @4xl:w-1/4">
@@ -109,10 +106,7 @@
 									method="GetPosition"
 									api={ResourceTriplets.MovementSensor}
 								/>
-								<Query
-									query={positionQuery}
-									class="h-6"
-								>
+								<Query query={positionQuery}>
 									{#if positionQuery.data !== undefined}
 										<Position data={positionQuery.data} />
 									{/if}
@@ -129,10 +123,7 @@
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
 								</SectionHeading>
-								<Query
-									query={orientationQuery}
-									class="h-6"
-								>
+								<Query query={orientationQuery}>
 									{#if orientationQuery.data !== undefined}
 										<Orientation data={orientationQuery.data} />
 									{/if}
@@ -149,10 +140,7 @@
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
 								</SectionHeading>
-								<Query
-									query={compassHeadingQuery}
-									class="h-6"
-								>
+								<Query query={compassHeadingQuery}>
 									{#if compassHeadingQuery.data !== undefined}
 										<CompassHeading data={compassHeadingQuery.data} />
 									{/if}
@@ -171,10 +159,7 @@
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
 										>{/snippet}
 								</SectionHeading>
-								<Query
-									query={angularVelocityQuery}
-									class="h-6"
-								>
+								<Query query={angularVelocityQuery}>
 									{#if angularVelocityQuery.data !== undefined}
 										<Vector3 data={angularVelocityQuery.data} />
 									{/if}
@@ -191,10 +176,7 @@
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
 										>{/snippet}
 								</SectionHeading>
-								<Query
-									query={linearVelocityQuery}
-									class="h-6"
-								>
+								<Query query={linearVelocityQuery}>
 									{#if linearVelocityQuery.data !== undefined}
 										<Vector3 data={linearVelocityQuery.data} />
 									{/if}
@@ -212,10 +194,7 @@
 											>(m/s<sup>2</sup>)</span
 										>{/snippet}
 								</SectionHeading>
-								<Query
-									query={linearAccelerationQuery}
-									class="h-6"
-								>
+								<Query query={linearAccelerationQuery}>
 									{#if linearAccelerationQuery.data !== undefined}
 										<Vector3 data={linearAccelerationQuery.data} />
 									{/if}
@@ -228,10 +207,7 @@
 								method="GetAccuracy"
 								api={ResourceTriplets.MovementSensor}
 							/>
-							<Query
-								query={accuracyQuery}
-								class="h-6"
-							>
+							<Query query={accuracyQuery}>
 								{#if accuracyQuery.data !== undefined}
 									<Accuracy data={accuracyQuery.data} />
 								{/if}

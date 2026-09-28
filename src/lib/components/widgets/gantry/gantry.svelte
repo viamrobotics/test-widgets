@@ -110,10 +110,7 @@
 							<ApiSection class="flex-col gap-4">
 								{#snippet heading()}Quick move{/snippet}
 								{#snippet description()}Press a button to execute{/snippet}
-								<Query
-									query={positionQuery}
-									class="h-6"
-								>
+								<Query query={positionQuery}>
 									{@const positions = positionQuery.data}
 									{#if positions !== undefined}
 										<QuickMove

@@ -205,10 +205,7 @@
 				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
 			{/if}
 
-			<Queries
-				queries={[propertiesQuery, captureAllQuery]}
-				class="h-14 p-4"
-			>
+			<Queries queries={[propertiesQuery, captureAllQuery]}>
 				{#if detectionsSlow}
 					<p class="text-subtle-2 text-xs italic">
 						This request is taking a long time to complete.
@@ -245,10 +242,7 @@
 			{/if}
 
 			{#if showObjectPointClouds}
-				<Queries
-					queries={[getObjectPointCloudsQuery]}
-					class="h-14 p-4"
-				>
+				<Queries queries={[getObjectPointCloudsQuery]}>
 					{#if objectPointCloudsSlow.isSlow}
 						<p class="text-subtle-2 text-xs italic">
 							This request is taking a long time to complete.

@@ -29,10 +29,10 @@
 	api={ResourceTriplets.Arm}
 	class="grow flex-col gap-4"
 >
-	{#snippet description()}Updates automatically{/snippet}
 	<Query {query}>
 		{#if query.data}
 			<GetJointPositions positions={query.data.values} />
 		{/if}
 	</Query>
+	{#snippet description()}Updates automatically{/snippet}
 </ApiSection>

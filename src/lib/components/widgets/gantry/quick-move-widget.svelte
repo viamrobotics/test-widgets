@@ -30,10 +30,7 @@
 	const quickMoveMutation = createResourceMutation(client, 'moveToPosition')
 </script>
 
-<Query
-	query={positionQuery}
-	class="h-6"
->
+<Query query={positionQuery}>
 	{@const positions = positionQuery.data}
 	{#if positions !== undefined}
 		<QuickMove

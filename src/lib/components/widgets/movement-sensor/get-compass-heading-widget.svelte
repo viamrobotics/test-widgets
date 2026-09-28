@@ -29,10 +29,7 @@
 	api={ResourceTriplets.MovementSensor}
 	class="grow flex-col gap-4"
 >
-	<Query
-		{query}
-		class="h-6"
-	>
+	<Query {query}>
 		{#if query.data !== undefined}
 			<CompassHeading data={query.data} />
 		{/if}

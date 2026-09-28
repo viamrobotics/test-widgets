@@ -29,10 +29,7 @@
 	api={ResourceTriplets.Slam}
 	class="grow flex-col gap-4"
 >
-	<Query
-		{query}
-		class="h-6"
-	>
+	<Query {query}>
 		{#if query.data !== undefined}
 			<Position position={query.data} />
 		{/if}
