@@ -43,7 +43,7 @@ describe('Base MoveStraight widget', () => {
 		expect(moveStraightMutate).toHaveBeenCalledWith([200, 100])
 	})
 
-	it('shows the moveStraight error below the section', () => {
+	it('shows the moveStraight error in the section’s error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: moveStraightMutate,
 			isPending: false,
@@ -51,6 +51,7 @@ describe('Base MoveStraight widget', () => {
 		} as never)
 
 		renderSubject()
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/base refused moveStraight/iu)).toBeInTheDocument()
 	})

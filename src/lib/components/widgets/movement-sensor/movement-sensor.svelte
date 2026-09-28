@@ -9,9 +9,8 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import SectionTitle from '$lib/components/section-title.svelte'
-
-	const MS_API = 'rdk:component:movement_sensor'
+	import SectionHeading from '$lib/components/section-heading.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Accuracy from './accuracy.svelte'
 	import CompassHeading from './compass-heading.svelte'
@@ -86,8 +85,6 @@
 		enabled: showFullReadings,
 		refetchInterval: refetchInterval.current,
 	}))
-
-	const headingID = $props.id()
 </script>
 
 <ConnectionStatus {partID}>
@@ -101,20 +98,20 @@
 
 		<Query
 			query={propertiesQuery}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			<div class="@container">
 				<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
 					<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 @4xl:w-1/4">
 						{#if propertiesQuery.data?.positionSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetPosition"
-									api={MS_API}
+								<SectionHeading
+									method="GetPosition"
+									api={ResourceTriplets.MovementSensor}
 								/>
 								<Query
 									query={positionQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position data={positionQuery.data} />
@@ -125,16 +122,16 @@
 
 						{#if propertiesQuery.data?.orientationSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetOrientation"
-									api={MS_API}
+								<SectionHeading
+									method="GetOrientation"
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
-								</SectionTitle>
+								</SectionHeading>
 								<Query
 									query={orientationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if orientationQuery.data !== undefined}
 										<Orientation data={orientationQuery.data} />
@@ -145,16 +142,16 @@
 
 						{#if propertiesQuery.data?.compassHeadingSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetCompassHeading"
-									api={MS_API}
+								<SectionHeading
+									method="GetCompassHeading"
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
-								</SectionTitle>
+								</SectionHeading>
 								<Query
 									query={compassHeadingQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if compassHeadingQuery.data !== undefined}
 										<CompassHeading data={compassHeadingQuery.data} />
@@ -167,16 +164,16 @@
 					<div class="flex w-full flex-col gap-5 p-4 @4xl:w-1/4">
 						{#if propertiesQuery.data?.angularVelocitySupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetAngularVelocity"
-									api={MS_API}
+								<SectionHeading
+									method="GetAngularVelocity"
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
 										>{/snippet}
-								</SectionTitle>
+								</SectionHeading>
 								<Query
 									query={angularVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if angularVelocityQuery.data !== undefined}
 										<Vector3 data={angularVelocityQuery.data} />
@@ -187,16 +184,16 @@
 
 						{#if propertiesQuery.data?.linearVelocitySupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetLinearVelocity"
-									api={MS_API}
+								<SectionHeading
+									method="GetLinearVelocity"
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
 										>{/snippet}
-								</SectionTitle>
+								</SectionHeading>
 								<Query
 									query={linearVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearVelocityQuery.data !== undefined}
 										<Vector3 data={linearVelocityQuery.data} />
@@ -207,17 +204,17 @@
 
 						{#if propertiesQuery.data?.linearAccelerationSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetLinearAcceleration"
-									api={MS_API}
+								<SectionHeading
+									method="GetLinearAcceleration"
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
 											>(m/s<sup>2</sup>)</span
 										>{/snippet}
-								</SectionTitle>
+								</SectionHeading>
 								<Query
 									query={linearAccelerationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearAccelerationQuery.data !== undefined}
 										<Vector3 data={linearAccelerationQuery.data} />
@@ -227,13 +224,13 @@
 						{/if}
 
 						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetAccuracy"
-								api={MS_API}
+							<SectionHeading
+								method="GetAccuracy"
+								api={ResourceTriplets.MovementSensor}
 							/>
 							<Query
 								query={accuracyQuery}
-								contentCx="h-6"
+								class="h-6"
 							>
 								{#if accuracyQuery.data !== undefined}
 									<Accuracy data={accuracyQuery.data} />
@@ -252,15 +249,11 @@
 			</div>
 		</Query>
 
-		<section
-			class="flex flex-col gap-4 p-4"
-			aria-labelledby={headingID}
-		>
+		<section class="flex flex-col gap-4 p-4">
 			<div class="flex flex-col gap-0.5">
-				<SectionTitle
-					title="GetReadings"
-					api={MS_API}
-					headingId={headingID}
+				<SectionHeading
+					method="GetReadings"
+					api={ResourceTriplets.MovementSensor}
 				/>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>
 			</div>

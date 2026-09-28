@@ -42,7 +42,7 @@ describe('Gripper Grab widget', () => {
 		expect(grabMutate).toHaveBeenCalledWith([], {})
 	})
 
-	it('shows the grab error below the button', () => {
+	it('shows the grab error in the section error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: grabMutate,
 			isPending: false,
@@ -50,6 +50,8 @@ describe('Gripper Grab widget', () => {
 		} as never)
 
 		renderSubject()
+
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/gripper refused to grab/iu)).toBeInTheDocument()
 	})

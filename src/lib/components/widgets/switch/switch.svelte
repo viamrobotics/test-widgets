@@ -45,7 +45,7 @@
 		<div class="p-4">
 			<Queries
 				queries={[positionQuery, numPositionsQuery]}
-				contentCx="h-7.5"
+				class="h-7.5"
 			>
 				{#if positionQuery.data !== undefined && numPositionsQuery.data !== undefined}
 					<Position

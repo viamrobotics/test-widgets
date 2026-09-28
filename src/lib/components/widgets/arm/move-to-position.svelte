@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
+	import type { Snippet } from 'svelte'
 
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
@@ -10,15 +11,10 @@
 		endPosition: Pose
 		moveToPosition: (position: Pose) => void
 		lastError: Error | null
-		description?: string
+		description?: Snippet
 	}
 
-	const {
-		endPosition,
-		moveToPosition,
-		lastError,
-		description = 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.',
-	}: Props = $props()
+	const { endPosition, moveToPosition, lastError, description: customDescription }: Props = $props()
 
 	// svelte-ignore state_referenced_locally
 	let desiredPosition = $state({ ...endPosition })
@@ -40,15 +36,21 @@
 	}
 </script>
 
+{#snippet poseDescription()}
+	Pose is with respect to the arm origin and does not take into account the motion service or frame
+	system.
+{/snippet}
+
 <div class="flex min-w-0 flex-col gap-4">
 	<PoseEditor
 		pose={desiredPosition}
 		onPoseChange={(next) => {
 			desiredPosition = next
 		}}
-		title="Pose Values"
-		{description}
-	/>
+		description={customDescription ?? poseDescription}
+	>
+		{#snippet title()}Pose Values{/snippet}
+	</PoseEditor>
 
 	<div class="mb-2 flex flex-col gap-2">
 		<span class="flex flex-row gap-2">

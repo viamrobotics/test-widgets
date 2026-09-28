@@ -15,6 +15,7 @@
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
 
@@ -134,13 +135,13 @@
 		</div>
 
 		<ApiSection
-			title="DiscoverResources"
-			api="rdk:service:discovery"
-			class="relative"
+			class="relative flex-col gap-4"
+			method="DiscoverResources"
+			api={ResourceTriplets.Discovery}
 		>
 			<Query
 				query={discoveryQuery}
-				contentCx="h-6"
+				class="h-6"
 			>
 				{#if discoveryQuery.data !== undefined}
 					<ResourcesList

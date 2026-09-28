@@ -17,6 +17,8 @@
 
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
+	import type { ResourceTriplet } from '$lib/resource-triplet'
+
 	import ApiSection from './api-section.svelte'
 	import StopButton from './stop-button.svelte'
 
@@ -32,7 +34,7 @@
 		client: Client
 		partID: string
 		resourceName: string
-		api: string
+		api: ResourceTriplet
 		children?: Snippet
 	}
 
@@ -50,11 +52,12 @@
 </script>
 
 <ApiSection
-	title="Stop"
+	class="flex-col gap-4"
+	method="Stop"
 	{api}
+	lastError={stopMutation.error}
 >
 	<StopButton
-		error={stopMutation.error}
 		onStop={() => {
 			stopMutation.mutate([])
 		}}

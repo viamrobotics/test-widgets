@@ -36,8 +36,9 @@
 </script>
 
 <ApiSection
-	title="Move"
+	method="Move"
 	api={ResourceTriplets.Servo}
+	class="flex-col gap-4"
 >
 	<Query query={positionQuery}>
 		{#if positionQuery.data !== undefined}

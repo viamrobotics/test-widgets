@@ -6,6 +6,7 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import ClosedGripperSvg from './closed-gripper-svg.svelte'
 	import OpenGripperSvg from './open-gripper-svg.svelte'
@@ -29,11 +30,11 @@
 </script>
 
 <ApiSection
-	title="IsHoldingSomething"
-	api="rdk:component:gripper"
-	bottomText="Updates automatically"
-	class="grow"
+	method="IsHoldingSomething"
+	api={ResourceTriplets.Gripper}
+	class="grow flex-col gap-4"
 >
+	{#snippet description()}Updates automatically{/snippet}
 	<Query {query}>
 		<div class="flex items-center gap-2">
 			{#if query.data !== undefined}

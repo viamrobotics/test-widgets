@@ -3,8 +3,8 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 
 	import IsMovingWidget from './is-moving-widget.svelte'
 	import MoveStraightWidget from './move-straight-widget.svelte'
@@ -40,11 +40,12 @@
 	{#snippet connected()}
 		<div class="@container">
 			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
-				<MutationSection
-					title="Quick move"
+				<ApiSection
+					class="flex-row flex-wrap gap-2"
 					lastError={quickSetPowerMutation.error}
 				>
-					{#snippet titleInput()}
+					{#snippet heading()}Quick move{/snippet}
+					{#snippet input()}
 						<Label>
 							Keyboard control
 
@@ -56,11 +57,13 @@
 						</Label>
 					{/snippet}
 
-					<QuickMove
-						isKeyboardEnabled={quickMoveKeyboardControl}
-						setPower={quickSetPower}
-					/>
-				</MutationSection>
+					<div class="flex grow flex-wrap justify-between gap-2">
+						<QuickMove
+							isKeyboardEnabled={quickMoveKeyboardControl}
+							setPower={quickSetPower}
+						/>
+					</div>
+				</ApiSection>
 				<div class="flex grow flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<StopWidget
 						{partID}

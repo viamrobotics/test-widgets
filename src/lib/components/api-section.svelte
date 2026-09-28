@@ -2,67 +2,97 @@
 	import type { Snippet } from 'svelte'
 	import type { HTMLAttributes } from 'svelte/elements'
 
-	import { twMerge } from 'tailwind-merge'
+	import type { ResourceTriplet } from '$lib/resource-triplet'
 
 	import Boundary from './boundary.svelte'
-	import SectionTitle from './section-title.svelte'
+	import ErrorIndicator from './error-indicator.svelte'
+	import Progress from './progress.svelte'
+	import SectionHeading from './section-heading.svelte'
+	import { queryErrorKey, type SectionQuery, useQueryErrors } from './use-query-errors.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
-		title?: string | undefined
-		tooltip?: string | undefined
-		description?: string | undefined
-		bottomText?: string | undefined
-		/** RDK API string; presence renders the title as a linked monospace method name */
-		api?: string | undefined
-		class?: string
+		/** RDK method name, rendered verbatim in mono and linked to its docs through `api`. */
+		method?: string | undefined
+		/** RDK API string, e.g. "rdk:component:camera". */
+		api?: ResourceTriplet | undefined
+		/** The queries this section reads. Their distinct errors show in the heading's indicator. */
+		queries?: SectionQuery[]
+		/** The last error of the mutation this section sends, shown in the heading's indicator. */
+		lastError?: Error | null
+		/** Heading for a section that is not one method. Ignored when `method` is set. */
+		heading?: Snippet
+		subheading?: Snippet
+		/** Rendered under the description, for a control that belongs to the heading. */
+		input?: Snippet
+		tooltip?: Snippet
+		description?: Snippet
 		children?: Snippet
 	}
 
 	const {
-		title,
+		method,
+		api,
+		queries = [],
+		lastError = null,
+		class: className,
+		heading,
+		subheading,
+		input,
 		tooltip,
 		description,
-		bottomText,
-		api,
-		class: className = '',
 		children,
 		...rest
 	}: Props = $props()
 
-	const headingID = $props.id()
+	const queryErrors = useQueryErrors(() => queries)
+	const errors = $derived.by(() => {
+		const held = queryErrors.current
+		if (lastError === null) {
+			return held
+		}
+		const key = queryErrorKey(lastError)
+		return held.some((error) => queryErrorKey(error) === key) ? held : [...held, lastError]
+	})
+	const hasHeading = $derived(method !== undefined || heading !== undefined)
+	const isInitialLoad = $derived(errors.length === 0 && queries.some((query) => query.isLoading))
 </script>
 
 <section
-	class={twMerge('flex flex-col gap-4 p-4', className)}
-	aria-labelledby={title ? headingID : undefined}
+	class={['flex p-4', className]}
 	{...rest}
 >
-	{#if title}
+	{#if hasHeading}
 		<div class="flex flex-col gap-0.5">
-			{#if api}
-				<SectionTitle
-					{title}
-					{tooltip}
-					{api}
-					headingId={headingID}
-				/>
-			{:else}
-				<h3
-					class="flex flex-row items-center gap-1 text-sm font-semibold"
-					id={headingID}
-				>
-					{title}
-				</h3>
+			<SectionHeading
+				{method}
+				{api}
+				{heading}
+				{tooltip}
+			>
+				{#snippet aside()}
+					<ErrorIndicator {errors} />
+				{/snippet}
+			</SectionHeading>
+			{#if subheading}
+				<p class="text-subtle-2 text-xs">{@render subheading()}</p>
 			{/if}
-			{#if description}
-				<p class="text-subtle-2 text-xs">{description}</p>
-			{/if}
+			{@render input?.()}
+		</div>
+	{:else if errors.length > 0}
+		<div class="flex">
+			<ErrorIndicator {errors} />
 		</div>
 	{/if}
 
-	<Boundary {children} />
+	{#if isInitialLoad}
+		<div class="h-6">
+			<Progress />
+		</div>
+	{:else}
+		<Boundary {children} />
+	{/if}
 
-	{#if bottomText}
-		<p class="text-subtle-2 mt-auto text-xs">{bottomText}</p>
+	{#if description}
+		<p class="text-subtle-2 mt-auto text-xs">{@render description()}</p>
 	{/if}
 </section>

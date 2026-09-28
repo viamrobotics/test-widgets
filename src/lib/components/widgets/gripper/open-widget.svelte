@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { ClassValue } from 'svelte/elements'
+
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
@@ -10,7 +12,7 @@
 	interface Props {
 		partID: string
 		resourceName: string
-		class?: string
+		class?: ClassValue
 	}
 
 	const { partID, resourceName, class: className }: Props = $props()
@@ -25,14 +27,14 @@
 </script>
 
 <ApiSection
-	title="Open"
+	method="Open"
 	api={ResourceTriplets.Gripper}
-	class={className}
+	class={['flex-col gap-4', className]}
+	lastError={openMutation.error}
 >
 	<Open
 		onOpen={() => {
 			openMutation.mutate([], {})
 		}}
-		lastError={openMutation.error}
 	/>
 </ApiSection>

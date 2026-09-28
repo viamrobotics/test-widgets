@@ -9,10 +9,10 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { formatNumeric } from '$lib/format'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GoFor from './go-for.svelte'
 	import GoTo from './go-to.svelte'
@@ -79,55 +79,71 @@
 		<div class="@container">
 			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 				<div class="flex w-full flex-col divide-y">
-					<MutationSection
-						title="Quick move"
+					<ApiSection
+						class="flex-row flex-wrap gap-2"
 						lastError={quickSetPowerMutation.error}
 					>
-						<QuickMove setPower={quickSetPower} />
-					</MutationSection>
-					<MutationSection
-						title="SetPower"
-						api="rdk:component:motor"
-						description="Move continuously"
+						{#snippet heading()}Quick move{/snippet}
+						<div class="flex grow flex-wrap justify-between gap-2">
+							<QuickMove setPower={quickSetPower} />
+						</div>
+					</ApiSection>
+					<ApiSection
+						class="flex-row flex-wrap gap-2"
+						method="SetPower"
+						api={ResourceTriplets.Motor}
 						lastError={setPowerMutation.error}
 					>
-						<SetPower {setPower} />
-					</MutationSection>
+						{#snippet subheading()}Move continuously{/snippet}
+						<div class="flex grow flex-wrap justify-between gap-2">
+							<SetPower {setPower} />
+						</div>
+					</ApiSection>
 					{#if propertiesQuery.data?.positionReporting}
-						<MutationSection
-							title="SetRPM"
-							api="rdk:component:motor"
-							description="Move indefinitely at a specified speed."
+						<ApiSection
+							class="flex-row flex-wrap gap-2"
+							method="SetRPM"
+							api={ResourceTriplets.Motor}
 							lastError={setRPMMutation.error}
 						>
-							<SetRPM {setRPM} />
-						</MutationSection>
-						<MutationSection
-							title="GoFor"
-							api="rdk:component:motor"
-							description="Move a specified number of revolutions"
+							{#snippet subheading()}Move indefinitely at a specified speed.{/snippet}
+							<div class="flex grow flex-wrap justify-between gap-2">
+								<SetRPM {setRPM} />
+							</div>
+						</ApiSection>
+						<ApiSection
+							class="flex-row flex-wrap gap-2"
+							method="GoFor"
+							api={ResourceTriplets.Motor}
 							lastError={goForMutation.error}
 						>
-							<GoFor {goFor} />
-						</MutationSection>
-						<MutationSection
-							title="GoTo"
-							api="rdk:component:motor"
-							description="Turn to a specified position"
+							{#snippet subheading()}Move a specified number of revolutions{/snippet}
+							<div class="flex grow flex-wrap justify-between gap-2">
+								<GoFor {goFor} />
+							</div>
+						</ApiSection>
+						<ApiSection
+							class="flex-row flex-wrap gap-2"
+							method="GoTo"
+							api={ResourceTriplets.Motor}
 							lastError={goToMutation.error}
 						>
-							<GoTo {goTo} />
-						</MutationSection>
+							{#snippet subheading()}Turn to a specified position{/snippet}
+							<div class="flex grow flex-wrap justify-between gap-2">
+								<GoTo {goTo} />
+							</div>
+						</ApiSection>
 					{/if}
 				</div>
 
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
-						title="Stop"
-						api="rdk:component:motor"
+						class="flex-col gap-4"
+						method="Stop"
+						api={ResourceTriplets.Motor}
+						lastError={stopMutation.error}
 					>
 						<StopButton
-							error={stopMutation.error}
 							onStop={() => {
 								stopMutation.mutate([])
 							}}
@@ -135,20 +151,19 @@
 					</ApiSection>
 					<IsMoving
 						client={MotorClient}
-						api="rdk:component:motor"
+						api={ResourceTriplets.Motor}
 						{partID}
 						{resourceName}
 					>
 						<div class="flex flex-col gap-6 pt-2">
 							<ApiSection
-								title="IsPowered"
-								api="rdk:component:motor"
-								class="gap-3 p-0"
-								tooltip="Returns whether or not the motor is running and the current portion of max power.
-
-  Stepper motors will report ”true” if they are being powered while holding
-  a position and while they are turning."
+								method="IsPowered"
+								api={ResourceTriplets.Motor}
+								class="flex-col gap-3 p-0"
 							>
+								{#snippet tooltip()}Returns whether or not the motor is running and the current
+									portion of max power. Stepper motors will report ”true” if they are being powered
+									while holding a position and while they are turning.{/snippet}
 								<Query query={isPoweredQuery}>
 									{#if isPoweredQuery.data !== undefined}
 										{@const [isPowered, powerPct] = isPoweredQuery.data}
@@ -164,11 +179,12 @@
 							</ApiSection>
 							{#if propertiesQuery.data?.positionReporting === true}
 								<ApiSection
-									title="GetPosition"
-									api="rdk:component:motor"
-									class="gap-3 p-0"
-									tooltip="Reports the position of an encoded motor in revolutions from zero/home."
+									method="GetPosition"
+									api={ResourceTriplets.Motor}
+									class="flex-col gap-3 p-0"
 								>
+									{#snippet tooltip()}Reports the position of an encoded motor in revolutions from
+										zero/home.{/snippet}
 									<Query query={positionQuery}>
 										<p class="font-roboto-mono text-default text-xs">
 											{formatNumeric(positionQuery.data, 4)}

@@ -49,7 +49,7 @@ describe('Base SetPower widget', () => {
 		)
 	})
 
-	it('shows the setPower error below the section', () => {
+	it('shows the setPower error in the section’s error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: setPowerMutate,
 			isPending: false,
@@ -57,6 +57,7 @@ describe('Base SetPower widget', () => {
 		} as never)
 
 		renderSubject()
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/base refused setPower/iu)).toBeInTheDocument()
 	})

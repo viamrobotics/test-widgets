@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Queries from '$lib/components/queries.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PositionAndLengths from './position-and-lengths.svelte'
 
@@ -26,10 +27,11 @@
 </script>
 
 <ApiSection
-	title="GetPosition"
-	bottomText="Updates automatically"
-	class="grow"
+	method="GetPosition"
+	api={ResourceTriplets.Gantry}
+	class="grow flex-col gap-4"
 >
+	{#snippet description()}Updates automatically{/snippet}
 	<Queries queries={[positionQuery, lengthsQuery]}>
 		{@const positions = positionQuery.data}
 		{@const lengths = lengthsQuery.data ?? []}

@@ -33,7 +33,6 @@
 	import { slide } from 'svelte/transition'
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
-	import SectionGroup from '$lib/components/section-group.svelte'
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
@@ -43,6 +42,7 @@
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
 	import ResourceStatus from './resource-status.svelte'
+	import SectionGroup from './section-group.svelte'
 
 	interface Props {
 		partID: string
@@ -167,12 +167,12 @@
 			<div class="flex flex-col divide-y">
 				{#if ResourceTestView}
 					<SectionGroup
-						title="Test"
 						isCollapsed={isTestCollapsed.current ?? false}
 						toggleIsCollapsed={() => {
 							isTestCollapsed.current = !isTestCollapsed.current
 						}}
 					>
+						{#snippet title()}Test{/snippet}
 						<ResourceTestView
 							{partID}
 							{resourceName}
@@ -181,12 +181,12 @@
 				{/if}
 				{#if apiWidgets.length > 0}
 					<SectionGroup
-						title="API widgets"
 						isCollapsed={isApiWidgetsCollapsed.current ?? true}
 						toggleIsCollapsed={() => {
 							isApiWidgetsCollapsed.current = !isApiWidgetsCollapsed.current
 						}}
 					>
+						{#snippet title()}API widgets{/snippet}
 						<div class="flex flex-col gap-4 p-4">
 							{#each apiWidgets as { id: widgetId, widgets, label } (widgetId)}
 								<div class="flex flex-col gap-1">
@@ -204,12 +204,12 @@
 				{/if}
 				{#if resourceAPI !== ResourceTriplets.MLModel}
 					<SectionGroup
-						title="Do Command"
 						isCollapsed={isDoCommandCollapsed.current}
 						toggleIsCollapsed={() => {
 							isDoCommandCollapsed.current = !isDoCommandCollapsed.current
 						}}
 					>
+						{#snippet title()}Do Command{/snippet}
 						<DoCommandWidget
 							{partID}
 							resource={resource.name}

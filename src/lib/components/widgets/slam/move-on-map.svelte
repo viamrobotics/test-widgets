@@ -4,6 +4,7 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import type { PosePosition } from './pose'
 
@@ -23,8 +24,9 @@
 </script>
 
 <ApiSection
-	title="MoveOnMap"
-	api="rdk:service:motion"
+	class="flex-col gap-4"
+	method="MoveOnMap"
+	api={ResourceTriplets.Motion}
 >
 	<Label>
 		Plan deviation <abbr>(m)</abbr>

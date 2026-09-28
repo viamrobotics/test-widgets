@@ -8,6 +8,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
@@ -44,8 +45,9 @@
 </script>
 
 <ApiSection
-	title="MoveToJointPositions"
-	api="rdk:component:arm"
+	method="MoveToJointPositions"
+	api={ResourceTriplets.Arm}
+	class="flex-col gap-4"
 >
 	<Query query={jointPositionsQuery}>
 		{#if jointPositionsQuery.data}

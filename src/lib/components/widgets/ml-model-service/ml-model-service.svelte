@@ -53,7 +53,7 @@
 
 		<Queries
 			queries={[metadataQuery]}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			{#if metadata !== undefined}
 				<div class="p-4">

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 import { describe, expect, it, vi } from 'vitest'
@@ -50,7 +50,7 @@ describe('Base QuickMove widget', () => {
 		)
 	})
 
-	it('shows the setPower error below the section', () => {
+	it('shows the setPower error in the section’s error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: quickSetPowerMutate,
 			isPending: false,
@@ -58,6 +58,7 @@ describe('Base QuickMove widget', () => {
 		} as never)
 
 		renderSubject()
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/base refused quick setPower/iu)).toBeInTheDocument()
 	})

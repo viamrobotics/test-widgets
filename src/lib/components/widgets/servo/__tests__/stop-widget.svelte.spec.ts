@@ -38,7 +38,7 @@ describe('Servo Stop widget', () => {
 		expect(stopMutate).toHaveBeenCalledWith([])
 	})
 
-	it('shows the stop error below the button', () => {
+	it('shows the stop error in the section error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: stopMutate,
 			isPending: false,
@@ -46,6 +46,8 @@ describe('Servo Stop widget', () => {
 		} as never)
 
 		renderSubject()
+
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/servo refused to stop/iu)).toBeInTheDocument()
 	})

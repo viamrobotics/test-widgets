@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CurrentReading from './current-reading.svelte'
 
@@ -24,12 +25,13 @@
 </script>
 
 <ApiSection
-	title="GetCurrent"
-	class="grow"
+	method="GetCurrent"
+	api={ResourceTriplets.PowerSensor}
+	class="grow flex-col gap-4"
 >
 	<Query
 		{query}
-		contentCx="h-6"
+		class="h-6"
 	>
 		{#if query.data !== undefined}
 			<CurrentReading data={query.data} />

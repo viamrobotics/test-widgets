@@ -42,7 +42,7 @@ describe('Gripper Open widget', () => {
 		expect(openMutate).toHaveBeenCalledWith([], {})
 	})
 
-	it('shows the open error below the button', () => {
+	it('shows the open error in the section error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: openMutate,
 			isPending: false,
@@ -50,6 +50,8 @@ describe('Gripper Open widget', () => {
 		} as never)
 
 		renderSubject()
+
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/gripper refused to open/iu)).toBeInTheDocument()
 	})

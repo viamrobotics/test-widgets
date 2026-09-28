@@ -2,7 +2,7 @@
 	import { BaseClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationSection from '$lib/components/mutation-section.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Spin from './spin.svelte'
@@ -23,15 +23,18 @@
 	const spinMutation = createResourceMutation(client, 'spin')
 </script>
 
-<MutationSection
-	title="Spin"
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="Spin"
 	api={ResourceTriplets.Base}
-	description="Turn to a given angle at a given velocity"
 	lastError={spinMutation.error}
 >
-	<Spin
-		spin={(angleDeg: number, degsPerSec: number) => {
-			spinMutation.mutate([angleDeg, degsPerSec], {})
-		}}
-	/>
-</MutationSection>
+	{#snippet subheading()}Turn to a given angle at a given velocity{/snippet}
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<Spin
+			spin={(angleDeg: number, degsPerSec: number) => {
+				spinMutation.mutate([angleDeg, degsPerSec], {})
+			}}
+		/>
+	</div>
+</ApiSection>

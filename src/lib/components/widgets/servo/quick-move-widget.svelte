@@ -34,10 +34,9 @@
 	}
 </script>
 
-<ApiSection
-	title="Quick move"
-	bottomText="Press a button to execute"
->
+<ApiSection class="flex-col gap-4">
+	{#snippet heading()}Quick move{/snippet}
+	{#snippet description()}Press a button to execute{/snippet}
 	<Query query={positionQuery}>
 		{#if positionQuery.data !== undefined}
 			<QuickMove

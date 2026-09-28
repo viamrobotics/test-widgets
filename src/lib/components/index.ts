@@ -1,5 +1,7 @@
 export { default as ConnectionStatus } from './connection-status.svelte'
-export { default as SectionTitle } from './section-title.svelte'
+/** @deprecated Use SectionHeading. Slated for removal. */
+export { default as SectionTitle } from './section-heading.svelte'
+export { default as SectionHeading } from './section-heading.svelte'
 
 /** @todo rename this export to ArmApis when ArmControls is introduced. */
 export { default as ArmWidget } from './widgets/arm/arm-apis.svelte'

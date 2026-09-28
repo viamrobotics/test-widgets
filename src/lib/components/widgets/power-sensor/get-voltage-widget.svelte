@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import VoltageReading from './voltage-reading.svelte'
 
@@ -24,12 +25,13 @@
 </script>
 
 <ApiSection
-	title="GetVoltage"
-	class="grow"
+	method="GetVoltage"
+	api={ResourceTriplets.PowerSensor}
+	class="grow flex-col gap-4"
 >
 	<Query
 		{query}
-		contentCx="h-6"
+		class="h-6"
 	>
 		{#if query.data !== undefined}
 			<VoltageReading data={query.data} />

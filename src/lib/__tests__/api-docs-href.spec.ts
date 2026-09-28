@@ -1,32 +1,33 @@
 import { describe, expect, it } from 'vitest'
 
 import { apiDocsHref } from '../api-docs-href'
+import { ResourceTriplets } from '../resource-triplet'
 
 describe('apiDocsHref', () => {
 	it.each([
 		{
-			api: 'rdk:component:camera',
+			api: ResourceTriplets.Camera,
 			method: 'getPointCloud',
 			expected: 'https://docs.viam.com/reference/apis/components/camera/#getpointcloud',
 		},
 		{
-			api: 'rdk:service:slam',
+			api: ResourceTriplets.Slam,
 			method: 'getPosition',
 			expected: 'https://docs.viam.com/reference/apis/services/slam/#getposition',
 		},
 		{
 			// underscore subtype must hyphenate in the docs URL
-			api: 'rdk:component:movement_sensor',
+			api: ResourceTriplets.MovementSensor,
 			method: 'getReadings',
 			expected: 'https://docs.viam.com/reference/apis/components/movement-sensor/#getreadings',
 		},
 		{
-			api: 'rdk:component:power_sensor',
+			api: ResourceTriplets.PowerSensor,
 			method: 'getCurrent',
 			expected: 'https://docs.viam.com/reference/apis/components/power-sensor/#getcurrent',
 		},
 		{
-			api: 'rdk:component:generic',
+			api: ResourceTriplets.GenericComponent,
 			method: 'doCommand',
 			expected: 'https://docs.viam.com/reference/apis/components/generic/#docommand',
 		},
@@ -35,8 +36,8 @@ describe('apiDocsHref', () => {
 	})
 
 	it.each([
-		{ api: 'rdk:component:camera', method: 'getStatus' },
-		{ api: 'rdk:component:camera', method: 'getSourceNames' },
+		{ api: ResourceTriplets.Camera, method: 'getStatus' },
+		{ api: ResourceTriplets.Camera, method: 'getSourceNames' },
 	])('returns undefined for no-link method $method', ({ api, method }) => {
 		expect(apiDocsHref(api, method)).toBeUndefined()
 	})

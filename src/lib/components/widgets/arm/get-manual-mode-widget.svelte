@@ -5,6 +5,7 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
 		partID: string
@@ -23,10 +24,11 @@
 </script>
 
 <ApiSection
-	title="GetManualMode"
-	api="rdk:component:arm"
-	bottomText="Updates automatically"
+	method="GetManualMode"
+	api={ResourceTriplets.Arm}
+	class="flex-col gap-4"
 >
+	{#snippet description()}Updates automatically{/snippet}
 	<Query {query}>
 		<StatusPill
 			isActive={query.data ?? false}

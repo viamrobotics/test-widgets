@@ -49,7 +49,7 @@ describe('Base SetVelocity widget', () => {
 		)
 	})
 
-	it('shows the setVelocity error below the section', () => {
+	it('shows the setVelocity error in the section’s error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: setVelocityMutate,
 			isPending: false,
@@ -57,6 +57,7 @@ describe('Base SetVelocity widget', () => {
 		} as never)
 
 		renderSubject()
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/base refused setVelocity/iu)).toBeInTheDocument()
 	})

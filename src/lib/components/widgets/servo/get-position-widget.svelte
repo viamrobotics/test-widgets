@@ -26,10 +26,11 @@
 </script>
 
 <ApiSection
-	title="GetPosition"
+	method="GetPosition"
 	api={ResourceTriplets.Servo}
-	bottomText="Updates automatically"
+	class="flex-col gap-4"
 >
+	{#snippet description()}Updates automatically{/snippet}
 	<Query query={positionQuery}>
 		{#if positionQuery.data !== undefined}
 			<!-- span required to get unit closer to position reading -->

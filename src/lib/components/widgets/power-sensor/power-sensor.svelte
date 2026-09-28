@@ -10,6 +10,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CurrentReading from './current-reading.svelte'
 	import PowerReading from './power-reading.svelte'
@@ -66,13 +67,13 @@
 		<div class="@container">
 			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 				<ApiSection
-					title="GetCurrent"
-					api="rdk:component:power_sensor"
-					class="pb-5"
+					method="GetCurrent"
+					api={ResourceTriplets.PowerSensor}
+					class="flex-col gap-4 pb-5"
 				>
 					<Query
 						query={currentQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if currentQuery.data !== undefined}
 							<CurrentReading data={currentQuery.data} />
@@ -80,13 +81,13 @@
 					</Query>
 				</ApiSection>
 				<ApiSection
-					title="GetVoltage"
-					api="rdk:component:power_sensor"
-					class="pb-5"
+					method="GetVoltage"
+					api={ResourceTriplets.PowerSensor}
+					class="flex-col gap-4 pb-5"
 				>
 					<Query
 						query={voltageQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if voltageQuery.data !== undefined}
 							<VoltageReading data={voltageQuery.data} />
@@ -94,13 +95,13 @@
 					</Query>
 				</ApiSection>
 				<ApiSection
-					title="GetPower"
-					api="rdk:component:power_sensor"
-					class="pb-5"
+					method="GetPower"
+					api={ResourceTriplets.PowerSensor}
+					class="flex-col gap-4 pb-5"
 				>
 					<Query
 						query={powerQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if powerQuery.data !== undefined}
 							<PowerReading data={powerQuery.data} />
@@ -111,10 +112,11 @@
 		</div>
 
 		<ApiSection
-			title="GetReadings"
-			api="rdk:component:power_sensor"
-			description="Get all the measurements and data that this power sensor provides"
+			method="GetReadings"
+			api={ResourceTriplets.PowerSensor}
+			class="flex-col gap-4"
 		>
+			{#snippet subheading()}Get all the measurements and data that this power sensor provides{/snippet}
 			<Switch
 				bind:on={isGetReadingsEnabled}
 				cx="text-subtle-2"
@@ -127,7 +129,7 @@
 				>
 					<Query
 						query={readingsQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if readingsQuery.data !== undefined}
 							<ReadingsList data={readingsQuery.data} />

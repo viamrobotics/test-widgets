@@ -24,6 +24,7 @@
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
 	import SlamMap2D from '$lib/components/slam/map2d/index.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import type { PosePosition } from './pose'
 
@@ -180,7 +181,7 @@
 	{#snippet connected()}
 		<Query
 			query={propertiesQuery}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			{#if propertiesQuery.data?.cloudSlam}
 				<div class="p-4 text-sm">
@@ -202,12 +203,13 @@
 							</div>
 
 							<ApiSection
-								title="GetPosition"
-								api="rdk:service:slam"
+								class="flex-col gap-4"
+								method="GetPosition"
+								api={ResourceTriplets.Slam}
 							>
 								<Queries
 									queries={[propertiesQuery, positionQuery]}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position position={positionQuery.data} />
@@ -215,7 +217,8 @@
 								</Queries>
 							</ApiSection>
 
-							<ApiSection title="Motion">
+							<ApiSection class="flex-col gap-4">
+								{#snippet heading()}Motion{/snippet}
 								<Label>
 									Base name
 
@@ -247,7 +250,7 @@
 						<div class="flex w-full">
 							<Queries
 								queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
-								contentCx="p-4 h-auto"
+								class="h-auto p-4"
 							>
 								{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
 									<div class="h-80 w-full @2xl:h-full">

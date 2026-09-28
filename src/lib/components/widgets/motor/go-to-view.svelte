@@ -2,7 +2,8 @@
 	import { MotorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GoTo from './go-to.svelte'
 
@@ -26,6 +27,13 @@
 	}
 </script>
 
-<MutationView lastError={goToMutation.error}>
-	<GoTo {goTo} />
-</MutationView>
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="GoTo"
+	api={ResourceTriplets.Motor}
+	lastError={goToMutation.error}
+>
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<GoTo {goTo} />
+	</div>
+</ApiSection>

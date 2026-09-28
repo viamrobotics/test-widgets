@@ -12,6 +12,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Queries from '$lib/components/queries.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import {
 		canPlanMotion,
@@ -98,12 +99,6 @@
 	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
 	const lastError = $derived(mode === 'motion' ? moveMutation.error : moveToPosMutation.error)
 
-	const description = $derived(
-		mode === 'motion'
-			? 'Pose is in the world frame, as required by the motion service.'
-			: 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.'
-	)
-
 	const handleModeInput = (event: CustomEvent<string>) => {
 		userChoice = event.detail === 'Motion service' ? 'motion' : 'direct'
 	}
@@ -123,9 +118,12 @@
 	}
 </script>
 
+{#snippet motionDescription()}Pose is in the world frame, as required by the motion service.{/snippet}
+
 <ApiSection
-	title="MoveToPosition"
-	api="rdk:component:arm"
+	method="MoveToPosition"
+	api={ResourceTriplets.Arm}
+	class="flex-col gap-4"
 >
 	<div class="flex flex-col gap-4">
 		{#if motionAvailable}
@@ -190,7 +188,7 @@
 						{endPosition}
 						{moveToPosition}
 						{lastError}
-						{description}
+						description={mode === 'motion' ? motionDescription : undefined}
 					/>
 				{/if}
 			{/key}

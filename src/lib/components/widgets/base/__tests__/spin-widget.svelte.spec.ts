@@ -43,7 +43,7 @@ describe('Base Spin widget', () => {
 		expect(spinMutate).toHaveBeenCalledWith([90, 45], {})
 	})
 
-	it('shows the spin error below the section', () => {
+	it('shows the spin error in the section’s error indicator', async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
 			mutate: spinMutate,
 			isPending: false,
@@ -51,6 +51,7 @@ describe('Base Spin widget', () => {
 		} as never)
 
 		renderSubject()
+		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/base refused spin/iu)).toBeInTheDocument()
 	})

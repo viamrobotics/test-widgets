@@ -8,13 +8,14 @@
 	import { untrack } from 'svelte'
 
 	import { assertExists } from '$lib/assert'
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ContentRect from '$lib/components/content-rect.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Progress from '$lib/components/progress.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 	import { usePip } from '$lib/pip/context.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
@@ -339,7 +340,7 @@
 {#if lastError}
 	<ContentRect
 		{contentRect}
-		cx="bg-medium/50 absolute flex h-64 w-80 max-w-full items-center justify-center"
+		class="bg-medium/50 absolute flex h-64 w-80 max-w-full items-center justify-center"
 	>
 		<ErrorDisplay
 			class="pb-4"
@@ -349,7 +350,7 @@
 {:else if isLive ? isStreamLoading : isLoading}
 	<ContentRect
 		{contentRect}
-		cx="absolute h-64 w-80 max-w-full"
+		class="absolute h-64 w-80 max-w-full"
 	>
 		<Progress />
 	</ContentRect>
@@ -398,13 +399,13 @@
 {/if}
 
 {#if showResolutionOptions && isLive}
-	<MutationSection
-		title="SetStreamOptions"
-		api="rdk:component:camera"
-		description="Change the resolution of the live stream video feed"
+	<ApiSection
+		class="-m-4 mt-4 flex-row flex-wrap gap-2"
+		method="SetStreamOptions"
+		api={ResourceTriplets.Camera}
 		lastError={resolutionMutation.error}
-		class="-m-4 mt-4"
 	>
+		{#snippet subheading()}Change the resolution of the live stream video feed{/snippet}
 		<div class="flex w-full flex-wrap justify-between gap-2">
 			<Label cx="max-w-[96px] gap-1 text-xs">
 				<span class="flex gap-1 whitespace-nowrap">
@@ -447,5 +448,5 @@
 				</Button>
 			</div>
 		</div>
-	</MutationSection>
+	</ApiSection>
 {/if}
