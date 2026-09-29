@@ -334,28 +334,27 @@
 	})
 </script>
 
-<!-- This breaks out of using the <Query> component
-  to merge live stream and TanStack query errors -->
-{#if lastError}
-	<ContentRect
-		{contentRect}
-		cx="bg-medium/50 absolute flex h-64 w-80 max-w-full items-center justify-center"
-	>
-		<ErrorDisplay
-			class="pb-4"
-			{lastError}
-		/>
-	</ContentRect>
-{:else if isLive ? isStreamLoading : isLoading}
-	<ContentRect
-		{contentRect}
-		cx="absolute h-64 w-80 max-w-full"
-	>
-		<Progress />
-	</ContentRect>
-{/if}
-
 <div class="relative">
+	<!-- This breaks out of using the <Query> component
+	  to merge live stream and TanStack query errors -->
+	{#if lastError}
+		<ContentRect
+			{contentRect}
+			cx="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+		>
+			<ErrorDisplay
+				class="pb-4"
+				{lastError}
+			/>
+		</ContentRect>
+	{:else if isLive ? isStreamLoading : isLoading}
+		<ContentRect
+			{contentRect}
+			cx="absolute top-0 left-0 h-64 w-80 max-w-full"
+		>
+			<Progress />
+		</ContentRect>
+	{/if}
 	<div
 		class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
 	>
