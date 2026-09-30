@@ -8,6 +8,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Webgamepad from './webgamepad.svelte'
 
@@ -55,7 +56,7 @@
 
 		<ApiSection
 			title="GetEvents"
-			api="rdk:component:input_controller"
+			api={ResourceTriplets.InputController}
 			class="relative"
 		>
 			<Query

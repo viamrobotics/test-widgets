@@ -15,6 +15,7 @@
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 	import { usePip } from '$lib/pip/context.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
@@ -399,7 +400,7 @@
 {#if showResolutionOptions && isLive}
 	<MutationSection
 		title="SetStreamOptions"
-		api="rdk:component:camera"
+		api={ResourceTriplets.Camera}
 		description="Change the resolution of the live stream video feed"
 		lastError={resolutionMutation.error}
 		class="-m-4 mt-4"

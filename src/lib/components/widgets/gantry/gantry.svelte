@@ -13,6 +13,7 @@
 	import Queries from '$lib/components/queries.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Home from './home.svelte'
 	import MoveToPosition from './move-to-position.svelte'
@@ -58,7 +59,7 @@
 								id={positionHeadingID}
 							>
 								<a
-									href={apiDocsHref('rdk:component:gantry', 'getPosition')}
+									href={apiDocsHref(ResourceTriplets.Gantry, 'getPosition')}
 									target="_blank"
 									rel="noopener noreferrer external"
 									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
@@ -67,7 +68,7 @@
 								</a>
 								and
 								<a
-									href={apiDocsHref('rdk:component:gantry', 'getLengths')}
+									href={apiDocsHref(ResourceTriplets.Gantry, 'getLengths')}
 									target="_blank"
 									rel="noopener noreferrer external"
 									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
@@ -88,7 +89,7 @@
 						</ApiSection>
 						<ApiSection
 							title="MoveToPosition"
-							api="rdk:component:gantry"
+							api={ResourceTriplets.Gantry}
 						>
 							<Query query={positionQuery}>
 								{@const positions = positionQuery.data}
@@ -126,7 +127,7 @@
 							</ApiSection>
 							<ApiSection
 								title="Home"
-								api="rdk:component:gantry"
+								api={ResourceTriplets.Gantry}
 								description="Run the homing sequence"
 							>
 								<Home
@@ -140,7 +141,7 @@
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
 						title="Stop"
-						api="rdk:component:gantry"
+						api={ResourceTriplets.Gantry}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -151,7 +152,7 @@
 					</ApiSection>
 					<IsMoving
 						client={GantryClient}
-						api="rdk:component:gantry"
+						api={ResourceTriplets.Gantry}
 						{partID}
 						{resourceName}
 					/>

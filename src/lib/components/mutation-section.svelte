@@ -3,6 +3,8 @@
 
 	import { twMerge } from 'tailwind-merge'
 
+	import type { ResourceTriplet } from '$lib/resource-triplet'
+
 	import Boundary from './boundary.svelte'
 	import ErrorDisplay from './error.svelte'
 	import SectionTitle from './section-title.svelte'
@@ -13,7 +15,7 @@
 		description?: string | undefined
 		lastError: Error | null
 		/** RDK API string; presence renders the title as a linked monospace method name */
-		api?: string | undefined
+		api?: ResourceTriplet | undefined
 		class?: string
 		titleInput?: Snippet
 		error?: Snippet

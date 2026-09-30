@@ -11,6 +11,7 @@
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
@@ -65,7 +66,7 @@
 				>
 					<ApiSection
 						title="GetJointPositions"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 						bottomText="Updates automatically"
 					>
 						<Query query={jointPositionsQuery}>
@@ -76,7 +77,7 @@
 					</ApiSection>
 					<ApiSection
 						title="MoveToJointPositions"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<Query query={jointPositionsQuery}>
 							{#if jointPositionsQuery.data}
@@ -92,7 +93,7 @@
 					</ApiSection>
 					<ApiSection
 						title="MoveToPosition"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<MoveToPositionControl
 							{partID}
@@ -107,7 +108,7 @@
 				>
 					<ApiSection
 						title="Stop"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -118,7 +119,7 @@
 					</ApiSection>
 					<IsMoving
 						client={ArmClient}
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 						{partID}
 						{resourceName}
 					/>

@@ -10,8 +10,7 @@
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import SectionTitle from '$lib/components/section-title.svelte'
-
-	const MS_API = 'rdk:component:movement_sensor'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Accuracy from './accuracy.svelte'
 	import CompassHeading from './compass-heading.svelte'
@@ -110,7 +109,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetPosition"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								/>
 								<Query
 									query={positionQuery}
@@ -127,7 +126,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetOrientation"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
@@ -147,7 +146,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetCompassHeading"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
@@ -169,7 +168,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetAngularVelocity"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
 										>{/snippet}
@@ -189,7 +188,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetLinearVelocity"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
 										>{/snippet}
@@ -209,7 +208,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetLinearAcceleration"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
 											>(m/s<sup>2</sup>)</span
@@ -229,7 +228,7 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetAccuracy"
-								api={MS_API}
+								api={ResourceTriplets.MovementSensor}
 							/>
 							<Query
 								query={accuracyQuery}
@@ -259,7 +258,7 @@
 			<div class="flex flex-col gap-0.5">
 				<SectionTitle
 					title="GetReadings"
-					api={MS_API}
+					api={ResourceTriplets.MovementSensor}
 					headingId={headingID}
 				/>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>

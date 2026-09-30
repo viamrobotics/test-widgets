@@ -3,6 +3,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import FrameSelect from './frame-select.svelte'
 	import { movableFrameNames, parentFrame, referenceFrameNames } from './frame-system-config'
@@ -34,7 +35,7 @@
 	{#snippet connected()}
 		<ApiSection
 			title="Move"
-			api="rdk:service:motion"
+			api={ResourceTriplets.Motion}
 		>
 			<div class="flex min-w-0 flex-col gap-4">
 				<FrameSelect

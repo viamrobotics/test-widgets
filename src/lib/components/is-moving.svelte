@@ -17,6 +17,8 @@
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
+	import type { ResourceTriplet } from '$lib/resource-triplet'
+
 	import ApiSection from './api-section.svelte'
 	import Query from './query.svelte'
 	import StatusPill from './status-pill.svelte'
@@ -33,7 +35,7 @@
 		client: Client
 		partID: string
 		resourceName: string
-		api: string
+		api: ResourceTriplet
 		children?: Snippet
 	}
 

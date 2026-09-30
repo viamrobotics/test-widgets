@@ -10,6 +10,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CurrentReading from './current-reading.svelte'
 	import PowerReading from './power-reading.svelte'
@@ -67,7 +68,7 @@
 			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 				<ApiSection
 					title="GetCurrent"
-					api="rdk:component:power_sensor"
+					api={ResourceTriplets.PowerSensor}
 					class="pb-5"
 				>
 					<Query
@@ -81,7 +82,7 @@
 				</ApiSection>
 				<ApiSection
 					title="GetVoltage"
-					api="rdk:component:power_sensor"
+					api={ResourceTriplets.PowerSensor}
 					class="pb-5"
 				>
 					<Query
@@ -95,7 +96,7 @@
 				</ApiSection>
 				<ApiSection
 					title="GetPower"
-					api="rdk:component:power_sensor"
+					api={ResourceTriplets.PowerSensor}
 					class="pb-5"
 				>
 					<Query
@@ -112,7 +113,7 @@
 
 		<ApiSection
 			title="GetReadings"
-			api="rdk:component:power_sensor"
+			api={ResourceTriplets.PowerSensor}
 			description="Get all the measurements and data that this power sensor provides"
 		>
 			<Switch

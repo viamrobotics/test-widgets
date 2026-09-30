@@ -2,6 +2,7 @@
 	import { ResourceName } from '@viamrobotics/sdk'
 
 	import SectionTitle from '$lib/components/section-title.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import DoCommand from '../do-command/do-command.svelte'
 
@@ -13,7 +14,9 @@
 
 	const { partID, resourceName, isComponent }: Props = $props()
 
-	const api = $derived(`rdk:${isComponent ? 'component' : 'service'}:generic`)
+	const api = $derived(
+		isComponent ? ResourceTriplets.GenericComponent : ResourceTriplets.GenericService
+	)
 
 	const genericResourceName = $derived<ResourceName>({
 		namespace: 'rdk',

@@ -15,6 +15,7 @@
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
 
@@ -135,7 +136,7 @@
 
 		<ApiSection
 			title="DiscoverResources"
-			api="rdk:service:discovery"
+			api={ResourceTriplets.Discovery}
 			class="relative"
 		>
 			<Query

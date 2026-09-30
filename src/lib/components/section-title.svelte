@@ -3,13 +3,15 @@
 
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
+	import type { ResourceTriplet } from '$lib/resource-triplet'
+
 	import { apiDocsHref } from '$lib/api-docs-href'
 
 	interface Props {
 		title: string
 		tooltip?: string | undefined
 		/** RDK API string, e.g. "rdk:component:camera". Required — SectionTitle is only for headers that map to an API method; the docs link is built from this plus the title. */
-		api: string
+		api: ResourceTriplet
 		/** Optional external ID for the <h3>; generated internally if omitted */
 		headingId?: string | undefined
 		/** Inline content rendered after the title inside the <h3> (e.g. unit labels) */

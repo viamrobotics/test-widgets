@@ -24,6 +24,7 @@
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
 	import SlamMap2D from '$lib/components/slam/map2d/index.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import type { PosePosition } from './pose'
 
@@ -203,7 +204,7 @@
 
 							<ApiSection
 								title="GetPosition"
-								api="rdk:service:slam"
+								api={ResourceTriplets.Slam}
 							>
 								<Queries
 									queries={[propertiesQuery, positionQuery]}

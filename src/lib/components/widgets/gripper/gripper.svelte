@@ -6,6 +6,7 @@
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Grab from './grab.svelte'
 	import IsHoldingSomething from './is-holding-something.svelte'
@@ -34,7 +35,7 @@
 				<span class="flex grow flex-wrap gap-4">
 					<ApiSection
 						title="Open"
-						api="rdk:component:gripper"
+						api={ResourceTriplets.Gripper}
 						class="grow-0 gap-3 @xs:pr-0"
 					>
 						<Open
@@ -44,7 +45,7 @@
 					</ApiSection>
 					<ApiSection
 						title="Grab"
-						api="rdk:component:gripper"
+						api={ResourceTriplets.Gripper}
 						class="grow-0 gap-3 @xs:pl-0"
 					>
 						<Grab
@@ -56,7 +57,7 @@
 				<div class="flex flex-col divide-y">
 					<ApiSection
 						title="Stop"
-						api="rdk:component:gripper"
+						api={ResourceTriplets.Gripper}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -67,7 +68,7 @@
 					</ApiSection>
 					<IsMoving
 						client={GripperClient}
-						api="rdk:component:gripper"
+						api={ResourceTriplets.Gripper}
 						{partID}
 						{resourceName}
 					/>
