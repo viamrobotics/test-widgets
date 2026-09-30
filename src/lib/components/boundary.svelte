@@ -39,7 +39,9 @@
 				}}>{isErrorExpanded ? 'Hide' : 'Show'} error</button
 			>
 			{#if isErrorExpanded}
-				<pre class="font-mono text-xs text-wrap">{error instanceof Error ? error.stack ?? error.message : String(error)}</pre>
+				<pre class="font-mono text-xs text-wrap">{error instanceof Error
+						? (error.stack ?? error.message)
+						: String(error)}</pre>
 			{/if}
 		</div>
 	{/snippet}
