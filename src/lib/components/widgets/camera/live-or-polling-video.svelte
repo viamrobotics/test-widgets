@@ -341,7 +341,7 @@
 	{#if lastError}
 		<ContentRect
 			{contentRect}
-			cx="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+			class="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
 		>
 			<ErrorDisplay
 				class="pb-4"
@@ -351,7 +351,7 @@
 	{:else if isLive ? isStreamLoading : isLoading}
 		<ContentRect
 			{contentRect}
-			cx="absolute top-0 left-0 h-64 w-80 max-w-full"
+			class="absolute top-0 left-0 h-64 w-80 max-w-full"
 		>
 			<Progress />
 		</ContentRect>

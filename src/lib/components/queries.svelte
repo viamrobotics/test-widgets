@@ -60,12 +60,14 @@
 	})
 
 	const isLoading = $derived(queries.some((query) => query.isLoading))
+	// A caller's class sets the placeholder height, so it replaces ContentRect's default `h-full`.
+	const contentRectClass = $derived(['w-full', classNames ?? 'h-full'])
 </script>
 
 {#if errors.length > 0}
 	<ContentRect
 		{contentRect}
-		class={classNames}
+		class={contentRectClass}
 	>
 		{#each errors as error (errorKey(error))}
 			<ErrorDisplay lastError={error} />
@@ -74,7 +76,7 @@
 {:else if isLoading}
 	<ContentRect
 		{contentRect}
-		class={classNames}
+		class={contentRectClass}
 	>
 		<Progress />
 	</ContentRect>

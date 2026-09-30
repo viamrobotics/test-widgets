@@ -8,11 +8,11 @@
 		children?: Snippet
 	}
 
-	const { contentRect, class: classNames = 'h-full', children }: Props = $props()
+	const { contentRect, class: classNames = 'h-full w-full', children }: Props = $props()
 </script>
 
 <div
-	class={['w-full', classNames]}
+	class={classNames}
 	style:width={contentRect ? `${contentRect.width.toString()}px` : undefined}
 	style:height={contentRect ? `${contentRect.height.toString()}px` : undefined}
 >

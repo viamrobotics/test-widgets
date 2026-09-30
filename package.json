@@ -288,6 +288,7 @@
 		"svelte": "^5.56.3",
 		"svelte-check": "^4.4.6",
 		"svelte-splitpanes": "^8.0.12",
+		"tailwind-merge": "^3.5.0",
 		"tailwindcss": "^4.2.4",
 		"three": "^0.183.2",
 		"threlte-uikit": "^2.0.0",
