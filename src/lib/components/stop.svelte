@@ -60,6 +60,6 @@
 		}}
 	/>
 
-	<!-- slot for additional actuation info Ex: Motor's IsPowered & GetPosition -->
+	<!-- snippet for additional actuation info Ex: Motor's IsPowered & GetPosition -->
 	{@render children?.()}
 </ApiSection>

@@ -37,7 +37,7 @@
 	<Boundary children={connected} />
 {:else if currentStatus === MachineConnectionEvent.CONNECTING}
 	{#if connecting}
-		{@render connecting()}
+		<Boundary children={connecting} />
 	{:else}
 		<div
 			class={twMerge(
@@ -51,7 +51,7 @@
 	{/if}
 {:else if currentStatus === MachineConnectionEvent.DISCONNECTED}
 	{#if disconnected}
-		{@render disconnected()}
+		<Boundary children={disconnected} />
 	{:else}
 		<div
 			class={twMerge(

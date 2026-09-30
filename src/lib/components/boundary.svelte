@@ -20,21 +20,26 @@
 	{@render children?.()}
 
 	{#snippet failed(error, reset)}
-		<div class="bg-extralight flex h-full w-full flex-col items-center justify-center gap-2 p-4">
+		<div
+			role="alert"
+			class="bg-extralight flex h-full w-full flex-col items-center justify-center gap-2 p-4"
+		>
 			<div>Something went wrong</div>
 			<button
 				class="text-disabled text-xs hover:underline"
+				type="button"
 				onclick={reset}>Try again</button
 			>
 			<button
 				class="text-disabled text-xs hover:underline"
+				type="button"
 				aria-expanded={isErrorExpanded}
 				onclick={() => {
 					isErrorExpanded = !isErrorExpanded
 				}}>{isErrorExpanded ? 'Hide' : 'Show'} error</button
 			>
 			{#if isErrorExpanded}
-				<pre class="font-mono text-xs text-wrap">{error}</pre>
+				<pre class="font-mono text-xs text-wrap">{error instanceof Error ? error.stack ?? error.message : String(error)}</pre>
 			{/if}
 		</div>
 	{/snippet}
