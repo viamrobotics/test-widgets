@@ -59,7 +59,7 @@
 		<ApiSection
 			title="SetManualMode"
 			api={ResourceTriplets.Arm}
-			class="grow"
+			class="grow flex-col gap-4"
 		>
 			<ManualMode
 				isManualMode={manualModeQuery.data ?? false}

@@ -65,6 +65,7 @@
 					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
 				>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="GetJointPositions"
 						api={ResourceTriplets.Arm}
 						bottomText="Updates automatically"
@@ -76,6 +77,7 @@
 						</Query>
 					</ApiSection>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="MoveToJointPositions"
 						api={ResourceTriplets.Arm}
 					>
@@ -92,6 +94,7 @@
 						</Query>
 					</ApiSection>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="MoveToPosition"
 						api={ResourceTriplets.Arm}
 					>
@@ -107,6 +110,7 @@
 					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
 				>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Arm}
 					>

@@ -137,11 +137,11 @@
 		<ApiSection
 			title="DiscoverResources"
 			api={ResourceTriplets.Discovery}
-			class="relative"
+			class="relative grow flex-col gap-4"
 		>
 			<Query
 				query={discoveryQuery}
-				contentCx="h-6"
+				class="h-6"
 			>
 				{#if discoveryQuery.data !== undefined}
 					<ResourcesList

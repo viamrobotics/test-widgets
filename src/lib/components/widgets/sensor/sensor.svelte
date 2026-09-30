@@ -46,11 +46,11 @@
 		<ApiSection
 			title="GetReadings"
 			api={ResourceTriplets.Sensor}
-			class="relative"
+			class="relative grow flex-col gap-4"
 		>
 			<Query
 				query={readingsQuery}
-				contentCx="h-6"
+				class="h-6"
 			>
 				{#if readingsQuery.data !== undefined}
 					<ReadingsList data={readingsQuery.data} />

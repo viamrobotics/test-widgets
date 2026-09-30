@@ -28,7 +28,7 @@
 <ApiSection
 	title="GetPosition"
 	bottomText="Updates automatically"
-	class="grow"
+	class="grow flex-col gap-4"
 >
 	<Queries queries={[positionQuery, lengthsQuery]}>
 		{@const positions = positionQuery.data}

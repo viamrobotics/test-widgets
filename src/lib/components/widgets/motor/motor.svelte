@@ -124,6 +124,7 @@
 
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Motor}
 					>
@@ -144,7 +145,7 @@
 							<ApiSection
 								title="IsPowered"
 								api={ResourceTriplets.Motor}
-								class="gap-3 p-0"
+								class="grow flex-col gap-3 p-0!"
 								tooltip="Returns whether or not the motor is running and the current portion of max power.
 
   Stepper motors will report ”true” if they are being powered while holding
@@ -167,7 +168,7 @@
 								<ApiSection
 									title="GetPosition"
 									api={ResourceTriplets.Motor}
-									class="gap-3 p-0"
+									class="grow flex-col gap-3 p-0!"
 									tooltip="Reports the position of an encoded motor in revolutions from zero/home."
 								>
 									<Query query={positionQuery}>

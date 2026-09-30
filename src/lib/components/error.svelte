@@ -1,11 +1,12 @@
 <script lang="ts">
+	import type { ClassValue } from 'svelte/elements'
+
 	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
-	import { twMerge } from 'tailwind-merge'
 
 	interface Props {
 		lastError: Error | null | undefined
 		id?: string
-		class?: string
+		class?: ClassValue
 	}
 
 	const defaultId = $props.id()
@@ -39,10 +40,10 @@
 	<div class="flex items-center justify-between gap-1">
 		<p
 			{id}
-			class={twMerge(
+			class={[
 				'font-roboto-mono text-danger-dark min-w-0 overflow-auto text-xs wrap-break-word',
-				className
-			)}
+				className,
+			]}
 		>
 			{errorText}
 		</p>

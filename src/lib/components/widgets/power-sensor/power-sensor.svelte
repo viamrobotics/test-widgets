@@ -69,11 +69,11 @@
 				<ApiSection
 					title="GetCurrent"
 					api={ResourceTriplets.PowerSensor}
-					class="pb-5"
+					class="grow flex-col gap-4 pb-5"
 				>
 					<Query
 						query={currentQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if currentQuery.data !== undefined}
 							<CurrentReading data={currentQuery.data} />
@@ -83,11 +83,11 @@
 				<ApiSection
 					title="GetVoltage"
 					api={ResourceTriplets.PowerSensor}
-					class="pb-5"
+					class="grow flex-col gap-4 pb-5"
 				>
 					<Query
 						query={voltageQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if voltageQuery.data !== undefined}
 							<VoltageReading data={voltageQuery.data} />
@@ -97,11 +97,11 @@
 				<ApiSection
 					title="GetPower"
 					api={ResourceTriplets.PowerSensor}
-					class="pb-5"
+					class="grow flex-col gap-4 pb-5"
 				>
 					<Query
 						query={powerQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if powerQuery.data !== undefined}
 							<PowerReading data={powerQuery.data} />
@@ -112,6 +112,7 @@
 		</div>
 
 		<ApiSection
+			class="grow flex-col gap-4"
 			title="GetReadings"
 			api={ResourceTriplets.PowerSensor}
 			description="Get all the measurements and data that this power sensor provides"
@@ -128,7 +129,7 @@
 				>
 					<Query
 						query={readingsQuery}
-						contentCx="h-6"
+						class="h-6"
 					>
 						{#if readingsQuery.data !== undefined}
 							<ReadingsList data={readingsQuery.data} />

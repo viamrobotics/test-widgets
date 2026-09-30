@@ -100,7 +100,7 @@
 
 		<Query
 			query={propertiesQuery}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			<div class="@container">
 				<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
@@ -113,7 +113,7 @@
 								/>
 								<Query
 									query={positionQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position data={positionQuery.data} />
@@ -133,7 +133,7 @@
 								</SectionTitle>
 								<Query
 									query={orientationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if orientationQuery.data !== undefined}
 										<Orientation data={orientationQuery.data} />
@@ -153,7 +153,7 @@
 								</SectionTitle>
 								<Query
 									query={compassHeadingQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if compassHeadingQuery.data !== undefined}
 										<CompassHeading data={compassHeadingQuery.data} />
@@ -175,7 +175,7 @@
 								</SectionTitle>
 								<Query
 									query={angularVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if angularVelocityQuery.data !== undefined}
 										<Vector3 data={angularVelocityQuery.data} />
@@ -195,7 +195,7 @@
 								</SectionTitle>
 								<Query
 									query={linearVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearVelocityQuery.data !== undefined}
 										<Vector3 data={linearVelocityQuery.data} />
@@ -216,7 +216,7 @@
 								</SectionTitle>
 								<Query
 									query={linearAccelerationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearAccelerationQuery.data !== undefined}
 										<Vector3 data={linearAccelerationQuery.data} />
@@ -232,7 +232,7 @@
 							/>
 							<Query
 								query={accuracyQuery}
-								contentCx="h-6"
+								class="h-6"
 							>
 								{#if accuracyQuery.data !== undefined}
 									<Accuracy data={accuracyQuery.data} />

@@ -33,7 +33,7 @@
 	title="IsHoldingSomething"
 	api={ResourceTriplets.Gripper}
 	bottomText="Updates automatically"
-	class="grow"
+	class="grow flex-col gap-4"
 >
 	<Query {query}>
 		<div class="flex items-center gap-2">

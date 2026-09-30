@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import type { HTMLAttributes } from 'svelte/elements'
-
-	import { twMerge } from 'tailwind-merge'
+	import type { ClassValue, HTMLAttributes } from 'svelte/elements'
 
 	import type { ResourceTriplet } from '$lib/resource-triplet'
 
@@ -16,7 +14,7 @@
 		bottomText?: string | undefined
 		/** RDK API string; presence renders the title as a linked monospace method name */
 		api?: ResourceTriplet | undefined
-		class?: string
+		class?: ClassValue
 		children?: Snippet
 	}
 
@@ -35,7 +33,7 @@
 </script>
 
 <section
-	class={twMerge('flex grow flex-col gap-4 p-4', className)}
+	class={['flex p-4', className]}
 	aria-labelledby={title ? headingID : undefined}
 	{...rest}
 >

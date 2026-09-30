@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { Snippet } from 'svelte'
+	import type { ClassValue } from 'svelte/elements'
 
 	import { useResizeObserver } from 'runed'
 
@@ -10,11 +11,11 @@
 
 	interface Props {
 		queries: QueryObserverResult[]
-		contentCx?: string
+		class?: ClassValue
 		children?: Snippet<[{ data: unknown[] }]>
 	}
 
-	const { queries, contentCx = '', children }: Props = $props()
+	const { queries, class: classNames, children }: Props = $props()
 
 	let el = $state.raw<HTMLDivElement>()
 	let contentRect = $state.raw<DOMRect>()
@@ -64,7 +65,7 @@
 {#if errors.length > 0}
 	<ContentRect
 		{contentRect}
-		cx={contentCx}
+		class={classNames}
 	>
 		{#each errors as error (errorKey(error))}
 			<ErrorDisplay lastError={error} />
@@ -73,7 +74,7 @@
 {:else if isLoading}
 	<ContentRect
 		{contentRect}
-		cx={contentCx}
+		class={classNames}
 	>
 		<Progress />
 	</ContentRect>

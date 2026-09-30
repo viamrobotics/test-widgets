@@ -16,10 +16,8 @@
 	const getButtonId = `${id}-get`
 </script>
 
-<PinSection
-	title="Read pin"
-	class="h-fit"
->
+<PinSection class="h-fit">
+	{#snippet title()}Read pin{/snippet}
 	<section
 		class="flex h-full max-h-18.5 w-full flex-col gap-1 p-3 text-xs"
 		aria-labelledby={sectionId}

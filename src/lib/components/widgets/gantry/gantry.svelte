@@ -51,6 +51,7 @@
 				<div class="@container grow">
 					<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 						<ApiSection
+							class="grow flex-col gap-4"
 							bottomText="Updates automatically"
 							aria-labelledby={positionHeadingID}
 						>
@@ -88,6 +89,7 @@
 							</Queries>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="MoveToPosition"
 							api={ResourceTriplets.Gantry}
 						>
@@ -106,12 +108,13 @@
 						</ApiSection>
 						<div class="flex grow flex-col divide-y">
 							<ApiSection
+								class="grow flex-col gap-4"
 								title="Quick move"
 								bottomText="Press a button to execute"
 							>
 								<Query
 									query={positionQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{@const positions = positionQuery.data}
 									{#if positions !== undefined}
@@ -126,6 +129,7 @@
 								</Query>
 							</ApiSection>
 							<ApiSection
+								class="grow flex-col gap-4"
 								title="Home"
 								api={ResourceTriplets.Gantry}
 								description="Run the homing sequence"
@@ -140,6 +144,7 @@
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Gantry}
 					>

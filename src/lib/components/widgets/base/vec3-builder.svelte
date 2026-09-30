@@ -5,13 +5,14 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 -->
 <script lang="ts">
 	import type { Vector3 } from '@viamrobotics/sdk'
+	import type { Snippet } from 'svelte'
 
 	import { Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
-		title: string
+		title: Snippet
 		titleUnits?: string | undefined
 		titleTooltip?: string | undefined
 		vector: Vector3
@@ -41,7 +42,7 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 		class="bg-light flex flex-row place-content-center gap-1 px-2 py-1.5"
 		id={builderID}
 	>
-		{title}
+		{@render title()}
 		{#if titleUnits}
 			<abbr class="text-disabled">{titleUnits}</abbr>
 		{/if}

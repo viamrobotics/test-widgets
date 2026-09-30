@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { createRawSnippet } from 'svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../frame-select.svelte'
@@ -14,7 +15,12 @@ describe('Motion frame select', () => {
 	})
 
 	it('renders a placeholder plus an option per frame', () => {
-		render(Subject, { value: '', options, label: 'Component', onChange: vi.fn() })
+		render(Subject, {
+			value: '',
+			options,
+			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
+			onChange: vi.fn(),
+		})
 
 		expect(screen.getByRole('option', { name: /select a frame/iu })).toBeInTheDocument()
 		expect(screen.getByRole('option', { name: 'my-arm' })).toBeInTheDocument()
@@ -23,7 +29,12 @@ describe('Motion frame select', () => {
 
 	it('emits the selected frame name', async () => {
 		const onChange = vi.fn()
-		render(Subject, { value: '', options, label: 'Component', onChange })
+		render(Subject, {
+			value: '',
+			options,
+			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
+			onChange,
+		})
 
 		await user.selectOptions(screen.getByRole('combobox'), 'my-gripper')
 
@@ -31,7 +42,12 @@ describe('Motion frame select', () => {
 	})
 
 	it('reflects the current value as selected', () => {
-		render(Subject, { value: 'my-arm', options, label: 'Component', onChange: vi.fn() })
+		render(Subject, {
+			value: 'my-arm',
+			options,
+			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
+			onChange: vi.fn(),
+		})
 
 		expect(screen.getByRole('combobox')).toHaveValue('my-arm')
 	})

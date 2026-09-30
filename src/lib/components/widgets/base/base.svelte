@@ -86,6 +86,7 @@
 				</MutationSection>
 				<div class="flex grow flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Base}
 					>

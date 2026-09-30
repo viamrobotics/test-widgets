@@ -60,9 +60,11 @@
 		onPoseChange={(next) => {
 			edit = { key: editKey, pose: next }
 		}}
-		title="Destination pose"
-		description="The target pose expressed in the selected reference frame. Translations are in millimeters."
-	/>
+	>
+		{#snippet title()}Destination pose{/snippet}
+		{#snippet description()}The target pose expressed in the selected reference frame. Translations
+			are in millimeters.{/snippet}
+	</PoseEditor>
 
 	<div class="flex flex-col gap-2">
 		<span class="flex flex-row gap-2">

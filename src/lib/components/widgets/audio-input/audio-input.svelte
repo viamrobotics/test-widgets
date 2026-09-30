@@ -136,11 +136,11 @@
 						title="GetProperties"
 						api={ResourceTriplets.AudioInput}
 						description="Audio input properties"
-						class="relative"
+						class="relative grow flex-col gap-4"
 					>
 						<Query
 							query={propertiesQuery}
-							contentCx="h-6"
+							class="h-6"
 						>
 							{#if propertiesQuery.data !== undefined}
 								<Properties

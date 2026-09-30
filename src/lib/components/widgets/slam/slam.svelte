@@ -181,7 +181,7 @@
 	{#snippet connected()}
 		<Query
 			query={propertiesQuery}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			{#if propertiesQuery.data?.cloudSlam}
 				<div class="p-4 text-sm">
@@ -203,12 +203,13 @@
 							</div>
 
 							<ApiSection
+								class="grow flex-col gap-4"
 								title="GetPosition"
 								api={ResourceTriplets.Slam}
 							>
 								<Queries
 									queries={[propertiesQuery, positionQuery]}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position position={positionQuery.data} />
@@ -216,7 +217,10 @@
 								</Queries>
 							</ApiSection>
 
-							<ApiSection title="Motion">
+							<ApiSection
+								class="grow flex-col gap-4"
+								title="Motion"
+							>
 								<Label>
 									Base name
 
@@ -248,7 +252,7 @@
 						<div class="flex w-full">
 							<Queries
 								queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
-								contentCx="p-4 h-auto"
+								class="h-auto p-4"
 							>
 								{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
 									<div class="h-80 w-full @2xl:h-full">

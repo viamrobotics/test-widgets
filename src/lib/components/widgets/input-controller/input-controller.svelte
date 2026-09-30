@@ -57,11 +57,11 @@
 		<ApiSection
 			title="GetEvents"
 			api={ResourceTriplets.InputController}
-			class="relative"
+			class="relative grow flex-col gap-4"
 		>
 			<Query
 				query={eventsQuery}
-				contentCx="h-4"
+				class="h-4"
 			>
 				{#if eventsQuery.data !== undefined}
 					<ReadingsList

@@ -1,19 +1,18 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-
-	import { twMerge } from 'tailwind-merge'
+	import type { ClassValue } from 'svelte/elements'
 
 	interface Props {
 		contentRect: DOMRect | undefined
-		cx?: string
+		class?: ClassValue
 		children?: Snippet
 	}
 
-	const { contentRect, cx = '', children }: Props = $props()
+	const { contentRect, class: classNames = 'h-full', children }: Props = $props()
 </script>
 
 <div
-	class={twMerge('h-full w-full', cx)}
+	class={['w-full', classNames]}
 	style:width={contentRect ? `${contentRect.width.toString()}px` : undefined}
 	style:height={contentRect ? `${contentRect.height.toString()}px` : undefined}
 >

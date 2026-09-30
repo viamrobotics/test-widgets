@@ -34,12 +34,12 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<ApiSection
+			class="grow flex-col gap-4"
 			title="Move"
 			api={ResourceTriplets.Motion}
 		>
 			<div class="flex min-w-0 flex-col gap-4">
 				<FrameSelect
-					label="Component"
 					value={frameName}
 					options={frameNames}
 					onChange={(value) => {
@@ -47,15 +47,18 @@
 						// reset the destination to the newly selected frame's parent
 						selectedDestination = undefined
 					}}
-				/>
+				>
+					{#snippet label()}Component{/snippet}
+				</FrameSelect>
 				<FrameSelect
-					label="Destination frame"
 					value={destination}
 					options={destinationOptions}
 					onChange={(value) => {
 						selectedDestination = value
 					}}
-				/>
+				>
+					{#snippet label()}Destination frame{/snippet}
+				</FrameSelect>
 				<MoveWidget
 					{partID}
 					{resourceName}

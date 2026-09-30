@@ -68,7 +68,7 @@
 					title="GetPosition"
 					api={ResourceTriplets.Encoder}
 					tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
-					class="gap-3"
+					class="grow flex-col gap-3"
 				>
 					<Queries queries={[propertiesQuery, positionQuery]}>
 						{#if positionQuery.data !== undefined}
@@ -84,6 +84,7 @@
 				</ApiSection>
 
 				<ApiSection
+					class="grow flex-col gap-4"
 					title="ResetPosition"
 					api={ResourceTriplets.Encoder}
 					description="Set the current position as the new zero position"

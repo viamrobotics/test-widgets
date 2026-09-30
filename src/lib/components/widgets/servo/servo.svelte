@@ -54,6 +54,7 @@
 				<div class="@container grow">
 					<div class="grid grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="GetPosition"
 							api={ResourceTriplets.Servo}
 							bottomText="Updates automatically"
@@ -71,6 +72,7 @@
 							</Query>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="Move"
 							api={ResourceTriplets.Servo}
 						>
@@ -85,6 +87,7 @@
 							</Query>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="Quick move"
 							bottomText="Press a button to execute"
 						>
@@ -102,6 +105,7 @@
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Servo}
 					>

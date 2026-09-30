@@ -36,7 +36,7 @@
 					<ApiSection
 						title="Open"
 						api={ResourceTriplets.Gripper}
-						class="grow-0 gap-3 @xs:pr-0"
+						class="grow-0 flex-col gap-3 @xs:pr-0"
 					>
 						<Open
 							{partID}
@@ -46,7 +46,7 @@
 					<ApiSection
 						title="Grab"
 						api={ResourceTriplets.Gripper}
-						class="grow-0 gap-3 @xs:pl-0"
+						class="grow-0 flex-col gap-3 @xs:pl-0"
 					>
 						<Grab
 							{partID}
@@ -56,6 +56,7 @@
 				</span>
 				<div class="flex flex-col divide-y">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
 						api={ResourceTriplets.Gripper}
 					>
