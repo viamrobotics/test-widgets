@@ -4,6 +4,7 @@
 
 	import { twMerge } from 'tailwind-merge'
 
+	import Boundary from './boundary.svelte'
 	import SectionTitle from './section-title.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
@@ -59,7 +60,7 @@
 		</div>
 	{/if}
 
-	{@render children?.()}
+	<Boundary {children} />
 
 	{#if bottomText}
 		<p class="text-subtle-2 mt-auto text-xs">{bottomText}</p>
