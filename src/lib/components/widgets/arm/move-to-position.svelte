@@ -29,7 +29,7 @@
 	import PoseEditor from '$lib/components/pose-editor.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
 
-	import { EditedTargets } from './edited-targets.svelte'
+	import { useEditedTargets } from './use-edited-targets.svelte'
 
 	interface Props {
 		endPosition: Pose
@@ -47,7 +47,7 @@
 		description: customDescription,
 	}: Props = $props()
 
-	const targets = new EditedTargets<PoseKey>(
+	const targets = useEditedTargets<PoseKey>(
 		(key) => endPosition[key],
 		(key) => DRIFT_THRESHOLDS[key]
 	)
@@ -97,7 +97,7 @@
 		}}
 		description={customDescription ?? poseDescription}
 	>
-		{#snippet title()}Pose Values{/snippet}
+		{#snippet heading()}Pose Values{/snippet}
 	</PoseEditor>
 
 	<div class="mb-2 flex flex-col gap-2">

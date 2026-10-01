@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { EditedTargets } from '../edited-targets.svelte'
+import { useEditedTargets } from '../use-edited-targets.svelte'
 
 const DRIFT_THRESHOLD = 1
 
 const createTargets = (live: number[]) =>
-	new EditedTargets<number>(
+	useEditedTargets<number>(
 		(index) => live[index] ?? 0,
 		() => DRIFT_THRESHOLD
 	)
 
-describe('EditedTargets', () => {
+describe('useEditedTargets', () => {
 	it('follows the live value until a field is edited', () => {
 		const live = [10, 20]
 		const targets = createTargets(live)

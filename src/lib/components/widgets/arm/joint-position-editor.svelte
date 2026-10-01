@@ -5,18 +5,16 @@
 	import Table from '$lib/components/table.svelte'
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
-	import type { EditedTargets } from './edited-targets.svelte'
+	import type { EditedTargets } from './use-edited-targets.svelte'
 
 	import { type JointLimit } from './joint-position-limits'
 	import JointPositionSlider from './joint-position-slider.svelte'
 
 	interface Props {
-		/** Each joint's target in degrees, keyed by joint index. */
 		targets: EditedTargets<number>
 		positions: number[]
 		jointLimitsDegrees: JointLimit[]
 		useRadians: boolean
-		/** Sends the move. Rejects when it fails. */
 		moveToJointPositions: (jointPositions: number[]) => Promise<void>
 		isMoving?: boolean
 	}

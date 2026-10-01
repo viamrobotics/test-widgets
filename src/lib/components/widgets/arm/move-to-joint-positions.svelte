@@ -7,10 +7,10 @@
 	import PasteButton from '$lib/components/paste-button.svelte'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
-	import { EditedTargets } from './edited-targets.svelte'
 	import JointPositionEditor from './joint-position-editor.svelte'
 	import JointPositionJogging from './joint-position-jogging.svelte'
 	import { type JointLimit } from './joint-position-limits'
+	import { useEditedTargets } from './use-edited-targets.svelte'
 
 	type ControlMode = 'Jogging' | 'Joint Positions'
 
@@ -36,7 +36,7 @@
 		isMoving = false,
 	}: Props = $props()
 
-	const targets = new EditedTargets<number>(
+	const targets = useEditedTargets<number>(
 		(index) => positions[index] ?? 0,
 		() => JOINT_DRIFT_DEGREES
 	)

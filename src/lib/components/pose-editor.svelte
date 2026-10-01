@@ -15,10 +15,8 @@
 	]
 
 	export interface PoseFieldStatus {
-		/** The live value, in degrees for theta. */
 		current: number
 		isEdited: boolean
-		/** How far the live value moved since the field was last edited, once past the drift threshold. */
 		drift: number | undefined
 		isMoving: boolean
 	}
@@ -39,18 +37,14 @@
 
 	interface Props {
 		pose: Pose
+		heading: Snippet
 		onPoseChange: (pose: Pose) => void
-		/** Heading shown above the input table. */
-		title: Snippet
-		/** Optional info-tooltip content shown next to the title. */
 		description?: Snippet
-		/** Live tracking per field. Omit for a plain editor with no current values. */
 		fieldStatus?: (key: keyof Pose) => PoseFieldStatus
-		/** Returns an edited field to the live value. Shown only alongside `fieldStatus`. */
 		onFieldReset?: (key: keyof Pose) => void
 	}
 
-	const { pose, title, description, fieldStatus, onFieldReset, onPoseChange }: Props = $props()
+	const { pose, heading, description, fieldStatus, onFieldReset, onPoseChange }: Props = $props()
 
 	let useRadians = $state(false)
 
@@ -115,7 +109,7 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
-			{@render title()}
+			{@render heading()}
 			{#if description}
 				<Tooltip>
 					<Icon
