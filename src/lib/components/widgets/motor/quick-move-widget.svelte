@@ -2,7 +2,8 @@
 	import { MotorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -22,10 +23,17 @@
 	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
 </script>
 
-<MutationView lastError={quickSetPowerMutation.error}>
-	<QuickMove
-		setPower={(val) => {
-			quickSetPowerMutation.mutate([val], {})
-		}}
-	/>
-</MutationView>
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="SetPower"
+	api={ResourceTriplets.Motor}
+	mutations={[quickSetPowerMutation]}
+>
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<QuickMove
+			setPower={(val) => {
+				quickSetPowerMutation.mutate([val], {})
+			}}
+		/>
+	</div>
+</ApiSection>

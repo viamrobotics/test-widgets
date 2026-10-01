@@ -135,7 +135,7 @@
 		</div>
 
 		<ApiSection
-			title="DiscoverResources"
+			method="DiscoverResources"
 			api={ResourceTriplets.Discovery}
 			class="relative grow flex-col gap-4"
 		>

@@ -10,6 +10,8 @@
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { ResourceTriplets } from '$lib/resource-triplet'
@@ -38,6 +40,8 @@
 	const quickMoveMutation = createResourceMutation(client, 'move')
 	const stopMutation = createResourceMutation(client, 'stop')
 
+	const quickMoveErrors = useSectionErrors(() => ({ mutations: [quickMoveMutation] }))
+
 	const moveTo = (angle: number) => {
 		moveMutation.mutate([angle], {})
 	}
@@ -55,9 +59,8 @@
 					<div class="grid grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 						<ApiSection
 							class="grow flex-col gap-4"
-							title="GetPosition"
+							method="GetPosition"
 							api={ResourceTriplets.Servo}
-							bottomText="Updates automatically"
 						>
 							<Query query={positionQuery}>
 								{#if positionQuery.data !== undefined}
@@ -70,10 +73,11 @@
 									</span>
 								{/if}
 							</Query>
+							<Section.Text class="mt-auto">Updates automatically</Section.Text>
 						</ApiSection>
 						<ApiSection
 							class="grow flex-col gap-4"
-							title="Move"
+							method="Move"
 							api={ResourceTriplets.Servo}
 						>
 							<Query query={positionQuery}>
@@ -86,31 +90,38 @@
 								{/if}
 							</Query>
 						</ApiSection>
-						<ApiSection
-							class="grow flex-col gap-4"
-							title="Quick move"
-							bottomText="Press a button to execute"
-						>
-							<Query query={positionQuery}>
-								{#if positionQuery.data !== undefined}
-									<QuickMove
-										currentPosition={positionQuery.data}
-										moveTo={quickMoveTo}
-										lastError={quickMoveMutation.error}
-									/>
-								{/if}
-							</Query>
-						</ApiSection>
+						<Section class="grow flex-col gap-4">
+							<div class="flex flex-col gap-0.5">
+								<Section.Heading>
+									Quick move
+									{#snippet aside()}
+										<Section.Errors errors={quickMoveErrors.errors} />
+									{/snippet}
+								</Section.Heading>
+							</div>
+							<Section.Body>
+								<Query query={positionQuery}>
+									{#if positionQuery.data !== undefined}
+										<QuickMove
+											currentPosition={positionQuery.data}
+											moveTo={quickMoveTo}
+											lastError={quickMoveMutation.error}
+										/>
+									{/if}
+								</Query>
+								<Section.Text class="mt-auto">Press a button to execute</Section.Text>
+							</Section.Body>
+						</Section>
 					</div>
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="Stop"
+						method="Stop"
 						api={ResourceTriplets.Servo}
+						mutations={[stopMutation]}
 					>
 						<StopButton
-							error={stopMutation.error}
 							onStop={() => {
 								stopMutation.mutate([])
 							}}
