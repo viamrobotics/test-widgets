@@ -61,7 +61,7 @@
 			edit = { key: editKey, pose: next }
 		}}
 	>
-		{#snippet title()}Destination pose{/snippet}
+		{#snippet heading()}Destination pose{/snippet}
 		{#snippet description()}The target pose expressed in the selected reference frame. Translations
 			are in millimeters.{/snippet}
 	</PoseEditor>

@@ -1,7 +1,7 @@
 import type { Pose } from '@viamrobotics/sdk'
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -133,6 +133,84 @@ describe('Arm move-to-position', () => {
 		expect(
 			screen.getByText(/does not take into account the motion service or frame system/iu)
 		).toBeInTheDocument()
+	})
+
+	const editX = async (value: string) => {
+		const xInput = screen.getAllByRole('spinbutton')[0]
+		assertExists(xInput, 'Expected a position input')
+		await user.clear(xInput)
+		await user.type(xInput, value)
+		await user.tab()
+		return xInput
+	}
+
+	it('follows the live pose in fields the user has not edited', async () => {
+		const { rerender } = renderSubject({})
+
+		await rerender({ endPosition: { ...defaultPose, x: 50 } })
+
+		expect(screen.getAllByRole('spinbutton')[0]).toHaveValue(50)
+	})
+
+	it('shows the current value under each field', async () => {
+		const { rerender } = renderSubject({})
+
+		await rerender({ endPosition: { ...defaultPose, x: 50 } })
+
+		expect(screen.getByText(/current 50(\.0+)?$/iu)).toBeInTheDocument()
+	})
+
+	it('keeps an edited value when a poll returns a new pose', async () => {
+		const { rerender } = renderSubject({})
+		const xInput = await editX('42')
+
+		await rerender({ endPosition: { ...defaultPose, x: 1.5 } })
+
+		expect(xInput).toHaveValue(42)
+		expect(screen.queryByText(/arm moved/iu)).not.toBeInTheDocument()
+	})
+
+	it('flags an edited field once the arm drifts past the threshold', async () => {
+		const { rerender } = renderSubject({})
+		const xInput = await editX('42')
+
+		await rerender({ endPosition: { ...defaultPose, x: 10 } })
+
+		expect(xInput).toHaveValue(42)
+		const message = screen.getByText(/arm moved 9(\.0+)? mm since you edited x/iu)
+		expect(xInput).toHaveAttribute('aria-describedby', message.closest('[role="tooltip"]')?.id)
+	})
+
+	it('resets one edited field to the live value', async () => {
+		renderSubject({})
+		const xInput = await editX('42')
+
+		await user.click(screen.getByRole('button', { name: /reset x to current/iu }))
+
+		expect(xInput).toHaveValue(1)
+		expect(screen.queryByRole('button', { name: /reset x to current/iu })).not.toBeInTheDocument()
+	})
+
+	it('keeps fields editable but locks Execute while the arm moves', async () => {
+		const { rerender } = renderSubject({})
+		await editX('42')
+
+		await rerender({ isMoving: true })
+
+		for (const input of screen.getAllByRole('spinbutton')) {
+			expect(input).toBeEnabled()
+		}
+		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
+		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
+	})
+
+	it('marks only edited fields while the arm moves', async () => {
+		const { rerender } = renderSubject({})
+		await editX('42')
+
+		await rerender({ isMoving: true })
+
+		expect(screen.getAllByText(/the arm is moving/iu)).toHaveLength(1)
 	})
 
 	it('displays the provided error', () => {

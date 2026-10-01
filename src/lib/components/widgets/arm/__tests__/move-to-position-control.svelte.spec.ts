@@ -1,6 +1,6 @@
 import type { Pose } from '@viamrobotics/sdk'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MotionClient } from '@viamrobotics/sdk'
 import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
@@ -15,14 +15,18 @@ interface PollOptions {
 	refetchInterval?: number
 }
 
-const { moveMutate, moveToPositionMutate, robotQueryOptions, properties } = vi.hoisted(() => ({
-	moveMutate: vi.fn(),
-	moveToPositionMutate: vi.fn(),
-	robotQueryOptions: new Map<string, unknown>(),
-	// Mutable so a test can flip supportCartesianCommands; undefined by default
-	// so existing tests behave as before (Arm mode available).
-	properties: { current: undefined as { supportCartesianCommands: boolean } | undefined },
-}))
+const { moveMutate, moveToPositionMutate, robotQueryOptions, properties, movePending } = vi.hoisted(
+	() => ({
+		moveMutate: vi.fn(),
+		moveToPositionMutate: vi.fn(),
+		// Mutable so a test can hold a move in flight.
+		movePending: { current: false },
+		robotQueryOptions: new Map<string, unknown>(),
+		// Mutable so a test can flip supportCartesianCommands; undefined by default
+		// so existing tests behave as before (Arm mode available).
+		properties: { current: undefined as { supportCartesianCommands: boolean } | undefined },
+	})
+)
 
 /** The pose the motion service reports in the world frame. */
 const worldPose: Pose = {
@@ -57,7 +61,7 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
 	createResourceMutation: vi.fn((_client: unknown, method: string) => {
 		if (method === 'move') {
-			return { error: null, isPending: false, mutate: moveMutate }
+			return { error: null, isPending: movePending.current, mutate: moveMutate }
 		}
 		return { error: null, isPending: false, mutate: moveToPositionMutate }
 	}),
@@ -122,6 +126,7 @@ describe('MoveToPositionControl', () => {
 		moveToPositionMutate.mockClear()
 		robotQueryOptions.clear()
 		properties.current = undefined
+		movePending.current = false
 		mockMotionServiceNames([])
 		mockFrameSystem(['arm-1'])
 	})
@@ -181,6 +186,16 @@ describe('MoveToPositionControl', () => {
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
 		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 500 })
+	})
+
+	it('polls faster and locks the editor while a move is in flight', () => {
+		mockMotionServiceNames(['builtin'])
+		movePending.current = true
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 250 })
+		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
+		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
 	})
 
 	it('reseeds the pose editor from the newly active frame when the mode changes', async () => {

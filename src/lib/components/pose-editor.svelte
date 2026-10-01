@@ -13,12 +13,19 @@
 		['oZ', 'OZ'],
 		['theta', 'θ'],
 	]
+
+	export interface PoseFieldStatus {
+		current: number
+		isEdited: boolean
+		drift: number | undefined
+		isMoving: boolean
+	}
 </script>
 
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { Icon, IconButton, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
@@ -30,14 +37,14 @@
 
 	interface Props {
 		pose: Pose
+		heading: Snippet
 		onPoseChange: (pose: Pose) => void
-		/** Heading shown above the input table. */
-		title: Snippet
-		/** Optional info-tooltip content shown next to the title. */
 		description?: Snippet
+		fieldStatus?: (key: keyof Pose) => PoseFieldStatus
+		onFieldReset?: (key: keyof Pose) => void
 	}
 
-	const { pose, onPoseChange, title, description }: Props = $props()
+	const { pose, heading, description, fieldStatus, onFieldReset, onPoseChange }: Props = $props()
 
 	let useRadians = $state(false)
 
@@ -73,12 +80,36 @@
 		oZ: '',
 		theta: useRadians ? 'rad' : 'deg',
 	})
+
+	const toDisplay = (key: keyof Pose, value: number) =>
+		key === 'theta' && useRadians ? degreesToRadians(value) : value
+
+	interface StatusIndicator {
+		status: 'info' | 'warn'
+		message: string
+	}
+
+	const statusIndicator = (
+		key: keyof Pose,
+		label: string,
+		status: PoseFieldStatus | undefined
+	): StatusIndicator | undefined => {
+		if (status?.drift !== undefined) {
+			const unit = poseUnits[key] ? ` ${poseUnits[key]}` : ''
+			const amount = formatNumeric(toDisplay(key, status.drift))
+			return { status: 'warn', message: `Arm moved ${amount}${unit} since you edited ${label}.` }
+		}
+		if (status?.isEdited && status.isMoving) {
+			return { status: 'info', message: 'The arm is moving. Your edit is kept.' }
+		}
+		return undefined
+	}
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
-			{@render title()}
+			{@render heading()}
 			{#if description}
 				<Tooltip>
 					<Icon
@@ -113,6 +144,8 @@
 			{#each poseLabelsList as labelList (labelList)}
 				{@const [key, label] = labelList}
 				{@const value = Number.parseFloat(formatNumeric(displayPose[key]))}
+				{@const status = fieldStatus?.(key)}
+				{@const indicator = statusIndicator(key, label, status)}
 				<tr>
 					<th>
 						<span class="relative inline-flex justify-center">
@@ -121,13 +154,46 @@
 						</span>
 					</th>
 					<th>
-						<NumericInput
-							cx="max-w-[76px]"
-							{value}
-							on:change={(event) => {
-								handleValueChange(key, numberValueFromEvent(event) ?? 0)
-							}}
-						/>
+						<div class="flex flex-col items-center gap-1 pt-2">
+							<div class="relative w-24">
+								<Tooltip
+									state={indicator ? undefined : 'invisible'}
+									targetClass="block"
+									let:tooltipID
+								>
+									<NumericInput
+										cx={['max-w-24', indicator && 'pr-7']}
+										{value}
+										state={indicator?.status}
+										aria-label="{label} target"
+										aria-describedby={indicator ? tooltipID : undefined}
+										on:change={(event) => {
+											handleValueChange(key, numberValueFromEvent(event) ?? 0)
+										}}
+									/>
+									<span slot="description">{indicator?.message}</span>
+								</Tooltip>
+								{#if status?.isEdited && onFieldReset}
+									<span class="absolute top-1/2 left-full ml-1 -translate-y-1/2">
+										<Tooltip>
+											<IconButton
+												icon="backup-restore"
+												label="Reset {label} to current"
+												onclick={() => {
+													onFieldReset(key)
+												}}
+											/>
+											<span slot="description">Reset {label} to its current value</span>
+										</Tooltip>
+									</span>
+								{/if}
+							</div>
+							{#if status}
+								<span class="text-subtle-2 font-roboto-mono text-xs font-normal">
+									Current {formatNumeric(toDisplay(key, status.current))}
+								</span>
+							{/if}
+						</div>
 					</th>
 				</tr>
 			{/each}

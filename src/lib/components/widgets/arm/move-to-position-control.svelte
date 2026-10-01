@@ -19,6 +19,7 @@
 		moveMotionServiceName,
 	} from './move-control-mode'
 	import MoveToPosition from './move-to-position.svelte'
+	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
 
 	interface Props {
 		partID: string
@@ -27,8 +28,6 @@
 
 	const { partID, resourceName }: Props = $props()
 
-	// Both modes read the live pose back at this rate, so `Current position` is never stale.
-	const POSE_REFETCH_INTERVAL_MS = 500
 	const FRAME_SYSTEM_REFETCH_INTERVAL_MS = 5000
 
 	const motionServices = useResourceStatuses(() => partID, 'motion')
@@ -77,25 +76,30 @@
 		() => activeMotionServiceName ?? ''
 	)
 
-	// Pre-fill the editor with the arm's current pose, in the frame the active mode sends to.
-	const poseArgs = $derived<Parameters<RobotClient['getPose']>>([resourceName, 'world', []])
+	const moveMutation = createResourceMutation(motionClient, 'move')
+	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
+	const lastError = $derived(mode === 'motion' ? moveMutation.error : moveToPosMutation.error)
+
+	const motionTracking = useArmMotionTracking(armClient, {
+		isMovePending: () => moveMutation.isPending || moveToPosMutation.isPending,
+		refetchPosition: () => activeQuery.refetch(),
+	})
+	const refetchInterval = $derived(motionTracking.refetchInterval)
+
 	const poseQuery = createRobotQuery(
 		robotClient,
 		'getPose',
-		() => poseArgs,
-		() => ({ refetchInterval: POSE_REFETCH_INTERVAL_MS, enabled: mode === 'motion' })
+		() => [resourceName, 'world', []] satisfies Parameters<RobotClient['getPose']>,
+		() => ({ refetchInterval, enabled: mode === 'motion' })
 	)
+
 	const endPositionQuery = createResourceQuery(armClient, 'getEndPosition', () => ({
-		refetchInterval: POSE_REFETCH_INTERVAL_MS,
+		refetchInterval,
 		enabled: mode === 'direct',
 	}))
 
 	const activeQuery = $derived(mode === 'motion' ? poseQuery : endPositionQuery)
 	const endPosition = $derived(mode === 'motion' ? poseQuery.data?.pose : endPositionQuery.data)
-
-	const moveMutation = createResourceMutation(motionClient, 'move')
-	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
-	const lastError = $derived(mode === 'motion' ? moveMutation.error : moveToPosMutation.error)
 
 	const handleModeInput = (event: CustomEvent<string>) => {
 		userChoice = event.detail === 'Motion service' ? 'motion' : 'direct'
@@ -188,6 +192,7 @@
 					{endPosition}
 					{moveToPosition}
 					{lastError}
+					isMoving={motionTracking.isTracking}
 					{description}
 				/>
 			{/if}

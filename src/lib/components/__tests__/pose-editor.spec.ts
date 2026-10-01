@@ -25,7 +25,7 @@ describe('PoseEditor', () => {
 		render(Subject, {
 			pose: defaultPose,
 			onPoseChange: vi.fn(),
-			title: textSnippet('Pose'),
+			heading: textSnippet('Pose'),
 			...props,
 		})
 

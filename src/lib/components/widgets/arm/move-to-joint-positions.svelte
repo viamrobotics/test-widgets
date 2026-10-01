@@ -10,10 +10,14 @@
 	import JointPositionEditor from './joint-position-editor.svelte'
 	import JointPositionJogging from './joint-position-jogging.svelte'
 	import { type JointLimit } from './joint-position-limits'
+	import { useEditedTargets } from './use-edited-targets.svelte'
 
 	type ControlMode = 'Jogging' | 'Joint Positions'
 
 	const CONTROL_MODES: ControlMode[] = ['Jogging', 'Joint Positions']
+
+	// Tight enough to catch a real move, loose enough to ignore encoder noise.
+	const JOINT_DRIFT_DEGREES = 0.5
 
 	interface Props {
 		positions: number[]
@@ -32,8 +36,11 @@
 		isMoving = false,
 	}: Props = $props()
 
-	// svelte-ignore state_referenced_locally
-	let desiredPositions = $state([...positions]) // in degrees
+	const targets = useEditedTargets<number>(
+		(index) => positions[index] ?? 0,
+		() => JOINT_DRIFT_DEGREES
+	)
+	const desiredPositions = $derived(positions.map((_, index) => targets.target(index))) // in degrees
 	let useRadians = $state(false)
 	let controlMode = $state<ControlMode>('Jogging')
 
@@ -57,10 +64,10 @@
 	const handlePaste = (data: string): boolean => {
 		try {
 			const parsed = JSON.parse(data) as number[]
-			desiredPositions = parsed.map((pos, i) => {
+			for (const [index, pos] of parsed.slice(0, positions.length).entries()) {
 				const degrees = useRadians ? radiansToDegrees(pos) : pos
-				return Math.min(Math.max(degrees, getJointMin(i)), getJointMax(i))
-			})
+				targets.edit(index, Math.min(Math.max(degrees, getJointMin(index)), getJointMax(index)))
+			}
 		} catch {
 			return false
 		}
@@ -111,11 +118,12 @@
 		/>
 	{:else}
 		<JointPositionEditor
-			bind:desiredPositions
+			{targets}
 			{positions}
 			{moveToJointPositions}
 			{useRadians}
 			{jointLimitsDegrees}
+			{isMoving}
 		/>
 	{/if}
 
