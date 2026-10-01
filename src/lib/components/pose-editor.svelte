@@ -29,7 +29,6 @@
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
-	import FieldStatusButton from '$lib/components/field-status-button.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
@@ -161,22 +160,23 @@
 					<th>
 						<div class="flex flex-col items-center gap-1 pt-2">
 							<div class="relative w-24">
-								<NumericInput
-									cx={['max-w-24', indicator && 'pr-7']}
-									{value}
-									state={indicator?.status}
-									aria-label="{label} target"
-									on:change={(event) => {
-										handleValueChange(key, numberValueFromEvent(event) ?? 0)
-									}}
-								/>
-								{#if indicator}
-									<FieldStatusButton
-										status={indicator.status}
-										message={indicator.message}
-										overlay
+								<Tooltip
+									state={indicator ? undefined : 'invisible'}
+									targetClass="block"
+									let:tooltipID
+								>
+									<NumericInput
+										cx={['max-w-24', indicator && 'pr-7']}
+										{value}
+										state={indicator?.status}
+										aria-label="{label} target"
+										aria-describedby={indicator ? tooltipID : undefined}
+										on:change={(event) => {
+											handleValueChange(key, numberValueFromEvent(event) ?? 0)
+										}}
 									/>
-								{/if}
+									<span slot="description">{indicator?.message}</span>
+								</Tooltip>
 								{#if status?.isEdited && onFieldReset}
 									<span class="absolute top-1/2 left-full ml-1 -translate-y-1/2">
 										<Tooltip>

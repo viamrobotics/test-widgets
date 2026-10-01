@@ -1,7 +1,7 @@
 import type { Pose } from '@viamrobotics/sdk'
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -167,7 +167,7 @@ describe('Arm move-to-position', () => {
 		await rerender({ endPosition: { ...defaultPose, x: 1.5 } })
 
 		expect(xInput).toHaveValue(42)
-		expect(screen.queryByRole('button', { name: /arm moved/iu })).not.toBeInTheDocument()
+		expect(screen.queryByText(/arm moved/iu)).not.toBeInTheDocument()
 	})
 
 	it('flags an edited field once the arm drifts past the threshold', async () => {
@@ -177,9 +177,8 @@ describe('Arm move-to-position', () => {
 		await rerender({ endPosition: { ...defaultPose, x: 10 } })
 
 		expect(xInput).toHaveValue(42)
-		expect(
-			screen.getByRole('button', { name: /arm moved 9(\.0+)? mm since you edited x/iu })
-		).toBeInTheDocument()
+		const message = screen.getByText(/arm moved 9(\.0+)? mm since you edited x/iu)
+		expect(xInput).toHaveAttribute('aria-describedby', message.closest('[role="tooltip"]')?.id)
 	})
 
 	it('resets one edited field to the live value', async () => {
@@ -202,7 +201,7 @@ describe('Arm move-to-position', () => {
 			expect(input).toBeEnabled()
 		}
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(screen.getByRole('status')).toHaveTextContent(/arm is moving/iu)
+		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
 	})
 
 	it('marks only edited fields while the arm moves', async () => {
@@ -211,7 +210,7 @@ describe('Arm move-to-position', () => {
 
 		await rerender({ isMoving: true })
 
-		expect(screen.getAllByRole('button', { name: /the arm is moving/iu })).toHaveLength(1)
+		expect(screen.getAllByText(/the arm is moving/iu)).toHaveLength(1)
 	})
 
 	it('displays the provided error', () => {

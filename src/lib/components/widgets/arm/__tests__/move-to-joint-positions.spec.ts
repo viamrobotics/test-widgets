@@ -175,7 +175,7 @@ describe('Arm move-to-joint-positions', () => {
 
 		expect(screen.getByRole('textbox')).toHaveValue('45.0')
 		expect(
-			screen.getByRole('button', { name: /arm moved 2(\.0+)?° since you edited joint 0/iu })
+			screen.getByText(/arm moved 2(\.0+)?° since you edited joint 0/iu, { selector: '.sr-only' })
 		).toBeInTheDocument()
 	})
 
@@ -202,8 +202,8 @@ describe('Arm move-to-joint-positions', () => {
 		await rerender({ isMoving: true })
 
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(screen.getByRole('status')).toHaveTextContent(/arm is moving/iu)
-		expect(screen.getAllByRole('button', { name: /the arm is moving/iu })).toHaveLength(1)
+		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
+		expect(screen.getAllByText(/the arm is moving/iu, { selector: '.sr-only' })).toHaveLength(1)
 	})
 
 	describe('paste', () => {

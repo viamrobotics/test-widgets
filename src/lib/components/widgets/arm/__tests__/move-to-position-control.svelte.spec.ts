@@ -1,6 +1,6 @@
 import type { Pose } from '@viamrobotics/sdk'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MotionClient } from '@viamrobotics/sdk'
 import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
@@ -195,7 +195,7 @@ describe('MoveToPositionControl', () => {
 
 		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 250 })
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(screen.getByRole('status')).toHaveTextContent(/arm is moving/iu)
+		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
 	})
 
 	it('reseeds the pose editor from the newly active frame when the mode changes', async () => {

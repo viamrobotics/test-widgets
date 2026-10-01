@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, Icon, IconButton, Tooltip } from '@viamrobotics/prime-core'
 
-	import FieldStatusButton from '$lib/components/field-status-button.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { degreesToRadians, formatNumeric } from '$lib/format'
@@ -98,10 +97,15 @@
 								/>
 							</div>
 							{#if indicator}
-								<FieldStatusButton
-									status={indicator.status}
-									message={indicator.message}
-								/>
+								<Tooltip>
+									<Icon
+										name={indicator.status === 'warn' ? 'alert' : 'information'}
+										cx={indicator.status === 'warn' ? 'text-warning-bright' : 'text-info-dark'}
+									/>
+									<span slot="description">{indicator.message}</span>
+								</Tooltip>
+								<!-- The tweakpane slider takes no aria-describedby, so screen readers get the message here. -->
+								<span class="sr-only">{indicator.message}</span>
 							{/if}
 							{#if targets.isEdited(index)}
 								<Tooltip>
