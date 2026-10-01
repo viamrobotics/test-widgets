@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -28,12 +27,11 @@
 <ApiSection
 	method="GetJointPositions"
 	api={ResourceTriplets.Arm}
+	queries={[query]}
 	class="grow flex-col gap-4"
 >
-	<Query {query}>
-		{#if query.data}
-			<GetJointPositions positions={query.data.values} />
-		{/if}
-	</Query>
+	{#if query.data}
+		<GetJointPositions positions={query.data.values} />
+	{/if}
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

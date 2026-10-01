@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -39,21 +38,20 @@
 <ApiSection
 	method="GetPosition"
 	api={ResourceTriplets.Encoder}
+	queries={[propertiesQuery, positionQuery]}
 	class="grow flex-col gap-4"
 >
 	{#snippet tooltip()}
 		Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
 	{/snippet}
-	<Queries queries={[propertiesQuery, positionQuery]}>
-		{#if positionQuery.data !== undefined}
-			{@const [position, encoderPositionType] = positionQuery.data}
-			<div class="font-roboto-mono flex flex-col gap-2 text-sm">
-				<Position
-					{position}
-					{encoderPositionType}
-				/>
-			</div>
-		{/if}
-	</Queries>
+	{#if positionQuery.data !== undefined}
+		{@const [position, encoderPositionType] = positionQuery.data}
+		<div class="font-roboto-mono flex flex-col gap-2 text-sm">
+			<Position
+				{position}
+				{encoderPositionType}
+			/>
+		</div>
+	{/if}
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

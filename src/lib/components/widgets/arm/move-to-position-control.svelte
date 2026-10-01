@@ -10,7 +10,8 @@
 		useRobotClient,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Queries from '$lib/components/queries.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import {
 		canPlanMotion,
@@ -78,7 +79,7 @@
 
 	const moveMutation = createResourceMutation(motionClient, 'move')
 	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
-	const lastError = $derived(mode === 'motion' ? moveMutation.error : moveToPosMutation.error)
+	const activeMutation = $derived(mode === 'motion' ? moveMutation : moveToPosMutation)
 
 	const motionTracking = useArmMotionTracking(armClient, {
 		isMovePending: () => moveMutation.isPending || moveToPosMutation.isPending,
@@ -129,7 +130,13 @@
 	{/if}
 {/snippet}
 
-<div class="flex flex-col gap-4">
+<ApiSection
+	method="MoveToPosition"
+	api={ResourceTriplets.Arm}
+	queries={[frameSystemQuery, activeQuery]}
+	mutations={[activeMutation]}
+	class="grow flex-col gap-4"
+>
 	{#if motionAvailable}
 		<Label position="top">
 			<span class="flex items-center gap-1 text-xs">
@@ -184,18 +191,15 @@
 			{/snippet}
 		</Banner>
 	{/if}
-	<Queries queries={[frameSystemQuery, activeQuery]}>
-		<!-- Re-seed the editor on a mode change: the two modes report the pose in different frames. -->
-		{#key mode}
-			{#if endPosition}
-				<MoveToPosition
-					{endPosition}
-					{moveToPosition}
-					{lastError}
-					isMoving={motionTracking.isTracking}
-					{description}
-				/>
-			{/if}
-		{/key}
-	</Queries>
-</div>
+	<!-- Re-seed the editor on a mode change: the two modes report the pose in different frames. -->
+	{#key mode}
+		{#if endPosition}
+			<MoveToPosition
+				{endPosition}
+				{moveToPosition}
+				isMoving={motionTracking.isTracking}
+				{description}
+			/>
+		{/if}
+	{/key}
+</ApiSection>

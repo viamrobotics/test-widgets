@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import FrameSelect from './frame-select.svelte'
 	import { movableFrameNames, parentFrame, referenceFrameNames } from './frame-system-config'
@@ -33,39 +31,33 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<ApiSection
-			class="grow flex-col gap-4"
-			method="Move"
-			api={ResourceTriplets.Motion}
+		<MoveWidget
+			{partID}
+			{resourceName}
+			{frameName}
+			{destination}
+			queries={[frameSystem]}
 		>
-			<div class="flex min-w-0 flex-col gap-4">
-				<FrameSelect
-					value={frameName}
-					options={frameNames}
-					onChange={(value) => {
-						selectedFrame = value
-						// reset the destination to the newly selected frame's parent
-						selectedDestination = undefined
-					}}
-				>
-					{#snippet label()}Component{/snippet}
-				</FrameSelect>
-				<FrameSelect
-					value={destination}
-					options={destinationOptions}
-					onChange={(value) => {
-						selectedDestination = value
-					}}
-				>
-					{#snippet label()}Destination frame{/snippet}
-				</FrameSelect>
-				<MoveWidget
-					{partID}
-					{resourceName}
-					{frameName}
-					{destination}
-				/>
-			</div>
-		</ApiSection>
+			<FrameSelect
+				value={frameName}
+				options={frameNames}
+				onChange={(value) => {
+					selectedFrame = value
+					// reset the destination to the newly selected frame's parent
+					selectedDestination = undefined
+				}}
+			>
+				{#snippet label()}Component{/snippet}
+			</FrameSelect>
+			<FrameSelect
+				value={destination}
+				options={destinationOptions}
+				onChange={(value) => {
+					selectedDestination = value
+				}}
+			>
+				{#snippet label()}Destination frame{/snippet}
+			</FrameSelect>
+		</MoveWidget>
 	{/snippet}
 </ConnectionStatus>

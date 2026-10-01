@@ -9,7 +9,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
@@ -75,41 +74,33 @@
 						class="grow flex-col gap-4"
 						method="GetJointPositions"
 						api={ResourceTriplets.Arm}
+						queries={[jointPositionsQuery]}
 					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<GetJointPositions positions={jointPositionsQuery.data.values} />
-							{/if}
-						</Query>
+						{#if jointPositionsQuery.data}
+							<GetJointPositions positions={jointPositionsQuery.data.values} />
+						{/if}
 						<Section.Text class="mt-auto">Updates automatically</Section.Text>
 					</ApiSection>
 					<ApiSection
 						class="grow flex-col gap-4"
 						method="MoveToJointPositions"
 						api={ResourceTriplets.Arm}
+						queries={[jointPositionsQuery, kinematicsQuery]}
+						mutations={[moveToJointPosMutation]}
 					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<MoveToJointPositions
-									positions={jointPositionsQuery.data.values}
-									{moveToJointPositions}
-									lastError={moveToJointPosMutation.error}
-									{jointLimitsDegrees}
-									isMoving={motionTracking.isTracking}
-								/>
-							{/if}
-						</Query>
+						{#if jointPositionsQuery.data}
+							<MoveToJointPositions
+								positions={jointPositionsQuery.data.values}
+								{moveToJointPositions}
+								{jointLimitsDegrees}
+								isMoving={motionTracking.isTracking}
+							/>
+						{/if}
 					</ApiSection>
-					<ApiSection
-						class="grow flex-col gap-4"
-						method="MoveToPosition"
-						api={ResourceTriplets.Arm}
-					>
-						<MoveToPositionControl
-							{partID}
-							{resourceName}
-						/>
-					</ApiSection>
+					<MoveToPositionControl
+						{partID}
+						{resourceName}
+					/>
 				</div>
 
 				<!-- Control actions sidebar -->

@@ -6,7 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -34,12 +35,17 @@
 	}
 </script>
 
-<Query query={jointPositionsQuery}>
+<ApiSection
+	method="MoveToJointPositions"
+	api={ResourceTriplets.Arm}
+	queries={[jointPositionsQuery]}
+	mutations={[quickMoveToJointPosMutation]}
+	class="grow flex-col gap-4"
+>
 	{#if jointPositionsQuery.data}
 		<QuickMove
 			positions={jointPositionsQuery.data.values}
 			moveToJointPositions={quickMoveToJointPositions}
-			lastError={quickMoveToJointPosMutation.error}
 		/>
 	{/if}
-</Query>
+</ApiSection>

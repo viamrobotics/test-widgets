@@ -16,8 +16,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Queries from '$lib/components/queries.svelte'
-	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
@@ -180,107 +178,91 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<Query
-			query={propertiesQuery}
-			class="h-14 p-4"
-		>
-			{#if propertiesQuery.data?.cloudSlam}
-				<div class="p-4 text-sm">
-					This resource is using Cloud SLAM. <a
-						href="https://docs.viam.com/operate/reference/services/slam/cloudslam/"
-						target="_blank"
-						class="text-link">Learn more</a
-					>.
-				</div>
-			{:else}
-				<div class="@container">
-					<div class="flex flex-col @2xl:flex-row @2xl:divide-x">
-						<div class="divide-y">
-							<div class="m-4">
-								<RefetchController
-									{refetchInterval}
-									queries={[positionQuery, pointCloudMapQuery]}
-								/>
-							</div>
-
-							<ApiSection
-								class="grow flex-col gap-4"
-								method="GetPosition"
-								api={ResourceTriplets.Slam}
-							>
-								<Queries
-									queries={[propertiesQuery, positionQuery]}
-									class="h-6"
-								>
-									{#if positionQuery.data !== undefined}
-										<Position position={positionQuery.data} />
-									{/if}
-								</Queries>
-							</ApiSection>
-
-							<Section class="grow flex-col gap-4">
-								<div class="flex flex-col gap-0.5">
-									<Section.Heading>Motion</Section.Heading>
-								</div>
-								<Section.Body>
-									<Label>
-										Base name
-
-										<Input
-											slot="input"
-											bind:value={baseName}
-										/>
-									</Label>
-									<Label>
-										Motion name
-
-										<Input
-											slot="input"
-											placeholder="builtin"
-											bind:value={motionName}
-										/>
-									</Label>
-								</Section.Body>
-							</Section>
-
-							<MoveOnMap
-								{destination}
-								{updateDestination}
-								{moveOnMap}
-								{stopPlan}
-								lastError={moveOnMapMutation.error ?? stopPlanMutation.error}
+		{#if propertiesQuery.data?.cloudSlam}
+			<div class="p-4 text-sm">
+				This resource is using Cloud SLAM. <a
+					href="https://docs.viam.com/operate/reference/services/slam/cloudslam/"
+					target="_blank"
+					class="text-link">Learn more</a
+				>.
+			</div>
+		{:else}
+			<div class="@container">
+				<div class="flex flex-col @2xl:flex-row @2xl:divide-x">
+					<div class="divide-y">
+						<div class="m-4">
+							<RefetchController
+								{refetchInterval}
+								queries={[positionQuery, pointCloudMapQuery]}
 							/>
 						</div>
 
-						<div class="flex w-full">
-							<Queries
-								queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
-								class="h-auto p-4"
-							>
-								{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
-									<div class="h-80 w-full @2xl:h-full">
-										<SlamMap2D
-											pointcloud={pointCloudMapQuery.data}
-											basePose={{
-												// Position is returned in millimeters, but the map uses meters
-												x: positionQuery.data.pose.x / 1000,
-												y: positionQuery.data.pose.y / 1000,
-												theta: positionQuery.data.pose.theta,
-											}}
-											{motionPath}
-											destination={destination
-												? new Vector2(destination.x, destination.y)
-												: undefined}
-											helpers={true}
-											onClick={handleClick}
-										/>
-									</div>
-								{/if}
-							</Queries>
-						</div>
+						<ApiSection
+							class="grow flex-col gap-4"
+							method="GetPosition"
+							api={ResourceTriplets.Slam}
+							queries={[propertiesQuery, positionQuery, pointCloudMapQuery]}
+						>
+							{#if positionQuery.data !== undefined}
+								<Position position={positionQuery.data} />
+							{/if}
+						</ApiSection>
+
+						<Section class="grow flex-col gap-4">
+							<div class="flex flex-col gap-0.5">
+								<Section.Heading>Motion</Section.Heading>
+							</div>
+							<Section.Body>
+								<Label>
+									Base name
+
+									<Input
+										slot="input"
+										bind:value={baseName}
+									/>
+								</Label>
+								<Label>
+									Motion name
+
+									<Input
+										slot="input"
+										placeholder="builtin"
+										bind:value={motionName}
+									/>
+								</Label>
+							</Section.Body>
+						</Section>
+
+						<MoveOnMap
+							{destination}
+							{updateDestination}
+							{moveOnMap}
+							{stopPlan}
+							mutations={[moveOnMapMutation, stopPlanMutation]}
+						/>
+					</div>
+
+					<div class="flex w-full p-4">
+						{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
+							<div class="h-80 w-full @2xl:h-full">
+								<SlamMap2D
+									pointcloud={pointCloudMapQuery.data}
+									basePose={{
+										// Position is returned in millimeters, but the map uses meters
+										x: positionQuery.data.pose.x / 1000,
+										y: positionQuery.data.pose.y / 1000,
+										theta: positionQuery.data.pose.theta,
+									}}
+									{motionPath}
+									destination={destination ? new Vector2(destination.x, destination.y) : undefined}
+									helpers={true}
+									onClick={handleClick}
+								/>
+							</div>
+						{/if}
 					</div>
 				</div>
-			{/if}
-		</Query>
+			</div>
+		{/if}
 	{/snippet}
 </ConnectionStatus>

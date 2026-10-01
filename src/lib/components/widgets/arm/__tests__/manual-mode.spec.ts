@@ -19,7 +19,6 @@ describe('Arm manual mode', () => {
 			isManualMode: false,
 			isPending: false,
 			setManualMode: vi.fn(),
-			lastError: null,
 			...props,
 		})
 

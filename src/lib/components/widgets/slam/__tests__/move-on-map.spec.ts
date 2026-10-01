@@ -23,7 +23,7 @@ describe('Slam move on map', () => {
 			updateDestination,
 			moveOnMap,
 			stopPlan,
-			lastError: null,
+			mutations: [],
 			...props,
 		})
 

@@ -25,6 +25,8 @@
 		() => resourceName
 	)
 
+	const openMutation = createResourceMutation(client, 'open')
+	const grabMutation = createResourceMutation(client, 'grab')
 	const stopMutation = createResourceMutation(client, 'stop')
 </script>
 
@@ -36,22 +38,18 @@
 					<ApiSection
 						method="Open"
 						api={ResourceTriplets.Gripper}
+						mutations={[openMutation]}
 						class="grow-0 flex-col gap-3 @xs:pr-0"
 					>
-						<Open
-							{partID}
-							{resourceName}
-						/>
+						<Open onOpen={() => openMutation.mutate([], {})} />
 					</ApiSection>
 					<ApiSection
 						method="Grab"
 						api={ResourceTriplets.Gripper}
+						mutations={[grabMutation]}
 						class="grow-0 flex-col gap-3 @xs:pl-0"
 					>
-						<Grab
-							{partID}
-							{resourceName}
-						/>
+						<Grab onGrab={() => grabMutation.mutate([], {})} />
 					</ApiSection>
 				</span>
 				<div class="flex flex-col divide-y">

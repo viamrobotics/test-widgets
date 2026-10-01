@@ -4,7 +4,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Query from '$lib/components/query.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
@@ -44,18 +43,14 @@
 		</div>
 
 		<ApiSection
+			queries={[readingsQuery]}
 			method="GetReadings"
 			api={ResourceTriplets.Sensor}
 			class="relative grow flex-col gap-4"
 		>
-			<Query
-				query={readingsQuery}
-				class="h-6"
-			>
-				{#if readingsQuery.data !== undefined}
-					<ReadingsList data={readingsQuery.data} />
-				{/if}
-			</Query>
+			{#if readingsQuery.data !== undefined}
+				<ReadingsList data={readingsQuery.data} />
+			{/if}
 		</ApiSection>
 	{/snippet}
 </ConnectionStatus>
