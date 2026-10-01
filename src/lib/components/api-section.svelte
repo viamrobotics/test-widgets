@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import type { HTMLAttributes } from 'svelte/elements'
+	import type { ClassValue, HTMLAttributes } from 'svelte/elements'
 
-	import { twMerge } from 'tailwind-merge'
+	import type { ResourceTriplet } from '$lib/resource-triplet'
 
+	import Boundary from './boundary.svelte'
 	import SectionTitle from './section-title.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
@@ -12,8 +13,8 @@
 		description?: string | undefined
 		bottomText?: string | undefined
 		/** RDK API string; presence renders the title as a linked monospace method name */
-		api?: string | undefined
-		class?: string
+		api?: ResourceTriplet | undefined
+		class?: ClassValue
 		children?: Snippet
 	}
 
@@ -32,7 +33,7 @@
 </script>
 
 <section
-	class={twMerge('flex grow flex-col gap-4 p-4', className)}
+	class={['flex p-4', className]}
 	aria-labelledby={title ? headingID : undefined}
 	{...rest}
 >
@@ -59,7 +60,7 @@
 		</div>
 	{/if}
 
-	{@render children?.()}
+	<Boundary {children} />
 
 	{#if bottomText}
 		<p class="text-subtle-2 mt-auto text-xs">{bottomText}</p>

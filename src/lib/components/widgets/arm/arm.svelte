@@ -11,6 +11,7 @@
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
@@ -70,8 +71,9 @@
 					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
 				>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="GetJointPositions"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 						bottomText="Updates automatically"
 					>
 						<Query query={jointPositionsQuery}>
@@ -81,8 +83,9 @@
 						</Query>
 					</ApiSection>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="MoveToJointPositions"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<Query query={jointPositionsQuery}>
 							{#if jointPositionsQuery.data}
@@ -97,8 +100,9 @@
 						</Query>
 					</ApiSection>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="MoveToPosition"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<MoveToPositionControl
 							{partID}
@@ -112,8 +116,9 @@
 					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
 				>
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -124,7 +129,7 @@
 					</ApiSection>
 					<IsMoving
 						client={ArmClient}
-						api="rdk:component:arm"
+						api={ResourceTriplets.Arm}
 						{partID}
 						{resourceName}
 					/>

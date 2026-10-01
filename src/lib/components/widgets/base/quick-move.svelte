@@ -3,7 +3,6 @@
 
 	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
 	import { onMount } from 'svelte'
-	import { twMerge } from 'tailwind-merge'
 
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
@@ -51,7 +50,7 @@
 	}
 
 	const buttonCx =
-		'flex gap-2 justify-center items-center w-[60px] border border-light bg-light px-2.5 py-3 hover:border-medium hover:bg-medium active:bg-gray-2 h-fit'
+		'flex gap-2 justify-center items-center w-[60px] border border-light px-2.5 py-3 hover:border-medium hover:bg-medium active:bg-gray-2 h-fit'
 
 	const keys = {
 		W_KEY: 'w',
@@ -154,7 +153,7 @@
 				aria-label="left"
 				onmouseup={mouseEnd}
 				onmouseleave={mouseEnd}
-				class={twMerge(buttonCx, pressedKeys.a && 'bg-gray-2')}
+				class={[buttonCx, pressedKeys.a ? 'bg-gray-2' : 'bg-light']}
 			>
 				<Icon
 					name="undo"
@@ -171,7 +170,7 @@
 					aria-label="forwards"
 					onmouseup={mouseEnd}
 					onmouseleave={mouseEnd}
-					class={twMerge(buttonCx, 'flex-col', pressedKeys.w && 'bg-gray-2')}
+					class={[buttonCx, 'flex-col', pressedKeys.w ? 'bg-gray-2' : 'bg-light']}
 				>
 					<Icon
 						name="arrow-up"
@@ -187,7 +186,7 @@
 					aria-label="backwards"
 					onmouseup={mouseEnd}
 					onmouseleave={mouseEnd}
-					class={twMerge(buttonCx, 'flex-col', pressedKeys.s && 'bg-gray-2')}
+					class={[buttonCx, 'flex-col', pressedKeys.s ? 'bg-gray-2' : 'bg-light']}
 				>
 					{#if isKeyboardEnabled}
 						<div class="text-gray-6 text-sm font-semibold">S</div>
@@ -205,7 +204,7 @@
 				aria-label="right"
 				onmouseup={mouseEnd}
 				onmouseleave={mouseEnd}
-				class={twMerge(buttonCx, pressedKeys.d && 'bg-gray-2')}
+				class={[buttonCx, pressedKeys.d ? 'bg-gray-2' : 'bg-light']}
 			>
 				{#if isKeyboardEnabled}
 					<div class="text-gray-6 text-sm font-semibold">D</div>

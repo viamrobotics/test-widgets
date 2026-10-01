@@ -32,7 +32,7 @@
 
 <Query
 	query={positionQuery}
-	contentCx="h-6"
+	class="h-6"
 >
 	{@const positions = positionQuery.data}
 	{#if positions !== undefined}

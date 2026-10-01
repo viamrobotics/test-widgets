@@ -21,6 +21,8 @@
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
@@ -34,7 +36,7 @@
 		moveToPosition: (position: Pose) => void
 		lastError: Error | null
 		isMoving?: boolean
-		description?: string
+		description?: Snippet
 	}
 
 	const {
@@ -42,7 +44,7 @@
 		moveToPosition,
 		lastError,
 		isMoving = false,
-		description = 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.',
+		description: customDescription,
 	}: Props = $props()
 
 	const targets = new EditedTargets<PoseKey>(
@@ -75,6 +77,11 @@
 	}
 </script>
 
+{#snippet poseDescription()}
+	Pose is with respect to the arm origin and does not take into account the motion service or frame
+	system.
+{/snippet}
+
 <div class="flex min-w-0 flex-col gap-4">
 	<PoseEditor
 		pose={desiredPosition}
@@ -88,9 +95,10 @@
 		onFieldReset={(key) => {
 			targets.reset(key)
 		}}
-		title="Pose Values"
-		{description}
-	/>
+		description={customDescription ?? poseDescription}
+	>
+		{#snippet title()}Pose Values{/snippet}
+	</PoseEditor>
 
 	<div class="mb-2 flex flex-col gap-2">
 		<span class="flex flex-row gap-2">

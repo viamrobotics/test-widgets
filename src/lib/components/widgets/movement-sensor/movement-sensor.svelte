@@ -10,8 +10,7 @@
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import SectionTitle from '$lib/components/section-title.svelte'
-
-	const MS_API = 'rdk:component:movement_sensor'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Accuracy from './accuracy.svelte'
 	import CompassHeading from './compass-heading.svelte'
@@ -101,7 +100,7 @@
 
 		<Query
 			query={propertiesQuery}
-			contentCx="p-4 h-14"
+			class="h-14 p-4"
 		>
 			<div class="@container">
 				<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
@@ -110,11 +109,11 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetPosition"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								/>
 								<Query
 									query={positionQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position data={positionQuery.data} />
@@ -127,14 +126,14 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetOrientation"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
 								</SectionTitle>
 								<Query
 									query={orientationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if orientationQuery.data !== undefined}
 										<Orientation data={orientationQuery.data} />
@@ -147,14 +146,14 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetCompassHeading"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
 										>{/snippet}
 								</SectionTitle>
 								<Query
 									query={compassHeadingQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if compassHeadingQuery.data !== undefined}
 										<CompassHeading data={compassHeadingQuery.data} />
@@ -169,14 +168,14 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetAngularVelocity"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
 										>{/snippet}
 								</SectionTitle>
 								<Query
 									query={angularVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if angularVelocityQuery.data !== undefined}
 										<Vector3 data={angularVelocityQuery.data} />
@@ -189,14 +188,14 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetLinearVelocity"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
 										>{/snippet}
 								</SectionTitle>
 								<Query
 									query={linearVelocityQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearVelocityQuery.data !== undefined}
 										<Vector3 data={linearVelocityQuery.data} />
@@ -209,7 +208,7 @@
 							<div class="flex flex-col gap-2">
 								<SectionTitle
 									title="GetLinearAcceleration"
-									api={MS_API}
+									api={ResourceTriplets.MovementSensor}
 								>
 									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
 											>(m/s<sup>2</sup>)</span
@@ -217,7 +216,7 @@
 								</SectionTitle>
 								<Query
 									query={linearAccelerationQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{#if linearAccelerationQuery.data !== undefined}
 										<Vector3 data={linearAccelerationQuery.data} />
@@ -229,11 +228,11 @@
 						<div class="flex flex-col gap-2">
 							<SectionTitle
 								title="GetAccuracy"
-								api={MS_API}
+								api={ResourceTriplets.MovementSensor}
 							/>
 							<Query
 								query={accuracyQuery}
-								contentCx="h-6"
+								class="h-6"
 							>
 								{#if accuracyQuery.data !== undefined}
 									<Accuracy data={accuracyQuery.data} />
@@ -259,7 +258,7 @@
 			<div class="flex flex-col gap-0.5">
 				<SectionTitle
 					title="GetReadings"
-					api={MS_API}
+					api={ResourceTriplets.MovementSensor}
 					headingId={headingID}
 				/>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>

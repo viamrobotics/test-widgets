@@ -32,7 +32,8 @@
 	}
 </script>
 
-<PinSection title="Read pin">
+<PinSection>
+	{#snippet title()}Read pin{/snippet}
 	<section
 		class="flex h-full max-h-18.5 w-full flex-col gap-1 p-3 text-xs"
 		aria-labelledby={stateSectionId}

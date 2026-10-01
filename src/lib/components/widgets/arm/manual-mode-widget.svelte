@@ -7,6 +7,7 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import ManualMode from './manual-mode.svelte'
 
@@ -57,8 +58,8 @@
 	{:else}
 		<ApiSection
 			title="SetManualMode"
-			api="rdk:component:arm"
-			class="grow"
+			api={ResourceTriplets.Arm}
+			class="grow flex-col gap-4"
 		>
 			<ManualMode
 				isManualMode={manualModeQuery.data ?? false}

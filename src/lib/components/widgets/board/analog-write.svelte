@@ -15,10 +15,8 @@
 	const { setValue }: Props = $props()
 </script>
 
-<PinSection
-	title="Write pin"
-	class="h-fit"
->
+<PinSection class="h-fit">
+	{#snippet title()}Write pin{/snippet}
 	<div class="flex h-full max-h-18.5 w-full p-3">
 		<Label cx="w-fit!">
 			<h5>Value</h5>

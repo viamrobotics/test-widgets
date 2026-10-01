@@ -101,12 +101,6 @@
 	const activeQuery = $derived(mode === 'motion' ? poseQuery : endPositionQuery)
 	const endPosition = $derived(mode === 'motion' ? poseQuery.data?.pose : endPositionQuery.data)
 
-	const description = $derived(
-		mode === 'motion'
-			? 'Pose is in the world frame, as required by the motion service.'
-			: 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.'
-	)
-
 	const handleModeInput = (event: CustomEvent<string>) => {
 		userChoice = event.detail === 'Motion service' ? 'motion' : 'direct'
 	}
@@ -125,6 +119,15 @@
 		}
 	}
 </script>
+
+{#snippet description()}
+	{#if mode === 'motion'}
+		Pose is in the world frame, as required by the motion service.
+	{:else}
+		Pose is with respect to the arm origin and does not take into account the motion service or
+		frame system.
+	{/if}
+{/snippet}
 
 <div class="flex flex-col gap-4">
 	{#if motionAvailable}

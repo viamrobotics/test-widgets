@@ -17,17 +17,19 @@
 
 <div class="flex flex-wrap gap-4">
 	<Vec3Builder
-		title="Linear velocity"
 		titleUnits="(mm/s)"
 		yTooltip="Only Y is used for a wheeled base, since Viam’s coordinate system considers +Y to be the forward axis."
 		bind:vector={linearVelocity}
-	/>
+	>
+		{#snippet title()}Linear velocity{/snippet}
+	</Vec3Builder>
 	<Vec3Builder
-		title="Angular velocity"
 		titleUnits="(º/s)"
 		zTooltip="Only Z is used for a wheeled base, since Viam’s coordinate system considers +Z to point up and the angular velocity to rotate around the Z axis."
 		bind:vector={angularVelocity}
-	/>
+	>
+		{#snippet title()}Angular velocity{/snippet}
+	</Vec3Builder>
 </div>
 
 <Button

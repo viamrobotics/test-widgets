@@ -8,6 +8,7 @@
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import MutationSection from '$lib/components/mutation-section.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import MoveStraight from './move-straight.svelte'
 	import QuickMove from './quick-move.svelte'
@@ -85,8 +86,9 @@
 				</MutationSection>
 				<div class="flex grow flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
-						api="rdk:component:base"
+						api={ResourceTriplets.Base}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -97,7 +99,7 @@
 					</ApiSection>
 					<IsMoving
 						client={BaseClient}
-						api="rdk:component:base"
+						api={ResourceTriplets.Base}
 						{partID}
 						{resourceName}
 					/>
@@ -106,7 +108,7 @@
 		</div>
 		<MutationSection
 			title="MoveStraight"
-			api="rdk:component:base"
+			api={ResourceTriplets.Base}
 			description="Move across a given distance at a given velocity"
 			lastError={moveStraightMutation.error}
 		>
@@ -114,7 +116,7 @@
 		</MutationSection>
 		<MutationSection
 			title="Spin"
-			api="rdk:component:base"
+			api={ResourceTriplets.Base}
 			description="Turn to a given angle at a given velocity"
 			lastError={spinMutation.error}
 		>
@@ -122,7 +124,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetPower"
-			api="rdk:component:base"
+			api={ResourceTriplets.Base}
 			description="Move continuously at a given amount of power"
 			lastError={setPowerMutation.error}
 		>
@@ -130,7 +132,7 @@
 		</MutationSection>
 		<MutationSection
 			title="SetVelocity"
-			api="rdk:component:base"
+			api={ResourceTriplets.Base}
 			description="Move continually at a given velocity"
 			lastError={setVelocityMutation.error}
 		>

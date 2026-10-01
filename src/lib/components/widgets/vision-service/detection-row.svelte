@@ -1,11 +1,13 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import type { Detection } from './context.svelte.ts'
 
 	import { useDetections } from './context.svelte.ts'
 
 	interface Props {
 		detection: Detection
-		label: string
+		label: Snippet
 	}
 
 	let { detection, label }: Props = $props()
@@ -33,6 +35,6 @@
 		context.selected = context.selected === detection.id ? null : detection.id
 	}}
 >
-	{label}
+	{@render label()}
 	<span class="text-subtle-2 pl-1">{detection.confidence}%</span>
 </button>

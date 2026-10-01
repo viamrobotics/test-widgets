@@ -3,7 +3,9 @@
 
   Creates a maplibre-gl map that will fill its parent.
 
-  Children will mount once the map is fully loaded.
+  Children will mount once the map is fully loaded. They render inside the
+  map's own positioned, isolated box, so absolutely positioned overlays sit
+  relative to the map and their z-index never competes with the host page.
 
   ```svelte
     <MapLibre mapProvider="open-street">
@@ -220,12 +222,8 @@
 	})
 </script>
 
-{#if created}
-	{@render children?.()}
-{/if}
-
 <div
-	class={['h-full', className]}
+	class={['relative isolate h-full', className]}
 	{...rest}
 >
 	<div
@@ -234,6 +232,7 @@
 	></div>
 
 	{#if created}
+		{@render children?.()}
 		{@render layer?.()}
 	{/if}
 </div>

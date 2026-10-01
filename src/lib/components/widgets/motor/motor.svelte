@@ -13,6 +13,7 @@
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { formatNumeric } from '$lib/format'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GoFor from './go-for.svelte'
 	import GoTo from './go-to.svelte'
@@ -87,7 +88,7 @@
 					</MutationSection>
 					<MutationSection
 						title="SetPower"
-						api="rdk:component:motor"
+						api={ResourceTriplets.Motor}
 						description="Move continuously"
 						lastError={setPowerMutation.error}
 					>
@@ -96,7 +97,7 @@
 					{#if propertiesQuery.data?.positionReporting}
 						<MutationSection
 							title="SetRPM"
-							api="rdk:component:motor"
+							api={ResourceTriplets.Motor}
 							description="Move indefinitely at a specified speed."
 							lastError={setRPMMutation.error}
 						>
@@ -104,7 +105,7 @@
 						</MutationSection>
 						<MutationSection
 							title="GoFor"
-							api="rdk:component:motor"
+							api={ResourceTriplets.Motor}
 							description="Move a specified number of revolutions"
 							lastError={goForMutation.error}
 						>
@@ -112,7 +113,7 @@
 						</MutationSection>
 						<MutationSection
 							title="GoTo"
-							api="rdk:component:motor"
+							api={ResourceTriplets.Motor}
 							description="Turn to a specified position"
 							lastError={goToMutation.error}
 						>
@@ -123,8 +124,9 @@
 
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
-						api="rdk:component:motor"
+						api={ResourceTriplets.Motor}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -135,15 +137,15 @@
 					</ApiSection>
 					<IsMoving
 						client={MotorClient}
-						api="rdk:component:motor"
+						api={ResourceTriplets.Motor}
 						{partID}
 						{resourceName}
 					>
 						<div class="flex flex-col gap-6 pt-2">
 							<ApiSection
 								title="IsPowered"
-								api="rdk:component:motor"
-								class="gap-3 p-0"
+								api={ResourceTriplets.Motor}
+								class="grow flex-col gap-3 p-0!"
 								tooltip="Returns whether or not the motor is running and the current portion of max power.
 
   Stepper motors will report ”true” if they are being powered while holding
@@ -165,8 +167,8 @@
 							{#if propertiesQuery.data?.positionReporting === true}
 								<ApiSection
 									title="GetPosition"
-									api="rdk:component:motor"
-									class="gap-3 p-0"
+									api={ResourceTriplets.Motor}
+									class="grow flex-col gap-3 p-0!"
 									tooltip="Reports the position of an encoded motor in revolutions from zero/home."
 								>
 									<Query query={positionQuery}>

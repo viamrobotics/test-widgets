@@ -26,7 +26,7 @@
 <ApiSection
 	title="GetJointPositions"
 	bottomText="Updates automatically"
-	class="grow"
+	class="grow flex-col gap-4"
 >
 	<Query {query}>
 		{#if query.data}

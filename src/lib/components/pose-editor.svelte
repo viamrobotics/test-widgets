@@ -25,6 +25,8 @@
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Icon, IconButton, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
@@ -39,9 +41,9 @@
 		pose: Pose
 		onPoseChange: (pose: Pose) => void
 		/** Heading shown above the input table. */
-		title: string
-		/** Optional info-tooltip text shown next to the title. */
-		description?: string
+		title: Snippet
+		/** Optional info-tooltip content shown next to the title. */
+		description?: Snippet
 		/** Live tracking per field. Omit for a plain editor with no current values. */
 		fieldStatus?: (key: keyof Pose) => PoseFieldStatus
 		/** Returns an edited field to the live value. Shown only alongside `fieldStatus`. */
@@ -113,7 +115,7 @@
 <div class="flex min-w-0 flex-col gap-4">
 	<div class="flex items-center justify-between">
 		<span class="flex flex-row items-center gap-1 text-sm">
-			{title}
+			{@render title()}
 			{#if description}
 				<Tooltip>
 					<Icon
@@ -121,7 +123,7 @@
 						cx="text-gray-6"
 					/>
 
-					<span slot="description">{description}</span>
+					<span slot="description">{@render description()}</span>
 				</Tooltip>
 			{/if}
 		</span>
