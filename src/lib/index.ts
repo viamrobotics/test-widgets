@@ -17,6 +17,7 @@ export {
 } from './is-known-resource'
 export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
+export type { ResourceTriplet } from './resource-triplet'
 export type {
 	ResourceAPIWidget,
 	ResourceWidget,

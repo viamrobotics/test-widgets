@@ -6,7 +6,6 @@ const NO_LINK_METHODS = new Set(['getStatus', 'getSourceNames'])
  * Returns the docs URL for a given resource API + method, or undefined
  * when the method has no dedicated anchor (e.g. GetStatus, GetSourceNames).
  *
- * @param api  - RDK API string, e.g. "rdk:component:movement_sensor"
  * @param method - camelCase method name, e.g. "getPosition"
  */
 export const apiDocsHref = (api: ResourceTriplet, method: string): string | undefined => {

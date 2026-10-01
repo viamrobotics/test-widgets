@@ -22,6 +22,18 @@ describe('apiDocsHref', () => {
 			expected: 'https://docs.viam.com/reference/apis/components/movement-sensor/#getreadings',
 		},
 		{
+			// underscore subtype must hyphenate in the docs URL
+			api: ResourceTriplets.AudioInput,
+			method: 'getReadings',
+			expected: 'https://docs.viam.com/reference/apis/components/audio-in/#getreadings',
+		},
+		{
+			// underscore subtype must hyphenate in the docs URL
+			api: ResourceTriplets.AudioOutput,
+			method: 'getReadings',
+			expected: 'https://docs.viam.com/reference/apis/components/audio-out/#getreadings',
+		},
+		{
 			api: ResourceTriplets.PowerSensor,
 			method: 'getCurrent',
 			expected: 'https://docs.viam.com/reference/apis/components/power-sensor/#getcurrent',
