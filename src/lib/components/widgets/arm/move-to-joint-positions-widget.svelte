@@ -10,6 +10,7 @@
 
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
+	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
 
 	interface Props {
 		partID: string
@@ -24,14 +25,20 @@
 		() => resourceName
 	)
 
-	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', {
-		refetchInterval: 500,
+	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
+
+	const motionTracking = useArmMotionTracking(client, {
+		isMovePending: () => moveToJointPosMutation.isPending,
+		refetchPosition: () => jointPositionsQuery.refetch(),
 	})
+
+	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', () => ({
+		refetchInterval: motionTracking.refetchInterval,
+	}))
+
 	const kinematicsQuery = createResourceQuery(client, 'getKinematics', {
 		refetchInterval: 500,
 	})
-
-	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
 
 	const moveToJointPositions = async (jointPositionsList: number[]) => {
 		await moveToJointPosMutation.mutateAsync([jointPositionsList])
@@ -49,6 +56,7 @@
 			{moveToJointPositions}
 			lastError={moveToJointPosMutation.error}
 			{jointLimitsDegrees}
+			isMoving={motionTracking.isTracking}
 		/>
 	{/if}
 </Query>

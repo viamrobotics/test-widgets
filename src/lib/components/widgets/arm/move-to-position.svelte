@@ -1,15 +1,39 @@
-<script lang="ts">
+<script
+	lang="ts"
+	module
+>
 	import type { Pose } from '@viamrobotics/sdk'
 
+	type PoseKey = keyof Pose
+
+	const POSE_KEYS: PoseKey[] = ['x', 'y', 'z', 'oX', 'oY', 'oZ', 'theta']
+
+	// Tight enough to catch a real move, loose enough to ignore encoder noise. Theta is in degrees.
+	const DRIFT_THRESHOLDS: Record<PoseKey, number> = {
+		x: 1,
+		y: 1,
+		z: 1,
+		oX: 0.01,
+		oY: 0.01,
+		oZ: 0.01,
+		theta: 0.5,
+	}
+</script>
+
+<script lang="ts">
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
 	import PoseEditor from '$lib/components/pose-editor.svelte'
+	import StatusPill from '$lib/components/status-pill.svelte'
+
+	import { EditedTargets } from './edited-targets.svelte'
 
 	interface Props {
 		endPosition: Pose
 		moveToPosition: (position: Pose) => void
 		lastError: Error | null
+		isMoving?: boolean
 		description?: string
 	}
 
@@ -17,34 +41,52 @@
 		endPosition,
 		moveToPosition,
 		lastError,
+		isMoving = false,
 		description = 'Pose is with respect to the arm origin and does not take into account the motion service or frame system.',
 	}: Props = $props()
 
-	// svelte-ignore state_referenced_locally
-	let desiredPosition = $state({ ...endPosition })
+	const targets = new EditedTargets<PoseKey>(
+		(key) => endPosition[key],
+		(key) => DRIFT_THRESHOLDS[key]
+	)
 
-	const resetToZero = () => {
-		desiredPosition = {
-			x: 0,
-			y: 0,
-			z: 0,
-			oX: 0,
-			oY: 0,
-			oZ: 0,
-			theta: 0,
+	const desiredPosition = $derived<Pose>({
+		x: targets.target('x'),
+		y: targets.target('y'),
+		z: targets.target('z'),
+		oX: targets.target('oX'),
+		oY: targets.target('oY'),
+		oZ: targets.target('oZ'),
+		theta: targets.target('theta'),
+	})
+
+	const handlePoseChange = (next: Pose) => {
+		for (const key of POSE_KEYS) {
+			if (next[key] !== desiredPosition[key]) {
+				targets.edit(key, next[key])
+			}
 		}
 	}
 
-	const resetToCurrent = () => {
-		desiredPosition = { ...endPosition }
+	const resetToZero = () => {
+		for (const key of POSE_KEYS) {
+			targets.edit(key, 0)
+		}
 	}
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">
 	<PoseEditor
 		pose={desiredPosition}
-		onPoseChange={(next) => {
-			desiredPosition = next
+		onPoseChange={handlePoseChange}
+		fieldStatus={(key) => ({
+			current: endPosition[key],
+			isEdited: targets.isEdited(key),
+			drift: targets.drift(key),
+			isMoving,
+		})}
+		onFieldReset={(key) => {
+			targets.reset(key)
 		}}
 		title="Pose Values"
 		{description}
@@ -64,16 +106,33 @@
 		</span>
 		<div class="flex flex-col gap-2 sm:flex-row">
 			<Button onclick={resetToZero}>Zero</Button>
-			<Button onclick={resetToCurrent}>Current position</Button>
+			<Button
+				onclick={() => {
+					targets.resetAll()
+				}}
+			>
+				Current position
+			</Button>
 		</div>
 	</div>
-	<Button
-		class="mt-auto w-fit"
-		icon="play-circle-outline"
-		variant="dark"
-		onclick={() => moveToPosition(desiredPosition)}
-	>
-		Execute
-	</Button>
+	<div class="mt-auto flex items-center gap-2">
+		<Button
+			class="w-fit"
+			icon="play-circle-outline"
+			variant="dark"
+			disabled={isMoving}
+			onclick={() => moveToPosition(desiredPosition)}
+		>
+			Execute
+		</Button>
+		<span role="status">
+			{#if isMoving}
+				<StatusPill
+					isActive
+					activeText="Arm is moving"
+				/>
+			{/if}
+		</span>
+	</div>
 	<ErrorDisplay {lastError} />
 </div>

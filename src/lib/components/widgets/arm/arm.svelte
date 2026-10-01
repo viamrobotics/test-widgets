@@ -17,6 +17,7 @@
 	import ManualModeWidget from './manual-mode-widget.svelte'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPositionControl from './move-to-position-control.svelte'
+	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
 
 	interface Props {
 		partID: string
@@ -31,12 +32,17 @@
 		() => resourceName
 	)
 
-	const options = { refetchInterval: 500 }
-	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', options)
-	const kinematicsQuery = createResourceQuery(client, 'getKinematics', options)
-	const isMovingQuery = createResourceQuery(client, 'isMoving', options)
-
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
+
+	const motionTracking = useArmMotionTracking(client, {
+		isMovePending: () => moveToJointPosMutation.isPending,
+		refetchPosition: () => jointPositionsQuery.refetch(),
+	})
+
+	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', () => ({
+		refetchInterval: motionTracking.refetchInterval,
+	}))
+	const kinematicsQuery = createResourceQuery(client, 'getKinematics', { refetchInterval: 500 })
 	const stopMutation = createResourceMutation(client, 'stop')
 
 	const moveToJointPositions = async (jointPositionsList: number[]) => {
@@ -85,7 +91,7 @@
 									{moveToJointPositions}
 									lastError={moveToJointPosMutation.error}
 									{jointLimitsDegrees}
-									isMoving={isMovingQuery.data ?? false}
+									isMoving={motionTracking.isTracking}
 								/>
 							{/if}
 						</Query>

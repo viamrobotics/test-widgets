@@ -152,6 +152,60 @@ describe('Arm move-to-joint-positions', () => {
 		expect(textInputs[1]).toHaveValue('20.0')
 	})
 
+	it('follows the live position in joints the user has not edited', async () => {
+		const { rerender } = await renderJointPositionsEditor({
+			positions: [10],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		await rerender({ positions: [20] })
+
+		expect(screen.getByRole('textbox')).toHaveValue('20.0')
+		expect(screen.getByText(/current 20(\.0+)?°/iu)).toBeInTheDocument()
+	})
+
+	it('keeps an edited joint and flags it once the arm drifts past the threshold', async () => {
+		const { rerender } = await renderJointPositionsEditor({
+			positions: [10],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		fireEvent.change(screen.getByRole('textbox'), { target: { value: '45' } })
+		await rerender({ positions: [12] })
+
+		expect(screen.getByRole('textbox')).toHaveValue('45.0')
+		expect(
+			screen.getByRole('button', { name: /arm moved 2(\.0+)?° since you edited joint 0/iu })
+		).toBeInTheDocument()
+	})
+
+	it('resets one edited joint to the live position', async () => {
+		await renderJointPositionsEditor({
+			positions: [10],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		fireEvent.change(screen.getByRole('textbox'), { target: { value: '45' } })
+		await user.click(screen.getByRole('button', { name: /reset joint 0 to current/iu }))
+
+		expect(screen.getByRole('textbox')).toHaveValue('10.0')
+	})
+
+	it('locks Execute and marks only edited joints while the arm moves', async () => {
+		const { rerender } = await renderJointPositionsEditor({
+			positions: [10, 20],
+			jointLimitsDegrees: jointLimitsForCount(2),
+		})
+
+		const [firstInput] = screen.getAllByRole('textbox')
+		fireEvent.change(firstInput!, { target: { value: '45' } })
+		await rerender({ isMoving: true })
+
+		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
+		expect(screen.getByRole('status')).toHaveTextContent(/arm is moving/iu)
+		expect(screen.getAllByRole('button', { name: /the arm is moving/iu })).toHaveLength(1)
+	})
+
 	describe('paste', () => {
 		beforeEach(() => {
 			vi.spyOn(globalThis.navigator.clipboard, 'readText')

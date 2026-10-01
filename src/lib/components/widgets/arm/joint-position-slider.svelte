@@ -5,12 +5,13 @@
 
 	interface Props {
 		value: number
+		onValueChange: (degrees: number) => void
 		minDegrees: number
 		maxDegrees: number
 		useRadians: boolean
 	}
 
-	let { value = $bindable(), minDegrees, maxDegrees, useRadians }: Props = $props()
+	const { value, onValueChange, minDegrees, maxDegrees, useRadians }: Props = $props()
 
 	const min = $derived(useRadians ? degreesToRadians(minDegrees) : minDegrees)
 	const max = $derived(useRadians ? degreesToRadians(maxDegrees) : maxDegrees)
@@ -25,7 +26,10 @@
 	<Slider
 		value={toDisplay(value)}
 		on:change={(event) => {
-			value = toDegrees(event.detail.value)
+			// The slider also reports changes to `value` from outside, such as a live reading arriving.
+			if (event.detail.origin === 'internal') {
+				onValueChange(toDegrees(event.detail.value))
+			}
 		}}
 		{min}
 		{max}
