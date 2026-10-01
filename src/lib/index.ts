@@ -4,7 +4,6 @@ export {
 	useAddImageToDataset,
 } from './add-image-to-dataset'
 
-
 export { clientForResource, supportsDoCommand } from './client-map'
 export * from './components'
 
