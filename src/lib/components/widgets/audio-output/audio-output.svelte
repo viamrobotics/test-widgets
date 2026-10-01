@@ -11,6 +11,7 @@
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { ExtToCodec, MimeToCodec } from './codec.ts'
 	import { createAudioPlayer } from './create-audio-player.svelte.ts'
@@ -108,7 +109,7 @@
 				<div class="flex w-full flex-col divide-y">
 					<MutationSection
 						title="Play"
-						api="rdk:component:audio_output"
+						api={ResourceTriplets.AudioOutput}
 						description="Send audio data to the device"
 						lastError={playContext.error}
 					>
@@ -180,13 +181,13 @@
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
 						title="GetProperties"
-						api="rdk:component:audio_output"
+						api={ResourceTriplets.AudioOutput}
 						description="Audio output properties"
-						class="relative"
+						class="relative grow flex-col gap-4"
 					>
 						<Query
 							query={propertiesQuery}
-							contentCx="h-6"
+							class="h-6"
 						>
 							{#if propertiesQuery.data !== undefined}
 								<Properties

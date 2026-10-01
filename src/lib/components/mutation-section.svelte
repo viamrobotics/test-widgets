@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
+	import type { ClassValue } from 'svelte/elements'
 
-	import { twMerge } from 'tailwind-merge'
+	import type { ResourceTriplet } from '$lib/resource-triplet'
 
+	import Boundary from './boundary.svelte'
 	import ErrorDisplay from './error.svelte'
 	import SectionTitle from './section-title.svelte'
 
@@ -12,8 +14,8 @@
 		description?: string | undefined
 		lastError: Error | null
 		/** RDK API string; presence renders the title as a linked monospace method name */
-		api?: string | undefined
-		class?: string
+		api?: ResourceTriplet | undefined
+		class?: ClassValue
 		titleInput?: Snippet
 		error?: Snippet
 		children?: Snippet
@@ -38,7 +40,7 @@
 	class="flex w-full flex-col gap-2 p-4"
 	aria-labelledby={headingID}
 >
-	<div class={twMerge('flex grow flex-row flex-wrap gap-2', className)}>
+	<div class={['flex grow flex-row flex-wrap gap-2', className]}>
 		<div class="flex max-w-50 grow flex-col gap-0.5 pr-4">
 			{#if api}
 				<SectionTitle
@@ -62,7 +64,7 @@
 		</div>
 
 		<div class="flex grow flex-wrap justify-between gap-2">
-			{@render children?.()}
+			<Boundary {children} />
 		</div>
 	</div>
 	{#if error}

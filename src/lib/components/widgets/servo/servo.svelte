@@ -12,6 +12,7 @@
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { formatNumeric } from '$lib/format'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Move from './move.svelte'
 	import QuickMove from './quick-move.svelte'
@@ -53,8 +54,9 @@
 				<div class="@container grow">
 					<div class="grid grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="GetPosition"
-							api="rdk:component:servo"
+							api={ResourceTriplets.Servo}
 							bottomText="Updates automatically"
 						>
 							<Query query={positionQuery}>
@@ -70,8 +72,9 @@
 							</Query>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="Move"
-							api="rdk:component:servo"
+							api={ResourceTriplets.Servo}
 						>
 							<Query query={positionQuery}>
 								{#if positionQuery.data !== undefined}
@@ -84,6 +87,7 @@
 							</Query>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="Quick move"
 							bottomText="Press a button to execute"
 						>
@@ -101,8 +105,9 @@
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
-						api="rdk:component:servo"
+						api={ResourceTriplets.Servo}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -113,7 +118,7 @@
 					</ApiSection>
 					<IsMoving
 						client={ServoClient}
-						api="rdk:component:servo"
+						api={ResourceTriplets.Servo}
 						{partID}
 						{resourceName}
 					/>

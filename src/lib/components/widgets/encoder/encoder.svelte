@@ -13,6 +13,7 @@
 	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'
@@ -65,9 +66,9 @@
 			<div class="grid w-full grid-cols-1 divide-y @lg:grid-cols-2 @lg:divide-x @lg:divide-y-0">
 				<ApiSection
 					title="GetPosition"
-					api="rdk:component:encoder"
+					api={ResourceTriplets.Encoder}
 					tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
-					class="gap-3"
+					class="grow flex-col gap-3"
 				>
 					<Queries queries={[propertiesQuery, positionQuery]}>
 						{#if positionQuery.data !== undefined}
@@ -83,8 +84,9 @@
 				</ApiSection>
 
 				<ApiSection
+					class="grow flex-col gap-4"
 					title="ResetPosition"
-					api="rdk:component:encoder"
+					api={ResourceTriplets.Encoder}
 					description="Set the current position as the new zero position"
 				>
 					<Button

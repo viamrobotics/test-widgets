@@ -25,11 +25,11 @@
 
 <ApiSection
 	title="GetVoltage"
-	class="grow"
+	class="grow flex-col gap-4"
 >
 	<Query
 		{query}
-		contentCx="h-6"
+		class="h-6"
 	>
 		{#if query.data !== undefined}
 			<VoltageReading data={query.data} />

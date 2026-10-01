@@ -15,6 +15,7 @@
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
 	import SectionTitle from '$lib/components/section-title.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
@@ -170,7 +171,7 @@
 			<div class="flex flex-col gap-0.5 p-4 pb-0">
 				<SectionTitle
 					title="GetImages"
-					api="rdk:component:camera"
+					api={ResourceTriplets.Camera}
 					headingId={getImagesHeadingID}
 				/>
 			</div>
@@ -339,7 +340,7 @@
 			<div class="flex flex-col gap-0.5">
 				<SectionTitle
 					title="GetPointCloud"
-					api="rdk:component:camera"
+					api={ResourceTriplets.Camera}
 					headingId={getPointCloudHeadingID}
 				/>
 				<p class="text-subtle-2 text-xs">
@@ -356,7 +357,7 @@
 			{#if isShowingPointcloud}
 				<Query
 					query={pointcloudQuery}
-					contentCx="h-6"
+					class="h-6"
 				>
 					{#if pointcloudQuery.data}
 						<PCDWidget data={pointcloudQuery.data} />

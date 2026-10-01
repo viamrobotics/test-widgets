@@ -13,6 +13,7 @@
 	import Queries from '$lib/components/queries.svelte'
 	import Query from '$lib/components/query.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Home from './home.svelte'
 	import MoveToPosition from './move-to-position.svelte'
@@ -50,6 +51,7 @@
 				<div class="@container grow">
 					<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 						<ApiSection
+							class="grow flex-col gap-4"
 							bottomText="Updates automatically"
 							aria-labelledby={positionHeadingID}
 						>
@@ -58,7 +60,7 @@
 								id={positionHeadingID}
 							>
 								<a
-									href={apiDocsHref('rdk:component:gantry', 'getPosition')}
+									href={apiDocsHref(ResourceTriplets.Gantry, 'getPosition')}
 									target="_blank"
 									rel="noopener noreferrer external"
 									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
@@ -67,7 +69,7 @@
 								</a>
 								and
 								<a
-									href={apiDocsHref('rdk:component:gantry', 'getLengths')}
+									href={apiDocsHref(ResourceTriplets.Gantry, 'getLengths')}
 									target="_blank"
 									rel="noopener noreferrer external"
 									class="decoration-gray-5 hover:decoration-default text-default font-mono font-semibold underline underline-offset-3"
@@ -87,8 +89,9 @@
 							</Queries>
 						</ApiSection>
 						<ApiSection
+							class="grow flex-col gap-4"
 							title="MoveToPosition"
-							api="rdk:component:gantry"
+							api={ResourceTriplets.Gantry}
 						>
 							<Query query={positionQuery}>
 								{@const positions = positionQuery.data}
@@ -105,12 +108,13 @@
 						</ApiSection>
 						<div class="flex grow flex-col divide-y">
 							<ApiSection
+								class="grow flex-col gap-4"
 								title="Quick move"
 								bottomText="Press a button to execute"
 							>
 								<Query
 									query={positionQuery}
-									contentCx="h-6"
+									class="h-6"
 								>
 									{@const positions = positionQuery.data}
 									{#if positions !== undefined}
@@ -125,8 +129,9 @@
 								</Query>
 							</ApiSection>
 							<ApiSection
+								class="grow flex-col gap-4"
 								title="Home"
-								api="rdk:component:gantry"
+								api={ResourceTriplets.Gantry}
 								description="Run the homing sequence"
 							>
 								<Home
@@ -139,8 +144,9 @@
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
+						class="grow flex-col gap-4"
 						title="Stop"
-						api="rdk:component:gantry"
+						api={ResourceTriplets.Gantry}
 					>
 						<StopButton
 							error={stopMutation.error}
@@ -151,7 +157,7 @@
 					</ApiSection>
 					<IsMoving
 						client={GantryClient}
-						api="rdk:component:gantry"
+						api={ResourceTriplets.Gantry}
 						{partID}
 						{resourceName}
 					/>

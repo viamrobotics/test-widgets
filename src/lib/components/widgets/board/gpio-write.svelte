@@ -23,7 +23,8 @@
 	}
 </script>
 
-<PinSection title="Write pin">
+<PinSection>
+	{#snippet title()}Write pin{/snippet}
 	<div class="flex w-full p-3 text-xs">
 		<ToggleButtons
 			cx="w-fit!"

@@ -123,11 +123,11 @@
 				{#if expandedLabels.has(label)}
 					<ul>
 						{#each detections as detection (detection.id)}
+							{@const detectionLabel = label}
 							<li>
-								<DetectionRow
-									{detection}
-									{label}
-								/>
+								<DetectionRow {detection}>
+									{#snippet label()}{detectionLabel}{/snippet}
+								</DetectionRow>
 							</li>
 						{/each}
 					</ul>

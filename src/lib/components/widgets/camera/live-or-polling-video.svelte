@@ -15,6 +15,7 @@
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 	import { usePip } from '$lib/pip/context.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
@@ -340,7 +341,7 @@
 	{#if lastError}
 		<ContentRect
 			{contentRect}
-			cx="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+			class="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
 		>
 			<ErrorDisplay
 				class="pb-4"
@@ -350,7 +351,7 @@
 	{:else if isLive ? isStreamLoading : isLoading}
 		<ContentRect
 			{contentRect}
-			cx="absolute top-0 left-0 h-64 w-80 max-w-full"
+			class="absolute top-0 left-0 h-64 w-80 max-w-full"
 		>
 			<Progress />
 		</ContentRect>
@@ -399,7 +400,7 @@
 {#if showResolutionOptions && isLive}
 	<MutationSection
 		title="SetStreamOptions"
-		api="rdk:component:camera"
+		api={ResourceTriplets.Camera}
 		description="Change the resolution of the live stream video feed"
 		lastError={resolutionMutation.error}
 		class="-m-4 mt-4"

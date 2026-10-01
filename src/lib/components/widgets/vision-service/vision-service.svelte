@@ -207,7 +207,7 @@
 
 			<Queries
 				queries={[propertiesQuery, captureAllQuery]}
-				contentCx="p-4 h-14"
+				class="h-14 p-4"
 			>
 				{#if detectionsSlow}
 					<p class="text-subtle-2 text-xs italic">
@@ -247,7 +247,7 @@
 			{#if showObjectPointClouds}
 				<Queries
 					queries={[getObjectPointCloudsQuery]}
-					contentCx="p-4 h-14"
+					class="h-14 p-4"
 				>
 					{#if objectPointCloudsSlow.isSlow}
 						<p class="text-subtle-2 text-xs italic">

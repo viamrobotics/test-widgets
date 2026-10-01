@@ -1,10 +1,12 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Label, Select } from '@viamrobotics/prime-core'
 
 	interface Props {
 		value: string
 		options: string[]
-		label: string
+		label: Snippet
 		onChange: (value: string) => void
 	}
 
@@ -12,7 +14,7 @@
 </script>
 
 <Label>
-	{label}
+	{@render label()}
 
 	<Select
 		slot="input"

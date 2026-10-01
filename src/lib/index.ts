@@ -4,8 +4,6 @@ export {
 	useAddImageToDataset,
 } from './add-image-to-dataset'
 
-export { apiDocsHref } from './api-docs-href'
-
 export { clientForResource, supportsDoCommand } from './client-map'
 export * from './components'
 
@@ -18,6 +16,7 @@ export {
 } from './is-known-resource'
 export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
+export type { ResourceTriplet } from './resource-triplet'
 export type {
 	ResourceAPIWidget,
 	ResourceWidget,

@@ -38,7 +38,7 @@
 	title="GetPosition"
 	tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
 	bottomText="Updates automatically"
-	class="grow"
+	class="grow flex-col gap-4"
 >
 	<Queries queries={[propertiesQuery, positionQuery]}>
 		{#if positionQuery.data !== undefined}

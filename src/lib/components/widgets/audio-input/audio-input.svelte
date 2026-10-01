@@ -11,6 +11,7 @@
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { createAudioCapturer } from './create-audio-capturer.svelte.ts'
 
@@ -63,7 +64,7 @@
 				<div class="flex w-full flex-col divide-y">
 					<MutationSection
 						title="GetAudio"
-						api="rdk:component:audio_input"
+						api={ResourceTriplets.AudioInput}
 						description="Capture audio from the device"
 						lastError={capture.error}
 					>
@@ -133,13 +134,13 @@
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
 						title="GetProperties"
-						api="rdk:component:audio_input"
+						api={ResourceTriplets.AudioInput}
 						description="Audio input properties"
-						class="relative"
+						class="relative grow flex-col gap-4"
 					>
 						<Query
 							query={propertiesQuery}
-							contentCx="h-6"
+							class="h-6"
 						>
 							{#if propertiesQuery.data !== undefined}
 								<Properties

@@ -8,6 +8,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
 		partID: string
@@ -44,12 +45,12 @@
 
 		<ApiSection
 			title="GetReadings"
-			api="rdk:component:sensor"
-			class="relative"
+			api={ResourceTriplets.Sensor}
+			class="relative grow flex-col gap-4"
 		>
 			<Query
 				query={readingsQuery}
-				contentCx="h-6"
+				class="h-6"
 			>
 				{#if readingsQuery.data !== undefined}
 					<ReadingsList data={readingsQuery.data} />
