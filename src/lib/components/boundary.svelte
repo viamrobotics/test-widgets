@@ -1,22 +1,20 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte'
+	import * as Sentry from '@sentry/svelte'
 
-	import { Progress } from '@viamrobotics/prime-core'
-
-	interface Props {
-		children?: Snippet
-	}
-
-	const { children }: Props = $props()
+	const { children } = $props()
 
 	let isErrorExpanded = $state(false)
+
+	const describeError = (error: unknown) => {
+		return error instanceof Error ? (error.stack ?? error.message) : String(error)
+	}
 </script>
 
-<svelte:boundary>
-	{#snippet pending()}
-		<Progress />
-	{/snippet}
-
+<svelte:boundary
+	onerror={(error) => {
+		Sentry.captureException(error)
+	}}
+>
 	{@render children?.()}
 
 	{#snippet failed(error, reset)}
@@ -26,22 +24,27 @@
 		>
 			<div>Something went wrong</div>
 			<button
-				class="text-disabled text-xs hover:underline"
+				class="text-subtle-1 text-xs hover:underline"
 				type="button"
-				onclick={reset}>Try again</button
+				onclick={() => {
+					isErrorExpanded = false
+					reset()
+				}}
 			>
+				Try again
+			</button>
 			<button
-				class="text-disabled text-xs hover:underline"
+				class="text-danger-dark text-xs hover:underline"
 				type="button"
 				aria-expanded={isErrorExpanded}
 				onclick={() => {
 					isErrorExpanded = !isErrorExpanded
-				}}>{isErrorExpanded ? 'Hide' : 'Show'} error</button
+				}}
 			>
+				{isErrorExpanded ? 'Hide' : 'Show'} error
+			</button>
 			{#if isErrorExpanded}
-				<pre class="font-mono text-xs text-wrap">{error instanceof Error
-						? (error.stack ?? error.message)
-						: String(error)}</pre>
+				<pre class="text-danger-dark font-mono text-xs text-wrap">{describeError(error)}</pre>
 			{/if}
 		</div>
 	{/snippet}
