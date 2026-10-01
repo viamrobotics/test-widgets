@@ -1,3 +1,10 @@
+<!--
+  @component
+
+  @deprecated A section owns its async state now. Pass the query to `ApiSection` as `queries`, or to a
+  `Section` control's `useSectionErrors` call, and guard `query.data` in the children. Kept for the sectionless files until their resource PRs.
+-->
+
 <script lang="ts">
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { Snippet } from 'svelte'

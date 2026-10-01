@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import { Section } from '$lib/components/section'
 	import StatusPill from '$lib/components/status-pill.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
@@ -12,11 +11,10 @@
 		title?: string
 		isManualMode: boolean
 		isPending: boolean
-		lastError: Error | null
 		setManualMode: (manualMode: boolean, enabledFor: number) => void
 	}
 
-	const { title, isManualMode, isPending, setManualMode, lastError }: Props = $props()
+	const { title, isManualMode, isPending, setManualMode }: Props = $props()
 
 	let enabledFor = $state(90)
 	let enableAfter = $state(5)
@@ -147,6 +145,4 @@
 		Manual mode puts the arm into gravity compensation or servo release mode so the arm can be moved
 		by hand.
 	</p>
-
-	<Section.Error error={lastError} />
 </div>

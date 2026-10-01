@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CurrentReading from './current-reading.svelte'
@@ -25,16 +24,12 @@
 </script>
 
 <ApiSection
+	queries={[query]}
 	method="GetCurrent"
 	api={ResourceTriplets.PowerSensor}
 	class="grow flex-col gap-4"
 >
-	<Query
-		{query}
-		class="h-6"
-	>
-		{#if query.data !== undefined}
-			<CurrentReading data={query.data} />
-		{/if}
-	</Query>
+	{#if query.data !== undefined}
+		<CurrentReading data={query.data} />
+	{/if}
 </ApiSection>

@@ -6,7 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
@@ -49,14 +50,19 @@
 	)
 </script>
 
-<Query query={jointPositionsQuery}>
+<ApiSection
+	method="MoveToJointPositions"
+	api={ResourceTriplets.Arm}
+	queries={[jointPositionsQuery, kinematicsQuery]}
+	mutations={[moveToJointPosMutation]}
+	class="grow flex-col gap-4"
+>
 	{#if jointPositionsQuery.data}
 		<MoveToJointPositions
 			positions={jointPositionsQuery.data.values}
 			{moveToJointPositions}
-			lastError={moveToJointPosMutation.error}
 			{jointLimitsDegrees}
 			isMoving={motionTracking.isTracking}
 		/>
 	{/if}
-</Query>
+</ApiSection>

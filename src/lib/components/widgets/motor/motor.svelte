@@ -9,7 +9,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -177,6 +176,7 @@
 							<ApiSection
 								method="IsPowered"
 								api={ResourceTriplets.Motor}
+								queries={[isPoweredQuery]}
 								class="grow flex-col gap-3 p-0!"
 							>
 								{#snippet tooltip()}
@@ -184,33 +184,32 @@
 									Stepper motors will report ”true” if they are being powered while holding a
 									position and while they are turning.
 								{/snippet}
-								<Query query={isPoweredQuery}>
-									{#if isPoweredQuery.data !== undefined}
-										{@const [isPowered, powerPct] = isPoweredQuery.data}
-										<span class="font-roboto-mono flex flex-row gap-1 text-xs">
-											<p class="text-default">{isPowered}</p>
-											<p class="text-disabled">/</p>
-											<p class="text-subtle-1">
-												{formatNumeric(powerPct * 100, 1)}%
-											</p>
-										</span>
-									{/if}
-								</Query>
+								{#if isPoweredQuery.data !== undefined}
+									{@const [isPowered, powerPct] = isPoweredQuery.data}
+									<span class="font-roboto-mono flex flex-row gap-1 text-xs">
+										<p class="text-default">{isPowered}</p>
+										<p class="text-disabled">/</p>
+										<p class="text-subtle-1">
+											{formatNumeric(powerPct * 100, 1)}%
+										</p>
+									</span>
+								{/if}
 							</ApiSection>
 							{#if propertiesQuery.data?.positionReporting === true}
 								<ApiSection
 									method="GetPosition"
 									api={ResourceTriplets.Motor}
+									queries={[positionQuery]}
 									class="grow flex-col gap-3 p-0!"
 								>
 									{#snippet tooltip()}
 										Reports the position of an encoded motor in revolutions from zero/home.
 									{/snippet}
-									<Query query={positionQuery}>
+									{#if positionQuery.data !== undefined}
 										<p class="font-roboto-mono text-default text-xs">
 											{formatNumeric(positionQuery.data, 4)}
 										</p>
-									</Query>
+									{/if}
 								</ApiSection>
 							{/if}
 						</div>

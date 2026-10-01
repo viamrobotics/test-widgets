@@ -9,7 +9,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
@@ -137,21 +136,17 @@
 		<ApiSection
 			method="DiscoverResources"
 			api={ResourceTriplets.Discovery}
+			queries={[discoveryQuery]}
 			class="relative grow flex-col gap-4"
 		>
-			<Query
-				query={discoveryQuery}
-				class="h-6"
-			>
-				{#if discoveryQuery.data !== undefined}
-					<ResourcesList
-						data={discoveryQuery.data}
-						{previews}
-						{componentPreview}
-						{onAddComponent}
-					/>
-				{/if}
-			</Query>
+			{#if discoveryQuery.data !== undefined}
+				<ResourcesList
+					data={discoveryQuery.data}
+					{previews}
+					{componentPreview}
+					{onAddComponent}
+				/>
+			{/if}
 		</ApiSection>
 	{/snippet}
 </ConnectionStatus>

@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Orientation from './orientation.svelte'
@@ -27,14 +26,10 @@
 <ApiSection
 	method="GetOrientation"
 	api={ResourceTriplets.MovementSensor}
+	queries={[query]}
 	class="grow flex-col gap-4"
 >
-	<Query
-		{query}
-		class="h-6"
-	>
-		{#if query.data !== undefined}
-			<Orientation data={query.data} />
-		{/if}
-	</Query>
+	{#if query.data !== undefined}
+		<Orientation data={query.data} />
+	{/if}
 </ApiSection>

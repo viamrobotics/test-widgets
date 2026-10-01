@@ -6,7 +6,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Properties from '$lib/components/audio-properties.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { Section } from '$lib/components/section'
@@ -140,23 +139,19 @@
 					<ApiSection
 						method="GetProperties"
 						api={ResourceTriplets.AudioInput}
+						queries={[propertiesQuery]}
 						class="relative grow flex-col gap-4"
 					>
 						{#snippet subheading()}
 							<Section.Text>Audio input properties</Section.Text>
 						{/snippet}
-						<Query
-							query={propertiesQuery}
-							class="h-6"
-						>
-							{#if propertiesQuery.data !== undefined}
-								<Properties
-									supportedCodecs={propertiesQuery.data.supportedCodecs}
-									sampleRateHz={propertiesQuery.data.sampleRateHz}
-									numChannels={propertiesQuery.data.numChannels}
-								/>
-							{/if}
-						</Query>
+						{#if propertiesQuery.data !== undefined}
+							<Properties
+								supportedCodecs={propertiesQuery.data.supportedCodecs}
+								sampleRateHz={propertiesQuery.data.sampleRateHz}
+								numChannels={propertiesQuery.data.numChannels}
+							/>
+						{/if}
 					</ApiSection>
 				</div>
 			</div>

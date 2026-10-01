@@ -1,3 +1,12 @@
+<!--
+  @component
+
+  @deprecated Errors show in the section heading's indicator. Pass the mutation to `ApiSection` as
+  `mutations` or to a `Section` control's `useSectionErrors` call. In a form that cannot reach its
+  section, use `Section.Error`, which reports to the indicator and falls back to an inline line
+  outside a section. Kept for the sectionless files until their resource PRs.
+-->
+
 <script lang="ts">
 	import type { ClassValue } from 'svelte/elements'
 

@@ -9,8 +9,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Queries from '$lib/components/queries.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -42,7 +40,10 @@
 	const quickMoveMutation = createResourceMutation(client, 'moveToPosition')
 	const stopMutation = createResourceMutation(client, 'stop')
 
-	const quickMoveErrors = useSectionErrors(() => ({ mutations: [quickMoveMutation] }))
+	const quickMoveErrors = useSectionErrors(() => ({
+		queries: [positionQuery],
+		mutations: [quickMoveMutation],
+	}))
 </script>
 
 <ConnectionStatus {partID}>
@@ -55,36 +56,34 @@
 							class="grow flex-col gap-4"
 							method="GetPosition"
 							api={ResourceTriplets.Gantry}
+							queries={[positionQuery, lengthsQuery]}
 						>
-							<Queries queries={[positionQuery, lengthsQuery]}>
-								{@const positions = positionQuery.data}
-								{@const lengths = lengthsQuery.data ?? []}
-								{#if positions !== undefined}
-									<PositionAndLengths
-										{positions}
-										{lengths}
-									/>
-								{/if}
-							</Queries>
+							{@const positions = positionQuery.data}
+							{@const lengths = lengthsQuery.data ?? []}
+							{#if positions !== undefined}
+								<PositionAndLengths
+									{positions}
+									{lengths}
+								/>
+							{/if}
 							<Section.Text class="mt-auto">Updates automatically</Section.Text>
 						</ApiSection>
 						<ApiSection
 							class="grow flex-col gap-4"
 							method="MoveToPosition"
 							api={ResourceTriplets.Gantry}
+							queries={[positionQuery]}
 							mutations={[moveMutation]}
 						>
-							<Query query={positionQuery}>
-								{@const positions = positionQuery.data}
-								{#if positions !== undefined}
-									<MoveToPosition
-										{positions}
-										moveTo={(newPos: number[], speeds: number[]) => {
-											moveMutation.mutate([newPos, speeds], {})
-										}}
-									/>
-								{/if}
-							</Query>
+							{@const positions = positionQuery.data}
+							{#if positions !== undefined}
+								<MoveToPosition
+									{positions}
+									moveTo={(newPos: number[], speeds: number[]) => {
+										moveMutation.mutate([newPos, speeds], {})
+									}}
+								/>
+							{/if}
 						</ApiSection>
 						<div class="flex grow flex-col divide-y">
 							<Section
@@ -99,37 +98,23 @@
 										{/snippet}
 									</Section.Heading>
 								</div>
-								<Section.Body>
-									<Query
-										query={positionQuery}
-										class="h-6"
-									>
-										{@const positions = positionQuery.data}
-										{#if positions !== undefined}
-											<QuickMove
-												{positions}
-												moveTo={(newPos: number[], speeds: number[]) => {
-													quickMoveMutation.mutate([newPos, speeds], {})
-												}}
-											/>
-										{/if}
-									</Query>
+								<Section.Body isLoading={quickMoveErrors.isLoading}>
+									{@const positions = positionQuery.data}
+									{#if positions !== undefined}
+										<QuickMove
+											{positions}
+											moveTo={(newPos: number[], speeds: number[]) => {
+												quickMoveMutation.mutate([newPos, speeds], {})
+											}}
+										/>
+									{/if}
 									<Section.Text class="mt-auto">Press a button to execute</Section.Text>
 								</Section.Body>
 							</Section>
-							<ApiSection
-								class="grow flex-col gap-4"
-								method="Home"
-								api={ResourceTriplets.Gantry}
-							>
-								{#snippet subheading()}
-									<Section.Text>Run the homing sequence</Section.Text>
-								{/snippet}
-								<Home
-									{partID}
-									{resourceName}
-								/>
-							</ApiSection>
+							<Home
+								{partID}
+								{resourceName}
+							/>
 						</div>
 					</div>
 				</div>

@@ -9,7 +9,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 	import { Section } from '$lib/components/section'
@@ -67,28 +66,28 @@
 				<ApiSection
 					method="GetPosition"
 					api={ResourceTriplets.Encoder}
+					queries={[propertiesQuery, positionQuery]}
 					class="grow flex-col gap-3"
 				>
 					{#snippet tooltip()}
 						Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
 					{/snippet}
-					<Queries queries={[propertiesQuery, positionQuery]}>
-						{#if positionQuery.data !== undefined}
-							{@const [position, encoderPositionType] = positionQuery.data}
-							<div class="font-roboto-mono flex flex-col gap-2 text-sm">
-								<Position
-									{position}
-									{encoderPositionType}
-								/>
-							</div>
-						{/if}
-					</Queries>
+					{#if positionQuery.data !== undefined}
+						{@const [position, encoderPositionType] = positionQuery.data}
+						<div class="font-roboto-mono flex flex-col gap-2 text-sm">
+							<Position
+								{position}
+								{encoderPositionType}
+							/>
+						</div>
+					{/if}
 				</ApiSection>
 
 				<ApiSection
 					class="grow flex-col gap-4"
 					method="ResetPosition"
 					api={ResourceTriplets.Encoder}
+					mutations={[resetMutation]}
 				>
 					{#snippet subheading()}
 						<Section.Text>Set the current position as the new zero position</Section.Text>
@@ -102,7 +101,6 @@
 					>
 						Execute
 					</Button>
-					<Section.Error error={resetMutation.error} />
 				</ApiSection>
 			</div>
 		</div>

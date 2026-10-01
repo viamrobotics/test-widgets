@@ -337,7 +337,7 @@
 </script>
 
 <div class="relative">
-	<!-- This breaks out of using the <Query> component
+	<!-- This breaks out of using the Query component
 	  to merge live stream and TanStack query errors -->
 	{#if lastError}
 		<ContentRect
