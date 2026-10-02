@@ -85,14 +85,18 @@
 				<div class="flex w-full flex-col divide-y">
 					<Section class="flex-row flex-wrap gap-2">
 						<div class="flex flex-col gap-0.5">
-							<Section.Heading>Quick move</Section.Heading>
+							<Section.Heading>
+								Quick move
+								{#snippet aside()}
+									<Section.Errors errors={quickMoveErrors.errors} />
+								{/snippet}
+							</Section.Heading>
 						</div>
 						<Section.Body>
 							<div class="flex grow flex-wrap justify-between gap-2">
 								<QuickMove setPower={quickSetPower} />
 							</div>
 						</Section.Body>
-						<Section.Errors errors={quickMoveErrors.errors} />
 					</Section>
 					<ApiSection
 						class="flex-row flex-wrap gap-2"
