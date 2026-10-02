@@ -47,15 +47,14 @@
 		if (!hasErrors) return
 		try {
 			await globalThis.navigator.clipboard.writeText(text)
+			copied = true
+			clearTimeout(copiedTimer)
+			copiedTimer = setTimeout(() => {
+				copied = false
+			}, COPIED_MS)
 		} catch (error) {
 			console.error('Failed to copy errors to clipboard', error)
 		}
-
-		copied = true
-		clearTimeout(copiedTimer)
-		copiedTimer = setTimeout(() => {
-			copied = false
-		}, COPIED_MS)
 	}
 
 	$effect(() => () => clearTimeout(copiedTimer))
