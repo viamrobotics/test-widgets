@@ -5,8 +5,8 @@
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { PersistedState } from 'runed'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import PoseEditor from '$lib/components/pose-editor.svelte'
+	import { Section } from '$lib/components/section'
 
 	import type { MoveInput } from './parse-move-args'
 
@@ -140,5 +140,5 @@
 		Move blocks until the motion completes. Stop the component itself to interrupt.
 	</p>
 
-	<ErrorDisplay {lastError} />
+	<Section.Error error={lastError} />
 </div>

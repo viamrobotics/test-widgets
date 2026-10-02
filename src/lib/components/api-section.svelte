@@ -40,7 +40,10 @@
 	const sectionErrors = useSectionErrors(() => ({ queries, mutations }))
 </script>
 
-<Section {...rest}>
+<Section
+	errorReporter={sectionErrors}
+	{...rest}
+>
 	<div class="flex flex-col gap-0.5">
 		<Section.Heading>
 			<Section.Method

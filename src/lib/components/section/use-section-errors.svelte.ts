@@ -1,5 +1,7 @@
 import type { QueryObserverResult } from '@tanstack/svelte-query'
 
+import { SvelteSet } from 'svelte/reactivity'
+
 import { errorKey } from './error-key'
 
 export type SectionQuery = Pick<
@@ -45,9 +47,13 @@ export const useSectionErrors = (getSources: () => SectionSources) => {
 		return held
 	})
 
+	// Errors that `Section.Error` parts inside the section report, e.g. an inner form's mutation.
+	const reported = new SvelteSet<() => Error | null>()
+
 	const errors = $derived.by(() => {
 		const mutationErrors = (getSources().mutations ?? []).map((mutation) => mutation.error)
-		return dedupeErrors([...queryErrors, ...mutationErrors])
+		const reportedErrors = [...reported].map((getError) => getError())
+		return dedupeErrors([...queryErrors, ...mutationErrors, ...reportedErrors])
 	})
 
 	const isLoading = $derived(
@@ -60,6 +66,12 @@ export const useSectionErrors = (getSources: () => SectionSources) => {
 		},
 		get isLoading() {
 			return isLoading
+		},
+		report(getError: () => Error | null) {
+			reported.add(getError)
+			return () => {
+				reported.delete(getError)
+			}
 		},
 	}
 }

@@ -3,8 +3,8 @@
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
+	import { Section } from '$lib/components/section'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
 	import JointPositionEditor from './joint-position-editor.svelte'
@@ -127,5 +127,5 @@
 		/>
 	{/if}
 
-	<ErrorDisplay {lastError} />
+	<Section.Error error={lastError} />
 </div>

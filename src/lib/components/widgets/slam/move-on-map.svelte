@@ -2,7 +2,7 @@
 	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -102,5 +102,5 @@
 			Stop
 		</Button>
 	</div>
-	<ErrorDisplay {lastError} />
+	<Section.Error error={lastError} />
 </ApiSection>

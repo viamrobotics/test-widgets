@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import AnalogReadWrapper from './analog-read-wrapper.svelte'
 	import AnalogWriteWrapper from './analog-write-wrapper.svelte'
@@ -68,5 +68,5 @@
 			/>
 		{/if}
 	</div>
-	<ErrorDisplay lastError={currentError} />
+	<Section.Error error={currentError} />
 </div>

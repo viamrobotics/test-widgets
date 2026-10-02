@@ -66,7 +66,10 @@
 	{#snippet connected()}
 		<div class="@container">
 			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
-				<Section class="flex-row flex-wrap gap-2">
+				<Section
+					errorReporter={quickMoveErrors}
+					class="flex-row flex-wrap gap-2"
+				>
 					<div class="flex flex-col gap-0.5">
 						<Section.Heading>
 							Quick move

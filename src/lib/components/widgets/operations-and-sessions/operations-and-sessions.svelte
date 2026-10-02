@@ -4,6 +4,7 @@
 	import { slide } from 'svelte/transition'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import OperationsTable from './operations-table.svelte'
 	import RttPill from './rtt-pill.svelte'
@@ -98,7 +99,7 @@
 					/>
 				{/if}
 				<ErrorDisplay lastError={operationsQuery.error} />
-				<ErrorDisplay lastError={cancelOperationMutation.error} />
+				<Section.Error error={cancelOperationMutation.error} />
 			</div>
 			<div class="flex h-max flex-col gap-2">
 				<span class="text-default text-sm font-semibold">Sessions</span>

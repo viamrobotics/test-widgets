@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 	import Table from '$lib/components/table.svelte'
 
 	interface Props {
@@ -59,4 +59,4 @@
 		{/each}
 	</tbody>
 </Table>
-<ErrorDisplay {lastError} />
+<Section.Error error={lastError} />

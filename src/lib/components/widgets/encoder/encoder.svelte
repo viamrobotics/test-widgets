@@ -9,7 +9,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
@@ -103,7 +102,7 @@
 					>
 						Execute
 					</Button>
-					<ErrorDisplay lastError={resetMutation.error} />
+					<Section.Error error={resetMutation.error} />
 				</ApiSection>
 			</div>
 		</div>

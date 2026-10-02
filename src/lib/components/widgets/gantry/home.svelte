@@ -3,7 +3,7 @@
 	import { GantryClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	interface Props {
 		partID: string
@@ -30,4 +30,4 @@
 >
 	Execute
 </Button>
-<ErrorDisplay lastError={homeMutation.error} />
+<Section.Error error={homeMutation.error} />
