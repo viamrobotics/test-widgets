@@ -17,7 +17,6 @@ describe('Gantry quick-move', () => {
 		render(Subject, {
 			positions: [],
 			moveTo: vi.fn(),
-			lastError: null,
 			...props,
 		})
 
@@ -89,8 +88,4 @@ describe('Gantry quick-move', () => {
 		expect(moveTo).toHaveBeenCalledWith([11], [50])
 	})
 
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('some error msg') })
-		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
-	})
 })
