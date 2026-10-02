@@ -90,7 +90,10 @@
 								{/if}
 							</Query>
 						</ApiSection>
-						<Section class="grow flex-col gap-4">
+						<Section
+							errorReporter={quickMoveErrors}
+							class="grow flex-col gap-4"
+						>
 							<div class="flex flex-col gap-0.5">
 								<Section.Heading>
 									Quick move

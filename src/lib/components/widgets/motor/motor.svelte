@@ -83,7 +83,10 @@
 		<div class="@container">
 			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 				<div class="flex w-full flex-col divide-y">
-					<Section class="flex-row flex-wrap gap-2">
+					<Section
+						errorReporter={quickMoveErrors}
+						class="flex-row flex-wrap gap-2"
+					>
 						<div class="flex flex-col gap-0.5">
 							<Section.Heading>
 								Quick move

@@ -3,7 +3,7 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import OpenGripperSvg from './open-gripper-svg.svelte'
 
@@ -34,4 +34,4 @@
 		<p class="font-roboto-mono text-xs uppercase">open</p>
 	</div>
 </Button>
-<ErrorDisplay lastError={openMutation.error} />
+<Section.Error error={openMutation.error} />

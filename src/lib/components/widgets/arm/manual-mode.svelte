@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 	import StatusPill from '$lib/components/status-pill.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
@@ -148,5 +148,5 @@
 		by hand.
 	</p>
 
-	<ErrorDisplay {lastError} />
+	<Section.Error error={lastError} />
 </div>

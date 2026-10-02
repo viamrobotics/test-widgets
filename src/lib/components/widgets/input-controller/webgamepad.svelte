@@ -3,7 +3,7 @@
 	import { InputControllerClient, type InputControllerEvent } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 	import StatusPill from '$lib/components/status-pill.svelte'
 
 	import type { StandardGamepadEvent } from './standard-gamepad-event'
@@ -139,4 +139,4 @@
 	activeText="Connected"
 	inactiveText="Disconnected"
 />
-<ErrorDisplay lastError={triggerEventMutation.error} />
+<Section.Error error={triggerEventMutation.error} />
