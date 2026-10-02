@@ -67,7 +67,8 @@
 		aria-describedby={tooltipID}
 		onclick={copy}
 		class={[
-			'inline-flex items-center gap-0.5 p-0.5',
+			// The pseudo-element pads the hit area to 24px (WCAG 2.5.8) without growing the heading row.
+			'relative inline-flex items-center gap-0.5 p-0.5 after:absolute after:-inset-0.5',
 			{
 				'text-gray-6': !hasErrors && !copied,
 				'text-danger-dark hover:bg-medium': hasErrors && !copied,
