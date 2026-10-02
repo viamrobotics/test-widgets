@@ -109,23 +109,23 @@
 		}
 		15% {
 			transform: scale(1.35) rotate(-14deg);
-			background-color: var(--color-danger-light);
+			background-color: color-mix(in srgb, var(--color-danger-light) 50%, transparent);
 		}
 		30% {
 			transform: scale(1.35) rotate(14deg);
-			background-color: var(--color-danger-light);
+			background-color: color-mix(in srgb, var(--color-danger-light) 50%, transparent);
 		}
 		45% {
 			transform: scale(1.35) rotate(-14deg);
-			background-color: var(--color-danger-light);
+			background-color: color-mix(in srgb, var(--color-danger-light) 50%, transparent);
 		}
 		60% {
 			transform: scale(1.35) rotate(14deg);
-			background-color: var(--color-danger-light);
+			background-color: color-mix(in srgb, var(--color-danger-light) 50%, transparent);
 		}
 		80% {
 			transform: scale(1.35) rotate(0deg);
-			background-color: var(--color-danger-light);
+			background-color: color-mix(in srgb, var(--color-danger-light) 50%, transparent);
 		}
 		100% {
 			transform: scale(1) rotate(0deg);
