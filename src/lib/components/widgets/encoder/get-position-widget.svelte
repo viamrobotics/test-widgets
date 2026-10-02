@@ -4,6 +4,8 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Queries from '$lib/components/queries.svelte'
+	import { Section } from '$lib/components/section'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'
@@ -35,11 +37,13 @@
 </script>
 
 <ApiSection
-	title="GetPosition"
-	tooltip="Relative encoders return ticks since last zeroing. Absolute encoders return degrees."
-	bottomText="Updates automatically"
+	method="GetPosition"
+	api={ResourceTriplets.Encoder}
 	class="grow flex-col gap-4"
 >
+	{#snippet tooltip()}
+		Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
+	{/snippet}
 	<Queries queries={[propertiesQuery, positionQuery]}>
 		{#if positionQuery.data !== undefined}
 			{@const [position, encoderPositionType] = positionQuery.data}
@@ -51,4 +55,5 @@
 			</div>
 		{/if}
 	</Queries>
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

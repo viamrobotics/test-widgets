@@ -2,7 +2,9 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { Section } from '$lib/components/section'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import SetPower from './set-power.svelte'
 
@@ -22,10 +24,20 @@
 	const setPowerMutation = createResourceMutation(client, 'setPower')
 </script>
 
-<MutationView lastError={setPowerMutation.error}>
-	<SetPower
-		setPower={(linear: Vector3, angular: Vector3) => {
-			setPowerMutation.mutate([linear, angular], {})
-		}}
-	/>
-</MutationView>
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="SetPower"
+	api={ResourceTriplets.Base}
+	mutations={[setPowerMutation]}
+>
+	{#snippet subheading()}
+		<Section.Text>Move continuously at a given amount of power</Section.Text>
+	{/snippet}
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<SetPower
+			setPower={(linear: Vector3, angular: Vector3) => {
+				setPowerMutation.mutate([linear, angular], {})
+			}}
+		/>
+	</div>
+</ApiSection>

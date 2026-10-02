@@ -1,48 +1,43 @@
 <script lang="ts">
-	import type {
-		Arm,
-		ArmClient,
-		Base,
-		BaseClient,
-		Gantry,
-		GantryClient,
-		Gripper,
-		GripperClient,
-		Motor,
-		MotorClient,
-		Servo,
-		ServoClient,
-	} from '@viamrobotics/sdk'
-	import type { Snippet } from 'svelte'
+	import type * as SDK from '@viamrobotics/sdk'
+	import type { HTMLAttributes } from 'svelte/elements'
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import type { ResourceTriplet } from '$lib/resource-triplet'
 
 	import ApiSection from './api-section.svelte'
-	import Query from './query.svelte'
+	import { Section } from './section'
 	import StatusPill from './status-pill.svelte'
 
 	type Client =
-		| typeof ArmClient
-		| typeof BaseClient
-		| typeof GantryClient
-		| typeof GripperClient
-		| typeof MotorClient
-		| typeof ServoClient
+		| typeof SDK.ArmClient
+		| typeof SDK.BaseClient
+		| typeof SDK.GantryClient
+		| typeof SDK.GripperClient
+		| typeof SDK.MotorClient
+		| typeof SDK.ServoClient
 
-	interface Props {
+	type Resource = SDK.Arm | SDK.Base | SDK.Gantry | SDK.Gripper | SDK.Motor | SDK.Servo
+
+	interface Props extends HTMLAttributes<HTMLElement> {
 		client: Client
 		partID: string
 		resourceName: string
 		api: ResourceTriplet
-		children?: Snippet
 	}
 
-	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
+	const {
+		client: clientClass,
+		partID,
+		resourceName,
+		api,
+		children,
+		class: className,
+	}: Props = $props()
 
 	const client = $derived(
-		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
+		createResourceClient<Resource>(
 			clientClass,
 			() => partID,
 			() => resourceName
@@ -53,15 +48,12 @@
 </script>
 
 <ApiSection
-	title="IsMoving"
+	class={['grow flex-col gap-4', className]}
+	method="IsMoving"
+	queries={[query]}
 	{api}
-	bottomText="Updates automatically"
-	class="grow flex-col gap-4"
 >
-	<Query {query}>
-		<StatusPill isActive={query.data ?? false} />
-	</Query>
-
-	<!-- slot for additional actuation info Ex: Motor's IsPowered & GetPosition -->
+	<StatusPill isActive={query.data ?? false} />
 	{@render children?.()}
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

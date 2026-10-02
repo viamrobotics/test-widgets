@@ -8,10 +8,11 @@
 	import { untrack } from 'svelte'
 
 	import { assertExists } from '$lib/assert'
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ContentRect from '$lib/components/content-rect.svelte'
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Progress from '$lib/components/progress.svelte'
+	import { Section } from '$lib/components/section'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 	import { usePip } from '$lib/pip/context.svelte'
@@ -398,14 +399,16 @@
 {/if}
 
 {#if showResolutionOptions && isLive}
-	<MutationSection
-		title="SetStreamOptions"
+	<ApiSection
+		method="SetStreamOptions"
 		api={ResourceTriplets.Camera}
-		description="Change the resolution of the live stream video feed"
-		lastError={resolutionMutation.error}
-		class="-m-4 mt-4"
+		mutations={[resolutionMutation]}
+		class={['flex-row flex-wrap gap-2', '-m-4 mt-4']}
 	>
-		<div class="flex w-full flex-wrap justify-between gap-2">
+		{#snippet subheading()}
+			<Section.Text>Change the resolution of the live stream video feed</Section.Text>
+		{/snippet}
+		<div class="flex grow flex-wrap justify-between gap-2">
 			<Label cx="max-w-[96px] gap-1 text-xs">
 				<span class="flex gap-1 whitespace-nowrap">
 					Resolution
@@ -447,5 +450,5 @@
 				</Button>
 			</div>
 		</div>
-	</MutationSection>
+	</ApiSection>
 {/if}

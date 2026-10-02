@@ -44,7 +44,7 @@
 		</div>
 
 		<ApiSection
-			title="GetReadings"
+			method="GetReadings"
 			api={ResourceTriplets.Sensor}
 			class="relative grow flex-col gap-4"
 		>

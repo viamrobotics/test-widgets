@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from './error.svelte'
-
 	interface Props {
 		onStop: () => void
-		error: Error | null
 	}
 
-	const { error, onStop }: Props = $props()
+	const { onStop }: Props = $props()
 </script>
 
 <Button
@@ -18,4 +15,3 @@
 >
 	Stop
 </Button>
-<ErrorDisplay lastError={error} />

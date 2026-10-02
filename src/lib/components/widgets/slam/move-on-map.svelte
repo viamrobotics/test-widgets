@@ -25,7 +25,7 @@
 
 <ApiSection
 	class="grow flex-col gap-4"
-	title="MoveOnMap"
+	method="MoveOnMap"
 	api={ResourceTriplets.Motion}
 >
 	<Label>

@@ -36,7 +36,7 @@ Fonts are loaded by the demo app only: `src/routes/+layout.svelte` imports `@via
 
 ## Spacing, layout, density
 
-Use Tailwind's spacing scale consistently. Match the density of neighboring widgets. This is a dense tooling UI, not a marketing page. Reuse the existing layout idioms in `src/lib/components/` (`section-group`, `section-title`, `api-section`, `mutation-section`, `readings-list`) rather than inventing a new layout per widget.
+Use Tailwind's spacing scale consistently. Match the density of neighboring widgets. This is a dense tooling UI, not a marketing page. Reuse the existing layout idioms in `src/lib/components/` (`section-group`, the `section/` parts, `api-section`, `readings-list`) rather than inventing a new layout per widget.
 
 ## Component states and interaction
 

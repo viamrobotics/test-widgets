@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CompassHeading from './compass-heading.svelte'
 
@@ -24,7 +25,8 @@
 </script>
 
 <ApiSection
-	title="GetCompassHeading"
+	method="GetCompassHeading"
+	api={ResourceTriplets.MovementSensor}
 	class="grow flex-col gap-4"
 >
 	<Query
