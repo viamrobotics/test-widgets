@@ -2,7 +2,9 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { Section } from '$lib/components/section'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import SetVelocity from './set-velocity.svelte'
 
@@ -22,10 +24,20 @@
 	const setVelocityMutation = createResourceMutation(client, 'setVelocity')
 </script>
 
-<MutationView lastError={setVelocityMutation.error}>
-	<SetVelocity
-		setVelocity={(linear: Vector3, angular: Vector3) => {
-			setVelocityMutation.mutate([linear, angular], {})
-		}}
-	/>
-</MutationView>
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="SetVelocity"
+	api={ResourceTriplets.Base}
+	mutations={[setVelocityMutation]}
+>
+	{#snippet subheading()}
+		<Section.Text>Move continually at a given velocity</Section.Text>
+	{/snippet}
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<SetVelocity
+			setVelocity={(linear: Vector3, angular: Vector3) => {
+				setVelocityMutation.mutate([linear, angular], {})
+			}}
+		/>
+	</div>
+</ApiSection>

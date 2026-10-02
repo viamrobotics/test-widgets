@@ -4,6 +4,8 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { Section } from '$lib/components/section'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GetJointPositions from './get-joint-positions.svelte'
 
@@ -24,8 +26,8 @@
 </script>
 
 <ApiSection
-	title="GetJointPositions"
-	bottomText="Updates automatically"
+	method="GetJointPositions"
+	api={ResourceTriplets.Arm}
 	class="grow flex-col gap-4"
 >
 	<Query {query}>
@@ -33,4 +35,5 @@
 			<GetJointPositions positions={query.data.values} />
 		{/if}
 	</Query>
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

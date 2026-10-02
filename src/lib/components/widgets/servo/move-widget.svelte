@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import Query from '$lib/components/query.svelte'
 
 	import Move from './move.svelte'
@@ -38,7 +39,7 @@
 		<Move
 			currentPosition={positionQuery.data}
 			{moveTo}
-			lastError={moveMutation.error}
 		/>
 	{/if}
 </Query>
+<ErrorDisplay lastError={moveMutation.error} />

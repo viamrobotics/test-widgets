@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Position from './position.svelte'
 
@@ -24,7 +25,8 @@
 </script>
 
 <ApiSection
-	title="GetPosition"
+	method="GetPosition"
+	api={ResourceTriplets.Slam}
 	class="grow flex-col gap-4"
 >
 	<Query

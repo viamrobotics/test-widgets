@@ -10,6 +10,7 @@
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { Section } from '$lib/components/section'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -72,19 +73,19 @@
 				>
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="GetJointPositions"
+						method="GetJointPositions"
 						api={ResourceTriplets.Arm}
-						bottomText="Updates automatically"
 					>
 						<Query query={jointPositionsQuery}>
 							{#if jointPositionsQuery.data}
 								<GetJointPositions positions={jointPositionsQuery.data.values} />
 							{/if}
 						</Query>
+						<Section.Text class="mt-auto">Updates automatically</Section.Text>
 					</ApiSection>
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="MoveToJointPositions"
+						method="MoveToJointPositions"
 						api={ResourceTriplets.Arm}
 					>
 						<Query query={jointPositionsQuery}>
@@ -101,7 +102,7 @@
 					</ApiSection>
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="MoveToPosition"
+						method="MoveToPosition"
 						api={ResourceTriplets.Arm}
 					>
 						<MoveToPositionControl
@@ -117,11 +118,11 @@
 				>
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="Stop"
+						method="Stop"
 						api={ResourceTriplets.Arm}
+						mutations={[stopMutation]}
 					>
 						<StopButton
-							error={stopMutation.error}
 							onStop={() => {
 								stopMutation.mutate([], {})
 							}}
