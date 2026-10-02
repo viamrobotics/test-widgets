@@ -20,7 +20,6 @@ describe('Motion move', () => {
 			frameName: 'my-arm',
 			destination: 'world',
 			isPending: false,
-			lastError: null,
 			storageKey: `test-move-${keySeq++}`,
 			onExecute: vi.fn(),
 			...props,
@@ -85,11 +84,5 @@ describe('Motion move', () => {
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(onExecute).toHaveBeenCalledWith(expect.objectContaining({ pose: currentPose }))
-	})
-
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('move failed') })
-
-		expect(screen.getByText(/move failed/iu)).toBeInTheDocument()
 	})
 })

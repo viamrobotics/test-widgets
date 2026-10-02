@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
 
+	import type { SectionMutation } from '$lib/components/section/use-section-errors.svelte'
+
 	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -13,10 +14,10 @@
 		updateDestination: (_: Partial<PosePosition>) => void
 		moveOnMap: (planDeviationM: number | undefined) => void
 		stopPlan: () => void
-		lastError: Error | null
+		mutations: SectionMutation[]
 	}
 
-	const { destination, updateDestination, moveOnMap, stopPlan, lastError }: Props = $props()
+	const { destination, updateDestination, moveOnMap, stopPlan, mutations }: Props = $props()
 
 	const destinationID = $props.id()
 
@@ -27,6 +28,7 @@
 	class="grow flex-col gap-4"
 	method="MoveOnMap"
 	api={ResourceTriplets.Motion}
+	{mutations}
 >
 	<Label>
 		Plan deviation <abbr>(m)</abbr>
@@ -102,5 +104,4 @@
 			Stop
 		</Button>
 	</div>
-	<Section.Error error={lastError} />
 </ApiSection>

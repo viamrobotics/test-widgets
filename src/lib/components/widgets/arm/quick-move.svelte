@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import { Section } from '$lib/components/section'
 	import Table from '$lib/components/table.svelte'
 
 	interface Props {
 		positions: number[]
 		moveToJointPositions: (jointPositions: number[]) => void
-		lastError: Error | null
 	}
 
-	const { positions, moveToJointPositions, lastError }: Props = $props()
+	const { positions, moveToJointPositions }: Props = $props()
 
 	const quickMove = (index: number, increment: number) => {
 		const clonedPositions = positions.map((position, positionIndex) =>
@@ -59,4 +57,3 @@
 		{/each}
 	</tbody>
 </Table>
-<Section.Error error={lastError} />

@@ -7,6 +7,8 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import ManualMode from './manual-mode.svelte'
@@ -36,6 +38,12 @@
 
 	const setManualModeMutation = createResourceMutation(client, 'setManualMode')
 
+	// The band renders no ApiSection, so it reads the same sources through the errors indicator.
+	const bandErrors = useSectionErrors(() => ({
+		queries: [propertiesQuery, manualModeQuery],
+		mutations: [setManualModeMutation],
+	}))
+
 	const setManualMode = (manualMode: boolean, enabledFor: number) => {
 		setManualModeMutation.mutate([manualMode, enabledFor], {})
 	}
@@ -45,27 +53,28 @@
 	{#if band}
 		<section
 			aria-label="SetManualMode"
-			class="border-b px-4 py-3"
+			class="flex items-start justify-between gap-2 border-b px-4 py-3"
 		>
 			<ManualMode
 				title="ManualMode"
 				isManualMode={manualModeQuery.data ?? false}
 				isPending={setManualModeMutation.isPending}
 				{setManualMode}
-				lastError={setManualModeMutation.error}
 			/>
+			<Section.Errors errors={bandErrors.errors} />
 		</section>
 	{:else}
 		<ApiSection
 			method="SetManualMode"
 			api={ResourceTriplets.Arm}
+			queries={[propertiesQuery, manualModeQuery]}
+			mutations={[setManualModeMutation]}
 			class="grow flex-col gap-4"
 		>
 			<ManualMode
 				isManualMode={manualModeQuery.data ?? false}
 				isPending={setManualModeMutation.isPending}
 				{setManualMode}
-				lastError={setManualModeMutation.error}
 			/>
 		</ApiSection>
 	{/if}

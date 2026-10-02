@@ -52,11 +52,11 @@ export { default as GantryQuickMoveWidget } from './widgets/gantry/quick-move-wi
 
 export { default as GenericWidget } from './widgets/generic/generic.svelte'
 
-export { default as GripperGrabWidget } from './widgets/gripper/grab.svelte'
+export { default as GripperGrabWidget } from './widgets/gripper/grab-widget.svelte'
 export { default as GripperWidget } from './widgets/gripper/gripper.svelte'
 export { default as GripperIsHoldingSomethingWidget } from './widgets/gripper/is-holding-something.svelte'
 export { default as GripperIsMovingWidget } from './widgets/gripper/is-moving-widget.svelte'
-export { default as GripperOpenWidget } from './widgets/gripper/open.svelte'
+export { default as GripperOpenWidget } from './widgets/gripper/open-widget.svelte'
 
 export { default as InputControllerWidget } from './widgets/input-controller/input-controller.svelte'
 

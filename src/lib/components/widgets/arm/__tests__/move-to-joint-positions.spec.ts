@@ -25,7 +25,6 @@ describe('Arm move-to-joint-positions', () => {
 		return render(Subject, {
 			positions: [],
 			moveToJointPositions: vi.fn(),
-			lastError: null,
 			jointLimitsDegrees: jointLimitsForCount(positions.length),
 			...props,
 		})
@@ -240,11 +239,6 @@ describe('Arm move-to-joint-positions', () => {
 
 			expect(screen.getByRole('textbox')).toHaveValue('90.0')
 		})
-	})
-
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('some error msg') })
-		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 
 	describe('control mode toggle', () => {

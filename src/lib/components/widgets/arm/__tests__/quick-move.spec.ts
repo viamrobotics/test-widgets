@@ -17,7 +17,6 @@ describe('Arm quick-move', () => {
 		render(Subject, {
 			positions: [],
 			moveToJointPositions: vi.fn(),
-			lastError: null,
 			...props,
 		})
 
@@ -87,10 +86,5 @@ describe('Arm quick-move', () => {
 		await user.click(plusButton)
 
 		expect(moveToJointPositions).toHaveBeenCalledWith([6])
-	})
-
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('some error msg') })
-		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 })

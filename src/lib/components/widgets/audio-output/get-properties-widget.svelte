@@ -4,7 +4,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Properties from '$lib/components/audio-properties.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -27,21 +26,17 @@
 <ApiSection
 	method="GetProperties"
 	api={ResourceTriplets.AudioOutput}
+	queries={[query]}
 	class="grow flex-col gap-4"
 >
 	{#snippet subheading()}
 		<Section.Text>Audio output properties</Section.Text>
 	{/snippet}
-	<Query
-		{query}
-		class="h-6"
-	>
-		{#if query.data !== undefined}
-			<Properties
-				supportedCodecs={query.data.supportedCodecs}
-				sampleRateHz={query.data.sampleRateHz}
-				numChannels={query.data.numChannels}
-			/>
-		{/if}
-	</Query>
+	{#if query.data !== undefined}
+		<Properties
+			supportedCodecs={query.data.supportedCodecs}
+			sampleRateHz={query.data.sampleRateHz}
+			numChannels={query.data.numChannels}
+		/>
+	{/if}
 </ApiSection>
