@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Accuracy from './accuracy.svelte'
 
@@ -24,7 +25,8 @@
 </script>
 
 <ApiSection
-	title="GetAccuracy"
+	method="GetAccuracy"
+	api={ResourceTriplets.MovementSensor}
 	class="grow flex-col gap-4"
 >
 	<Query

@@ -6,10 +6,10 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Properties from '$lib/components/audio-properties.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { Section } from '$lib/components/section'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -62,82 +62,89 @@
 		<div class="@container">
 			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 				<div class="flex w-full flex-col divide-y">
-					<MutationSection
-						title="GetAudio"
+					<ApiSection
+						method="GetAudio"
 						api={ResourceTriplets.AudioInput}
-						description="Capture audio from the device"
-						lastError={capture.error}
+						mutations={[capture]}
+						class="flex-row flex-wrap gap-2"
 					>
-						<div class="flex flex-col gap-2">
-							<Label cx="gap-1 text-xs">
-								Codec
-								<Select
-									slot="input"
-									value={selectedCodec}
-									on:change={(e) => {
-										captureCodec = (e.target as HTMLSelectElement).value
-									}}
-								>
-									{#each availableCodecs as codec (codec)}
-										<option value={codec}>{codec}</option>
-									{/each}
-								</Select>
-							</Label>
-							<Label cx="gap-1 text-xs">
-								Duration (seconds, 0 = stream until stopped)
-								<NumericInput
-									slot="input"
-									value={captureDuration}
-									on:change={(e) => {
-										captureDuration = numberValueFromEvent(e) ?? 3
-									}}
-								/>
-							</Label>
-						</div>
+						{#snippet subheading()}
+							<Section.Text>Capture audio from the device</Section.Text>
+						{/snippet}
+						<div class="flex grow flex-wrap justify-between gap-2">
+							<div class="flex flex-col gap-2">
+								<Label cx="gap-1 text-xs">
+									Codec
+									<Select
+										slot="input"
+										value={selectedCodec}
+										on:change={(e) => {
+											captureCodec = (e.target as HTMLSelectElement).value
+										}}
+									>
+										{#each availableCodecs as codec (codec)}
+											<option value={codec}>{codec}</option>
+										{/each}
+									</Select>
+								</Label>
+								<Label cx="gap-1 text-xs">
+									Duration (seconds, 0 = stream until stopped)
+									<NumericInput
+										slot="input"
+										value={captureDuration}
+										on:change={(e) => {
+											captureDuration = numberValueFromEvent(e) ?? 3
+										}}
+									/>
+								</Label>
+							</div>
 
-						<div class="mt-auto flex flex-col items-start gap-2">
-							{#if capture.status === 'recording'}
-								<p class="font-roboto-mono text-subtle-1 text-xs">
-									{(capture.totalBytes / 1024).toFixed(1)} kB captured
-								</p>
-								<Button
-									icon="stop-circle-outline"
-									onclick={capture.stop}
-								>
-									Stop
-								</Button>
-							{:else}
-								{#if capture.downloadUrl}
+							<div class="mt-auto flex flex-col items-start gap-2">
+								{#if capture.status === 'recording'}
 									<p class="font-roboto-mono text-subtle-1 text-xs">
 										{(capture.totalBytes / 1024).toFixed(1)} kB captured
 									</p>
-									<a
-										href={capture.downloadUrl}
-										download="audio-capture.{selectedCodec}"
-										rel="external"
+									<Button
+										icon="stop-circle-outline"
+										onclick={capture.stop}
 									>
-										<Button icon="download">Download</Button>
-									</a>
+										Stop
+									</Button>
+								{:else}
+									{#if capture.downloadUrl}
+										<p class="font-roboto-mono text-subtle-1 text-xs">
+											{(capture.totalBytes / 1024).toFixed(1)} kB captured
+										</p>
+										<a
+											href={capture.downloadUrl}
+											download="audio-capture.{selectedCodec}"
+											rel="external"
+										>
+											<Button icon="download">Download</Button>
+										</a>
+									{/if}
+									<Button
+										icon="play-circle-outline"
+										onclick={() => capture.start(selectedCodec, captureDuration)}
+										disabled={!client.current}
+									>
+										{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
+									</Button>
 								{/if}
-								<Button
-									icon="play-circle-outline"
-									onclick={() => capture.start(selectedCodec, captureDuration)}
-									disabled={!client.current}
-								>
-									{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
-								</Button>
-							{/if}
+							</div>
 						</div>
-					</MutationSection>
+					</ApiSection>
 				</div>
 
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
-						title="GetProperties"
+						method="GetProperties"
 						api={ResourceTriplets.AudioInput}
-						description="Audio input properties"
 						class="relative grow flex-col gap-4"
 					>
+						{#snippet subheading()}
+							<Section.Text>Audio input properties</Section.Text>
+						{/snippet}
 						<Query
 							query={propertiesQuery}
 							class="h-6"

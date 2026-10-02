@@ -53,11 +53,11 @@
 
 <ApiSection
 	class="grow flex-col gap-4"
-	title="Stop"
+	method="Stop"
 	{api}
+	mutations={[stopMutation]}
 >
 	<StopButton
-		error={stopMutation.error}
 		onStop={() => {
 			stopMutation.mutate([])
 		}}

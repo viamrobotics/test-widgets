@@ -5,6 +5,8 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Properties from '$lib/components/audio-properties.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { Section } from '$lib/components/section'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
 		partID: string
@@ -23,10 +25,13 @@
 </script>
 
 <ApiSection
-	title="GetProperties"
-	description="Audio output properties"
+	method="GetProperties"
+	api={ResourceTriplets.AudioOutput}
 	class="grow flex-col gap-4"
 >
+	{#snippet subheading()}
+		<Section.Text>Audio output properties</Section.Text>
+	{/snippet}
 	<Query
 		{query}
 		class="h-6"

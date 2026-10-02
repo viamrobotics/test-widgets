@@ -9,7 +9,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import SectionTitle from '$lib/components/section-title.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Accuracy from './accuracy.svelte'
@@ -85,8 +85,6 @@
 		enabled: showFullReadings,
 		refetchInterval: refetchInterval.current,
 	}))
-
-	const headingID = $props.id()
 </script>
 
 <ConnectionStatus {partID}>
@@ -107,10 +105,12 @@
 					<div class="flex w-full flex-col gap-5 py-4 pr-6 pl-4 @4xl:w-1/4">
 						{#if propertiesQuery.data?.positionSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetPosition"
-									api={ResourceTriplets.MovementSensor}
-								/>
+								<Section.Heading>
+									<Section.Method
+										method="GetPosition"
+										api={ResourceTriplets.MovementSensor}
+									/>
+								</Section.Heading>
 								<Query
 									query={positionQuery}
 									class="h-6"
@@ -124,13 +124,13 @@
 
 						{#if propertiesQuery.data?.orientationSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetOrientation"
-									api={ResourceTriplets.MovementSensor}
-								>
-									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
-										>{/snippet}
-								</SectionTitle>
+								<Section.Heading>
+									<Section.Method
+										method="GetOrientation"
+										api={ResourceTriplets.MovementSensor}
+									/>
+									<span class="text-subtle-2 text-xs font-normal">(º)</span>
+								</Section.Heading>
 								<Query
 									query={orientationQuery}
 									class="h-6"
@@ -144,13 +144,13 @@
 
 						{#if propertiesQuery.data?.compassHeadingSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetCompassHeading"
-									api={ResourceTriplets.MovementSensor}
-								>
-									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º)</span
-										>{/snippet}
-								</SectionTitle>
+								<Section.Heading>
+									<Section.Method
+										method="GetCompassHeading"
+										api={ResourceTriplets.MovementSensor}
+									/>
+									<span class="text-subtle-2 text-xs font-normal">(º)</span>
+								</Section.Heading>
 								<Query
 									query={compassHeadingQuery}
 									class="h-6"
@@ -166,13 +166,13 @@
 					<div class="flex w-full flex-col gap-5 p-4 @4xl:w-1/4">
 						{#if propertiesQuery.data?.angularVelocitySupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetAngularVelocity"
-									api={ResourceTriplets.MovementSensor}
-								>
-									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(º/s)</span
-										>{/snippet}
-								</SectionTitle>
+								<Section.Heading>
+									<Section.Method
+										method="GetAngularVelocity"
+										api={ResourceTriplets.MovementSensor}
+									/>
+									<span class="text-subtle-2 text-xs font-normal">(º/s)</span>
+								</Section.Heading>
 								<Query
 									query={angularVelocityQuery}
 									class="h-6"
@@ -186,13 +186,13 @@
 
 						{#if propertiesQuery.data?.linearVelocitySupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetLinearVelocity"
-									api={ResourceTriplets.MovementSensor}
-								>
-									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal">(m/s)</span
-										>{/snippet}
-								</SectionTitle>
+								<Section.Heading>
+									<Section.Method
+										method="GetLinearVelocity"
+										api={ResourceTriplets.MovementSensor}
+									/>
+									<span class="text-subtle-2 text-xs font-normal">(m/s)</span>
+								</Section.Heading>
 								<Query
 									query={linearVelocityQuery}
 									class="h-6"
@@ -206,14 +206,13 @@
 
 						{#if propertiesQuery.data?.linearAccelerationSupported}
 							<div class="flex flex-col gap-2">
-								<SectionTitle
-									title="GetLinearAcceleration"
-									api={ResourceTriplets.MovementSensor}
-								>
-									{#snippet suffix()}<span class="text-subtle-2 text-xs font-normal"
-											>(m/s<sup>2</sup>)</span
-										>{/snippet}
-								</SectionTitle>
+								<Section.Heading>
+									<Section.Method
+										method="GetLinearAcceleration"
+										api={ResourceTriplets.MovementSensor}
+									/>
+									<span class="text-subtle-2 text-xs font-normal">(m/s<sup>2</sup>)</span>
+								</Section.Heading>
 								<Query
 									query={linearAccelerationQuery}
 									class="h-6"
@@ -226,10 +225,12 @@
 						{/if}
 
 						<div class="flex flex-col gap-2">
-							<SectionTitle
-								title="GetAccuracy"
-								api={ResourceTriplets.MovementSensor}
-							/>
+							<Section.Heading>
+								<Section.Method
+									method="GetAccuracy"
+									api={ResourceTriplets.MovementSensor}
+								/>
+							</Section.Heading>
 							<Query
 								query={accuracyQuery}
 								class="h-6"
@@ -251,16 +252,14 @@
 			</div>
 		</Query>
 
-		<section
-			class="flex flex-col gap-4 p-4"
-			aria-labelledby={headingID}
-		>
+		<section class="flex flex-col gap-4 p-4">
 			<div class="flex flex-col gap-0.5">
-				<SectionTitle
-					title="GetReadings"
-					api={ResourceTriplets.MovementSensor}
-					headingId={headingID}
-				/>
+				<Section.Heading>
+					<Section.Method
+						method="GetReadings"
+						api={ResourceTriplets.MovementSensor}
+					/>
+				</Section.Heading>
 				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>
 			</div>
 

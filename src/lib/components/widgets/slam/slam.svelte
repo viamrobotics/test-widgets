@@ -23,6 +23,7 @@
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
+	import { Section } from '$lib/components/section'
 	import SlamMap2D from '$lib/components/slam/map2d/index.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -204,7 +205,7 @@
 
 							<ApiSection
 								class="grow flex-col gap-4"
-								title="GetPosition"
+								method="GetPosition"
 								api={ResourceTriplets.Slam}
 							>
 								<Queries
@@ -217,28 +218,30 @@
 								</Queries>
 							</ApiSection>
 
-							<ApiSection
-								class="grow flex-col gap-4"
-								title="Motion"
-							>
-								<Label>
-									Base name
+							<Section class="grow flex-col gap-4">
+								<div class="flex flex-col gap-0.5">
+									<Section.Heading>Motion</Section.Heading>
+								</div>
+								<Section.Body>
+									<Label>
+										Base name
 
-									<Input
-										slot="input"
-										bind:value={baseName}
-									/>
-								</Label>
-								<Label>
-									Motion name
+										<Input
+											slot="input"
+											bind:value={baseName}
+										/>
+									</Label>
+									<Label>
+										Motion name
 
-									<Input
-										slot="input"
-										placeholder="builtin"
-										bind:value={motionName}
-									/>
-								</Label>
-							</ApiSection>
+										<Input
+											slot="input"
+											placeholder="builtin"
+											bind:value={motionName}
+										/>
+									</Label>
+								</Section.Body>
+							</Section>
 
 							<MoveOnMap
 								{destination}

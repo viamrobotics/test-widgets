@@ -4,6 +4,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Orientation from './orientation.svelte'
 
@@ -24,7 +25,8 @@
 </script>
 
 <ApiSection
-	title="GetOrientation"
+	method="GetOrientation"
+	api={ResourceTriplets.MovementSensor}
 	class="grow flex-col gap-4"
 >
 	<Query

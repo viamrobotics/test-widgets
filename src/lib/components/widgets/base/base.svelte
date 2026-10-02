@@ -6,7 +6,8 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
+	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -56,6 +57,8 @@
 		moveStraightMutation.mutate([distanceMm, mmPerSec], {})
 	}
 
+	const quickMoveErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
+
 	let quickMoveKeyboardControl = $state(false)
 </script>
 
@@ -63,11 +66,9 @@
 	{#snippet connected()}
 		<div class="@container">
 			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
-				<MutationSection
-					title="Quick move"
-					lastError={quickSetPowerMutation.error}
-				>
-					{#snippet titleInput()}
+				<Section class="flex-row flex-wrap gap-2">
+					<div class="flex flex-col gap-0.5">
+						<Section.Heading>Quick move</Section.Heading>
 						<Label>
 							Keyboard control
 
@@ -77,21 +78,26 @@
 								on:change={() => (quickMoveKeyboardControl = !quickMoveKeyboardControl)}
 							/>
 						</Label>
-					{/snippet}
+					</div>
 
-					<QuickMove
-						isKeyboardEnabled={quickMoveKeyboardControl}
-						setPower={quickSetPower}
-					/>
-				</MutationSection>
+					<Section.Body>
+						<div class="flex grow flex-wrap justify-between gap-2">
+							<QuickMove
+								isKeyboardEnabled={quickMoveKeyboardControl}
+								setPower={quickSetPower}
+							/>
+						</div>
+					</Section.Body>
+					<Section.Errors errors={quickMoveErrors.errors} />
+				</Section>
 				<div class="flex grow flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="Stop"
+						method="Stop"
 						api={ResourceTriplets.Base}
+						mutations={[stopMutation]}
 					>
 						<StopButton
-							error={stopMutation.error}
 							onStop={() => {
 								stopMutation.mutate([])
 							}}
@@ -106,37 +112,57 @@
 				</div>
 			</div>
 		</div>
-		<MutationSection
-			title="MoveStraight"
+		<ApiSection
+			class="flex-row flex-wrap gap-2"
+			method="MoveStraight"
 			api={ResourceTriplets.Base}
-			description="Move across a given distance at a given velocity"
-			lastError={moveStraightMutation.error}
+			mutations={[moveStraightMutation]}
 		>
-			<MoveStraight {moveStraight} />
-		</MutationSection>
-		<MutationSection
-			title="Spin"
+			{#snippet subheading()}
+				<Section.Text>Move across a given distance at a given velocity</Section.Text>
+			{/snippet}
+			<div class="flex grow flex-wrap justify-between gap-2">
+				<MoveStraight {moveStraight} />
+			</div>
+		</ApiSection>
+		<ApiSection
+			class="flex-row flex-wrap gap-2"
+			method="Spin"
 			api={ResourceTriplets.Base}
-			description="Turn to a given angle at a given velocity"
-			lastError={spinMutation.error}
+			mutations={[spinMutation]}
 		>
-			<Spin {spin} />
-		</MutationSection>
-		<MutationSection
-			title="SetPower"
+			{#snippet subheading()}
+				<Section.Text>Turn to a given angle at a given velocity</Section.Text>
+			{/snippet}
+			<div class="flex grow flex-wrap justify-between gap-2">
+				<Spin {spin} />
+			</div>
+		</ApiSection>
+		<ApiSection
+			class="flex-row flex-wrap gap-2"
+			method="SetPower"
 			api={ResourceTriplets.Base}
-			description="Move continuously at a given amount of power"
-			lastError={setPowerMutation.error}
+			mutations={[setPowerMutation]}
 		>
-			<SetPower {setPower} />
-		</MutationSection>
-		<MutationSection
-			title="SetVelocity"
+			{#snippet subheading()}
+				<Section.Text>Move continuously at a given amount of power</Section.Text>
+			{/snippet}
+			<div class="flex grow flex-wrap justify-between gap-2">
+				<SetPower {setPower} />
+			</div>
+		</ApiSection>
+		<ApiSection
+			class="flex-row flex-wrap gap-2"
+			method="SetVelocity"
 			api={ResourceTriplets.Base}
-			description="Move continually at a given velocity"
-			lastError={setVelocityMutation.error}
+			mutations={[setVelocityMutation]}
 		>
-			<SetVelocity {setVelocity} />
-		</MutationSection>
+			{#snippet subheading()}
+				<Section.Text>Move continually at a given velocity</Section.Text>
+			{/snippet}
+			<div class="flex grow flex-wrap justify-between gap-2">
+				<SetVelocity {setVelocity} />
+			</div>
+		</ApiSection>
 	{/snippet}
 </ConnectionStatus>

@@ -35,7 +35,7 @@
 	{#snippet connected()}
 		<ApiSection
 			class="grow flex-col gap-4"
-			title="Move"
+			method="Move"
 			api={ResourceTriplets.Motion}
 		>
 			<div class="flex min-w-0 flex-col gap-4">

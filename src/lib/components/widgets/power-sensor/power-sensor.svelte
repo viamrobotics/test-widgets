@@ -10,6 +10,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import CurrentReading from './current-reading.svelte'
@@ -67,7 +68,7 @@
 		<div class="@container">
 			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 				<ApiSection
-					title="GetCurrent"
+					method="GetCurrent"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
@@ -81,7 +82,7 @@
 					</Query>
 				</ApiSection>
 				<ApiSection
-					title="GetVoltage"
+					method="GetVoltage"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
@@ -95,7 +96,7 @@
 					</Query>
 				</ApiSection>
 				<ApiSection
-					title="GetPower"
+					method="GetPower"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
@@ -113,10 +114,14 @@
 
 		<ApiSection
 			class="grow flex-col gap-4"
-			title="GetReadings"
+			method="GetReadings"
 			api={ResourceTriplets.PowerSensor}
-			description="Get all the measurements and data that this power sensor provides"
 		>
+			{#snippet subheading()}
+				<Section.Text>
+					Get all the measurements and data that this power sensor provides
+				</Section.Text>
+			{/snippet}
 			<Switch
 				bind:on={isGetReadingsEnabled}
 				cx="text-subtle-2"
