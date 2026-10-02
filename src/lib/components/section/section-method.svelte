@@ -4,9 +4,8 @@
 	import { apiDocsHref } from '$lib/api-docs-href'
 
 	interface Props {
-		/** RDK method name in PascalCase, rendered verbatim in mono. */
+		/** RDK method name in PascalCase. */
 		method: string
-		/** The resource API the method belongs to. With `method`, it builds the docs link. */
 		api: ResourceTriplet
 	}
 

@@ -5,6 +5,7 @@ import type { SectionQuery } from '../section/use-section-errors.svelte'
 
 import Subject from './api-section-error.spec.svelte'
 import Queried from './api-section-queries.spec.svelte'
+import Skeleton from './api-section-skeleton.spec.svelte'
 
 const errorQuery = (name: string, message: string): SectionQuery => {
 	const error = new Error(message)
@@ -132,5 +133,30 @@ describe('<ApiSection>', () => {
 		await rerender({ queries: [successQuery(), disabledQuery()] })
 
 		expect(indicator('No errors')).toBeInTheDocument()
+	})
+})
+
+describe('<ApiSection skeleton>', () => {
+	const loadingBar = () => screen.queryByTestId('section-placeholder-loading')
+
+	it('pulses the placeholder while a query is on its first load', () => {
+		render(Skeleton, { queries: [loadingQuery()] })
+
+		expect(loadingBar()).toBeInTheDocument()
+		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+	})
+
+	it('reads "No data" without a pulse when the first load failed', () => {
+		render(Skeleton, { queries: [notFound()] })
+
+		expect(loadingBar()).not.toBeInTheDocument()
+		expect(screen.getByText('No data')).toBeInTheDocument()
+	})
+
+	it('never pulses for a disabled query, which has no data and is not loading', () => {
+		render(Skeleton, { queries: [disabledQuery()] })
+
+		expect(loadingBar()).not.toBeInTheDocument()
+		expect(screen.getByText('No data')).toBeInTheDocument()
 	})
 })

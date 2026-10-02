@@ -12,18 +12,22 @@
 	} from './section/use-section-errors.svelte'
 
 	interface Props extends HTMLAttributes<HTMLElement> {
-		/** RDK method name in PascalCase, rendered verbatim in mono and linked to its docs. */
+		/** RDK method name in PascalCase. */
 		method: string
-		/** The resource API the method belongs to, e.g. `ResourceTriplets.Arm`. */
+		/** The resource API the method belongs to. */
 		api: ResourceTriplet
-		/** The queries this section reads. Their distinct errors show in the heading's indicator. */
+		/** The queries this section reads. */
 		queries?: SectionQuery[]
-		/** The mutations this section sends. Their errors show in the heading's indicator. */
+		/** The mutations this section sends. */
 		mutations?: SectionMutation[]
-		/** Content under the heading, e.g. a `Section.Text` line or a control that belongs to it. */
+		/** Content under the heading. */
 		subheading?: Snippet
 		/** Content of the info tooltip beside the heading. */
 		tooltip?: Snippet
+		/**
+		 * @deprecated Exists only for the migration. Removed once every section passes it.
+		 */
+		skeleton?: boolean
 	}
 
 	const {
@@ -33,6 +37,7 @@
 		mutations = [],
 		subheading,
 		tooltip,
+		skeleton = false,
 		children,
 		...rest
 	}: Props = $props()
@@ -57,7 +62,10 @@
 		{@render subheading?.()}
 	</div>
 
-	<Section.Body isLoading={sectionErrors.isLoading}>
+	<Section.Body
+		isLoading={sectionErrors.isLoading}
+		{skeleton}
+	>
 		{@render children?.()}
 	</Section.Body>
 </Section>

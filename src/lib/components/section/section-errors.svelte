@@ -4,7 +4,6 @@
 	import { errorKey } from './error-key'
 
 	interface Props {
-		/** The distinct errors the section holds. Empty renders the idle glyph. */
 		errors: Error[]
 	}
 
@@ -21,15 +20,12 @@
 	let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
 	const label = $derived.by(() => {
-		if (copied) {
-			return `Copied ${summary}`
-		}
+		if (copied) return `Copied ${summary}`
 		return hasErrors ? `${summary}, copy to clipboard` : summary
 	})
+
 	const iconName = $derived.by(() => {
-		if (copied) {
-			return 'check'
-		}
+		if (copied) return 'check'
 		return hasErrors ? 'alert-circle' : 'alert-circle-outline'
 	})
 
@@ -41,22 +37,20 @@
 		const keys = errors.map((error) => errorKey(error)).join('\0\0')
 		if (keys !== lastKeys) {
 			lastKeys = keys
-			if (keys !== '') {
-				arrivals += 1
-			}
+			if (keys !== '') arrivals += 1
 		}
+
 		return arrivals
 	})
 
 	const copy = async () => {
-		if (!hasErrors) {
-			return
-		}
+		if (!hasErrors) return
 		try {
 			await globalThis.navigator.clipboard.writeText(text)
 		} catch (error) {
 			console.error('Failed to copy errors to clipboard', error)
 		}
+
 		copied = true
 		clearTimeout(copiedTimer)
 		copiedTimer = setTimeout(() => {
