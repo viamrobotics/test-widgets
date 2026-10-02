@@ -137,5 +137,4 @@ describe('Gantry move-to-position', () => {
 
 		expect(moveTo).toHaveBeenCalledWith([5], [100])
 	})
-
 })

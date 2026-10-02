@@ -40,7 +40,10 @@
 	const sectionErrors = useSectionErrors(() => ({ queries, mutations }))
 </script>
 
-<Section {...rest}>
+<Section
+	errorReporter={sectionErrors}
+	{...rest}
+>
 	<div class="flex flex-col gap-0.5">
 		<Section.Heading>
 			<Section.Method
@@ -48,6 +51,7 @@
 				{api}
 			/>
 			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
 				{#if tooltip}
 					<Section.Tooltip>{@render tooltip()}</Section.Tooltip>
 				{/if}
@@ -62,6 +66,4 @@
 	>
 		{@render children?.()}
 	</Section.Body>
-
-	<Section.Errors errors={sectionErrors.errors} />
 </Section>

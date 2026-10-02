@@ -3,7 +3,7 @@
 	import { ButtonClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	interface Props {
 		partID: string
@@ -29,4 +29,4 @@
 >
 	Push
 </Button>
-<ErrorDisplay lastError={pushMutation.error} />
+<Section.Error error={pushMutation.error} />

@@ -32,9 +32,17 @@
 	let isKeyboardEnabled = $state(false)
 </script>
 
-<Section class="flex-row flex-wrap gap-2">
+<Section
+	errorReporter={sectionErrors}
+	class="flex-row flex-wrap gap-2"
+>
 	<div class="flex flex-col gap-0.5">
-		<Section.Heading>Quick move</Section.Heading>
+		<Section.Heading>
+			Quick move
+			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
+			{/snippet}
+		</Section.Heading>
 		<Label cx="w-fit!">
 			Keyboard control
 
@@ -54,5 +62,4 @@
 			/>
 		</div>
 	</Section.Body>
-	<Section.Errors errors={sectionErrors.errors} />
 </Section>

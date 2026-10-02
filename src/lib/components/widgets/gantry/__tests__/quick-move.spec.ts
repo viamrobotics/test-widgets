@@ -87,5 +87,4 @@ describe('Gantry quick-move', () => {
 
 		expect(moveTo).toHaveBeenCalledWith([11], [50])
 	})
-
 })
