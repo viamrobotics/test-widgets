@@ -2,7 +2,7 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import Grab from './grab.svelte'
 
@@ -23,4 +23,4 @@
 </script>
 
 <Grab onGrab={() => grabMutation.mutate([], {})} />
-<ErrorDisplay lastError={grabMutation.error} />
+<Section.Error error={grabMutation.error} />

@@ -2,7 +2,7 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import Open from './open.svelte'
 
@@ -23,4 +23,4 @@
 </script>
 
 <Open onOpen={() => openMutation.mutate([], {})} />
-<ErrorDisplay lastError={openMutation.error} />
+<Section.Error error={openMutation.error} />
