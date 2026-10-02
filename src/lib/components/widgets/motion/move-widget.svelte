@@ -51,6 +51,7 @@
 
 	const currentPose = $derived(poseQuery.data?.pose)
 	let parseError = $state<Error>()
+	// A mutation-shaped source, so a pose that fails to parse shows in the section's indicator.
 	const parseFailure = $derived({ error: parseError ?? null })
 
 	const executeMove = (input: MoveInput) => {
