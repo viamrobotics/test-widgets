@@ -8,6 +8,13 @@ import SectionTooltip from './section-tooltip.svelte'
 import Root from './section.svelte'
 
 export { useSectionLoading } from './section-loading'
+export {
+	dedupeErrors,
+	useSectionErrors,
+	type SectionMutation,
+	type SectionQuery,
+	type SectionSources,
+} from './use-section-errors.svelte'
 
 export const Section: typeof Root & {
 	Body: typeof SectionBody

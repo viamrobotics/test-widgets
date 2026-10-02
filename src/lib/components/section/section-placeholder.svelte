@@ -17,7 +17,7 @@
 		aria-hidden="true"
 		data-testid="section-placeholder-loading"
 		class={[
-			'bg-gray-2 inline-block h-2.5 animate-pulse align-middle motion-reduce:animate-none',
+			'bg-light inline-block h-2.5 animate-pulse align-middle motion-reduce:animate-none',
 			className,
 		]}
 	></span>
