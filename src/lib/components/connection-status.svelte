@@ -54,7 +54,9 @@
 {/snippet}
 
 {#snippet failed()}
-	<div class="bg-extralight text-disabled flex h-full min-h-40 w-full items-center justify-center gap-2">
+	<div
+		class="bg-extralight text-disabled flex h-full min-h-40 w-full items-center justify-center gap-2"
+	>
 		<Icon
 			name="alert"
 			cx="text-danger-dark"
