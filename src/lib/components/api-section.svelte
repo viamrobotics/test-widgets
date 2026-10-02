@@ -48,6 +48,7 @@
 				{api}
 			/>
 			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
 				{#if tooltip}
 					<Section.Tooltip>{@render tooltip()}</Section.Tooltip>
 				{/if}
@@ -62,6 +63,4 @@
 	>
 		{@render children?.()}
 	</Section.Body>
-
-	<Section.Errors errors={sectionErrors.errors} />
 </Section>

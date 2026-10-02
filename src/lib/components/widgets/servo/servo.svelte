@@ -92,7 +92,12 @@
 						</ApiSection>
 						<Section class="grow flex-col gap-4">
 							<div class="flex flex-col gap-0.5">
-								<Section.Heading>Quick move</Section.Heading>
+								<Section.Heading>
+									Quick move
+									{#snippet aside()}
+										<Section.Errors errors={quickMoveErrors.errors} />
+									{/snippet}
+								</Section.Heading>
 							</div>
 							<Section.Body>
 								<Query query={positionQuery}>
@@ -105,7 +110,6 @@
 								</Query>
 								<Section.Text class="mt-auto">Press a button to execute</Section.Text>
 							</Section.Body>
-							<Section.Errors errors={quickMoveErrors.errors} />
 						</Section>
 					</div>
 				</div>

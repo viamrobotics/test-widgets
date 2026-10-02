@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen } from '@testing-library/svelte'
 import { describe, expect, it } from 'vitest'
 
 import type { SectionQuery } from '../section/use-section-errors.svelte'
@@ -37,7 +37,7 @@ const disabledQuery = (): SectionQuery => ({
 
 const notFound = () => errorQuery('ConnectionError', 'Resource not found')
 
-const errorLines = (text: string) => screen.queryAllByText(text)
+const indicator = (name: string) => screen.getByRole('button', { name })
 
 describe('<ApiSection>', () => {
 	it('contains a render error to its own section so sibling sections still render', () => {
@@ -61,33 +61,40 @@ describe('<ApiSection>', () => {
 		expect(screen.getByText('Updates automatically')).toBeInTheDocument()
 	})
 
-	it('keeps the content and shows the error below it when a query fails', () => {
+	it('keeps the content and raises the indicator when a query fails', async () => {
 		render(Queried, { queries: [notFound()] })
 
 		expect(screen.getByText('content')).toBeInTheDocument()
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+
+		await fireEvent.focus(indicator('1 error, copy to clipboard'))
+
 		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
 	})
 
-	it('shows one error when two queries fail the same way', () => {
+	it('counts one error when two queries fail the same way', () => {
 		render(Queried, { queries: [notFound(), notFound()] })
 
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(1)
+		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
 	})
 
-	it('lists every distinct error when queries fail differently', () => {
+	it('lists every distinct error when queries fail differently', async () => {
 		render(Queried, {
 			queries: [notFound(), errorQuery('ConnectionError', 'Resource unhealthy')],
 		})
+
+		await fireEvent.focus(indicator('2 errors, copy to clipboard'))
 
 		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
 		expect(screen.getByText('ConnectionError: Resource unhealthy')).toBeInTheDocument()
 	})
 
-	it('shows a mutation error in the same list', () => {
+	it('shows a mutation error through the same indicator', async () => {
 		const lastError = new Error('base is not powered')
 		lastError.name = 'RpcError'
 		render(Queried, { queries: [successQuery()], lastError })
+
+		await fireEvent.focus(indicator('1 error, copy to clipboard'))
 
 		expect(screen.getByText('RpcError: base is not powered')).toBeInTheDocument()
 	})
@@ -104,28 +111,28 @@ describe('<ApiSection>', () => {
 
 		await rerender({ queries: [loadingQuery()] })
 
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(1)
+		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
 		expect(screen.getByText('content')).toBeInTheDocument()
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 	})
 
 	it('clears the error once every query succeeds', async () => {
 		const { rerender } = render(Queried, { queries: [notFound(), successQuery()] })
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(1)
+		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
 
 		await rerender({ queries: [successQuery(), successQuery()] })
 
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(0)
+		expect(indicator('No errors')).toBeInTheDocument()
 		expect(screen.getByText('content')).toBeInTheDocument()
 	})
 
 	it('clears the error once the failing query recovers, even beside a disabled query', async () => {
 		const { rerender } = render(Queried, { queries: [notFound(), disabledQuery()] })
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(1)
+		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
 
 		await rerender({ queries: [successQuery(), disabledQuery()] })
 
-		expect(errorLines('ConnectionError: Resource not found')).toHaveLength(0)
+		expect(indicator('No errors')).toBeInTheDocument()
 	})
 })
 
