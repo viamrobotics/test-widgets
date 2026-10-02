@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import Query from '$lib/components/query.svelte'
 
 	import MoveToPosition from './move-to-position.svelte'
@@ -34,10 +35,10 @@
 	{#if positions !== undefined}
 		<MoveToPosition
 			{positions}
-			lastError={moveMutation.error}
 			moveTo={(newPos: number[], speeds: number[]) => {
 				moveMutation.mutate([newPos, speeds], {})
 			}}
 		/>
 	{/if}
 </Query>
+<ErrorDisplay lastError={moveMutation.error} />

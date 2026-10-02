@@ -6,6 +6,7 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import ErrorDisplay from '$lib/components/error.svelte'
 	import Query from '$lib/components/query.svelte'
 
 	import QuickMove from './quick-move.svelte'
@@ -38,7 +39,7 @@
 		<QuickMove
 			currentPosition={positionQuery.data}
 			moveTo={quickMoveTo}
-			lastError={quickMoveMutation.error}
 		/>
 	{/if}
 </Query>
+<ErrorDisplay lastError={quickMoveMutation.error} />

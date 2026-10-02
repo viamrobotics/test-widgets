@@ -2,7 +2,6 @@
 	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 	import { isEqual, zip } from 'lodash-es'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import Table from '$lib/components/table.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
@@ -11,10 +10,9 @@
 	interface Props {
 		positions: number[]
 		moveTo: (newPos: number[], speeds: number[]) => void
-		lastError: Error | null
 	}
 
-	const { positions, moveTo, lastError }: Props = $props()
+	const { positions, moveTo }: Props = $props()
 
 	let desiredSpeeds: number[] = $state([])
 
@@ -122,5 +120,4 @@
 	>
 		Execute
 	</Button>
-	<ErrorDisplay {lastError} />
 </div>

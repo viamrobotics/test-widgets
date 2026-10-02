@@ -19,7 +19,6 @@ describe('Servo Move', () => {
 		render(Subject, {
 			currentPosition: 0,
 			moveTo,
-			lastError: null,
 			...props,
 		})
 
@@ -69,8 +68,4 @@ describe('Servo Move', () => {
 		expect(warning).toBeInTheDocument()
 	})
 
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('baz error msg') })
-		expect(screen.getByText(/baz error msg/iu)).toBeInTheDocument()
-	})
 })

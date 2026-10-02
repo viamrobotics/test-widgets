@@ -72,13 +72,13 @@
 							class="grow flex-col gap-4"
 							method="MoveToPosition"
 							api={ResourceTriplets.Gantry}
+							mutations={[moveMutation]}
 						>
 							<Query query={positionQuery}>
 								{@const positions = positionQuery.data}
 								{#if positions !== undefined}
 									<MoveToPosition
 										{positions}
-										lastError={moveMutation.error}
 										moveTo={(newPos: number[], speeds: number[]) => {
 											moveMutation.mutate([newPos, speeds], {})
 										}}
@@ -100,7 +100,6 @@
 										{#if positions !== undefined}
 											<QuickMove
 												{positions}
-												lastError={quickMoveMutation.error}
 												moveTo={(newPos: number[], speeds: number[]) => {
 													quickMoveMutation.mutate([newPos, speeds], {})
 												}}

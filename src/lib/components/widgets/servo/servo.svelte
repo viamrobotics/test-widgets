@@ -79,13 +79,13 @@
 							class="grow flex-col gap-4"
 							method="Move"
 							api={ResourceTriplets.Servo}
+							mutations={[moveMutation]}
 						>
 							<Query query={positionQuery}>
 								{#if positionQuery.data !== undefined}
 									<Move
 										currentPosition={positionQuery.data}
 										{moveTo}
-										lastError={moveMutation.error}
 									/>
 								{/if}
 							</Query>
@@ -100,7 +100,6 @@
 										<QuickMove
 											currentPosition={positionQuery.data}
 											moveTo={quickMoveTo}
-											lastError={quickMoveMutation.error}
 										/>
 									{/if}
 								</Query>
