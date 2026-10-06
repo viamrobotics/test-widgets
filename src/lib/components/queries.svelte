@@ -81,10 +81,7 @@
 		<Progress />
 	</ContentRect>
 {:else}
-	<div
-		class="w-full"
-		bind:this={el}
-	>
+	<div bind:this={el}>
 		{@render children?.({ data })}
 	</div>
 {/if}

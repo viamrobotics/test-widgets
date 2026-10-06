@@ -9,6 +9,7 @@ export interface EditedTargets<TKey> {
 	target: (key: TKey) => number
 	isEdited: (key: TKey) => boolean
 	drift: (key: TKey) => number | undefined
+	baseline: (key: TKey) => number | undefined
 	edit: (key: TKey, value: number) => void
 	reset: (key: TKey) => void
 	resetAll: () => void
@@ -30,6 +31,7 @@ export const useEditedTargets = <TKey>(
 			const distance = Math.abs(readLive(key) - edit.baseline)
 			return distance > driftThreshold(key) ? distance : undefined
 		},
+		baseline: (key) => edits.get(key)?.baseline,
 		edit: (key, value) => {
 			edits.set(key, { value, baseline: readLive(key) })
 		},

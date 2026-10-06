@@ -58,6 +58,29 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="@container">
+			<!-- Stop and IsMoving band, so the control sections below get the card's full width -->
+			<div class="flex w-full flex-col border-b @md:flex-row @md:divide-x">
+				<ApiSection
+					class="flex-row flex-wrap items-center gap-x-4 gap-y-2"
+					title="Stop"
+					api={ResourceTriplets.Arm}
+				>
+					<StopButton
+						error={stopMutation.error}
+						onStop={() => {
+							stopMutation.mutate([], {})
+						}}
+					/>
+				</ApiSection>
+				<IsMoving
+					class="flex-row flex-wrap items-center gap-x-4 gap-y-2"
+					client={ArmClient}
+					api={ResourceTriplets.Arm}
+					{partID}
+					{resourceName}
+				/>
+			</div>
+
 			<!-- Full-width manual mode band, rendered only when the arm supports it -->
 			<ManualModeWidget
 				{partID}
@@ -65,75 +88,49 @@
 				band
 			/>
 
-			<div class="flex flex-col gap-4 @2xl:flex-row @2xl:gap-0 @2xl:divide-x">
-				<!-- Main control sections -->
-				<div
-					class="flex flex-col gap-4 @2xl:grid @2xl:grow @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @4xl:grid-cols-3"
+			<!-- Two columns with MoveToPosition on its own full-width row, so the pose editor lays out in rows. Three columns only once each clears 384 px. -->
+			<div
+				class="flex flex-col gap-4 @2xl:grid @2xl:grid-cols-2 @2xl:gap-0 @2xl:divide-x @7xl:grid-cols-3"
+			>
+				<ApiSection
+					class="grow flex-col gap-4 @2xl:col-span-2 @2xl:border-b @7xl:col-span-1 @7xl:border-b-0"
+					title="MoveToPosition"
+					api={ResourceTriplets.Arm}
 				>
-					<ApiSection
-						class="grow flex-col gap-4"
-						title="GetJointPositions"
-						api={ResourceTriplets.Arm}
-						bottomText="Updates automatically"
-					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<GetJointPositions positions={jointPositionsQuery.data.values} />
-							{/if}
-						</Query>
-					</ApiSection>
-					<ApiSection
-						class="grow flex-col gap-4"
-						title="MoveToJointPositions"
-						api={ResourceTriplets.Arm}
-					>
-						<Query query={jointPositionsQuery}>
-							{#if jointPositionsQuery.data}
-								<MoveToJointPositions
-									positions={jointPositionsQuery.data.values}
-									{moveToJointPositions}
-									lastError={moveToJointPosMutation.error}
-									{jointLimitsDegrees}
-									isMoving={motionTracking.isTracking}
-								/>
-							{/if}
-						</Query>
-					</ApiSection>
-					<ApiSection
-						class="grow flex-col gap-4"
-						title="MoveToPosition"
-						api={ResourceTriplets.Arm}
-					>
-						<MoveToPositionControl
-							{partID}
-							{resourceName}
-						/>
-					</ApiSection>
-				</div>
-
-				<!-- Control actions sidebar -->
-				<div
-					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
-				>
-					<ApiSection
-						class="grow flex-col gap-4"
-						title="Stop"
-						api={ResourceTriplets.Arm}
-					>
-						<StopButton
-							error={stopMutation.error}
-							onStop={() => {
-								stopMutation.mutate([], {})
-							}}
-						/>
-					</ApiSection>
-					<IsMoving
-						client={ArmClient}
-						api={ResourceTriplets.Arm}
+					<MoveToPositionControl
 						{partID}
 						{resourceName}
 					/>
-				</div>
+				</ApiSection>
+				<ApiSection
+					class="grow flex-col gap-4"
+					title="GetJointPositions"
+					api={ResourceTriplets.Arm}
+					bottomText="Updates automatically"
+				>
+					<Query query={jointPositionsQuery}>
+						{#if jointPositionsQuery.data}
+							<GetJointPositions positions={jointPositionsQuery.data.values} />
+						{/if}
+					</Query>
+				</ApiSection>
+				<ApiSection
+					class="grow flex-col gap-4 @2xl:border-r-0 @7xl:border-r"
+					title="MoveToJointPositions"
+					api={ResourceTriplets.Arm}
+				>
+					<Query query={jointPositionsQuery}>
+						{#if jointPositionsQuery.data}
+							<MoveToJointPositions
+								positions={jointPositionsQuery.data.values}
+								{moveToJointPositions}
+								lastError={moveToJointPosMutation.error}
+								{jointLimitsDegrees}
+								isMoving={motionTracking.isTracking}
+							/>
+						{/if}
+					</Query>
+				</ApiSection>
 			</div>
 		</div>
 	{/snippet}

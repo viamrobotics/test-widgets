@@ -14,6 +14,7 @@
 		ServoClient,
 	} from '@viamrobotics/sdk'
 	import type { Snippet } from 'svelte'
+	import type { ClassValue } from 'svelte/elements'
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
@@ -37,9 +38,18 @@
 		resourceName: string
 		api: ResourceTriplet
 		children?: Snippet
+		/** Classes for the section. Defaults to a column, as in a widget's sidebar. */
+		class?: ClassValue
 	}
 
-	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
+	const {
+		client: clientClass,
+		partID,
+		resourceName,
+		api,
+		children,
+		class: className = 'grow flex-col gap-4',
+	}: Props = $props()
 
 	const client = $derived(
 		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
@@ -56,7 +66,7 @@
 	title="IsMoving"
 	{api}
 	bottomText="Updates automatically"
-	class="grow flex-col gap-4"
+	class={className}
 >
 	<Query {query}>
 		<StatusPill isActive={query.data ?? false} />

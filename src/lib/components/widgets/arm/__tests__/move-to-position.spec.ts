@@ -1,7 +1,7 @@
 import type { Pose } from '@viamrobotics/sdk'
 import type { ComponentProps } from 'svelte'
 
-import { render, screen, within } from '@testing-library/svelte'
+import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -16,9 +16,9 @@ describe('Arm move-to-position', () => {
 		x: 1,
 		y: 2,
 		z: 3,
-		oX: 4,
-		oY: 5,
-		oZ: 6,
+		oX: 0,
+		oY: 0.6,
+		oZ: 0.8,
 		theta: 7,
 	}
 
@@ -42,7 +42,7 @@ describe('Arm move-to-position', () => {
 		expect(positionInputs).toHaveLength(7)
 	})
 
-	it('trims pose values to 2 decimal places', () => {
+	it('trims position values to 1 decimal place', () => {
 		renderSubject({
 			endPosition: {
 				...defaultPose,
@@ -52,11 +52,9 @@ describe('Arm move-to-position', () => {
 			},
 		})
 
-		const positionInputs = screen.getAllByRole('spinbutton')
-
-		expect(positionInputs[0]).toHaveValue(1.23)
-		expect(positionInputs[1]).toHaveValue(2.35)
-		expect(positionInputs[2]).toHaveValue(3.46)
+		expect(screen.getByRole('spinbutton', { name: 'X' })).toHaveValue(1.2)
+		expect(screen.getByRole('spinbutton', { name: 'Y' })).toHaveValue(2.3)
+		expect(screen.getByRole('spinbutton', { name: 'Z' })).toHaveValue(3.5)
 	})
 
 	it('resets to zero when Zero button is clicked', async () => {
@@ -112,9 +110,7 @@ describe('Arm move-to-position', () => {
 			moveToPosition,
 		})
 
-		const positionInputs = screen.getAllByRole('spinbutton')
-		const xInput = positionInputs[0]
-		assertExists(xInput, 'Expected a position input')
+		const xInput = screen.getByRole('spinbutton', { name: 'X' })
 
 		await user.clear(xInput)
 		await user.type(xInput, '5')
@@ -135,29 +131,32 @@ describe('Arm move-to-position', () => {
 		).toBeInTheDocument()
 	})
 
-	const editX = async (value: string) => {
-		const xInput = screen.getAllByRole('spinbutton')[0]
-		assertExists(xInput, 'Expected a position input')
-		await user.clear(xInput)
-		await user.type(xInput, value)
+	const editField = async (name: string, value: string) => {
+		const input = screen.getByRole('spinbutton', { name })
+		await user.clear(input)
+		await user.type(input, value)
 		await user.tab()
-		return xInput
+		return input
 	}
+
+	const editX = (value: string) => editField('X', value)
 
 	it('follows the live pose in fields the user has not edited', async () => {
 		const { rerender } = renderSubject({})
 
 		await rerender({ endPosition: { ...defaultPose, x: 50 } })
 
-		expect(screen.getAllByRole('spinbutton')[0]).toHaveValue(50)
+		expect(screen.getByRole('spinbutton', { name: 'X' })).toHaveValue(50)
 	})
 
-	it('shows the current value under each field', async () => {
+	it('names each restore button after the field and its current value', async () => {
 		const { rerender } = renderSubject({})
 
 		await rerender({ endPosition: { ...defaultPose, x: 50 } })
 
-		expect(screen.getByText(/current 50(\.0+)?$/iu)).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Reset X to its current value, 50.0' })
+		).toBeInTheDocument()
 	})
 
 	it('keeps an edited value when a poll returns a new pose', async () => {
@@ -177,18 +176,20 @@ describe('Arm move-to-position', () => {
 		await rerender({ endPosition: { ...defaultPose, x: 10 } })
 
 		expect(xInput).toHaveValue(42)
-		const message = screen.getByText(/arm moved 9(\.0+)? mm since you edited x/iu)
-		expect(xInput).toHaveAttribute('aria-describedby', message.closest('[role="tooltip"]')?.id)
+		expect(xInput).toHaveAccessibleDescription(/arm moved 9(\.0+)? mm since you edited x/iu)
 	})
 
 	it('resets one edited field to the live value', async () => {
 		renderSubject({})
 		const xInput = await editX('42')
 
-		await user.click(screen.getByRole('button', { name: /reset x to current/iu }))
+		await user.click(screen.getByRole('button', { name: /^reset x to its current value/iu }))
 
 		expect(xInput).toHaveValue(1)
-		expect(screen.queryByRole('button', { name: /reset x to current/iu })).not.toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /^reset x to its current value/iu })).toHaveProperty(
+			'tabIndex',
+			-1
+		)
 	})
 
 	it('keeps fields editable but locks Execute while the arm moves', async () => {
@@ -201,7 +202,7 @@ describe('Arm move-to-position', () => {
 			expect(input).toBeEnabled()
 		}
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
+		expect(screen.getByText('Arm is moving').closest('[role="status"]')).toBeInTheDocument()
 	})
 
 	it('marks only edited fields while the arm moves', async () => {
@@ -210,7 +211,39 @@ describe('Arm move-to-position', () => {
 
 		await rerender({ isMoving: true })
 
-		expect(screen.getAllByText(/the arm is moving/iu)).toHaveLength(1)
+		expect(screen.getByRole('spinbutton', { name: 'X' })).toHaveAccessibleDescription(
+			/the arm is moving/iu
+		)
+		expect(screen.getByRole('spinbutton', { name: 'Y' })).not.toHaveAccessibleDescription(
+			/the arm is moving/iu
+		)
+	})
+
+	it('sends a normalized orientation vector and shows it in the fields when OX is typed on a non-unit vector', async () => {
+		const moveToPosition = vi.fn()
+		renderSubject({ moveToPosition, endPosition: { ...defaultPose, oX: 0, oY: 0, oZ: -1 } })
+		await editField('OX', '0.5')
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		const sent: Pose = moveToPosition.mock.calls[0]![0]
+		expect(sent.oX).toBeCloseTo(0.447_214, 6)
+		expect(sent.oY).toBe(0)
+		expect(sent.oZ).toBeCloseTo(-0.894_427, 6)
+		expect(screen.getByRole('spinbutton', { name: 'OX' })).toHaveValue(0.447)
+	})
+
+	it('sends a near-unit orientation vector untouched and leaves its fields unedited', async () => {
+		const moveToPosition = vi.fn()
+		renderSubject({ moveToPosition, endPosition: { ...defaultPose, oX: 0, oY: 0, oZ: 0.9995 } })
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(moveToPosition.mock.calls[0]![0].oZ).toBe(0.9995)
+		expect(screen.getByRole('button', { name: /^reset oz to its current value/iu })).toHaveProperty(
+			'tabIndex',
+			-1
+		)
 	})
 
 	it('displays the provided error', () => {
