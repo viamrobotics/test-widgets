@@ -36,7 +36,9 @@ The playground (`pnpm dev`) can be used to develop the test-cards against prod r
 
 This is useful if you need to validate the sdk against specific behavior of modules or need to replicate a bug from another robot (why replicate locally when you could just develop directly against the robot with the bug?).
 
-To setup your playground, create a `.env.local` in the test-widgets directory with the following format (no need to create two robots):
+The sidebar lists your machines. The `?machine=<name>` search param picks which one the playground shows, and the first machine is the default.
+
+A `.env.local` in the test-widgets directory is optional. It seeds the list with the following format (no need to create two robots):
 
 ```json
 VITE_PLAYGROUND_ROBOTS='
@@ -70,3 +72,15 @@ VITE_PLAYGROUND_ROBOTS='
 }
 '
 ```
+
+You can also add machines from the sidebar. Paste one machine config with a `name`, or a whole `VITE_PLAYGROUND_ROBOTS` value, into the form and submit. Machines added this way are kept in your browser's localStorage, and you can remove them from the sidebar. Machines from `.env.local` cannot be removed there.
+
+### Hosted playground and docs
+
+Every push to `main` deploys the docs site to `https://viamrobotics.github.io/test-widgets/` and the playground to `https://viamrobotics.github.io/test-widgets/playground/`. The docs live in `docs/`, a separate Astro Starlight project. Run them with `pnpm docs:dev`, or build them with the playground included using `pnpm docs:build`.
+
+### PR previews
+
+Each pull request from a branch in this repo deploys the playground to `https://viamrobotics.github.io/test-widgets/pr-preview/pr-<N>/`, and a bot comment links it. The preview has no machines built in, so paste a config into the sidebar form. Closing the pull request removes the preview. Pull requests from forks and Dependabot get no preview.
+
+On GitHub Pages, every `viamrobotics` site shares the `viamrobotics.github.io` origin. Those sites can read the keys stored in localStorage. Use keys for test machines only.

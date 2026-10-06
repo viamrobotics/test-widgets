@@ -34,6 +34,10 @@ export default defineConfig(
 			'**/.claude/templates/**',
 		],
 	},
+	{
+		// The Astro docs site is a separate project with its own tooling and virtual modules
+		ignores: ['docs/**'],
+	},
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,

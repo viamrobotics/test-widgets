@@ -53,7 +53,7 @@
 		></div>
 	{:else if error}
 		<ErrorDisplay lastError={error} />
-	{:else if resources}
+	{:else if resources.length > 0}
 		<ul>
 			{#each resources as resource (getResourceKey(resource.name))}
 				{@const { name, type } = resource.name}
@@ -73,7 +73,6 @@
 								<div
 									use:observeTruncation={name}
 									class="w-full truncate text-sm"
-									aria-label={name}
 								>
 									{name}
 								</div>

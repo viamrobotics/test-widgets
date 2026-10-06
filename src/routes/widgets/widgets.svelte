@@ -10,6 +10,7 @@
 	import { providePip } from '$lib'
 	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
+	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus } from '$lib/resource'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 	import { showResourceWidget } from '$lib/show-resource-widget'
@@ -21,11 +22,10 @@
 	interface Props {
 		partID: string
 		urlHash: string
-		hasUnsavedChanges?: boolean
 		children: Snippet
 	}
 
-	const { partID, urlHash, hasUnsavedChanges = false, children }: Props = $props()
+	const { partID, urlHash, children }: Props = $props()
 
 	providePip(() => partID)
 
@@ -81,17 +81,17 @@
 	)
 
 	let singleCardMode = $state(false)
-	let selectedResourceKey = $state<string>()
+	let selection = $state<{ partID: string; key: string }>()
+	const selectedResourceKey = $derived(selection?.partID === partID ? selection.key : undefined)
 
 	const displayedResources = $derived(
 		singleCardMode && selectedResourceKey
-			? filteredResources.filter(
-					(r) =>
-						`${r.name.namespace}:${r.name.type}:${r.name.subtype}/${r.name.name}` ===
-						selectedResourceKey
-				)
+			? filteredResources.filter((r) => getResourceKey(r.name) === selectedResourceKey)
 			: filteredResources
 	)
+
+	const instanceId = $props.id()
+	const singleCardLabelId = `single-card-label-${instanceId}`
 
 	const minSidebarPct = 17
 	const sidebarPct = new PersistedState('sideBarPct', minSidebarPct)
@@ -122,9 +122,13 @@
 					<div class="flex items-center gap-2 px-4 py-2">
 						<Switch
 							on={singleCardMode}
+							aria-labelledby={singleCardLabelId}
 							on:change={() => (singleCardMode = !singleCardMode)}
 						/>
-						<span class="text-xs">Single card mode</span>
+						<span
+							id={singleCardLabelId}
+							class="text-xs">Single card mode</span
+						>
 					</div>
 
 					<ResourceList
@@ -133,7 +137,7 @@
 						{selectedResourceKey}
 						error={machineStatus.query.error ?? null}
 						resources={filteredResources}
-						onselect={(key) => (selectedResourceKey = key)}
+						onselect={(key) => (selection = { partID, key })}
 					/>
 				</nav>
 			</div>
@@ -145,25 +149,16 @@
 			<main
 				class="flex h-full w-full grow flex-col sm:relative sm:overflow-y-auto sm:overscroll-contain sm:scroll-smooth sm:motion-reduce:scroll-auto"
 			>
-				<div class="mt-6 ml-6 flex w-full flex-row items-start justify-start gap-3">
-					{#if displayedResources.length > 0}
-						<Button
-							onclick={collapseAll}
-							class="btn btn-default"
-							>Collapse all
-						</Button>
-						<Button
-							onclick={expandAll}
-							class="btn btn-default"
-							>Expand all
-						</Button>
-					{/if}
-				</div>
+				{#if displayedResources.length > 0}
+					<div class="mx-6 mt-6 flex flex-row items-start justify-start gap-3">
+						<Button onclick={collapseAll}>Collapse all</Button>
+						<Button onclick={expandAll}>Expand all</Button>
+					</div>
+				{/if}
 				<CardList
 					{partID}
 					{urlHash}
 					{isLoading}
-					{hasUnsavedChanges}
 					error={machineStatus.query.error ?? undefined}
 					resources={displayedResources}
 				/>
