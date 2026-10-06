@@ -15,6 +15,11 @@ export {
 	isKnownResource as hasWidget,
 } from './is-known-resource'
 export { providePip, usePip } from './pip/context.svelte'
+export {
+	createResourceDependenciesContext,
+	type GetResourceDependencies,
+	useResourceDependencies,
+} from './resource-dependencies'
 export { ResourceTriplets } from './resource-triplet'
 export type { ResourceTriplet } from './resource-triplet'
 export type {
