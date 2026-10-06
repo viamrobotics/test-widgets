@@ -42,6 +42,22 @@ jobs:
           BASE_PATH: /test-widgets/pr-preview/pr-${{ github.event.number }}
         run: pnpm vite-build
 
+      - name: Stage .nojekyll for the gh-pages root
+        if: github.event.action != 'closed'
+        # Pages builds gh-pages with Jekyll, which drops every `_app/` folder unless the branch
+        # root has a .nojekyll file. Nothing else creates it before the first docs deploy.
+        run: mkdir -p .gh-pages-root && touch .gh-pages-root/.nojekyll
+
+      - name: Keep .nojekyll at the gh-pages root
+        if: github.event.action != 'closed'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .gh-pages-root
+          branch: gh-pages
+          # Without clean: false this would wipe every preview and the docs from gh-pages.
+          clean: false
+          commit-message: 'Add .nojekyll so Pages serves _app/'
+
       - name: Deploy / cleanup preview
         uses: rossjrw/pr-preview-action@v1
         with:
