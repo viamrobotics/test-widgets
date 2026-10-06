@@ -9,9 +9,13 @@ type FontInfo = Exclude<FontFamilies[string][keyof FontFamilies[string]], string
 let font: FontInfo | undefined
 
 export const getPublicSansFont = (): FontInfo => {
-	font ??= {
-		...publicSansInfo,
-		pages: [new URL(publicSansPage, document.baseURI).href],
-	} satisfies FontInfo
+	if (!font) {
+		font = {
+			...publicSansInfo,
+			// uikit's type requires `outline`, which this generated font omits. uikit never reads it.
+			info: { ...publicSansInfo.info, outline: 0 },
+			pages: [new URL(publicSansPage, document.baseURI).href],
+		}
+	}
 	return font
 }

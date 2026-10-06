@@ -18,6 +18,8 @@ const buildResource = (name: string): NamedResourceStatus => ({
 		name,
 	},
 	state: robotApi.ResourceStatus_State.CONFIGURING,
+	revision: '1',
+	error: '',
 })
 
 const collapseKey = (resource: NamedResourceStatus) =>
