@@ -12,12 +12,14 @@
 	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { useResourceDependencies } from '$lib/resource-dependencies'
 
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'
 	import { useSlowRequest } from './use-slow-request.svelte.ts'
 
 	const { addImageToDataset } = useAddImageToDataset()
+	const getDependencies = useResourceDependencies()
 
 	interface Props {
 		partID: string
@@ -48,11 +50,18 @@
 
 	const cameraStatuses = useResourceStatuses(() => partID, 'camera')
 
-	const cameras = $derived(
-		cameraStatuses.current
+	// A modular vision service can only read cameras in its dependencies; the host knows those.
+	const dependencyNames = $derived(getDependencies(partID, resourceName))
+
+	const cameras = $derived.by(() => {
+		const names = cameraStatuses.current
 			.map((status) => status.name?.name)
 			.filter((name): name is string => name !== undefined)
-	)
+
+		return dependencyNames === undefined
+			? names
+			: names.filter((name) => dependencyNames.includes(name))
+	})
 
 	$effect.pre(() => {
 		if (cameras.length > 0 && !initialFetchComplete) {
