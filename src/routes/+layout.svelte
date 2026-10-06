@@ -6,62 +6,54 @@
 	import type { Snippet } from 'svelte'
 
 	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools'
-	import { Icon } from '@viamrobotics/prime-core'
 	import { ViamProvider } from '@viamrobotics/svelte-sdk'
 
-	import { resolve } from '$app/paths'
 	import { page } from '$app/state'
 
+	import { createMachineConfigs } from './machines/machine-configs.svelte'
+	import MachineList from './machines/machine-list.svelte'
 	import { getDialConf, loadRobots } from './robots'
 	import Widgets from './widgets/widgets.svelte'
+
 	interface Props {
 		children?: Snippet
 	}
 
 	const { children }: Props = $props()
 
-	const robots = loadRobots()
+	const machines = createMachineConfigs(loadRobots())
 
-	const part = $derived(page.params.name ?? Object.keys(robots).at(0) ?? '')
-	const playgroundRobot = $derived(robots[part])
-	const partID = $derived(playgroundRobot?.partId ?? '')
-	const dialConfigs = $derived(playgroundRobot ? { [partID]: getDialConf(playgroundRobot) } : {})
+	const requestedName = $derived(page.url.searchParams.get('machine'))
+	const selectedMachine = $derived(
+		machines.current.find(({ name }) => name === requestedName) ?? machines.current.at(0)
+	)
+	const selectedName = $derived(selectedMachine?.name)
+	const partID = $derived(selectedMachine?.partId ?? '')
+	const dialConfigs = $derived(selectedMachine ? { [partID]: getDialConf(selectedMachine) } : {})
 </script>
 
 <div class="h-screen w-screen">
 	<ViamProvider {dialConfigs}>
-		<Widgets
-			{partID}
-			urlHash={page.url.hash}
-		>
-			<div class="py-3">
-				<nav>
-					<ul>
-						{#each Object.keys(robots) as name, i (i)}
-							{@const isCurrent = page.params.name ? name === page.params.name : i === 0}
-							<li>
-								<a
-									href={resolve(`/${name}`)}
-									class="hover:bg-ghost-light focus:bg-ghost-light active:bg-ghost-medium flex items-center gap-1.5 px-3 py-1 text-sm sm:px-5"
-								>
-									<Icon
-										name="check"
-										cx={['text-gray-6', { 'opacity-0': !isCurrent }]}
-									/>
-									<Icon
-										name="robot-outline"
-										cx="text-gray-6"
-									/>
-									<span class="truncate overflow-auto">
-										{name}
-									</span>
-								</a>
-							</li>
-						{/each}
-					</ul>
-				</nav>
+		{#if selectedMachine}
+			<Widgets
+				{partID}
+				urlHash={page.url.hash}
+			>
+				<MachineList
+					{machines}
+					{selectedName}
+				/>
+			</Widgets>
+		{:else}
+			<div class="mx-auto flex max-w-md flex-col gap-2 py-8">
+				<h1 class="text-heading text-lg">No machines yet</h1>
+				<p class="text-subtle-1 text-sm">Add a machine below to start testing its resources.</p>
+				<MachineList
+					{machines}
+					{selectedName}
+				/>
 			</div>
-		</Widgets>
+		{/if}
 
 		<SvelteQueryDevtools buttonPosition="bottom-left" />
 	</ViamProvider>

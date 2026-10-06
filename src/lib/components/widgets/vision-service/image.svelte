@@ -11,6 +11,7 @@
 	import { provideDetectionsContext } from './context.svelte'
 	import { getImageSize, type Size } from './get-image-size'
 	import Legend from './legend.svelte'
+	import { getPublicSansFont } from './public-sans-font'
 	import Scene from './scene.svelte'
 
 	interface Props {
@@ -61,10 +62,9 @@
 
 	provideFontFamilies({
 		publicSans: {
-			// This must remain `/static/*` while the frontend directory still exist
-			light: '/static/fonts/public-sans.json',
-			medium: '/static/fonts/public-sans.json',
-			'extra-light': '/static/fonts/public-sans.json',
+			light: getPublicSansFont(),
+			medium: getPublicSansFont(),
+			'extra-light': getPublicSansFont(),
 		},
 	})
 

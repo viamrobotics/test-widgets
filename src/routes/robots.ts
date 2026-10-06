@@ -1,5 +1,7 @@
 import type { DialWebRTCConf } from '@viamrobotics/sdk'
 
+import { parseMachineConfigs } from './machines/parse-machine-configs'
+
 export type PlaygroundRobotsConfig = Record<
 	string,
 	{
@@ -13,14 +15,18 @@ export type PlaygroundRobotsConfig = Record<
 	}
 >
 
-export const loadRobots = () => {
+export const loadRobots = (): PlaygroundRobotsConfig => {
 	const rawRobots = import.meta.env.VITE_PLAYGROUND_ROBOTS
 	if (!rawRobots) {
+		return {}
+	}
+	const configs = parseMachineConfigs(rawRobots)
+	if (!configs) {
 		throw new Error(
-			'Cannot find VITE_PLAYGROUND_ROBOTS. Please read the README.md playground section for more info'
+			'Cannot parse VITE_PLAYGROUND_ROBOTS. Please read the README.md playground section for more info'
 		)
 	}
-	return JSON.parse(rawRobots) as PlaygroundRobotsConfig
+	return Object.fromEntries(configs.map(({ name, ...config }) => [name, config]))
 }
 
 export const getDialConfs = (robots: PlaygroundRobotsConfig): Record<string, DialWebRTCConf> =>

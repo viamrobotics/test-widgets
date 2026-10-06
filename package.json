@@ -22,6 +22,9 @@
 		"test": "wireit",
 		"test:coverage": "wireit",
 		"test:e2e": "playwright test",
+		"docs:dev": "pnpm --dir docs dev",
+		"docs:build": "pnpm --dir docs build:app && pnpm --dir docs build",
+		"docs:preview": "pnpm --dir docs preview",
 		"release": "changeset publish"
 	},
 	"wireit": {
@@ -72,7 +75,12 @@
 			],
 			"packageLocks": [
 				"pnpm-lock.yaml"
-			]
+			],
+			"env": {
+				"BASE_PATH": {
+					"external": true
+				}
+			}
 		},
 		"svelte-sync": {
 			"command": "svelte-kit sync",
@@ -125,7 +133,8 @@
 				"!test-results/**",
 				"!.env*",
 				"!**/*.tgz",
-				"!.claude/**"
+				"!.claude/**",
+				"!docs/**"
 			],
 			"output": [],
 			"packageLocks": [
@@ -143,7 +152,11 @@
 				"!test-results/**",
 				"!.env*",
 				"!**/*.tgz",
-				"!.claude/**"
+				"!.claude/**",
+				"!docs/dist/**",
+				"!docs/.astro/**",
+				"!docs/node_modules/**",
+				"!docs/public/playground/**"
 			],
 			"output": [],
 			"packageLocks": [

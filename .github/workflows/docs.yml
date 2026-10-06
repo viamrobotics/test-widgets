@@ -1,0 +1,91 @@
+name: Deploy Docs
+
+# Builds the playground from main and the Starlight docs site, then deploys both to gh-pages:
+# the docs at the root and the playground at /playground/. PR previews live under pr-preview/,
+# which pr-preview.yml owns, so this deploy leaves that tree alone.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build playground
+        # Never pass VITE_PLAYGROUND_ROBOTS here: Vite inlines it, so its API keys would ship in
+        # the public bundle.
+        env:
+          BASE_PATH: /test-widgets/playground
+        run: pnpm vite-build
+
+      - name: Upload playground build
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-build
+          path: build/
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: build-app
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - name: Install docs deps
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+
+      - name: Download playground build
+        uses: actions/download-artifact@v4
+        with:
+          name: playground-build
+          path: docs/public/playground/
+
+      - name: Build docs site
+        working-directory: docs
+        env:
+          DOCS_BASE: /test-widgets/
+          DOCS_SITE: https://viamrobotics.github.io
+        run: pnpm build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs/dist
+          branch: gh-pages
+          # `_app/immutable` names each chunk by content hash, so a merging deploy would keep every
+          # build's chunks forever.
+          clean: true
+          clean-exclude: pr-preview/**
+          git-config-name: github-actions[bot]
+          git-config-email: github-actions[bot]@users.noreply.github.com
+          commit-message: 'docs: deploy ${{ github.sha }}'

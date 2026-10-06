@@ -1,0 +1,27 @@
+{
+	"name": "@viamrobotics/test-widgets-docs",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"build:app": "BASE_PATH=/test-widgets/playground VITE_PLAYGROUND_ROBOTS= pnpm --dir .. exec vite build && rm -rf public/playground && cp -R ../build public/playground"
+	},
+	"dependencies": {
+		"@astrojs/starlight": "0.41.6",
+		"@tailwindcss/vite": "4.2.4",
+		"astro": "7.2.8",
+		"sharp": "0.35.4",
+		"starlight-theme-nova": "^0.12.2",
+		"tailwindcss": "4.2.4"
+	},
+	"devDependencies": {
+		"@fontsource-variable/public-sans": "^5.2.7",
+		"@fontsource-variable/roboto-mono": "^5.2.8",
+		"@viamrobotics/tailwind-config": "^1.2.0",
+		"remark-gfm": "^4.0.1",
+		"typescript": "5.9.2"
+	}
+}

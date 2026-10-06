@@ -40,6 +40,12 @@ describe('Sidebar ResourceList', () => {
 		expect(error).toBeInTheDocument()
 	})
 
+	it('renders no list when there are no resources', () => {
+		renderSubject({ resources: [] })
+
+		expect(screen.queryByRole('list')).not.toBeInTheDocument()
+	})
+
 	it('shows links for resources', () => {
 		renderSubject({
 			resources: [

@@ -12,17 +12,9 @@
 		error: Error | undefined
 		resources: NamedResourceStatus[]
 		urlHash: string
-		hasUnsavedChanges?: boolean
 	}
 
-	const {
-		partID,
-		isLoading,
-		error,
-		resources,
-		urlHash,
-		hasUnsavedChanges = false,
-	}: Props = $props()
+	const { partID, isLoading, error, resources, urlHash }: Props = $props()
 </script>
 
 <div class="p-6">
@@ -44,7 +36,6 @@
 					{resource}
 					{partID}
 					{urlHash}
-					{hasUnsavedChanges}
 				/>
 			{/each}
 		</ul>

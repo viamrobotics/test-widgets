@@ -2,15 +2,19 @@
 	module
 	lang="ts"
 >
-	const collapseAllCallbacks: (() => void)[] = []
-	const expandAllCallbacks: (() => void)[] = []
+	const collapseAllCallbacks = new Set<() => void>()
+	const expandAllCallbacks = new Set<() => void>()
 
+	/** @returns A function that unregisters the callback. */
 	export const registerCollapseAllCallback = (callback: () => void) => {
-		collapseAllCallbacks.push(callback)
+		collapseAllCallbacks.add(callback)
+		return () => collapseAllCallbacks.delete(callback)
 	}
 
+	/** @returns A function that unregisters the callback. */
 	export const registerExpandAllCallback = (callback: () => void) => {
-		expandAllCallbacks.push(callback)
+		expandAllCallbacks.add(callback)
+		return () => expandAllCallbacks.delete(callback)
 	}
 
 	export const collapseAll = () => {
@@ -27,10 +31,10 @@
 </script>
 
 <script lang="ts">
-	import { Breadcrumbs, Icon } from '@viamrobotics/prime-core'
+	import { Breadcrumbs } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
 	import { PersistedState } from 'runed'
-	import { slide } from 'svelte/transition'
+	import { onDestroy } from 'svelte'
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
@@ -49,15 +53,9 @@
 		resource: NamedResourceStatus
 		/** URL hash, including the `#` character */
 		urlHash: string
-		hasUnsavedChanges?: boolean
 	}
 
-	const { partID, resource, urlHash, hasUnsavedChanges = false }: Props = $props()
-
-	// TODO: Move ui/src/lib/user-agent.ts to prime and use that here
-	const isMacDevice = typeof navigator !== 'undefined' && /mac/iu.test(navigator.userAgent)
-	const iconName = isMacDevice ? ('apple-keyboard-command' as const) : ('chevron-up' as const)
-	const iconLabel = isMacDevice ? 'command' : 'control'
+	const { partID, resource, urlHash }: Props = $props()
 
 	const isTestCollapsed = $derived(
 		new PersistedState(`control/${partID}/${getResourceKey(resource.name)}/test/collapse`, false)
@@ -88,13 +86,13 @@
 	// Exclude the # character
 	const hash = $derived(urlHash.replace(/^#/iu, ''))
 
-	registerCollapseAllCallback(() => {
+	const unregisterCollapseAll = registerCollapseAllCallback(() => {
 		isTestCollapsed.current = true
 		isDoCommandCollapsed.current = true
 		isApiWidgetsCollapsed.current = true
 	})
 
-	registerExpandAllCallback(() => {
+	const unregisterExpandAll = registerExpandAllCallback(() => {
 		isTestCollapsed.current = false
 		isDoCommandCollapsed.current = false
 		isApiWidgetsCollapsed.current = false
@@ -110,6 +108,12 @@
 			isActive = false
 		}, 4000)
 	}
+
+	onDestroy(() => {
+		unregisterCollapseAll()
+		unregisterExpandAll()
+		globalThis.clearTimeout(isActiveTimeout)
+	})
 
 	$effect(() => {
 		if (id === hash) {
@@ -144,25 +148,6 @@
 				<ResourceStatus {resource} />
 			</div>
 		</header>
-		{#if hasUnsavedChanges}
-			<div
-				transition:slide={{ duration: 150 }}
-				class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b bg-amber-100 px-4 py-2 text-xs"
-			>
-				<p class="text-subtle-1 grow mix-blend-multiply">
-					Testing last saved configuration. You have unsaved changes.
-				</p>
-				<div class="text-subtle-2 flex items-center mix-blend-multiply">
-					<Icon
-						name={iconName}
-						size="xs"
-					/>
-					<span class="sr-only">{iconLabel}</span>
-					<span class="font-roboto-mono">S</span>
-					<p class="pl-1">to save</p>
-				</div>
-			</div>
-		{/if}
 		{#if resource.state === robotApi.ResourceStatus_State.READY}
 			<div class="flex flex-col divide-y">
 				{#if ResourceTestView}

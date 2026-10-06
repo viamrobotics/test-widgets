@@ -1,0 +1,67 @@
+name: PR Preview
+
+# Builds the playground app from the PR branch and publishes it as a static site under
+# gh-pages:pr-preview/pr-<N>/, so reviewers can open a link and test widget changes against a
+# machine they paste in. Closing the PR removes the preview.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: pr-preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    # Fork and Dependabot PRs get a read-only GITHUB_TOKEN, which cannot push to gh-pages.
+    if: >-
+      !startsWith(github.event.pull_request.title, 'Version Packages') &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v6
+
+      - name: Setup
+        if: github.event.action != 'closed'
+        uses: ./.github/actions/setup
+
+      - name: Build playground
+        if: github.event.action != 'closed'
+        # SvelteKit reads paths.base from BASE_PATH at build time, with no trailing slash.
+        # Never pass VITE_PLAYGROUND_ROBOTS here: Vite inlines it, so its API keys would ship in
+        # the public bundle. Reviewers paste a machine config into the app instead.
+        env:
+          BASE_PATH: /test-widgets/pr-preview/pr-${{ github.event.number }}
+        run: pnpm vite-build
+
+      - name: Stage .nojekyll for the gh-pages root
+        if: github.event.action != 'closed'
+        # Pages builds gh-pages with Jekyll, which drops every `_app/` folder unless the branch
+        # root has a .nojekyll file. Nothing else creates it before the first docs deploy.
+        run: mkdir -p .gh-pages-root && touch .gh-pages-root/.nojekyll
+
+      - name: Keep .nojekyll at the gh-pages root
+        if: github.event.action != 'closed'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .gh-pages-root
+          branch: gh-pages
+          # Without clean: false this would wipe every preview and the docs from gh-pages.
+          clean: false
+          commit-message: 'Add .nojekyll so Pages serves _app/'
+
+      - name: Deploy / cleanup preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: build
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
