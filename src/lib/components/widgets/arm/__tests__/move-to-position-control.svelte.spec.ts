@@ -220,6 +220,25 @@ describe('MoveToPositionControl', () => {
 		).toBeInTheDocument()
 	})
 
+	it('describes the pose as world-frame in motion mode', () => {
+		mockMotionServiceNames(['builtin'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(
+			screen.getByText(/pose is in the world frame, as required by the motion service/iu)
+		).toBeInTheDocument()
+	})
+
+	it('describes the pose relative to the arm origin in direct mode', () => {
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(
+			screen.getByText(
+				/pose is with respect to the arm origin and does not take into account the motion service or frame system/iu
+			)
+		).toBeInTheDocument()
+	})
+
 	it('routes Execute through the motion service in motion mode', async () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })

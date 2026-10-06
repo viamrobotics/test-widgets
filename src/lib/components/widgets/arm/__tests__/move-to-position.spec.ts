@@ -1,8 +1,8 @@
 import type { Pose } from '@viamrobotics/sdk'
-import type { ComponentProps } from 'svelte'
 
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { type ComponentProps, createRawSnippet } from 'svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { assertExists } from '$lib/assert'
@@ -26,11 +26,15 @@ describe('Arm move-to-position', () => {
 		user = userEvent.setup()
 	})
 
+	const textSnippet = (text: string) =>
+		createRawSnippet(() => ({ render: () => `<span>${text}</span>` }))
+
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		render(Subject, {
 			endPosition: defaultPose,
 			moveToPosition: vi.fn(),
 			lastError: null,
+			description: textSnippet('Pose description'),
 			...props,
 		})
 
@@ -124,11 +128,10 @@ describe('Arm move-to-position', () => {
 		})
 	})
 
-	it('renders a warning tooltip about the motion service and frame system', () => {
-		renderSubject({})
-		expect(
-			screen.getByText(/does not take into account the motion service or frame system/iu)
-		).toBeInTheDocument()
+	it('shows the description it is given in the info tooltip', () => {
+		renderSubject({ description: textSnippet('Pose is relative to the test frame.') })
+
+		expect(screen.getByText('Pose is relative to the test frame.')).toBeInTheDocument()
 	})
 
 	const editField = async (name: string, value: string) => {

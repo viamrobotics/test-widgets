@@ -392,12 +392,11 @@ describe('PoseEditor', () => {
 
 	describe('rotation editor toggle', () => {
 		const getToggle = () => screen.getByRole('button', { name: 'Rotation editor' })
-
 		const getRegion = () => {
 			const controls = getToggle().getAttribute('aria-controls') ?? ''
 			const region = document.querySelector(`#${CSS.escape(controls)}`)
 			if (!region) throw new Error('The rotation editor region is not in the document')
-			return region
+			return region as HTMLElement
 		}
 
 		it('starts collapsed with nothing at its aria-controls id', () => {
