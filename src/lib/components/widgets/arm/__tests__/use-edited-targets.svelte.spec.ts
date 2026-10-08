@@ -63,6 +63,51 @@ describe('useEditedTargets', () => {
 		expect(targets.drift(0)).toBeUndefined()
 	})
 
+	it('has no baseline for an unedited field', () => {
+		const targets = createTargets([10])
+
+		expect(targets.baseline(0)).toBeUndefined()
+	})
+
+	it('records the live value at edit time as the baseline', () => {
+		const live = [10]
+		const targets = createTargets(live)
+
+		targets.edit(0, 50)
+
+		expect(targets.baseline(0)).toBe(10)
+	})
+
+	it('keeps the baseline when the live value moves', () => {
+		const live = [10]
+		const targets = createTargets(live)
+
+		targets.edit(0, 50)
+		live[0] = 13
+
+		expect(targets.baseline(0)).toBe(10)
+	})
+
+	it('takes the new live value as the baseline on a second edit', () => {
+		const live = [10]
+		const targets = createTargets(live)
+
+		targets.edit(0, 50)
+		live[0] = 13
+		targets.edit(0, 55)
+
+		expect(targets.baseline(0)).toBe(13)
+	})
+
+	it('clears the baseline on reset', () => {
+		const targets = createTargets([10])
+
+		targets.edit(0, 50)
+		targets.reset(0)
+
+		expect(targets.baseline(0)).toBeUndefined()
+	})
+
 	it('returns a field to the live value on reset', () => {
 		const live = [10, 20]
 		const targets = createTargets(live)

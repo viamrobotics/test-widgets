@@ -63,6 +63,6 @@
 	<Boundary {children} />
 
 	{#if bottomText}
-		<p class="text-subtle-2 mt-auto text-xs">{bottomText}</p>
+		<p class="text-subtle-2 text-xs">{bottomText}</p>
 	{/if}
 </section>

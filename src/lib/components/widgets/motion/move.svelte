@@ -6,7 +6,11 @@
 	import { PersistedState } from 'runed'
 
 	import ErrorDisplay from '$lib/components/error.svelte'
-	import PoseEditor from '$lib/components/pose-editor.svelte'
+	import PoseEditor from '$lib/components/pose-editor/pose-editor.svelte'
+	import {
+		isUnitOrientationVector,
+		normalizeOrientationVector,
+	} from '$lib/normalize-orientation-vector'
 
 	import type { MoveInput } from './parse-move-args'
 
@@ -45,9 +49,15 @@
 	const disabled = $derived(frameName === '' || isPending)
 
 	const execute = () => {
+		let poseToSend = pose
+		if (!isUnitOrientationVector(pose)) {
+			poseToSend = normalizeOrientationVector(pose)
+			edit = { key: editKey, pose: poseToSend }
+		}
+
 		onExecute({
 			referenceFrame: destination,
-			pose,
+			pose: poseToSend,
 			worldStateJson: worldState.current,
 			constraintsJson: constraints.current,
 		})
@@ -69,11 +79,18 @@
 	<div class="flex flex-col gap-2">
 		<span class="flex flex-row gap-2">
 			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
+			<Tooltip let:tooltipID>
+				<button
+					type="button"
+					aria-label="About Quick set"
+					aria-describedby={tooltipID}
+					class="focus-visible:ring-gray-9 inline-flex rounded focus-visible:ring-2 focus-visible:outline-none"
+				>
+					<Icon
+						name="information-outline"
+						cx="text-gray-6"
+					/>
+				</button>
 
 				<span slot="description"> Will update the pose values but will not execute </span>
 			</Tooltip>

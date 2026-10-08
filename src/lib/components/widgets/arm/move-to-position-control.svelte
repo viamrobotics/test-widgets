@@ -190,10 +190,10 @@
 			{#if endPosition}
 				<MoveToPosition
 					{endPosition}
-					{moveToPosition}
 					{lastError}
-					isMoving={motionTracking.isTracking}
 					{description}
+					{moveToPosition}
+					isMoving={motionTracking.isTracking}
 				/>
 			{/if}
 		{/key}

@@ -1,6 +1,6 @@
 import type { Pose } from '@viamrobotics/sdk'
 
-import { render, screen, within } from '@testing-library/svelte'
+import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MotionClient } from '@viamrobotics/sdk'
 import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
@@ -33,9 +33,9 @@ const worldPose: Pose = {
 	x: 1,
 	y: 2,
 	z: 3,
-	oX: 4,
-	oY: 5,
-	oZ: 6,
+	oX: 0,
+	oY: 0.6,
+	oZ: 0.8,
 	theta: 7,
 }
 
@@ -44,9 +44,9 @@ const armPose: Pose = {
 	x: 11,
 	y: 12,
 	z: 13,
-	oX: 14,
-	oY: 15,
-	oZ: 16,
+	oX: 0.8,
+	oY: 0,
+	oZ: 0.6,
 	theta: 17,
 }
 
@@ -170,7 +170,7 @@ describe('MoveToPositionControl', () => {
 		mockFrameSystem([])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(poseInputValues()).toEqual([11, 12, 13, 14, 15, 16, 17])
+		expect(poseInputValues()).toEqual([11, 12, 13, 0.8, 0, 0.6, 17])
 	})
 
 	it('never asks for a world-frame pose the machine cannot resolve', () => {
@@ -195,18 +195,18 @@ describe('MoveToPositionControl', () => {
 
 		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 250 })
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
+		expect(screen.getByText('Arm is moving').closest('[role="status"]')).toBeInTheDocument()
 	})
 
 	it('reseeds the pose editor from the newly active frame when the mode changes', async () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(poseInputValues()).toEqual([1, 2, 3, 4, 5, 6, 7])
+		expect(poseInputValues()).toEqual([1, 2, 3, 0, 0.6, 0.8, 7])
 
 		await user.click(screen.getByRole('button', { name: 'Arm' }))
 
-		expect(poseInputValues()).toEqual([11, 12, 13, 14, 15, 16, 17])
+		expect(poseInputValues()).toEqual([11, 12, 13, 0.8, 0, 0.6, 17])
 	})
 
 	it('shows the danger banner after toggling to direct mode', async () => {
@@ -217,6 +217,25 @@ describe('MoveToPositionControl', () => {
 
 		expect(
 			screen.getByText(/the arm will not avoid obstacles when moving\. use with caution/iu)
+		).toBeInTheDocument()
+	})
+
+	it('describes the pose as world-frame in motion mode', () => {
+		mockMotionServiceNames(['builtin'])
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(
+			screen.getByText(/pose is in the world frame, as required by the motion service/iu)
+		).toBeInTheDocument()
+	})
+
+	it('describes the pose relative to the arm origin in direct mode', () => {
+		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
+
+		expect(
+			screen.getByText(
+				/pose is with respect to the arm origin and does not take into account the motion service or frame system/iu
+			)
 		).toBeInTheDocument()
 	})
 

@@ -70,11 +70,10 @@ describe('Motion move', () => {
 	it('pre-fills the pose editor from the current pose', () => {
 		renderSubject({ currentPose: { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 } })
 
-		const inputs = screen.getAllByRole('spinbutton')
-		expect(inputs[0]).toHaveValue(1)
-		expect(inputs[1]).toHaveValue(2)
-		expect(inputs[2]).toHaveValue(3)
-		expect(inputs[6]).toHaveValue(45)
+		expect(screen.getByRole('spinbutton', { name: 'X' })).toHaveValue(1)
+		expect(screen.getByRole('spinbutton', { name: 'Y' })).toHaveValue(2)
+		expect(screen.getByRole('spinbutton', { name: 'Z' })).toHaveValue(3)
+		expect(screen.getByRole('spinbutton', { name: 'θ (deg)' })).toHaveValue(45)
 	})
 
 	it('executes with the pre-filled current pose when unedited', async () => {
@@ -85,6 +84,37 @@ describe('Motion move', () => {
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(onExecute).toHaveBeenCalledWith(expect.objectContaining({ pose: currentPose }))
+	})
+
+	it('normalizes a non-unit orientation vector on execute and shows it in the fields', async () => {
+		const onExecute = vi.fn()
+		renderSubject({
+			currentPose: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: -1, theta: 0 },
+			onExecute,
+		})
+
+		const orientationX = screen.getByRole('spinbutton', { name: 'OX' })
+		await user.clear(orientationX)
+		await user.type(orientationX, '0.5')
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		const { pose } = onExecute.mock.calls[0]![0]
+		expect(pose.oX).toBeCloseTo(0.447214, 6)
+		expect(pose.oY).toBe(0)
+		expect(pose.oZ).toBeCloseTo(-0.894427, 6)
+		expect(screen.getByRole('spinbutton', { name: 'OX' })).toHaveValue(0.447)
+	})
+
+	it('sends an untouched near-unit orientation vector unchanged', async () => {
+		const onExecute = vi.fn()
+		renderSubject({
+			currentPose: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 0.9995, theta: 0 },
+			onExecute,
+		})
+
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(onExecute.mock.calls[0]![0].pose.oZ).toBe(0.9995)
 	})
 
 	it('displays the provided error', () => {

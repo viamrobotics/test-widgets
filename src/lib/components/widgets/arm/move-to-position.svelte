@@ -1,58 +1,38 @@
-<script
-	lang="ts"
-	module
->
-	import type { Pose } from '@viamrobotics/sdk'
-
-	type PoseKey = keyof Pose
-
-	const POSE_KEYS: PoseKey[] = ['x', 'y', 'z', 'oX', 'oY', 'oZ', 'theta']
-
-	// Tight enough to catch a real move, loose enough to ignore encoder noise. Theta is in degrees.
-	const DRIFT_THRESHOLDS: Record<PoseKey, number> = {
-		x: 1,
-		y: 1,
-		z: 1,
-		oX: 0.01,
-		oY: 0.01,
-		oZ: 0.01,
-		theta: 0.5,
-	}
-</script>
-
 <script lang="ts">
+	import type { Pose } from '@viamrobotics/sdk'
 	import type { Snippet } from 'svelte'
 
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
-	import PoseEditor from '$lib/components/pose-editor.svelte'
-	import StatusPill from '$lib/components/status-pill.svelte'
+	import type { PoseStatusMessage } from '$lib/components/pose-editor/pose-field-status'
 
+	import ErrorDisplay from '$lib/components/error.svelte'
+	import PoseEditor from '$lib/components/pose-editor/pose-editor.svelte'
+	import StatusPill from '$lib/components/status-pill.svelte'
+	import {
+		isUnitOrientationVector,
+		normalizeOrientationVector,
+	} from '$lib/normalize-orientation-vector'
+
+	import { DRIFT_THRESHOLDS, POSE_KEYS, type PoseKey } from './pose'
 	import { useEditedTargets } from './use-edited-targets.svelte'
 
 	interface Props {
 		endPosition: Pose
-		moveToPosition: (position: Pose) => void
 		lastError: Error | null
+		description: Snippet
 		isMoving?: boolean
-		description?: Snippet
+		moveToPosition: (position: Pose) => void
 	}
 
-	const {
-		endPosition,
-		moveToPosition,
-		lastError,
-		isMoving = false,
-		description: customDescription,
-	}: Props = $props()
+	const { endPosition, moveToPosition, lastError, description, isMoving = false }: Props = $props()
 
 	const targets = useEditedTargets<PoseKey>(
 		(key) => endPosition[key],
 		(key) => DRIFT_THRESHOLDS[key]
 	)
 
-	const desiredPosition = $derived<Pose>({
+	const pose = $derived<Pose>({
 		x: targets.target('x'),
 		y: targets.target('y'),
 		z: targets.target('z'),
@@ -62,12 +42,32 @@
 		theta: targets.target('theta'),
 	})
 
-	const handlePoseChange = (next: Pose) => {
+	const onPoseChange = (next: Pose) => {
 		for (const key of POSE_KEYS) {
-			if (next[key] !== desiredPosition[key]) {
+			if (next[key] !== pose[key]) {
 				targets.edit(key, next[key])
 			}
 		}
+	}
+
+	const fieldStatus = (key: PoseKey) => ({
+		current: endPosition[key],
+		isEdited: targets.isEdited(key),
+		drift: targets.drift(key),
+		baseline: targets.baseline(key),
+		isMoving,
+	})
+
+	const onFieldReset = (key: PoseKey) => targets.reset(key)
+
+	const execute = () => {
+		if (isUnitOrientationVector(pose)) {
+			moveToPosition(pose)
+			return
+		}
+		const normalized = normalizeOrientationVector(pose)
+		onPoseChange(normalized)
+		moveToPosition(normalized)
 	}
 
 	const resetToZero = () => {
@@ -77,25 +77,22 @@
 	}
 </script>
 
-{#snippet poseDescription()}
-	Pose is with respect to the arm origin and does not take into account the motion service or frame
-	system.
+{#snippet statusMessage({ kind, label, amount }: PoseStatusMessage)}
+	{#if kind === 'drift'}
+		Arm moved {amount} since you edited {label}.
+	{:else}
+		The arm is moving. Your edit is kept.
+	{/if}
 {/snippet}
 
 <div class="flex min-w-0 flex-col gap-4">
 	<PoseEditor
-		pose={desiredPosition}
-		onPoseChange={handlePoseChange}
-		fieldStatus={(key) => ({
-			current: endPosition[key],
-			isEdited: targets.isEdited(key),
-			drift: targets.drift(key),
-			isMoving,
-		})}
-		onFieldReset={(key) => {
-			targets.reset(key)
-		}}
-		description={customDescription ?? poseDescription}
+		{pose}
+		{statusMessage}
+		{fieldStatus}
+		{description}
+		{onPoseChange}
+		{onFieldReset}
 	>
 		{#snippet heading()}Pose Values{/snippet}
 	</PoseEditor>
@@ -103,11 +100,18 @@
 	<div class="mb-2 flex flex-col gap-2">
 		<span class="flex flex-row gap-2">
 			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
+			<Tooltip let:tooltipID>
+				<button
+					type="button"
+					aria-label="About Quick set"
+					aria-describedby={tooltipID}
+					class="focus-visible:ring-gray-9 inline-flex rounded focus-visible:ring-2 focus-visible:outline-none"
+				>
+					<Icon
+						name="information-outline"
+						cx="text-gray-6"
+					/>
+				</button>
 
 				<span slot="description"> Will update the pose values but will not execute </span>
 			</Tooltip>
@@ -129,7 +133,7 @@
 			icon="play-circle-outline"
 			variant="dark"
 			disabled={isMoving}
-			onclick={() => moveToPosition(desiredPosition)}
+			onclick={execute}
 		>
 			Execute
 		</Button>
