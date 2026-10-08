@@ -144,3 +144,4 @@ export {
 	cartesianToMercator,
 	cartesianToLngLat,
 } from './maplibre'
+export { default as CustomControlWidget } from './widgets/custom-control/custom-control.svelte'
