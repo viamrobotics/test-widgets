@@ -1,5 +1,23 @@
 # @viamrobotics/test-widgets
 
+## 0.16.0
+
+### Minor Changes
+
+- af23f81: `SectionTitle` and `apiDocsHref` are no longer exported. Both are internal to the widgets.
+- 663bc9d: `ConnectionStatus` drops its `connectingClass` and `disconnectedClass` props. To style the connecting or offline state, pass the `connecting` or `disconnected` snippet instead.
+- 4ea3fe7: ApiSection and MutationSection wrap their content in an error boundary, so a failing API section shows its error in place instead of taking down the whole resource widget. ConnectionStatus keeps an outer boundary as a last resort. The shared StopWidget renders its own Stop section and requires an api prop.
+- 442e80c: `ConnectionStatus` requires its `connected` snippet and drops the `status` prop, which only tests used. It renders a view for every machine connection status, with optional `dialing`, `reconnecting`, `reconnectionFailed` and `disconnecting` snippets beside `connecting` and `disconnected`. A view that crashed recovers when the status changes.
+
+### Patch Changes
+
+- a2effa7: Camera error and loading overlays now scroll with the video feed.
+- 284457a: MapLibre renders its children inside the map's own positioned, isolated box, so overlay controls no longer paint over host page elements such as toolbars and popups.
+- 8aad9d8: The vision service widget now ships its detection label font inside the package. It no longer needs the host app to serve `/static/fonts/public-sans.json`.
+- 663bc9d: Internal section and form components take Svelte `ClassValue` class props and snippet content props, and no longer merge classes with `tailwind-merge`.
+- d4a760f: Arm move editors show current values, keep edits while the arm moves, and flag drift.
+- 663a82b: Fix the AudioIn and AudioOut section headings linking to missing docs pages.
+
 ## 0.15.1
 
 ### Patch Changes
