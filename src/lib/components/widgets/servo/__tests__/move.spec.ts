@@ -67,5 +67,4 @@ describe('Servo Move', () => {
 		const warning = screen.getByText(/must be non-negative/iu)
 		expect(warning).toBeInTheDocument()
 	})
-
 })

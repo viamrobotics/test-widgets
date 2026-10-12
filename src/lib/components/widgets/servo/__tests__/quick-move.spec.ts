@@ -54,5 +54,4 @@ describe('Servo Quick move', () => {
 		})
 		expect(minusButton).toHaveAttribute('aria-disabled', 'true')
 	})
-
 })
