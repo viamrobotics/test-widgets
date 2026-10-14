@@ -6,10 +6,10 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Properties from '$lib/components/audio-properties.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import MutationSection from '$lib/components/mutation-section.svelte'
 	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { Section } from '$lib/components/section'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -107,84 +107,91 @@
 		<div class="@container">
 			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 				<div class="flex w-full flex-col divide-y">
-					<MutationSection
-						title="Play"
+					<ApiSection
+						method="Play"
 						api={ResourceTriplets.AudioOutput}
-						description="Send audio data to the device"
-						lastError={playContext.error}
+						mutations={[playContext]}
+						class="flex-row flex-wrap gap-2"
 					>
-						<div class="flex flex-col gap-2">
-							<Label cx="gap-1 text-xs">
-								Audio file
-								<input
-									slot="input"
-									type="file"
-									accept={availableCodecs.map((c) => `.${c}`).join(',')}
-									class="text-xs"
-									onchange={handleFileChange}
-								/>
-							</Label>
-							{#if fileInputError}
-								<p class="text-xs text-red-500">{fileInputError}</p>
-							{/if}
-							{#if selectedFile}
-								<p class="font-roboto-mono text-subtle-1 text-xs">{selectedFile.name}</p>
-							{/if}
-							<Label cx="gap-1 text-xs">
-								Codec
-								<Select
-									slot="input"
-									value={selectedCodec}
-									on:change={(e) => {
-										playCodec = (e.target as HTMLSelectElement).value
-									}}
-								>
-									{#each availableCodecs as codec (codec)}
-										<option value={codec}>{codec}</option>
-									{/each}
-								</Select>
-							</Label>
-							<Label cx="gap-1 text-xs">
-								Sample rate (Hz)
-								<NumericInput
-									slot="input"
-									value={selectedSampleRateHz}
-									on:change={(e) => {
-										playSampleRateHz = numberValueFromEvent(e) ?? null
-									}}
-								/>
-							</Label>
-							<Label cx="gap-1 text-xs">
-								Channels
-								<NumericInput
-									slot="input"
-									value={selectedNumChannels}
-									on:change={(e) => {
-										playNumChannels = numberValueFromEvent(e) ?? null
-									}}
-								/>
-							</Label>
-						</div>
+						{#snippet subheading()}
+							<Section.Text>Send audio data to the device</Section.Text>
+						{/snippet}
+						<div class="flex grow flex-wrap justify-between gap-2">
+							<div class="flex flex-col gap-2">
+								<Label cx="gap-1 text-xs">
+									Audio file
+									<input
+										slot="input"
+										type="file"
+										accept={availableCodecs.map((c) => `.${c}`).join(',')}
+										class="text-xs"
+										onchange={handleFileChange}
+									/>
+								</Label>
+								{#if fileInputError}
+									<p class="text-xs text-red-500">{fileInputError}</p>
+								{/if}
+								{#if selectedFile}
+									<p class="font-roboto-mono text-subtle-1 text-xs">{selectedFile.name}</p>
+								{/if}
+								<Label cx="gap-1 text-xs">
+									Codec
+									<Select
+										slot="input"
+										value={selectedCodec}
+										on:change={(e) => {
+											playCodec = (e.target as HTMLSelectElement).value
+										}}
+									>
+										{#each availableCodecs as codec (codec)}
+											<option value={codec}>{codec}</option>
+										{/each}
+									</Select>
+								</Label>
+								<Label cx="gap-1 text-xs">
+									Sample rate (Hz)
+									<NumericInput
+										slot="input"
+										value={selectedSampleRateHz}
+										on:change={(e) => {
+											playSampleRateHz = numberValueFromEvent(e) ?? null
+										}}
+									/>
+								</Label>
+								<Label cx="gap-1 text-xs">
+									Channels
+									<NumericInput
+										slot="input"
+										value={selectedNumChannels}
+										on:change={(e) => {
+											playNumChannels = numberValueFromEvent(e) ?? null
+										}}
+									/>
+								</Label>
+							</div>
 
-						<div class="mt-auto">
-							<Button
-								icon="play-circle-outline"
-								onclick={play}
-								disabled={!client.current || playContext.status === 'playing'}
-							>
-								{playButtonLabel}
-							</Button>
+							<div class="mt-auto">
+								<Button
+									icon="play-circle-outline"
+									onclick={play}
+									disabled={!client.current || playContext.status === 'playing'}
+								>
+									{playButtonLabel}
+								</Button>
+							</div>
 						</div>
-					</MutationSection>
+					</ApiSection>
 				</div>
 
 				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
 					<ApiSection
-						title="GetProperties"
+						method="GetProperties"
 						api={ResourceTriplets.AudioOutput}
-						description="Audio output properties"
 						class="relative grow flex-col gap-4"
 					>
+						{#snippet subheading()}
+							<Section.Text>Audio output properties</Section.Text>
+						{/snippet}
 						<Query
 							query={propertiesQuery}
 							class="h-6"

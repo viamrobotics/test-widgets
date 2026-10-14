@@ -19,7 +19,6 @@ describe('Servo Quick move', () => {
 		render(Subject, {
 			currentPosition: 0,
 			moveTo,
-			lastError: null,
 			...props,
 		})
 
@@ -54,10 +53,5 @@ describe('Servo Quick move', () => {
 			name: /minus-five-degrees/iu,
 		})
 		expect(minusButton).toHaveAttribute('aria-disabled', 'true')
-	})
-
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('some error msg') })
-		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 })

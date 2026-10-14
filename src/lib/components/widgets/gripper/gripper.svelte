@@ -34,7 +34,7 @@
 			<div class="flex flex-col divide-y @lg:flex-row @lg:divide-x @lg:divide-y-0">
 				<span class="flex grow flex-wrap gap-4">
 					<ApiSection
-						title="Open"
+						method="Open"
 						api={ResourceTriplets.Gripper}
 						class="grow-0 flex-col gap-3 @xs:pr-0"
 					>
@@ -44,7 +44,7 @@
 						/>
 					</ApiSection>
 					<ApiSection
-						title="Grab"
+						method="Grab"
 						api={ResourceTriplets.Gripper}
 						class="grow-0 flex-col gap-3 @xs:pl-0"
 					>
@@ -57,11 +57,11 @@
 				<div class="flex flex-col divide-y">
 					<ApiSection
 						class="grow flex-col gap-4"
-						title="Stop"
+						method="Stop"
 						api={ResourceTriplets.Gripper}
+						mutations={[stopMutation]}
 					>
 						<StopButton
-							error={stopMutation.error}
 							onStop={() => {
 								stopMutation.mutate([])
 							}}

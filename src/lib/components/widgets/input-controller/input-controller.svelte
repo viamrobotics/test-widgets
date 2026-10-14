@@ -55,7 +55,7 @@
 		</div>
 
 		<ApiSection
-			title="GetEvents"
+			method="GetEvents"
 			api={ResourceTriplets.InputController}
 			class="relative grow flex-col gap-4"
 		>

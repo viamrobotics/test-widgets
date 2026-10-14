@@ -57,7 +57,7 @@
 		</section>
 	{:else}
 		<ApiSection
-			title="SetManualMode"
+			method="SetManualMode"
 			api={ResourceTriplets.Arm}
 			class="grow flex-col gap-4"
 		>

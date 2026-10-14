@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
-
 	interface Props {
 		currentPosition: number
 		moveTo: (angle: number) => void
-		lastError: Error | null
 	}
 
-	const { currentPosition, moveTo, lastError }: Props = $props()
+	const { currentPosition, moveTo }: Props = $props()
 </script>
 
 <div class="flex flex-row gap-4 text-xs">
@@ -31,4 +28,3 @@
 		<abbr class="text-subtle-2">º</abbr>
 	</Button>
 </div>
-<ErrorDisplay {lastError} />

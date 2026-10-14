@@ -14,7 +14,7 @@
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
-	import SectionTitle from '$lib/components/section-title.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
@@ -156,24 +156,18 @@
 	const setMousePostionTooltip = (event: CustomEvent<string>) => {
 		mousePostionTooltip = event.detail as 'On' | 'Off'
 	}
-
-	const headingID = $props.id()
-	const getImagesHeadingID = `${headingID}-images`
-	const getPointCloudHeadingID = `${headingID}-point-cloud`
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<section
-			class="flex flex-col"
-			aria-labelledby={getImagesHeadingID}
-		>
+		<section class="flex flex-col">
 			<div class="flex flex-col gap-0.5 p-4 pb-0">
-				<SectionTitle
-					title="GetImages"
-					api={ResourceTriplets.Camera}
-					headingId={getImagesHeadingID}
-				/>
+				<Section.Heading>
+					<Section.Method
+						method="GetImages"
+						api={ResourceTriplets.Camera}
+					/>
+				</Section.Heading>
 			</div>
 			<div class="p-4">
 				{#if isPlaying}
@@ -333,16 +327,14 @@
 			</div>
 		</section>
 
-		<section
-			class="flex flex-col gap-4 p-4"
-			aria-labelledby={getPointCloudHeadingID}
-		>
+		<section class="flex flex-col gap-4 p-4">
 			<div class="flex flex-col gap-0.5">
-				<SectionTitle
-					title="GetPointCloud"
-					api={ResourceTriplets.Camera}
-					headingId={getPointCloudHeadingID}
-				/>
+				<Section.Heading>
+					<Section.Method
+						method="GetPointCloud"
+						api={ResourceTriplets.Camera}
+					/>
+				</Section.Heading>
 				<p class="text-subtle-2 text-xs">
 					Get depth measurement data from cameras with depth sensing support
 				</p>

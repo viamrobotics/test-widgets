@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ResourceName } from '@viamrobotics/sdk'
 
-	import SectionTitle from '$lib/components/section-title.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import DoCommand from '../do-command/do-command.svelte'
@@ -27,10 +27,12 @@
 </script>
 
 <div class="flex flex-col py-2 pl-4">
-	<SectionTitle
-		title="DoCommand"
-		{api}
-	/>
+	<Section.Heading>
+		<Section.Method
+			method="DoCommand"
+			{api}
+		/>
+	</Section.Heading>
 </div>
 
 {#key genericResourceName}

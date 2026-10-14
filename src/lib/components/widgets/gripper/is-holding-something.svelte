@@ -5,6 +5,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import Query from '$lib/components/query.svelte'
+	import { Section } from '$lib/components/section'
 	import StatusPill from '$lib/components/status-pill.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -30,9 +31,8 @@
 </script>
 
 <ApiSection
-	title="IsHoldingSomething"
+	method="IsHoldingSomething"
 	api={ResourceTriplets.Gripper}
-	bottomText="Updates automatically"
 	class="grow flex-col gap-4"
 >
 	<Query {query}>
@@ -53,4 +53,5 @@
 			{/if}
 		</div>
 	</Query>
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

@@ -3,7 +3,8 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import MutationView from '$lib/components/mutation-view.svelte'
+	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -26,11 +27,14 @@
 		quickSetPowerMutation.mutate([linear, angular], {})
 	}
 
+	const sectionErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
+
 	let isKeyboardEnabled = $state(false)
 </script>
 
-<MutationView lastError={quickSetPowerMutation.error}>
-	{#snippet titleInput()}
+<Section class="flex-row flex-wrap gap-2">
+	<div class="flex flex-col gap-0.5">
+		<Section.Heading>Quick move</Section.Heading>
 		<Label cx="w-fit!">
 			Keyboard control
 
@@ -40,10 +44,15 @@
 				on:change={() => (isKeyboardEnabled = !isKeyboardEnabled)}
 			/>
 		</Label>
-	{/snippet}
+	</div>
 
-	<QuickMove
-		setPower={quickSetPower}
-		{isKeyboardEnabled}
-	/>
-</MutationView>
+	<Section.Body>
+		<div class="flex grow flex-wrap justify-between gap-2">
+			<QuickMove
+				setPower={quickSetPower}
+				{isKeyboardEnabled}
+			/>
+		</div>
+	</Section.Body>
+	<Section.Errors errors={sectionErrors.errors} />
+</Section>

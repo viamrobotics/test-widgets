@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
 		currentPosition: number
 		moveTo: (angle: number) => void
-		lastError: Error | null
 	}
 
-	const { currentPosition, moveTo, lastError }: Props = $props()
+	const { currentPosition, moveTo }: Props = $props()
 
 	let desiredAngle = $state(0)
 
@@ -99,4 +97,3 @@
 		Execute
 	</Button>
 </div>
-<ErrorDisplay {lastError} />

@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import Table from '$lib/components/table.svelte'
 
 	interface Props {
 		positions: number[]
 		moveTo: (newPos: number[], speeds: number[]) => void
-		lastError: Error | null
 	}
 
-	const { positions, moveTo, lastError }: Props = $props()
+	const { positions, moveTo }: Props = $props()
 
 	// mm/s
 	const quickMoveSpeed = 50
@@ -65,5 +63,3 @@
 		{/each}
 	</tbody>
 </Table>
-
-<ErrorDisplay {lastError} />
