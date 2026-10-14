@@ -1,5 +1,19 @@
 # @viamrobotics/test-widgets
 
+## 0.17.0
+
+### Minor Changes
+
+- 77c9ee6: Add `CustomControlWidget`, which renders a prebuilt control artifact in a sandboxed iframe (`allow-scripts` only) and hosts it on the part's `RobotClient` through `@viamrobotics/post-message-sdk`, scoped to its own resource. The widget injects a Content Security Policy into every artifact so a control can reach nothing but the bridge, sizes the frame from the guest's reports within `min-h-px max-h-[80vh]`, and contains a failing control in a `<svelte:boundary>` whose `error` snippet receives `{ failure, reset }`. Add `loadCustomControl`, which fetches a resource's artifact over `doCommand({ command: 'get-custom-control' })`, and `prepareArtifact` plus `CUSTOM_CONTROL_CSP`.
+- 002ef3c: Sections can keep their content on screen during the first load, with placeholders that pulse while data loads and read "—" when it is missing.
+- af691d2: Sections show mutation errors, including those from forms inside them, in a heading indicator that copies them, instead of an error line below their content. Query errors move to the indicator in a later release.
+- 8ae43b3: Standalone base and motor method widgets show their method name as a heading linked to its docs, like every other API section.
+
+### Patch Changes
+
+- 7dae4ef: Widget sections show query errors in their heading indicator, and a section's first-load progress follows the queries it reads. Query errors no longer render as a line inside the section.
+- 8ae43b3: Widget sections are no longer named landmarks, so screen readers stop listing each API section as a region. Loading bars are announced as "Loading".
+
 ## 0.16.0
 
 ### Minor Changes
