@@ -3,7 +3,7 @@ import { ResourceName, type RobotClient, type Struct } from '@viamrobotics/sdk'
 import { useRobotClient } from '@viamrobotics/svelte-sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { prepareArtifact } from '../../../../custom-control/prepare-artifact.ts'
+import { prepareArtifact } from '../custom-control'
 import Subject from '../custom-control.svelte'
 
 vi.mock('@viamrobotics/svelte-sdk', () => ({ useRobotClient: vi.fn() }))

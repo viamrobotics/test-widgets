@@ -8,11 +8,8 @@
 	interface Props {
 		partID: string
 		resourceName: string
-		/** The prebuilt control artifact. The widget injects the host's policy before rendering it. */
 		html: string
-		/** Shown over the iframe until the guest reports its first size. */
 		loading?: Snippet
-		/** Replaces the default error display. `reset` renders the control again. */
 		error?: Snippet<[{ failure: Error; reset: () => void }]>
 	}
 

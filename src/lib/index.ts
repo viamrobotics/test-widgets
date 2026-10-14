@@ -23,10 +23,3 @@ export type {
 	ResourceWidgetProps,
 } from './resource-widget-types'
 export { showResourceWidget } from './show-resource-widget'
-export { loadCustomControl } from './custom-control/load-custom-control.ts'
-export {
-	CUSTOM_CONTROL_COMMAND,
-	type CustomControlArtifact,
-} from './custom-control/custom-control-command.ts'
-export { prepareArtifact } from './custom-control/prepare-artifact.ts'
-export { CUSTOM_CONTROL_CSP } from './custom-control/content-security-policy.ts'

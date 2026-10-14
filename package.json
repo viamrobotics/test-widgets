@@ -324,7 +324,7 @@
 		}
 	},
 	"dependencies": {
-		"@viamrobotics/post-message-sdk": "link:../viam-post-message-sdk",
+		"@viamrobotics/post-message-sdk": "0.2.0",
 		"svelte-tweakpane-ui": "^1.5.17"
 	}
 }

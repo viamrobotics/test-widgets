@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@viamrobotics/post-message-sdk':
-        specifier: link:../viam-post-message-sdk
-        version: link:../viam-post-message-sdk
+        specifier: 0.2.0
+        version: 0.2.0(@viamrobotics/sdk@0.76.0)(svelte@5.56.3(@typescript-eslint/types@8.59.1))
       svelte-tweakpane-ui:
         specifier: ^1.5.17
         version: 1.5.17(svelte@5.56.3(@typescript-eslint/types@8.59.1))
@@ -1419,6 +1419,15 @@ packages:
   '@typescript-eslint/visitor-keys@8.59.1':
     resolution: {integrity: sha512-LdDNl6C5iJExcM0Yh0PwAIBb9PrSiCsWamF/JyEZawm3kFDnRoaq3LGE4bpyRao/fWeGKKyw7icx0YxrLFC5Cg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@viamrobotics/post-message-sdk@0.2.0':
+    resolution: {integrity: sha512-UgVIpMNFQZ8S6NI6IkRZAHm8c1pyR/ZZqTVHgbDOuz+0m7GluU64hrxvbywut89RdLR4k5aww907/TzTUaPD8w==}
+    peerDependencies:
+      '@viamrobotics/sdk': '>=0.76.0'
+      svelte: '>=5'
+    peerDependenciesMeta:
+      svelte:
+        optional: true
 
   '@viamrobotics/prime-core@0.1.22':
     resolution: {integrity: sha512-h5ukdMQqHSLIBCWyheliW7cJfCeMC2bIifa9hzHnWBUpuYPwoujG/4/4wWRhohG9XBN1bCZQs/txttUdXpxqBA==}
@@ -4399,6 +4408,12 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.59.1
       eslint-visitor-keys: 5.0.1
+
+  '@viamrobotics/post-message-sdk@0.2.0(@viamrobotics/sdk@0.76.0)(svelte@5.56.3(@typescript-eslint/types@8.59.1))':
+    dependencies:
+      '@viamrobotics/sdk': 0.76.0
+    optionalDependencies:
+      svelte: 5.56.3(@typescript-eslint/types@8.59.1)
 
   '@viamrobotics/prime-core@0.1.22(@internationalized/date@3.12.1)(svelte@5.56.3(@typescript-eslint/types@8.59.1))':
     dependencies:

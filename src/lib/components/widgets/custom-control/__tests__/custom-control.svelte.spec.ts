@@ -3,8 +3,7 @@ import { createHost } from '@viamrobotics/post-message-sdk/host'
 import { createRawSnippet } from 'svelte'
 import { describe, expect, it, vi } from 'vitest'
 
-import { CUSTOM_CONTROL_CSP } from '../../../../custom-control/content-security-policy.ts'
-import { prepareArtifact } from '../../../../custom-control/prepare-artifact.ts'
+import { CUSTOM_CONTROL_CSP, prepareArtifact } from '../custom-control'
 import Subject from '../custom-control.svelte'
 import WithSibling from './__fixtures__/with-sibling.svelte'
 
