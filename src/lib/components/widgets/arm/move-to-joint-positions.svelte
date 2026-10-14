@@ -3,7 +3,6 @@
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
@@ -23,18 +22,11 @@
 		positions: number[]
 		/** Sends the move. Rejects when it fails. */
 		moveToJointPositions: (jointPositions: number[]) => Promise<void>
-		lastError: Error | null
 		jointLimitsDegrees: JointLimit[]
 		isMoving?: boolean
 	}
 
-	const {
-		positions,
-		moveToJointPositions,
-		lastError,
-		jointLimitsDegrees,
-		isMoving = false,
-	}: Props = $props()
+	const { positions, moveToJointPositions, jointLimitsDegrees, isMoving = false }: Props = $props()
 
 	const targets = useEditedTargets<number>(
 		(index) => positions[index] ?? 0,
@@ -126,6 +118,4 @@
 			{isMoving}
 		/>
 	{/if}
-
-	<ErrorDisplay {lastError} />
 </div>

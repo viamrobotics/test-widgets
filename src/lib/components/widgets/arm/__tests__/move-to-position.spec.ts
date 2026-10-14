@@ -30,7 +30,6 @@ describe('Arm move-to-position', () => {
 		render(Subject, {
 			endPosition: defaultPose,
 			moveToPosition: vi.fn(),
-			lastError: null,
 			...props,
 		})
 
@@ -211,10 +210,5 @@ describe('Arm move-to-position', () => {
 		await rerender({ isMoving: true })
 
 		expect(screen.getAllByText(/the arm is moving/iu)).toHaveLength(1)
-	})
-
-	it('displays the provided error', () => {
-		renderSubject({ lastError: new Error('some error msg') })
-		expect(screen.getByText(/some error msg/iu)).toBeInTheDocument()
 	})
 })

@@ -5,7 +5,6 @@
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { PersistedState } from 'runed'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import PoseEditor from '$lib/components/pose-editor.svelte'
 
 	import type { MoveInput } from './parse-move-args'
@@ -17,20 +16,11 @@
 		destination: string
 		currentPose?: Pose
 		isPending: boolean
-		lastError: Error | null
 		storageKey: string
 		onExecute: (input: MoveInput) => void
 	}
 
-	const {
-		frameName,
-		destination,
-		currentPose,
-		isPending,
-		lastError,
-		storageKey,
-		onExecute,
-	}: Props = $props()
+	const { frameName, destination, currentPose, isPending, storageKey, onExecute }: Props = $props()
 
 	const zeroPose: Pose = { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 0 }
 
@@ -139,6 +129,4 @@
 	<p class="text-subtle-2 text-xs">
 		Move blocks until the motion completes. Stop the component itself to interrupt.
 	</p>
-
-	<ErrorDisplay {lastError} />
 </div>

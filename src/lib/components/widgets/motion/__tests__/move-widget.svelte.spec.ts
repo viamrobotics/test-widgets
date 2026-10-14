@@ -14,7 +14,13 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
 	createResourceMutation: vi.fn(() => ({ error: null, isPending: false, mutate: vi.fn() })),
 	useRobotClient: vi.fn(() => ({ current: {} })),
-	createRobotQuery: vi.fn(() => ({ data: undefined })),
+	createRobotQuery: vi.fn(() => ({
+		data: undefined,
+		error: null,
+		fetchStatus: 'idle',
+		isLoading: false,
+		isSuccess: false,
+	})),
 }))
 
 describe('Motion Move widget', () => {

@@ -43,7 +43,7 @@ Use Tailwind's spacing scale consistently. Match the density of neighboring widg
 A control is not done until every state is handled. Missing states is the most common slop tell.
 
 - hover, focus-visible, active, and disabled on every interactive element.
-- loading and empty states for any async or list view (a placeholder, not a blank box). The `query.svelte` and `queries.svelte` wrappers already handle the async branches. Use them instead of hand-rolling `{#if}` chains.
+- loading and empty states for any async or list view (a placeholder, not a blank box). Async loading and errors belong to the section: pass queries to `ApiSection` as `queries` (and mutations as `mutations`), or to a `Section` control's `useSectionErrors` call with `Section.Body` taking `isLoading`. Children guard only what they read, e.g. `{#if query.data}`.
 - Prefer `aria-disabled` over `disabled` when the element must stay focusable.
 - Lean on PRIME components for correct states instead of re-deriving them.
 

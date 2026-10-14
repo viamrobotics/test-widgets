@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ToggleButtons } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	interface Props {
 		numPositions: number
@@ -39,5 +39,5 @@
 		cx={[{ '[&>div>button]:w-12!': !hasLabels }, 'font-roboto-mono [&>div]:flex-wrap!']}
 		on:input={handleInput}
 	/>
-	<ErrorDisplay {lastError} />
+	<Section.Error error={lastError} />
 </div>

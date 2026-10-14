@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -31,16 +30,15 @@
 	method="GetPosition"
 	api={ResourceTriplets.Gantry}
 	class="grow flex-col gap-4"
+	queries={[positionQuery, lengthsQuery]}
 >
-	<Queries queries={[positionQuery, lengthsQuery]}>
-		{@const positions = positionQuery.data}
-		{@const lengths = lengthsQuery.data ?? []}
-		{#if positions !== undefined}
-			<PositionAndLengths
-				{positions}
-				{lengths}
-			/>
-		{/if}
-	</Queries>
+	{@const positions = positionQuery.data}
+	{@const lengths = lengthsQuery.data ?? []}
+	{#if positions !== undefined}
+		<PositionAndLengths
+			{positions}
+			{lengths}
+		/>
+	{/if}
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

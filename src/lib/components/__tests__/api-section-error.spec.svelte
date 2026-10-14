@@ -7,12 +7,15 @@
 	const throwError = (): string => {
 		throw new Error('bad news bears')
 	}
+
+	const idle = { error: null }
 </script>
 
 <ApiSection
 	class="flex-col gap-4"
 	method="IsMoving"
 	api={ResourceTriplets.Servo}
+	mutations={[idle]}
 >
 	{@const message = throwError()}
 	<p>{message}</p>
@@ -22,6 +25,7 @@
 	class="flex-col gap-4"
 	method="Stop"
 	api={ResourceTriplets.Servo}
+	mutations={[idle]}
 >
 	<p>still standing</p>
 </ApiSection>
@@ -30,6 +34,7 @@
 	class="flex-col gap-4"
 	method="GetPosition"
 	api={ResourceTriplets.Servo}
+	mutations={[idle]}
 >
 	{#snippet subheading()}<Section.Text>Where the servo is</Section.Text>{/snippet}
 	{#snippet tooltip()}Degrees from zero{/snippet}

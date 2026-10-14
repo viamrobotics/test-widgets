@@ -9,7 +9,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -40,7 +39,10 @@
 	const quickMoveMutation = createResourceMutation(client, 'move')
 	const stopMutation = createResourceMutation(client, 'stop')
 
-	const quickMoveErrors = useSectionErrors(() => ({ mutations: [quickMoveMutation] }))
+	const quickMoveErrors = useSectionErrors(() => ({
+		queries: [positionQuery],
+		mutations: [quickMoveMutation],
+	}))
 
 	const moveTo = (angle: number) => {
 		moveMutation.mutate([angle], {})
@@ -61,51 +63,54 @@
 							class="grow flex-col gap-4"
 							method="GetPosition"
 							api={ResourceTriplets.Servo}
+							queries={[positionQuery]}
 						>
-							<Query query={positionQuery}>
-								{#if positionQuery.data !== undefined}
-									<!-- span required to get unit closer to position reading -->
-									<span class="flex flex-row gap-1">
-										<span class="font-roboto-mono font-normal"
-											>{formatNumeric(positionQuery.data)}</span
-										>
-										<abbr class="text-subtle-2">º</abbr>
-									</span>
-								{/if}
-							</Query>
+							{#if positionQuery.data !== undefined}
+								<!-- span required to get unit closer to position reading -->
+								<span class="flex flex-row gap-1">
+									<span class="font-roboto-mono font-normal"
+										>{formatNumeric(positionQuery.data)}</span
+									>
+									<abbr class="text-subtle-2">º</abbr>
+								</span>
+							{/if}
 							<Section.Text class="mt-auto">Updates automatically</Section.Text>
 						</ApiSection>
 						<ApiSection
 							class="grow flex-col gap-4"
 							method="Move"
 							api={ResourceTriplets.Servo}
+							queries={[positionQuery]}
 							mutations={[moveMutation]}
 						>
-							<Query query={positionQuery}>
+							{#if positionQuery.data !== undefined}
+								<Move
+									currentPosition={positionQuery.data}
+									{moveTo}
+								/>
+							{/if}
+						</ApiSection>
+						<Section
+							errorReporter={quickMoveErrors}
+							class="grow flex-col gap-4"
+						>
+							<div class="flex flex-col gap-0.5">
+								<Section.Heading>
+									Quick move
+									{#snippet aside()}
+										<Section.Errors errors={quickMoveErrors.errors} />
+									{/snippet}
+								</Section.Heading>
+							</div>
+							<Section.Body isLoading={quickMoveErrors.isLoading}>
 								{#if positionQuery.data !== undefined}
-									<Move
+									<QuickMove
 										currentPosition={positionQuery.data}
-										{moveTo}
+										moveTo={quickMoveTo}
 									/>
 								{/if}
-							</Query>
-						</ApiSection>
-						<Section class="grow flex-col gap-4">
-							<div class="flex flex-col gap-0.5">
-								<Section.Heading>Quick move</Section.Heading>
-							</div>
-							<Section.Body>
-								<Query query={positionQuery}>
-									{#if positionQuery.data !== undefined}
-										<QuickMove
-											currentPosition={positionQuery.data}
-											moveTo={quickMoveTo}
-										/>
-									{/if}
-								</Query>
 								<Section.Text class="mt-auto">Press a button to execute</Section.Text>
 							</Section.Body>
-							<Section.Errors errors={quickMoveErrors.errors} />
 						</Section>
 					</div>
 				</div>

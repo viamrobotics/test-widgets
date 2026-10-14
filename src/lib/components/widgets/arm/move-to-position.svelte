@@ -25,7 +25,6 @@
 
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import PoseEditor from '$lib/components/pose-editor.svelte'
 	import StatusPill from '$lib/components/status-pill.svelte'
 
@@ -34,7 +33,6 @@
 	interface Props {
 		endPosition: Pose
 		moveToPosition: (position: Pose) => void
-		lastError: Error | null
 		isMoving?: boolean
 		description?: Snippet
 	}
@@ -42,7 +40,6 @@
 	const {
 		endPosition,
 		moveToPosition,
-		lastError,
 		isMoving = false,
 		description: customDescription,
 	}: Props = $props()
@@ -142,5 +139,4 @@
 			{/if}
 		</span>
 	</div>
-	<ErrorDisplay {lastError} />
 </div>

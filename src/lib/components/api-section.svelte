@@ -11,19 +11,26 @@
 		useSectionErrors,
 	} from './section/use-section-errors.svelte'
 
-	interface Props extends HTMLAttributes<HTMLElement> {
-		/** RDK method name in PascalCase. */
-		method: string
-		api: ResourceTriplet
-		queries?: SectionQuery[]
-		mutations?: SectionMutation[]
-		subheading?: Snippet
-		tooltip?: Snippet
-		/**
-		 * @deprecated Exists only for the migration. Removed once every section passes it.
-		 */
-		skeleton?: boolean
-	}
+	/**
+	 * What the section reads or writes. At least one list is required, so every section's errors
+	 * reach its indicator. Query errors are distinct per query, mutation errors per mutation.
+	 */
+	type Sources =
+		| { queries: SectionQuery[]; mutations?: SectionMutation[] }
+		| { queries?: SectionQuery[]; mutations: SectionMutation[] }
+
+	type Props = HTMLAttributes<HTMLElement> &
+		Sources & {
+			/** RDK method name in PascalCase. */
+			method: string
+			api: ResourceTriplet
+			subheading?: Snippet
+			tooltip?: Snippet
+			/**
+			 * @deprecated Exists only for the migration. Removed once every section passes it.
+			 */
+			skeleton?: boolean
+		}
 
 	const {
 		method,
@@ -40,7 +47,10 @@
 	const sectionErrors = useSectionErrors(() => ({ queries, mutations }))
 </script>
 
-<Section {...rest}>
+<Section
+	errorReporter={sectionErrors}
+	{...rest}
+>
 	<div class="flex flex-col gap-0.5">
 		<Section.Heading>
 			<Section.Method
@@ -48,6 +58,7 @@
 				{api}
 			/>
 			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
 				{#if tooltip}
 					<Section.Tooltip>{@render tooltip()}</Section.Tooltip>
 				{/if}
@@ -62,6 +73,4 @@
 	>
 		{@render children?.()}
 	</Section.Body>
-
-	<Section.Errors errors={sectionErrors.errors} />
 </Section>

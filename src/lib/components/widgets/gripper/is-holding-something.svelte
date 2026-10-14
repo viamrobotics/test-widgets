@@ -4,7 +4,6 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import StatusPill from '$lib/components/status-pill.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
@@ -34,24 +33,23 @@
 	method="IsHoldingSomething"
 	api={ResourceTriplets.Gripper}
 	class="grow flex-col gap-4"
+	queries={[query]}
 >
-	<Query {query}>
-		<div class="flex items-center gap-2">
-			{#if query.data !== undefined}
-				{#if query.data}
-					<ClosedGripperSvg />
-				{:else}
-					<OpenGripperSvg />
-				{/if}
-				<StatusPill
-					isActive={query.data}
-					activeText="Holding"
-					inactiveText="Empty"
-				/>
+	<div class="flex items-center gap-2">
+		{#if query.data !== undefined}
+			{#if query.data}
+				<ClosedGripperSvg />
 			{:else}
-				<Pill value="Loading" />
+				<OpenGripperSvg />
 			{/if}
-		</div>
-	</Query>
+			<StatusPill
+				isActive={query.data}
+				activeText="Holding"
+				inactiveText="Empty"
+			/>
+		{:else}
+			<Pill value="Loading" />
+		{/if}
+	</div>
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

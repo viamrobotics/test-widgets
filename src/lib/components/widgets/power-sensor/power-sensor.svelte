@@ -6,7 +6,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Query from '$lib/components/query.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
@@ -68,51 +67,40 @@
 		<div class="@container">
 			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
 				<ApiSection
+					queries={[currentQuery]}
 					method="GetCurrent"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
-					<Query
-						query={currentQuery}
-						class="h-6"
-					>
-						{#if currentQuery.data !== undefined}
-							<CurrentReading data={currentQuery.data} />
-						{/if}
-					</Query>
+					{#if currentQuery.data !== undefined}
+						<CurrentReading data={currentQuery.data} />
+					{/if}
 				</ApiSection>
 				<ApiSection
+					queries={[voltageQuery]}
 					method="GetVoltage"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
-					<Query
-						query={voltageQuery}
-						class="h-6"
-					>
-						{#if voltageQuery.data !== undefined}
-							<VoltageReading data={voltageQuery.data} />
-						{/if}
-					</Query>
+					{#if voltageQuery.data !== undefined}
+						<VoltageReading data={voltageQuery.data} />
+					{/if}
 				</ApiSection>
 				<ApiSection
+					queries={[powerQuery]}
 					method="GetPower"
 					api={ResourceTriplets.PowerSensor}
 					class="grow flex-col gap-4 pb-5"
 				>
-					<Query
-						query={powerQuery}
-						class="h-6"
-					>
-						{#if powerQuery.data !== undefined}
-							<PowerReading data={powerQuery.data} />
-						{/if}
-					</Query>
+					{#if powerQuery.data !== undefined}
+						<PowerReading data={powerQuery.data} />
+					{/if}
 				</ApiSection>
 			</div>
 		</div>
 
 		<ApiSection
+			queries={[readingsQuery]}
 			class="grow flex-col gap-4"
 			method="GetReadings"
 			api={ResourceTriplets.PowerSensor}
@@ -132,14 +120,9 @@
 					transition:slide={{ duration: 150 }}
 					class="pt-2"
 				>
-					<Query
-						query={readingsQuery}
-						class="h-6"
-					>
-						{#if readingsQuery.data !== undefined}
-							<ReadingsList data={readingsQuery.data} />
-						{/if}
-					</Query>
+					{#if readingsQuery.data !== undefined}
+						<ReadingsList data={readingsQuery.data} />
+					{/if}
 				</div>
 			{/if}
 		</ApiSection>

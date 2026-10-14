@@ -9,7 +9,6 @@
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -83,16 +82,23 @@
 		<div class="@container">
 			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
 				<div class="flex w-full flex-col divide-y">
-					<Section class="flex-row flex-wrap gap-2">
+					<Section
+						errorReporter={quickMoveErrors}
+						class="flex-row flex-wrap gap-2"
+					>
 						<div class="flex flex-col gap-0.5">
-							<Section.Heading>Quick move</Section.Heading>
+							<Section.Heading>
+								Quick move
+								{#snippet aside()}
+									<Section.Errors errors={quickMoveErrors.errors} />
+								{/snippet}
+							</Section.Heading>
 						</div>
 						<Section.Body>
 							<div class="flex grow flex-wrap justify-between gap-2">
 								<QuickMove setPower={quickSetPower} />
 							</div>
 						</Section.Body>
-						<Section.Errors errors={quickMoveErrors.errors} />
 					</Section>
 					<ApiSection
 						class="flex-row flex-wrap gap-2"
@@ -170,6 +176,7 @@
 							<ApiSection
 								method="IsPowered"
 								api={ResourceTriplets.Motor}
+								queries={[isPoweredQuery]}
 								class="grow flex-col gap-3 p-0!"
 							>
 								{#snippet tooltip()}
@@ -177,33 +184,32 @@
 									Stepper motors will report ”true” if they are being powered while holding a
 									position and while they are turning.
 								{/snippet}
-								<Query query={isPoweredQuery}>
-									{#if isPoweredQuery.data !== undefined}
-										{@const [isPowered, powerPct] = isPoweredQuery.data}
-										<span class="font-roboto-mono flex flex-row gap-1 text-xs">
-											<p class="text-default">{isPowered}</p>
-											<p class="text-disabled">/</p>
-											<p class="text-subtle-1">
-												{formatNumeric(powerPct * 100, 1)}%
-											</p>
-										</span>
-									{/if}
-								</Query>
+								{#if isPoweredQuery.data !== undefined}
+									{@const [isPowered, powerPct] = isPoweredQuery.data}
+									<span class="font-roboto-mono flex flex-row gap-1 text-xs">
+										<p class="text-default">{isPowered}</p>
+										<p class="text-disabled">/</p>
+										<p class="text-subtle-1">
+											{formatNumeric(powerPct * 100, 1)}%
+										</p>
+									</span>
+								{/if}
 							</ApiSection>
 							{#if propertiesQuery.data?.positionReporting === true}
 								<ApiSection
 									method="GetPosition"
 									api={ResourceTriplets.Motor}
+									queries={[positionQuery]}
 									class="grow flex-col gap-3 p-0!"
 								>
 									{#snippet tooltip()}
 										Reports the position of an encoded motor in revolutions from zero/home.
 									{/snippet}
-									<Query query={positionQuery}>
+									{#if positionQuery.data !== undefined}
 										<p class="font-roboto-mono text-default text-xs">
 											{formatNumeric(positionQuery.data, 4)}
 										</p>
-									</Query>
+									{/if}
 								</ApiSection>
 							{/if}
 						</div>
