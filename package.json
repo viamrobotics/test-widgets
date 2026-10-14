@@ -277,7 +277,7 @@
 		"@types/node": "^25.6.0",
 		"@types/three": "^0.183.1",
 		"@viamrobotics/prime-core": "^0.1.22",
-		"@viamrobotics/sdk": "^0.75.1",
+		"@viamrobotics/sdk": "^0.76.0",
 		"@viamrobotics/svelte-sdk": "^1.5.1",
 		"@viamrobotics/tailwind-config": "^1.2.0",
 		"@vitest/browser": "^5.0.1",
@@ -324,6 +324,7 @@
 		}
 	},
 	"dependencies": {
+		"@viamrobotics/post-message-sdk": "0.2.0",
 		"svelte-tweakpane-ui": "^1.5.17"
 	}
 }
