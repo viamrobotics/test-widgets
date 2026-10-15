@@ -26,7 +26,7 @@ const GUEST = `<!doctype html>
 				if (data?.type === 'connect') {
 					port = event.ports[0]
 					port.onmessage = (reply) => record({ port: reply.data })
-					record({ connect: { ports: event.ports.length } })
+					record({ connect: { ports: event.ports.length, resourceName: data.resourceName } })
 				} else if (data?.command === 'send') {
 					port.postMessage(data.message)
 				}
@@ -96,18 +96,24 @@ describe('createControlHost', () => {
 
 		const startAndConnect = async () => {
 			controlHost.start()
-			await expect.poll(() => readLog(iframe)).toContainEqual({ connect: { ports: 1 } })
+			await expect
+				.poll(() => readLog(iframe))
+				.toContainEqual({
+					connect: { ports: 1, resourceName: RESOURCE },
+				})
 		}
 
 		return { iframe, onHeight, controlHost, startAndConnect }
 	}
 
-	it('posts connect to the iframe with one MessagePort when started', async () => {
+	it('posts connect to the iframe with one MessagePort and the resource name when started', async () => {
 		const { iframe, controlHost } = await setup()
 
 		controlHost.start()
 
-		await expect.poll(() => readLog(iframe)).toEqual([{ connect: { ports: 1 } }])
+		await expect
+			.poll(() => readLog(iframe))
+			.toEqual([{ connect: { ports: 1, resourceName: RESOURCE } }])
 	})
 
 	it('does nothing without a robot', async () => {
