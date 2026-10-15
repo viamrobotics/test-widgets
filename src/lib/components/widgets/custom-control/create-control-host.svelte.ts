@@ -41,6 +41,8 @@ export const createControlHost = ({
 		if (!robot || !iframe) return
 
 		host = createHost(robot, iframe, {
+			// Names the resource in the handshake so the guest's default client targets it.
+			resourceName: resourceName(),
 			allow: ({ resource }) => resource === resourceName(),
 			onSize: (height) => {
 				// A non-finite value would reach the iframe's style as invalid CSS, which the browser
