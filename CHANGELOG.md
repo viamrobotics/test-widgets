@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.17.2
+
+### Patch Changes
+
+- 13a756b: Bump `@viamrobotics/post-message-sdk`.
+
 ## 0.17.1
 
 ### Patch Changes
