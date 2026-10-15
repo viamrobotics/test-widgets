@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.17.1
+
+### Patch Changes
+
+- 95c51b1: `CustomControlWidget` now names its resource in the bridge handshake, so a control's default `createResourceClient()` targets the resource the card was rendered for instead of staying disconnected.
+
 ## 0.17.0
 
 ### Minor Changes
