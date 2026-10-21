@@ -280,7 +280,7 @@
 		"@viamrobotics/sdk": "^0.76.0",
 		"@viamrobotics/svelte-sdk": "^1.5.1",
 		"@viamrobotics/tailwind-config": "^1.2.0",
-		"@vitest/browser": "^5.0.1",
+		"@vitest/browser": "^5.0.5",
 		"@vitest/browser-playwright": "^5.0.1",
 		"@vitest/coverage-v8": "^5.0.1",
 		"@zag-js/dialog": "^1.37.0",
