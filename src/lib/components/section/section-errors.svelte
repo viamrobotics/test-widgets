@@ -87,16 +87,16 @@
 	</button>
 	<div
 		slot="description"
-		class="flex flex-col gap-1"
+		class="flex min-w-0 flex-col gap-1"
 	>
 		<div class="text-gray-5 flex justify-between gap-3">
 			<span>{summary}</span>
 			{#if hasErrors}
-				<span>{copied ? 'Copied' : 'Click to copy'}</span>
+				<span class="shrink-0">{copied ? 'Copied' : 'Click to copy'}</span>
 			{/if}
 		</div>
 		{#each errors as error (errorKey(error))}
-			<p class="font-roboto-mono">{error.name}: {error.message}</p>
+			<p class="font-roboto-mono wrap-anywhere">{error.name}: {error.message}</p>
 		{/each}
 	</div>
 </Tooltip>
