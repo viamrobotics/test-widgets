@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.17.3
+
+### Patch Changes
+
+- ea44e51: Wrap long error messages in the section error tooltip instead of letting them overflow past the tooltip edge
+
 ## 0.17.2
 
 ### Patch Changes
