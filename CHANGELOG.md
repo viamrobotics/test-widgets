@@ -1,5 +1,11 @@
 # @viamrobotics/test-widgets
 
+## 0.17.4
+
+### Patch Changes
+
+- 434d90a: Fix the Satellite button on Google Maps maps, including the navigation and movement sensor widgets. `MapLibre` now passes `mapProviderKey` to the map context as `apiKey`. Style reloads keep the current satellite setting and `maxZoom`.
+
 ## 0.17.3
 
 ### Patch Changes
