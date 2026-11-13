@@ -55,6 +55,20 @@ describe('apiWidgetsForResource', () => {
 		).toEqual(['open-grab', 'is-holding-something', 'is-moving'])
 	})
 
+	it('keeps the base ids the app persists, with stop added last', () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'base')).map((widget) => widget.id)
+		).toEqual([
+			'quick-move',
+			'move-straight',
+			'spin',
+			'set-power',
+			'set-velocity',
+			'is-moving',
+			'stop',
+		])
+	})
+
 	it('returns an empty list for a recognized resource with no API widgets', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
 	})

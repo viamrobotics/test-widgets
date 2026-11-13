@@ -21,6 +21,7 @@ export { default as BaseQuickMoveWidget } from './widgets/base/quick-move-widget
 export { default as BaseSetPowerWidget } from './widgets/base/set-power-widget.svelte'
 export { default as BaseSetVelocityWidget } from './widgets/base/set-velocity-widget.svelte'
 export { default as BaseSpinWidget } from './widgets/base/spin-widget.svelte'
+export { default as BaseStopWidget } from './widgets/base/stop-widget.svelte'
 
 export { default as BoardWidget } from './widgets/board/board.svelte'
 export { default as BoardReadWritePinsWidget } from './widgets/board/read-write-pins-widget.svelte'
