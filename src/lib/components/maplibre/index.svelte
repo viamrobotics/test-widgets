@@ -27,6 +27,7 @@
 
 	import { LngLat, Map, type MapOptions } from 'maplibre-gl'
 	import { onMount, type Snippet, tick } from 'svelte'
+	import { get } from 'svelte/store'
 
 	import { provideMapContext } from './hooks.svelte'
 	import { getStyleSpecification } from './style'
@@ -117,7 +118,7 @@
 		zoom,
 		maxZoom,
 		mapProvider,
-		mapProviderKey,
+		apiKey: mapProviderKey,
 		satellite,
 	}))
 
@@ -166,7 +167,7 @@
 	}
 
 	const updateStyle = async (provider: MapProvider, apiKey?: string) => {
-		const style = await getStyleSpecification(provider, apiKey)
+		const style = await getStyleSpecification(provider, apiKey, maxZoom, get(context.satellite))
 		map?.setStyle(style)
 	}
 
