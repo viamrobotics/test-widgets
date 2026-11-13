@@ -109,8 +109,6 @@
   ],
   "moduleOptions": {
     "orchestrate": [
-      "low",
-      "xhigh",
       "research"
     ],
     "svelte/svelte": [],
