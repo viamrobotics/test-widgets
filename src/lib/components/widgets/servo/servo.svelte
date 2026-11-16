@@ -1,22 +1,11 @@
 <script lang="ts">
-	import { ServoClient } from '@viamrobotics/sdk'
-	import {
-		createResourceClient,
-		createResourceMutation,
-		createResourceQuery,
-	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import { Section } from '$lib/components/section'
-	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
-	import StopButton from '$lib/components/stop-button.svelte'
-	import { formatNumeric } from '$lib/format'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
-	import Move from './move.svelte'
-	import QuickMove from './quick-move.svelte'
+	import GetPositionWidget from './get-position-widget.svelte'
+	import IsMovingWidget from './is-moving-widget.svelte'
+	import MoveWidget from './move-widget.svelte'
+	import QuickMoveWidget from './quick-move-widget.svelte'
+	import StopWidget from './stop-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -24,33 +13,6 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const client = createResourceClient(
-		ServoClient,
-		() => partID,
-		() => resourceName
-	)
-
-	const positionQuery = createResourceQuery(client, 'getPosition', {
-		refetchInterval: 500,
-	})
-
-	const moveMutation = createResourceMutation(client, 'move')
-	const quickMoveMutation = createResourceMutation(client, 'move')
-	const stopMutation = createResourceMutation(client, 'stop')
-
-	const quickMoveErrors = useSectionErrors(() => ({
-		queries: [positionQuery],
-		mutations: [quickMoveMutation],
-	}))
-
-	const moveTo = (angle: number) => {
-		moveMutation.mutate([angle], {})
-	}
-
-	const quickMoveTo = (angle: number) => {
-		quickMoveMutation.mutate([angle], {})
-	}
 </script>
 
 <ConnectionStatus {partID}>
@@ -59,77 +21,26 @@
 			<div class="flex flex-col divide-y @4xl:flex-row @4xl:divide-x @4xl:divide-y-0">
 				<div class="@container grow">
 					<div class="grid grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
-						<ApiSection
-							class="grow flex-col gap-4"
-							method="GetPosition"
-							api={ResourceTriplets.Servo}
-							queries={[positionQuery]}
-						>
-							{#if positionQuery.data !== undefined}
-								<!-- span required to get unit closer to position reading -->
-								<span class="flex flex-row gap-1">
-									<span class="font-roboto-mono font-normal"
-										>{formatNumeric(positionQuery.data)}</span
-									>
-									<abbr class="text-subtle-2">º</abbr>
-								</span>
-							{/if}
-							<Section.Text class="mt-auto">Updates automatically</Section.Text>
-						</ApiSection>
-						<ApiSection
-							class="grow flex-col gap-4"
-							method="Move"
-							api={ResourceTriplets.Servo}
-							queries={[positionQuery]}
-							mutations={[moveMutation]}
-						>
-							{#if positionQuery.data !== undefined}
-								<Move
-									currentPosition={positionQuery.data}
-									{moveTo}
-								/>
-							{/if}
-						</ApiSection>
-						<Section
-							errorReporter={quickMoveErrors}
-							class="grow flex-col gap-4"
-						>
-							<div class="flex flex-col gap-0.5">
-								<Section.Heading>
-									Quick move
-									{#snippet aside()}
-										<Section.Errors errors={quickMoveErrors.errors} />
-									{/snippet}
-								</Section.Heading>
-							</div>
-							<Section.Body isLoading={quickMoveErrors.isLoading}>
-								{#if positionQuery.data !== undefined}
-									<QuickMove
-										currentPosition={positionQuery.data}
-										moveTo={quickMoveTo}
-									/>
-								{/if}
-								<Section.Text class="mt-auto">Press a button to execute</Section.Text>
-							</Section.Body>
-						</Section>
+						<GetPositionWidget
+							{partID}
+							{resourceName}
+						/>
+						<MoveWidget
+							{partID}
+							{resourceName}
+						/>
+						<QuickMoveWidget
+							{partID}
+							{resourceName}
+						/>
 					</div>
 				</div>
 				<div class="flex flex-col divide-y @4xl:ml-auto @4xl:w-full @4xl:max-w-40">
-					<ApiSection
-						class="grow flex-col gap-4"
-						method="Stop"
-						api={ResourceTriplets.Servo}
-						mutations={[stopMutation]}
-					>
-						<StopButton
-							onStop={() => {
-								stopMutation.mutate([])
-							}}
-						/>
-					</ApiSection>
-					<IsMoving
-						client={ServoClient}
-						api={ResourceTriplets.Servo}
+					<StopWidget
+						{partID}
+						{resourceName}
+					/>
+					<IsMovingWidget
 						{partID}
 						{resourceName}
 					/>

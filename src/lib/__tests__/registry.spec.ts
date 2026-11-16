@@ -64,6 +64,12 @@ describe('apiWidgetsForResource', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
 	})
 
+	it('keeps the servo ids the app persists, with get-position and stop added last', () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'servo')).map((widget) => widget.id)
+		).toEqual(['move', 'quick-move', 'is-moving', 'get-position', 'stop'])
+	})
+
 	it('returns an empty list for the widget-only motion service', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
