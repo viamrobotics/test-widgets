@@ -8,10 +8,11 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'
@@ -205,9 +206,11 @@
 				<p class="text-subtle-2 text-xs italic">This request is taking a long time to complete.</p>
 			{/if}
 
-			<Queries
+			<ApiSection
+				class="flex-col gap-2 p-0!"
+				method="CaptureAllFromCamera"
+				api={ResourceTriplets.Vision}
 				queries={[propertiesQuery, captureAllQuery]}
-				class="h-14 p-4"
 			>
 				{#if detectionsSlow}
 					<p class="text-subtle-2 text-xs italic">
@@ -221,7 +224,7 @@
 						classificationsSupported={Boolean(propertiesQuery.data?.classificationsSupported)}
 					/>
 				{/if}
-			</Queries>
+			</ApiSection>
 
 			<h6 class="text-subtle-1 mt-4 font-semibold">Object point clouds</h6>
 			<div class="flex flex-wrap items-center gap-4">
@@ -245,9 +248,11 @@
 			{/if}
 
 			{#if showObjectPointClouds}
-				<Queries
+				<ApiSection
+					class="flex-col gap-2 p-0!"
+					method="GetObjectPointClouds"
+					api={ResourceTriplets.Vision}
 					queries={[getObjectPointCloudsQuery]}
-					class="h-14 p-4"
 				>
 					{#if objectPointCloudsSlow.isSlow}
 						<p class="text-subtle-2 text-xs italic">
@@ -257,7 +262,7 @@
 					{#if getObjectPointCloudsQuery.data !== undefined}
 						<ObjectPointClouds objects={getObjectPointCloudsQuery.data} />
 					{/if}
-				</Queries>
+				</ApiSection>
 			{/if}
 		</div>
 	{/snippet}

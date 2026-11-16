@@ -8,13 +8,13 @@
 
 	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Query from '$lib/components/query.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
 		RefetchIntervals,
 	} from '$lib/components/refetch-interval-store.svelte'
-	import { Section } from '$lib/components/section'
+	import { Section, useSectionErrors } from '$lib/components/section'
+	import { usePip } from '$lib/pip/context.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
@@ -143,6 +143,15 @@
 		}
 	)
 
+	let exportScreenshotError = $state<Error | null>(null)
+	const pip = usePip()
+
+	const imagesErrors = useSectionErrors(() => ({
+		mutations: [{ error: exportScreenshotError }, { error: pip.error ?? null }],
+	}))
+
+	const pointcloudErrors = useSectionErrors(() => ({ queries: [pointcloudQuery] }))
+
 	// Firefox has native support for picture-in-picture and does not need
 	// to be requested separately. Don't show a "toggle pip" button in Firefox.
 	const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
@@ -167,6 +176,9 @@
 						method="GetImages"
 						api={ResourceTriplets.Camera}
 					/>
+					{#snippet aside()}
+						<Section.Errors errors={imagesErrors.errors} />
+					{/snippet}
 				</Section.Heading>
 			</div>
 			<div class="p-4">
@@ -230,6 +242,9 @@
 						name={client.current?.name ?? ''}
 						sourceName={selectedSource}
 						getImage={exportScreenshotQuery.refetch}
+						onExportError={(error) => {
+							exportScreenshotError = error
+						}}
 					/>
 					{#if addImageToDataset}
 						<Button
@@ -327,13 +342,19 @@
 			</div>
 		</section>
 
-		<section class="flex flex-col gap-4 p-4">
+		<Section
+			errorReporter={pointcloudErrors}
+			class="flex-col gap-4"
+		>
 			<div class="flex flex-col gap-0.5">
 				<Section.Heading>
 					<Section.Method
 						method="GetPointCloud"
 						api={ResourceTriplets.Camera}
 					/>
+					{#snippet aside()}
+						<Section.Errors errors={pointcloudErrors.errors} />
+					{/snippet}
 				</Section.Heading>
 				<p class="text-subtle-2 text-xs">
 					Get depth measurement data from cameras with depth sensing support
@@ -347,15 +368,12 @@
 			/>
 
 			{#if isShowingPointcloud}
-				<Query
-					query={pointcloudQuery}
-					class="h-6"
-				>
-					{#if pointcloudQuery.data}
+				<Section.Body isLoading={pointcloudErrors.isLoading}>
+					{#if pointcloudQuery.data !== undefined}
 						<PCDWidget data={pointcloudQuery.data} />
 					{/if}
-				</Query>
+				</Section.Body>
 			{/if}
-		</section>
+		</Section>
 	{/snippet}
 </ConnectionStatus>

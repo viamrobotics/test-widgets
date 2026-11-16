@@ -76,11 +76,17 @@ describe('Gantry QuickMove widget', () => {
 		)
 	})
 
-	it('shows the mutation error line', () => {
+	it('renders the Quick move section heading', () => {
+		renderSubject()
+
+		expect(screen.getByRole('heading', { name: 'Quick move' })).toBeInTheDocument()
+	})
+
+	it("shows the move error in the section's error indicator", () => {
 		state.error = new Error('gantry refused to move')
 
 		renderSubject()
 
-		expect(screen.getByText(/gantry refused to move/iu)).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
 	})
 })

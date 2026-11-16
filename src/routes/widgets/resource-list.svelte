@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { TooltipContainer, TooltipTarget, TooltipText } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
+	import { Section } from '$lib/components/section'
 	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus } from '$lib/resource'
 
@@ -52,7 +52,7 @@
 			role="progressbar"
 		></div>
 	{:else if error}
-		<ErrorDisplay lastError={error} />
+		<Section.Error {error} />
 	{:else if resources.length > 0}
 		<ul>
 			{#each resources as resource (getResourceKey(resource.name))}

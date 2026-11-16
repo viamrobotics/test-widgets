@@ -8,10 +8,10 @@
 	import { PersistedState } from 'runed'
 
 	import { supportsDoCommand } from '$lib/client-map'
+	import { Section } from '$lib/components/section'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
 
-	import ErrorDisplay from '../../error.svelte'
 	import { createDoCommandClient } from './create-do-command-client.svelte'
 
 	interface Props {
@@ -68,7 +68,7 @@
 			output = JSON.stringify(data, null, 2)
 			lastErr = null
 		} catch (error) {
-			lastErr = error as Error
+			lastErr = error instanceof Error ? error : new Error(String(error))
 		}
 	}
 </script>
@@ -120,19 +120,19 @@
 						class="h-40 overflow-y-auto @2xl:h-56"
 					/>
 				{:else}
-					<ErrorDisplay
+					<Section.Error
 						id={uid}
 						class="h-40 px-4 @2xl:h-56"
-						lastError={lastErr}
+						error={lastErr}
 					/>
 				{/if}
 			</div>
 		</div>
 	</div>
 {:else}
-	<ErrorDisplay
+	<Section.Error
 		class="p-4"
-		lastError={new Error(
+		error={new Error(
 			`DoCommand for ${getResourceAPI(
 				resource
 			)} is not supported in the UI. Consider using one of our SDKs.`

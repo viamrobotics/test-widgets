@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 
 	import ControlFrame from './control-frame.svelte'
 
@@ -37,7 +37,7 @@
 				{#if error}
 					{@render error({ failure, reset })}
 				{:else}
-					<ErrorDisplay lastError={failure} />
+					<Section.Error error={failure} />
 				{/if}
 			</div>
 		{/snippet}

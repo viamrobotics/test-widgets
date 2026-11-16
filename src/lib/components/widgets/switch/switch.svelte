@@ -6,8 +6,9 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
+	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Queries from '$lib/components/queries.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Position from './position.svelte'
 
@@ -42,21 +43,21 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="p-4">
-			<Queries
-				queries={[positionQuery, numPositionsQuery]}
-				class="h-7.5"
-			>
-				{#if positionQuery.data !== undefined && numPositionsQuery.data !== undefined}
-					<Position
-						numPositions={numPositionsQuery.data[0]}
-						labels={numPositionsQuery.data[1]}
-						currentPosition={positionQuery.data}
-						{onSelect}
-						lastError={setPositionMutation.error}
-					/>
-				{/if}
-			</Queries>
-		</div>
+		<ApiSection
+			class="flex-col gap-4"
+			method="SetPosition"
+			api={ResourceTriplets.Switch}
+			queries={[positionQuery, numPositionsQuery]}
+			mutations={[setPositionMutation]}
+		>
+			{#if positionQuery.data !== undefined && numPositionsQuery.data !== undefined}
+				<Position
+					numPositions={numPositionsQuery.data[0]}
+					labels={numPositionsQuery.data[1]}
+					currentPosition={positionQuery.data}
+					{onSelect}
+				/>
+			{/if}
+		</ApiSection>
 	{/snippet}
 </ConnectionStatus>

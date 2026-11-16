@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/svelte'
-import { describe, expect, it } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import SectionError from '../section-error.svelte'
 import Subject from './section-error.spec.svelte'
@@ -12,7 +13,7 @@ const notPowered = () => {
 
 const indicator = (name: string) => screen.getByRole('button', { name })
 
-// The inline `ErrorDisplay` line. The indicator's tooltip also renders the error text, so the
+// The inline line outside a section. The indicator's tooltip also renders the error text, so the
 // line is told apart by its copy button.
 const inlineLine = () => screen.queryByRole('button', { name: 'Copy error' })
 
@@ -51,5 +52,48 @@ describe('<Section.Error>', () => {
 
 		expect(screen.getByText('RpcError: gripper is not powered')).toBeInTheDocument()
 		expect(inlineLine()).toBeInTheDocument()
+	})
+
+	it.each([
+		{ label: 'null', error: null },
+		{ label: 'undefined', error: undefined },
+	])('renders nothing outside a section when the error is $label', ({ error }) => {
+		render(SectionError, { error })
+
+		expect(inlineLine()).not.toBeInTheDocument()
+	})
+
+	it('gives the inline line the id it was passed', () => {
+		render(SectionError, { error: notPowered(), id: 'do-command-output' })
+
+		expect(screen.getByText('RpcError: gripper is not powered')).toHaveAttribute(
+			'id',
+			'do-command-output'
+		)
+	})
+
+	it('copies the inline error text to the clipboard', async () => {
+		const user = userEvent.setup()
+		const writeText = vi.fn().mockResolvedValue(undefined)
+		vi.stubGlobal('navigator', { clipboard: { writeText } })
+		render(SectionError, { error: notPowered() })
+
+		await user.click(screen.getByRole('button', { name: 'Copy error' }))
+
+		expect(writeText).toHaveBeenCalledWith('RpcError: gripper is not powered')
+	})
+
+	it('shows a check after a copy, then restores the copy icon', async () => {
+		vi.useFakeTimers()
+		const timerUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) })
+		vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } })
+		render(SectionError, { error: notPowered() })
+
+		await timerUser.click(screen.getByRole('button', { name: 'Copy error' }))
+
+		await waitFor(() => expect(screen.getByTestId('icon-check')).toBeInTheDocument())
+		vi.runAllTimers()
+		await waitFor(() => expect(screen.getByTestId('icon-content-copy')).toBeInTheDocument())
+		vi.useRealTimers()
 	})
 })

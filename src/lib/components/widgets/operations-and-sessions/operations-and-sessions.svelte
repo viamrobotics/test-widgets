@@ -3,8 +3,7 @@
 	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
 	import { slide } from 'svelte/transition'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
-	import { Section } from '$lib/components/section'
+	import { Section, useSectionErrors } from '$lib/components/section'
 
 	import OperationsTable from './operations-table.svelte'
 	import RttPill from './rtt-pill.svelte'
@@ -27,6 +26,11 @@
 	const sessionsQuery = createRobotQuery(client, 'getSessions', () => ({
 		refetchInterval: 1000,
 		enabled: !isCollapsed,
+	}))
+
+	const sectionErrors = useSectionErrors(() => ({
+		queries: [operationsQuery, sessionsQuery],
+		mutations: [cancelOperationMutation],
 	}))
 
 	let rtt = $state(0)
@@ -54,9 +58,9 @@
 	class="fixed bottom-0 z-10 w-full bg-white"
 	aria-labelledby={headingID}
 >
-	<header>
+	<header class="border-light bg-extralight flex h-8 items-center border-y">
 		<button
-			class="group border-light bg-extralight flex h-8 w-full items-center gap-2 border-y px-2 py-[11px]"
+			class="group flex grow items-center gap-2 self-stretch px-2"
 			aria-controls={collapseID}
 			aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} Operations and Sessions`}
 			aria-expanded={!isCollapsed}
@@ -78,6 +82,9 @@
 				<RttPill {rtt} />
 			{/if}
 		</button>
+		<div class="px-2">
+			<Section.Errors errors={sectionErrors.errors} />
+		</div>
 	</header>
 
 	{#if !isCollapsed}
@@ -98,8 +105,6 @@
 						{cancelOperation}
 					/>
 				{/if}
-				<ErrorDisplay lastError={operationsQuery.error} />
-				<Section.Error error={cancelOperationMutation.error} />
 			</div>
 			<div class="flex h-max flex-col gap-2">
 				<span class="text-default text-sm font-semibold">Sessions</span>
@@ -109,7 +114,6 @@
 						ourSessionId={client.current?.sessionId}
 					/>
 				{/if}
-				<ErrorDisplay lastError={sessionsQuery.error} />
 			</div>
 		</div>
 	{/if}
