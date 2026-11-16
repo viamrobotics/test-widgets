@@ -1,5 +1,21 @@
 # @viamrobotics/test-widgets
 
+## 0.18.0
+
+### Minor Changes
+
+- 67d6304: ML model service Metadata renders in a headed section, exported as `MLModelServiceMetadataWidget`.
+- fc47e60: Add `ArmStopWidget` and a `stop` API widget entry for the arm.
+- b453948: Gripper Open and Grab widgets render full API sections, joined by `GripperOpenGrabWidget` and `GripperStopWidget`.
+- 257bfc3: Servo Move and Quick move widgets render headed sections, joined by `ServoGetPositionWidget` and `ServoStopWidget`.
+- cca6cd8: Add `BaseStopWidget` and a `stop` API widget entry for the base.
+
+### Patch Changes
+
+- 6fcde3f: Fix widget error boundaries hiding the error message in Firefox and Safari.
+- 4a92190: Request errors in the camera, gantry, movement sensor, operations and sessions, switch, and vision service widgets show on a section error indicator instead of an inline message. The gantry, switch, and vision service widgets gain section headings, and movement sensor units move to a subheading.
+- 6fcde3f: Announce new section errors to screen readers without moving focus.
+
 ## 0.17.4
 
 ### Patch Changes
