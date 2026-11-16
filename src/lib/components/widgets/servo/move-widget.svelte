@@ -6,8 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
-	import { Section } from '$lib/components/section'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Move from './move.svelte'
 
@@ -34,12 +34,17 @@
 	}
 </script>
 
-<Query query={positionQuery}>
+<ApiSection
+	class="grow flex-col gap-4"
+	method="Move"
+	api={ResourceTriplets.Servo}
+	queries={[positionQuery]}
+	mutations={[moveMutation]}
+>
 	{#if positionQuery.data !== undefined}
 		<Move
 			currentPosition={positionQuery.data}
 			{moveTo}
 		/>
 	{/if}
-</Query>
-<Section.Error error={moveMutation.error} />
+</ApiSection>

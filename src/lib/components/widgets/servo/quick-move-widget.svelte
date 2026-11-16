@@ -6,8 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
 	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -29,17 +29,35 @@
 	})
 	const quickMoveMutation = createResourceMutation(client, 'move')
 
+	const quickMoveErrors = useSectionErrors(() => ({
+		queries: [positionQuery],
+		mutations: [quickMoveMutation],
+	}))
+
 	const quickMoveTo = (angle: number) => {
 		quickMoveMutation.mutate([angle], {})
 	}
 </script>
 
-<Query query={positionQuery}>
-	{#if positionQuery.data !== undefined}
-		<QuickMove
-			currentPosition={positionQuery.data}
-			moveTo={quickMoveTo}
-		/>
-	{/if}
-</Query>
-<Section.Error error={quickMoveMutation.error} />
+<Section
+	errorReporter={quickMoveErrors}
+	class="grow flex-col gap-4"
+>
+	<div class="flex flex-col gap-0.5">
+		<Section.Heading>
+			Quick move
+			{#snippet aside()}
+				<Section.Errors errors={quickMoveErrors.errors} />
+			{/snippet}
+		</Section.Heading>
+	</div>
+	<Section.Body isLoading={quickMoveErrors.isLoading}>
+		{#if positionQuery.data !== undefined}
+			<QuickMove
+				currentPosition={positionQuery.data}
+				moveTo={quickMoveTo}
+			/>
+		{/if}
+		<Section.Text class="mt-auto">Press a button to execute</Section.Text>
+	</Section.Body>
+</Section>
