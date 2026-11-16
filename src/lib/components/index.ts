@@ -63,6 +63,7 @@ export { default as GripperStopWidget } from './widgets/gripper/stop-widget.svel
 
 export { default as InputControllerWidget } from './widgets/input-controller/input-controller.svelte'
 
+export { default as MLModelServiceMetadataWidget } from './widgets/ml-model-service/metadata-widget.svelte'
 export { default as MLModelServiceWidget } from './widgets/ml-model-service/ml-model-service.svelte'
 
 export { default as MotionServiceWidget } from './widgets/motion/motion.svelte'

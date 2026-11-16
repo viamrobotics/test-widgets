@@ -46,6 +46,7 @@ import {
 	GripperStopWidget,
 	GripperWidget,
 	InputControllerWidget,
+	MLModelServiceMetadataWidget,
 	MLModelServiceWidget,
 	MotionServiceWidget,
 	MotorGoForWidget,
@@ -218,7 +219,10 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 
 	// services
 	[ResourceTriplets.Discovery]: { widget: DiscoveryWidget, apis: [] },
-	[ResourceTriplets.MLModel]: { widget: MLModelServiceWidget, apis: [] },
+	[ResourceTriplets.MLModel]: {
+		widget: MLModelServiceWidget,
+		apis: [{ id: 'metadata', label: 'Metadata', widgets: [MLModelServiceMetadataWidget] }],
+	},
 	[ResourceTriplets.Motion]: { widget: MotionServiceWidget, apis: [] },
 	[ResourceTriplets.Navigation]: { widget: NavigationServiceWidget, apis: [] },
 	[ResourceTriplets.Slam]: {

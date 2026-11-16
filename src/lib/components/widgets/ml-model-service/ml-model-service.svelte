@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { type Metadata, MLModelClient } from '@viamrobotics/sdk'
+	import { MLModelClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import Queries from '$lib/components/queries.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
-	import ResultsTable from './results-table.svelte'
+	import MetadataWidget from './metadata-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -29,16 +28,9 @@
 		() => resourceName
 	)
 
+	// Never polls. It observes the Metadata widget's cache entry so manual refresh reaches it.
 	// @ts-expect-error No resource overlap
-	const metadataQuery = createResourceQuery(client, 'metadata', () => ({
-		// Lower bound of 1Hz for getProperties, higher frequencies are wasteful.
-		refetchInterval:
-			refetchInterval.current === false
-				? false
-				: (Math.max(refetchInterval.current, 1000) as number | false),
-	}))
-
-	const metadata = $derived((metadataQuery.data as unknown as { metadata: Metadata })?.metadata)
+	const metadataQuery = createResourceQuery(client, 'metadata', { refetchInterval: false })
 </script>
 
 <ConnectionStatus {partID}>
@@ -51,15 +43,10 @@
 			/>
 		</div>
 
-		<Queries
-			queries={[metadataQuery]}
-			class="h-14 p-4"
-		>
-			{#if metadata !== undefined}
-				<div class="p-4">
-					<ResultsTable {metadata} />
-				</div>
-			{/if}
-		</Queries>
+		<MetadataWidget
+			{partID}
+			{resourceName}
+			refetchInterval={refetchInterval.current}
+		/>
 	{/snippet}
 </ConnectionStatus>
