@@ -54,7 +54,7 @@ const renderSubject = () =>
 const positionCall = () => {
 	const call = vi
 		.mocked(createResourceQuery)
-		.mock.calls.find(([, method]) => method === 'getPosition')
+		.mock.calls.find(([, method]: readonly unknown[]) => method === 'getPosition')
 	if (!call) {
 		throw new Error('getPosition query was not created')
 	}
