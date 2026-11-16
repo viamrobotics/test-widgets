@@ -10,7 +10,6 @@
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import { Section } from '$lib/components/section'
-	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GetJointPositions from './get-joint-positions.svelte'
@@ -18,6 +17,7 @@
 	import ManualModeWidget from './manual-mode-widget.svelte'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'
 	import MoveToPositionControl from './move-to-position-control.svelte'
+	import StopWidget from './stop-widget.svelte'
 	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
 
 	interface Props {
@@ -44,7 +44,6 @@
 		refetchInterval: motionTracking.refetchInterval,
 	}))
 	const kinematicsQuery = createResourceQuery(client, 'getKinematics', { refetchInterval: 500 })
-	const stopMutation = createResourceMutation(client, 'stop')
 
 	const moveToJointPositions = async (jointPositionsList: number[]) => {
 		await moveToJointPosMutation.mutateAsync([jointPositionsList])
@@ -107,18 +106,10 @@
 				<div
 					class="flex flex-row gap-4 @2xl:ml-auto @2xl:w-full @2xl:max-w-40 @2xl:flex-col @2xl:gap-0 @2xl:divide-y"
 				>
-					<ApiSection
-						class="grow flex-col gap-4"
-						method="Stop"
-						api={ResourceTriplets.Arm}
-						mutations={[stopMutation]}
-					>
-						<StopButton
-							onStop={() => {
-								stopMutation.mutate([], {})
-							}}
-						/>
-					</ApiSection>
+					<StopWidget
+						{partID}
+						{resourceName}
+					/>
 					<IsMoving
 						client={ArmClient}
 						api={ResourceTriplets.Arm}

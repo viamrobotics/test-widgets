@@ -13,6 +13,7 @@ import {
 	ArmMoveToJointPositionsWidget,
 	ArmMoveToPositionWidget,
 	ArmQuickMoveWidget,
+	ArmStopWidget,
 	ArmWidget,
 	AudioInputGetPropertiesWidget,
 	AudioInputWidget,
@@ -99,6 +100,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			},
 			{ id: 'is-moving', label: 'IsMoving', widgets: [ArmIsMovingWidget] },
 			{ id: 'manual-mode', label: 'SetManualMode', widgets: [ArmManualModeWidget] },
+			{ id: 'stop', label: 'Stop', widgets: [ArmStopWidget] },
 		],
 	},
 	[ResourceTriplets.AudioInput]: {

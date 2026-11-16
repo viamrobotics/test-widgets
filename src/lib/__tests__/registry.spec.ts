@@ -63,6 +63,20 @@ describe('apiWidgetsForResource', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
 
+	it('keeps the arm ids the app persists, with stop added last', () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'arm')).map((widget) => widget.id)
+		).toEqual([
+			'move-to-joint-positions',
+			'move-to-position',
+			'quick-move',
+			'get-joint-positions',
+			'is-moving',
+			'manual-mode',
+			'stop',
+		])
+	})
+
 	it('returns an empty list for an unrecognized resource', () => {
 		expect(apiWidgetsForResource(resourceName('acme', 'component', 'widget'))).toEqual([])
 	})

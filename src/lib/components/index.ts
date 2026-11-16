@@ -7,6 +7,7 @@ export { default as ArmManualModeWidget } from './widgets/arm/manual-mode-widget
 export { default as ArmMoveToJointPositionsWidget } from './widgets/arm/move-to-joint-positions-widget.svelte'
 export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-position-widget.svelte'
 export { default as ArmQuickMoveWidget } from './widgets/arm/quick-move-widget.svelte'
+export { default as ArmStopWidget } from './widgets/arm/stop-widget.svelte'
 
 export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
 export { default as AudioInputGetPropertiesWidget } from './widgets/audio-input/get-properties-widget.svelte'
