@@ -4,8 +4,6 @@
 
 	import { Button } from '@viamrobotics/prime-core'
 
-	import ErrorDisplay from '$lib/components/error.svelte'
-
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
 
@@ -13,11 +11,11 @@
 		name: string
 		sourceName?: string
 		getImage: () => Promise<QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>>
+		/** Called with the export's failure, and with null once an export gets its image. */
+		onExportError: (error: Error | null) => void
 	}
 
-	const { name, sourceName = '', getImage }: Props = $props()
-
-	let lastError = $state<Error>()
+	const { name, sourceName = '', getImage, onExportError }: Props = $props()
 
 	// en-CA for iso formatting (better for filename sorting)
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -41,11 +39,11 @@
 	const handleExport = async () => {
 		const image = await getImage()
 		if (image.error) {
-			lastError = image.error
+			onExportError(image.error)
 			return
 		}
 
-		lastError = undefined
+		onExportError(null)
 		const matchingImage = pickImageForSource(image.data?.images, sourceName)
 		if (!matchingImage?.image) {
 			return
@@ -59,7 +57,7 @@
 			// Decode depth frames to a viewable PNG so the exported file matches the live feed.
 			const depthBlob = await getBlobForViamDepth(bytes)
 			if (!depthBlob) {
-				lastError = new Error('Failed to decode depth image')
+				onExportError(new Error('Failed to decode depth image'))
 				return
 			}
 			blob = depthBlob
@@ -79,15 +77,9 @@
 	}
 </script>
 
-<div class="flex flex-col items-start gap-1">
-	<Button
-		icon="camera-outline"
-		onclick={handleExport}
-	>
-		Screenshot
-	</Button>
-	<ErrorDisplay
-		class="max-w-50"
-		{lastError}
-	/>
-</div>
+<Button
+	icon="camera-outline"
+	onclick={handleExport}
+>
+	Screenshot
+</Button>

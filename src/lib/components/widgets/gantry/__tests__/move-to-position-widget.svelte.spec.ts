@@ -70,11 +70,17 @@ describe('Gantry MoveToPosition widget', () => {
 		)
 	})
 
-	it('shows the mutation error line', () => {
+	it('renders the MoveToPosition section heading', () => {
+		renderSubject()
+
+		expect(screen.getByRole('heading', { name: 'MoveToPosition' })).toBeInTheDocument()
+	})
+
+	it("shows the move error in the section's error indicator", () => {
 		state.error = new Error('gantry refused to move')
 
 		renderSubject()
 
-		expect(screen.getByText(/gantry refused to move/iu)).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
 	})
 })

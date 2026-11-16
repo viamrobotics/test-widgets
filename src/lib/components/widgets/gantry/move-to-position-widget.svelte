@@ -6,8 +6,8 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 
-	import Query from '$lib/components/query.svelte'
-	import { Section } from '$lib/components/section'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import MoveToPosition from './move-to-position.svelte'
 
@@ -30,15 +30,19 @@
 	const moveMutation = createResourceMutation(client, 'moveToPosition')
 </script>
 
-<Query query={positionQuery}>
-	{@const positions = positionQuery.data}
-	{#if positions !== undefined}
+<ApiSection
+	class="grow flex-col gap-4"
+	method="MoveToPosition"
+	api={ResourceTriplets.Gantry}
+	queries={[positionQuery]}
+	mutations={[moveMutation]}
+>
+	{#if positionQuery.data !== undefined}
 		<MoveToPosition
-			{positions}
+			positions={positionQuery.data}
 			moveTo={(newPos: number[], speeds: number[]) => {
 				moveMutation.mutate([newPos, speeds], {})
 			}}
 		/>
 	{/if}
-</Query>
-<Section.Error error={moveMutation.error} />
+</ApiSection>

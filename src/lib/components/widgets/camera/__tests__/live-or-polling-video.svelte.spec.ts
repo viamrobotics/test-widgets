@@ -29,4 +29,17 @@ describe('LiveOrPollingVideo', () => {
 
 		expect(topOffsetFromVideo(errorText)).toBe(offsetBeforeScroll)
 	})
+
+	it('sizes the error overlay to the video it covers', async () => {
+		render(Subject, {
+			props: { partID, resourceName, error: new Error('no node found') },
+		})
+		const errorText = await screen.findByText('Error: no node found')
+		const overlay = errorText.closest<HTMLElement>('.absolute')
+		if (!overlay) throw new Error('No overlay around the error text')
+		const video = screen.getByLabelText(`${resourceName} stream`).getBoundingClientRect()
+
+		await expect.poll(() => overlay.getBoundingClientRect().height).toBe(video.height)
+		expect(overlay.getBoundingClientRect().width).toBe(video.width)
+	})
 })

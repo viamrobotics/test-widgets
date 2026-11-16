@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { ToggleButtons } from '@viamrobotics/prime-core'
 
-	import { Section } from '$lib/components/section'
-
 	interface Props {
 		numPositions: number
 		labels: string[]
 		currentPosition: number
 		onSelect: (position: number) => void
-		lastError: Error | null
 	}
 
-	const { numPositions, labels, currentPosition, onSelect, lastError }: Props = $props()
+	const { numPositions, labels, currentPosition, onSelect }: Props = $props()
 
 	const hasLabels = $derived(labels.length > 0)
 	const options = $derived(
@@ -39,5 +36,4 @@
 		cx={[{ '[&>div>button]:w-12!': !hasLabels }, 'font-roboto-mono [&>div]:flex-wrap!']}
 		on:input={handleInput}
 	/>
-	<Section.Error error={lastError} />
 </div>

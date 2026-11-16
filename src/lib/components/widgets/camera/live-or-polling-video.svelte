@@ -9,8 +9,6 @@
 
 	import { assertExists } from '$lib/assert'
 	import ApiSection from '$lib/components/api-section.svelte'
-	import ContentRect from '$lib/components/content-rect.svelte'
-	import ErrorDisplay from '$lib/components/error.svelte'
 	import Progress from '$lib/components/progress.svelte'
 	import { Section } from '$lib/components/section'
 	import { formatNumeric } from '$lib/format'
@@ -261,6 +259,8 @@
 	})
 
 	let contentRect = $state.raw<DOMRect>()
+	const overlayWidth = $derived(contentRect ? `${contentRect.width.toString()}px` : undefined)
+	const overlayHeight = $derived(contentRect ? `${contentRect.height.toString()}px` : undefined)
 	useResizeObserver(
 		() => videoElement,
 		([entry]) => {
@@ -337,25 +337,26 @@
 </script>
 
 <div class="relative">
-	<!-- This breaks out of using the Query component
-	  to merge live stream and TanStack query errors -->
+	<!-- One overlay merges the live stream error with the polling query's error. -->
 	{#if lastError}
-		<ContentRect
-			{contentRect}
+		<div
 			class="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+			style:width={overlayWidth}
+			style:height={overlayHeight}
 		>
-			<ErrorDisplay
+			<Section.Error
 				class="pb-4"
-				{lastError}
+				error={lastError}
 			/>
-		</ContentRect>
+		</div>
 	{:else if isLive ? isStreamLoading : isLoading}
-		<ContentRect
-			{contentRect}
+		<div
 			class="absolute top-0 left-0 h-64 w-80 max-w-full"
+			style:width={overlayWidth}
+			style:height={overlayHeight}
 		>
 			<Progress />
-		</ContentRect>
+		</div>
 	{/if}
 	<div
 		class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"

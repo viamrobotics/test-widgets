@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ErrorDisplay from '$lib/components/error.svelte'
+	import { Section } from '$lib/components/section'
 	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus } from '$lib/resource'
 
@@ -26,7 +26,7 @@
 			<p class="text-heading">Connecting to machine...</p>
 		</div>
 	{:else if error}
-		<ErrorDisplay lastError={error} />
+		<Section.Error {error} />
 	{:else if resources.length === 0}
 		<NullState />
 	{:else}
