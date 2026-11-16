@@ -1,16 +1,10 @@
 <script lang="ts">
-	import { GripperClient } from '@viamrobotics/sdk'
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import StopButton from '$lib/components/stop-button.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
-	import Grab from './grab.svelte'
-	import IsHoldingSomething from './is-holding-something.svelte'
-	import Open from './open.svelte'
+	import IsHoldingSomethingWidget from './is-holding-something-widget.svelte'
+	import IsMovingWidget from './is-moving-widget.svelte'
+	import OpenGrabControl from './open-grab-control.svelte'
+	import StopWidget from './stop-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -18,60 +12,27 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const client = createResourceClient(
-		GripperClient,
-		() => partID,
-		() => resourceName
-	)
-
-	const openMutation = createResourceMutation(client, 'open')
-	const grabMutation = createResourceMutation(client, 'grab')
-	const stopMutation = createResourceMutation(client, 'stop')
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="@container">
 			<div class="flex flex-col divide-y @lg:flex-row @lg:divide-x @lg:divide-y-0">
-				<span class="flex grow flex-wrap gap-4">
-					<ApiSection
-						method="Open"
-						api={ResourceTriplets.Gripper}
-						mutations={[openMutation]}
-						class="grow-0 flex-col gap-3 @xs:pr-0"
-					>
-						<Open onOpen={() => openMutation.mutate([], {})} />
-					</ApiSection>
-					<ApiSection
-						method="Grab"
-						api={ResourceTriplets.Gripper}
-						mutations={[grabMutation]}
-						class="grow-0 flex-col gap-3 @xs:pl-0"
-					>
-						<Grab onGrab={() => grabMutation.mutate([], {})} />
-					</ApiSection>
-				</span>
+				<OpenGrabControl
+					class="grow"
+					{partID}
+					{resourceName}
+				/>
 				<div class="flex flex-col divide-y">
-					<ApiSection
-						class="grow flex-col gap-4"
-						method="Stop"
-						api={ResourceTriplets.Gripper}
-						mutations={[stopMutation]}
-					>
-						<StopButton
-							onStop={() => {
-								stopMutation.mutate([])
-							}}
-						/>
-					</ApiSection>
-					<IsMoving
-						client={GripperClient}
-						api={ResourceTriplets.Gripper}
+					<StopWidget
 						{partID}
 						{resourceName}
 					/>
-					<IsHoldingSomething
+					<IsMovingWidget
+						{partID}
+						{resourceName}
+					/>
+					<IsHoldingSomethingWidget
 						{partID}
 						{resourceName}
 					/>
