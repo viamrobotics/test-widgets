@@ -1,0 +1,80 @@
+import { render, screen } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+
+import Subject from '../move-to-position-widget.svelte'
+
+const state = vi.hoisted((): { moveMutate: Mock; error: Error | null } => ({
+	moveMutate: vi.fn(),
+	error: null,
+}))
+
+vi.mock('@viamrobotics/sdk', () => ({
+	GantryClient: class {},
+}))
+
+vi.mock('@viamrobotics/svelte-sdk', () => ({
+	createResourceClient: vi.fn(() => ({ current: {} })),
+	createResourceQuery: vi.fn(() => ({
+		data: [11, 22],
+		isLoading: false,
+		isSuccess: true,
+		isError: false,
+		error: null,
+	})),
+	createResourceMutation: vi.fn(() => ({
+		mutate: state.moveMutate,
+		isPending: false,
+		get error() {
+			return state.error
+		},
+	})),
+}))
+
+const renderSubject = () =>
+	render(Subject, {
+		props: { partID: 'test-part', resourceName: 'test-gantry' },
+	})
+
+describe('Gantry MoveToPosition widget', () => {
+	beforeEach(() => {
+		state.moveMutate = vi.fn()
+		state.error = null
+	})
+
+	it('fills the Move to inputs from the current positions', async () => {
+		renderSubject()
+		await userEvent.click(screen.getByRole('button', { name: 'Current position' }))
+
+		const inputs = screen.getAllByRole('spinbutton', { name: /move to/iu })
+
+		expect(inputs[0]).toHaveValue(11)
+		expect(inputs[1]).toHaveValue(22)
+	})
+
+	it('calls the moveToPosition mutation with the edited position and default speeds', async () => {
+		renderSubject()
+
+		const input = screen.getAllByRole('spinbutton', { name: /move to/iu })[0]!
+		await userEvent.clear(input)
+		await userEvent.click(input)
+		await userEvent.keyboard('77{Enter}')
+		await userEvent.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(state.moveMutate).toHaveBeenCalledWith(
+			[
+				[77, 0],
+				[50, 50],
+			],
+			{}
+		)
+	})
+
+	it('shows the mutation error line', () => {
+		state.error = new Error('gantry refused to move')
+
+		renderSubject()
+
+		expect(screen.getByText(/gantry refused to move/iu)).toBeInTheDocument()
+	})
+})
