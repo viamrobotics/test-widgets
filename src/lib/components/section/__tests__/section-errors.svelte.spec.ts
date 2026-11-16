@@ -14,6 +14,22 @@ const notPowered = () => error('RpcError', 'base is not powered')
 
 const glyph = () => screen.getByRole('button').firstElementChild
 
+const liveRegion = () => {
+	const region = document.querySelector('[aria-live="polite"]')
+	if (!region) throw new Error('<SectionErrors> rendered no polite live region')
+	return region
+}
+
+const watchMutationTypes = (node: Node) => {
+	const delivered: MutationRecord[] = []
+	const observer = new MutationObserver((records) => {
+		delivered.push(...records)
+	})
+	observer.observe(node, { childList: true, characterData: true, subtree: true })
+
+	return () => [...delivered, ...observer.takeRecords()].map((record) => record.type)
+}
+
 describe('<SectionErrors>', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
@@ -91,5 +107,38 @@ describe('<SectionErrors>', () => {
 		await rerender({ errors: [notFound(), notPowered()] })
 		expect(glyph()).not.toBe(first)
 		expect(glyph()).toHaveClass('arrival')
+	})
+
+	it('announces nothing through the live region while idle', () => {
+		render(Subject, { errors: [] })
+
+		expect(liveRegion().textContent).toBe('')
+	})
+
+	it('announces the count through the live region when errors arrive', async () => {
+		const { rerender } = render(Subject, { errors: [] })
+
+		await rerender({ errors: [notFound(), notPowered()] })
+
+		expect(liveRegion().textContent).toBe('2 errors')
+	})
+
+	it('leaves the live region untouched when the same error arrives again', async () => {
+		const { rerender } = render(Subject, { errors: [notFound()] })
+		const mutationTypes = watchMutationTypes(liveRegion())
+
+		await rerender({ errors: [notFound()] })
+
+		expect(mutationTypes()).toEqual([])
+	})
+
+	it('announces the count again when a different error replaces the held one', async () => {
+		const { rerender } = render(Subject, { errors: [notFound()] })
+		const mutationTypes = watchMutationTypes(liveRegion())
+
+		await rerender({ errors: [notPowered()] })
+
+		expect(mutationTypes()).toContain('childList')
+		expect(liveRegion().textContent).toBe('1 error')
 	})
 })
