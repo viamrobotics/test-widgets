@@ -43,6 +43,12 @@ describe('availableAPIWidgets', () => {
 		expect(availableAPIWidgets()['rdk:service:motion']).toEqual([])
 	})
 
+	it('lists Metadata as the one ML model service API widget', () => {
+		const mlModelIds = availableAPIWidgets()['rdk:service:mlmodel']?.map((widget) => widget.id)
+
+		expect(mlModelIds).toEqual(['metadata'])
+	})
+
 	it('excludes resources that have no test card', () => {
 		expect(availableAPIWidgets()).not.toHaveProperty('rdk:service:shell')
 	})
