@@ -18,3 +18,13 @@
 		border-color: var(--color-gray-200, currentcolor);
 	}
 }
+
+/*
+  `@viamrobotics/tailwind-config` 1.2.0 defines the `--z-max` token with no utility for it, so
+  the `z-max` class that prime-core puts on tooltips emits no rule. A tooltip then paints under
+  any positioned element that follows it, such as an input. Version 1.6.0 ships a `z-*` utility.
+  Remove this with the `tailwind-config` bump in the prime-controls migration.
+*/
+@utility z-max {
+	z-index: var(--z-max);
+}
