@@ -29,8 +29,8 @@
 		return hasErrors ? 'alert-circle' : 'alert-circle-outline'
 	})
 
-	// The cue replays only when the held set changes to a non-empty one, so a steady failing poll
-	// fires once and each new distinct error or failed attempt fires again.
+	// The cue replays and the live region re-announces only when the held set changes to a non-empty
+	// one, so a steady failing poll fires once and each new distinct error or failed attempt fires again.
 	let lastKeys = ''
 	let arrivals = 0
 	const arrival = $derived.by(() => {
@@ -60,6 +60,14 @@
 	$effect(() => () => clearTimeout(copiedTimer))
 </script>
 
+<span
+	aria-live="polite"
+	class="sr-only"
+>
+	{#key arrival}
+		{#if hasErrors}{summary}{/if}
+	{/key}
+</span>
 <Tooltip let:tooltipID>
 	<button
 		type="button"

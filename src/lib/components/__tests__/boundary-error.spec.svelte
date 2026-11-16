@@ -1,8 +1,14 @@
 <script lang="ts">
 	import Boundary from '../boundary.svelte'
 
+	interface Props {
+		error?: Error
+	}
+
+	const { error = new Error('test error') }: Props = $props()
+
 	const throwError = (): string => {
-		throw new Error('test error')
+		throw error
 	}
 </script>
 

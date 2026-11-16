@@ -6,7 +6,12 @@
 	let isErrorExpanded = $state(false)
 
 	const describeError = (error: unknown) => {
-		return error instanceof Error ? (error.stack ?? error.message) : String(error)
+		const message = String(error)
+		const stack = error instanceof Error ? error.stack : undefined
+		if (stack === undefined) return message
+
+		// A Chromium stack opens with the message. A Firefox or Safari stack holds only the call frames.
+		return stack.startsWith(message) ? stack : `${message}\n${stack}`
 	}
 </script>
 
