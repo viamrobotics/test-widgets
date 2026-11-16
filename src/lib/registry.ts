@@ -40,7 +40,9 @@ import {
 	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
+	GripperOpenGrabWidget,
 	GripperOpenWidget,
+	GripperStopWidget,
 	GripperWidget,
 	InputControllerWidget,
 	MLModelServiceWidget,
@@ -148,13 +150,16 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Gripper]: {
 		widget: GripperWidget,
 		apis: [
-			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] },
+			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget] },
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
 				widgets: [GripperIsHoldingSomethingWidget],
 			},
 			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
+			{ id: 'open', label: 'Open', widgets: [GripperOpenWidget] },
+			{ id: 'grab', label: 'Grab', widgets: [GripperGrabWidget] },
+			{ id: 'stop', label: 'Stop', widgets: [GripperStopWidget] },
 		],
 	},
 	[ResourceTriplets.InputController]: { widget: InputControllerWidget, apis: [] },
@@ -226,7 +231,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
  *
  * @example
  * apiWidgetsForResource(gripperResourceName)
- * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget] }, ...]
  */
 export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] =>
 	resourceWidgetRegistry[getResourceAPI(resource) as ResourceTriplet]?.apis ?? []
@@ -238,7 +243,7 @@ export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget
  *
  * @example
  * availableAPIWidgets()[ResourceTriplets.Gripper]
- * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget] }, ...]
  */
 export const availableAPIWidgets = (): Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> => {
 	const result: Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> = {}

@@ -2,7 +2,8 @@
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import { Section } from '$lib/components/section'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Grab from './grab.svelte'
 
@@ -22,5 +23,11 @@
 	const grabMutation = createResourceMutation(client, 'grab')
 </script>
 
-<Grab onGrab={() => grabMutation.mutate([], {})} />
-<Section.Error error={grabMutation.error} />
+<ApiSection
+	method="Grab"
+	api={ResourceTriplets.Gripper}
+	mutations={[grabMutation]}
+	class="grow-0 flex-col gap-3"
+>
+	<Grab onGrab={() => grabMutation.mutate([], {})} />
+</ApiSection>

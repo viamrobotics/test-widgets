@@ -6,7 +6,9 @@ import {
 	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
+	GripperOpenGrabWidget,
 	GripperOpenWidget,
+	GripperStopWidget,
 	MotionServiceWidget,
 } from '../components'
 import { isKnownResource } from '../is-known-resource'
@@ -19,13 +21,16 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 describe('availableAPIWidgets', () => {
 	it('maps each resource with a card to its API widgets', () => {
 		expect(availableAPIWidgets()['rdk:component:gripper']).toEqual([
-			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenWidget, GripperGrabWidget] },
+			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget] },
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
 				widgets: [GripperIsHoldingSomethingWidget],
 			},
 			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
+			{ id: 'open', label: 'Open', widgets: [GripperOpenWidget] },
+			{ id: 'grab', label: 'Grab', widgets: [GripperGrabWidget] },
+			{ id: 'stop', label: 'Stop', widgets: [GripperStopWidget] },
 		])
 	})
 
@@ -52,7 +57,7 @@ describe('apiWidgetsForResource', () => {
 	it("returns the targeted resource's API widgets", () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'gripper')).map((widget) => widget.id)
-		).toEqual(['open-grab', 'is-holding-something', 'is-moving'])
+		).toEqual(['open-grab', 'is-holding-something', 'is-moving', 'open', 'grab', 'stop'])
 	})
 
 	it('returns an empty list for a recognized resource with no API widgets', () => {
