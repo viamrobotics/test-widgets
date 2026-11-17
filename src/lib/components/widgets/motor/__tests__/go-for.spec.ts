@@ -39,4 +39,22 @@ describe('Motor GoFor', () => {
 
 		expect(goFor).toHaveBeenCalledWith(100, 10)
 	})
+
+	it.each([/^rpm/iu, /^revolutions/iu])(
+		'does not send undefined or NaN when the %s field is empty',
+		async (name) => {
+			renderSubject({})
+
+			const emptiedInput = screen.getByRole('spinbutton', { name })
+			await user.clear(emptiedInput)
+
+			expect(emptiedInput).toHaveAttribute('aria-invalid', 'true')
+
+			const executeButton = screen.getByRole('button', { name: /execute/iu })
+			expect(executeButton).toBeDisabled()
+			await user.click(executeButton)
+
+			expect(goFor).not.toHaveBeenCalled()
+		}
+	)
 })

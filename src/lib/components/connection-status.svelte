@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon, Progress } from '@viamrobotics/prime-core'
+	import { Icon } from '@viamrobotics/prime-core'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus } from '@viamrobotics/svelte-sdk'
 
@@ -46,16 +47,19 @@
 
 {#snippet loader()}
 	<div
-		class="bg-extralight text-disabled flex h-full min-h-40 w-full items-center justify-center gap-2"
+		class="bg-extralight text-subtle-2 flex h-full min-h-40 w-full flex-wrap items-center justify-center gap-2 px-4 text-center"
 	>
-		<Progress />
+		<Progress
+			label="Connection status"
+			class="w-24 shrink-0"
+		/>
 		<div class="capitalize">{connectionStatus.current}...</div>
 	</div>
 {/snippet}
 
 {#snippet failed()}
 	<div
-		class="bg-extralight text-disabled flex h-full min-h-40 w-full items-center justify-center gap-2"
+		class="bg-extralight text-subtle-2 flex h-full min-h-40 w-full flex-wrap items-center justify-center gap-2 px-4 text-center"
 	>
 		<Icon
 			name="alert"
@@ -68,7 +72,9 @@
 {/snippet}
 
 {#snippet offline()}
-	<div class="bg-extralight text-disabled flex h-full min-h-40 w-full items-center justify-center">
+	<div
+		class="bg-extralight text-subtle-2 flex h-full min-h-40 w-full items-center justify-center px-4 text-center"
+	>
 		This machine is offline
 	</div>
 {/snippet}

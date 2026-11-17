@@ -17,4 +17,5 @@
 	api={ResourceTriplets.Motor}
 	{partID}
 	{resourceName}
+	isCompact
 />

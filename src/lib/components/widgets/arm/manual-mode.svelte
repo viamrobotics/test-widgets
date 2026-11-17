@@ -26,6 +26,11 @@
 
 	const isEntering = $derived(countdown.isCounting || (isPending && lastAction === 'enter'))
 	const isExiting = $derived(isPending && lastAction === 'exit')
+	const pendingAnnouncement = $derived.by(() => {
+		if (isEntering) return 'Entering manual mode'
+		if (isExiting) return 'Exiting manual mode'
+		return ''
+	})
 
 	const enter = () => {
 		lastAction = 'enter'
@@ -49,10 +54,11 @@
 		{#if title}
 			<h3 class="font-mono text-sm font-semibold">{title}</h3>
 		{/if}
+		<!-- No `progress`: the prime-core spinner collides with the `pill` utility in tailwind-config 1.6 and later. -->
 		<Button
 			variant="dark"
 			disabled={isPending || countdown.isCounting}
-			progress={isEntering ? 'indeterminate' : undefined}
+			aria-busy={isEntering}
 			onclick={enter}
 		>
 			Enter
@@ -60,11 +66,17 @@
 		<Button
 			variant="dark"
 			disabled={isPending}
-			progress={isExiting ? 'indeterminate' : undefined}
+			aria-busy={isExiting}
 			onclick={exit}
 		>
 			Exit
 		</Button>
+		<span
+			class="sr-only"
+			role="status"
+		>
+			{pendingAnnouncement}
+		</span>
 		{#if countdown.isCounting}
 			<span class="text-subtle-2 text-xs">Enabling in {countdown.secondsRemaining}s</span>
 		{/if}

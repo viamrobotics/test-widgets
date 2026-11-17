@@ -11,6 +11,7 @@
 	const { resourceName, rate }: Props = $props()
 
 	const pip = usePip()
+	const isLoading = $derived(pip.readyState === 'loading')
 
 	$effect(() => {
 		if (resourceName === pip.resourceName) {
@@ -19,10 +20,17 @@
 	})
 </script>
 
+<!-- No `progress`: the prime-core spinner collides with the `pill` utility in tailwind-config 1.6 and later. -->
 <Button
 	icon="picture-in-picture-top-right"
+	aria-busy={isLoading}
 	onclick={() => pip.toggle(resourceName)}
-	progress={pip.readyState === 'loading' ? 'indeterminate' : undefined}
 >
 	Picture-in-picture
 </Button>
+<span
+	class="sr-only"
+	role="status"
+>
+	{isLoading ? 'Loading picture-in-picture' : ''}
+</span>

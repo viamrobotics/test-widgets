@@ -30,6 +30,67 @@ import { apiWidgetsForResource, widgetForResource } from '@viamrobotics/test-wid
 
 `maplibre-gl` is a required peer and by far the heaviest one. It reaches your bundle only if you import something that renders a map: `MovementSensorWidget`, `NavigationServiceWidget`, the `maplibre` and `navigation-map` building blocks, or `/registry`. Otherwise it is tree-shaken out.
 
+## Embedding
+
+### Stylesheet
+
+The widgets are styled with Tailwind 4 utility classes, so your Tailwind build has to generate them. Import the stylesheets once, in this order:
+
+```css
+@import 'tailwindcss';
+@import '@viamrobotics/prime-ui/styles.css';
+@import '@viamrobotics/prime-controls/styles.css';
+@import '@viamrobotics/test-widgets/styles.css';
+```
+
+Each one imports `@viamrobotics/tailwind-config` and points Tailwind at its own compiled components. Widgets not yet migrated off `@viamrobotics/prime-core` also need `@source` pointed at `@viamrobotics/prime-core/src/lib` in the same stylesheet.
+
+Tailwind 4 draws an unset `border` in `currentcolor`. Some widgets rely on the Tailwind 3 default instead, so copy the compatibility block from this repo's `src/app.css` into your base layer. The package stylesheet leaves it out, because it would change every border on your page.
+
+### Providers
+
+Mount these once, above any widget:
+
+- `ViamProvider` from `@viamrobotics/svelte-sdk`, with `dialConfigs` for each part a widget talks to. A widget outside it throws.
+- `providePip()` from `@viamrobotics/test-widgets`, before rendering a camera widget.
+
+Each widget takes the `partID` and `resourceName` of the resource it controls.
+
+### In a pane
+
+A widget renders its body only, so a host can draw the frame. Wrap a pane's header and body in one `Section.Scope`. The widget registers its method, loading state, and errors there, and drops its own heading row. Your header then draws the method, the docs link, and the error indicator.
+
+```svelte
+<script lang="ts">
+	import { Panes } from '@viamrobotics/prime-panes'
+	import { MotorSetPowerWidget, Section } from '@viamrobotics/test-widgets'
+
+	const { partID }: { partID: string } = $props()
+</script>
+
+{#snippet pane()}
+	<Section.Scope>
+		<Panes.DragTrigger>
+			<header class="flex items-center gap-1">
+				<h2>motor-1 › <Section.Method /></h2>
+				<Section.Docs />
+				<Section.Errors />
+				<Panes.MoveTrigger aria-label="Move motor-1 SetPower" />
+			</header>
+		</Panes.DragTrigger>
+		<Panes.PaneBody>
+			<Section.Loading />
+			<MotorSetPowerWidget
+				{partID}
+				resourceName="motor-1"
+			/>
+		</Panes.PaneBody>
+	</Section.Scope>
+{/snippet}
+```
+
+Keep every field in the body. The whole header is the drag handle, so a control with a drag gesture of its own, such as a scrubbing number field, never sits inside `Panes.DragTrigger`. The `/panes` route in the playground is a full example, with split, stacked, and floating panes and a resource tree. `@viamrobotics/prime-panes` is the playground's choice, not a dependency of this package.
+
 ## Playground
 
 The playground (`pnpm dev`) can be used to develop the test-cards against prod robots with prod modules.

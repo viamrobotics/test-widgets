@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		Badge,
-		Button,
-		Icon,
-		type IconName,
-		Label,
-		Select,
-		Tooltip,
-	} from '@viamrobotics/prime-core'
+	import { Badge, Button, Icon, Label, Select, Tooltip } from '@viamrobotics/prime-core'
 
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
@@ -27,16 +19,15 @@
 
 	type JogDirection = 'decrease' | 'increase'
 
-	interface StatusBadge {
-		variant: 'pending' | 'progress' | 'success' | 'danger'
-		icon?: IconName
-	}
+	type StatusBadgeVariant = 'pending' | 'success' | 'danger'
 
-	const STATUS_BADGES: Record<JogQueueStatus, StatusBadge> = {
-		queuing: { variant: 'pending' },
-		sending: { variant: 'progress' },
-		sent: { variant: 'success' },
-		failed: { variant: 'danger' },
+	// `sending` is not `progress`: that variant draws the prime-core spinner, which collides with
+	// the `pill` utility in tailwind-config 1.6 and later.
+	const STATUS_BADGE_VARIANTS: Record<JogQueueStatus, StatusBadgeVariant> = {
+		queuing: 'pending',
+		sending: 'pending',
+		sent: 'success',
+		failed: 'danger',
 	}
 
 	interface Props {
@@ -198,7 +189,7 @@
 								<Badge
 									label={formatTarget(entry)}
 									cx="font-roboto-mono tabular-nums"
-									{...STATUS_BADGES[entry.status]}
+									variant={STATUS_BADGE_VARIANTS[entry.status]}
 								/>
 							</span>
 							<span class="sr-only">{describeEntry(entry)}</span>

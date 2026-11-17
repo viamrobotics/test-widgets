@@ -2,7 +2,7 @@
 	import type { cameraApi, Classification, Detection } from '@viamrobotics/sdk'
 
 	import { Canvas } from '@threlte/core'
-	import { Progress } from '@viamrobotics/prime-core'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import { useResizeObserver } from 'runed'
 	import { provideFontFamilies } from 'threlte-uikit'
 
@@ -113,7 +113,10 @@
 >
 	{#if !size}
 		<div class="grid w-full place-content-center">
-			<Progress size="large" />
+			<Progress
+				label="Loading image"
+				class="w-48"
+			/>
 		</div>
 	{:else}
 		<div

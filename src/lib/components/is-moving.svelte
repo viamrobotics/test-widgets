@@ -2,6 +2,7 @@
 	import type * as SDK from '@viamrobotics/sdk'
 	import type { HTMLAttributes } from 'svelte/elements'
 
+	import { Tooltip } from '@viamrobotics/prime-ui'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import type { ResourceTriplet } from '$lib/resource-triplet'
@@ -25,6 +26,8 @@
 		partID: string
 		resourceName: string
 		api: ResourceTriplet
+		/** Render only the Moving or Idle badge, with the update hint in a tooltip. */
+		isCompact?: boolean
 	}
 
 	const {
@@ -32,6 +35,7 @@
 		partID,
 		resourceName,
 		api,
+		isCompact = false,
 		children,
 		class: className,
 	}: Props = $props()
@@ -53,7 +57,25 @@
 	queries={[query]}
 	{api}
 >
-	<StatusPill isActive={query.data ?? false} />
-	{@render children?.()}
-	<Section.Text class="mt-auto">Updates automatically</Section.Text>
+	{#if isCompact}
+		{@const isMoving = query.data ?? false}
+		<Tooltip>
+			<Tooltip.Trigger>
+				<!-- Keyboard focus is the only way to open the tooltip without a pointer. -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<span
+					class={['badge', isMoving ? 'badge-success' : 'badge-neutral']}
+					tabindex="0"
+				>
+					{isMoving ? 'Moving' : 'Idle'}
+				</span>
+			</Tooltip.Trigger>
+			<Tooltip.Content>Updates automatically</Tooltip.Content>
+		</Tooltip>
+		{@render children?.()}
+	{:else}
+		<StatusPill isActive={query.data ?? false} />
+		{@render children?.()}
+		<Section.Text class="mt-auto">Updates automatically</Section.Text>
+	{/if}
 </ApiSection>
