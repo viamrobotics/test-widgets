@@ -3,12 +3,13 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import AnalogWrite from './analog-write.svelte'
+	import { toError } from './to-error'
 
 	interface Props {
 		pin: string
 		partID: string
 		resourceName: string
-		setLastError: (err: Error | null) => void
+		setLastError: (error: Error | null) => void
 	}
 
 	const { pin, partID, resourceName, setLastError }: Props = $props()
@@ -24,8 +25,10 @@
 		try {
 			await setValueMutation.mutateAsync([pin, value])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 </script>

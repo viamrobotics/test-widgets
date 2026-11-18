@@ -93,6 +93,55 @@ const SERVO_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	'quick-move': { width: 162, height: 75 },
 }
 
+/**
+ * The gripper pane minimums in px, from "Batch 4.3 measured sizes" in
+ * `.claude/plans/prime-controls-migration/phase-4-rollout-actuator-widgets.md`, raised to the
+ * rendered widgets. Each width is the larger of the table's and the widget's rendered min-content
+ * width plus 2 px of borders: the composite 238 + 2 is 240, and IsHoldingSomething 194 + 2 is 196.
+ * Each height is the larger of the table's and the rendered `scrollHeight` at that width plus
+ * 2 px: open-grab 92 + 2 is 94, Open 94 + 2 is 96, Grab 140 + 2 is 142 with its readout showing,
+ * Stop 102 + 2 is 104, IsMoving 97 + 2 is 99, and IsHoldingSomething 97 + 2 is 99. The composite
+ * takes its rendered 205 + 2, 207, because the table's "about 540" counted the phase 7 inputs
+ * widgets. Measured in a browser-mode spec with the svelte-sdk mocked, connected, and every query
+ * true.
+ */
+const GRIPPER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 240, height: 207 },
+	'open-grab': { width: 190, height: 94 },
+	'is-holding-something': { width: 196, height: 99 },
+	'is-moving': { width: 162, height: 99 },
+	open: { width: 162, height: 96 },
+	grab: { width: 162, height: 142 },
+	stop: { width: 162, height: 104 },
+}
+
+/**
+ * The board pane minimum in px, from the table's pins surface row, 210 x 236, which is
+ * `BoardWidget`'s composite through phase 4. Rendered: min-content 158 + 2 sits under 210, and
+ * `scrollHeight` 231 + 2 is 233, under 236, so the table's numbers stand. Board has no API
+ * entries.
+ */
+const BOARD_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 210, height: 236 },
+}
+
+/**
+ * The switch pane minimum in px, from the same table's SetPosition row, 147 x 105, because
+ * `SwitchWidget` is SetPosition only in phase 4. An estimate. Switch has no API entries.
+ */
+const SWITCH_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 147, height: 105 },
+}
+
+/**
+ * The button pane minimum in px, from the table's Push row, 162 x 85, with the height raised to
+ * the rendered widget: `scrollHeight` 90 at 160 px plus 2 px of borders is 92. Min-content 136 + 2
+ * sits under 162. Push is also the control interface, and button has no API entries.
+ */
+const BUTTON_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 162, height: 92 },
+}
+
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
 	[ResourceTriplets.Motor]: MOTOR_PANE_MINIMUMS,
 	[ResourceTriplets.Arm]: ARM_PANE_MINIMUMS,
@@ -100,6 +149,10 @@ const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>
 	[ResourceTriplets.Base]: BASE_PANE_MINIMUMS,
 	[ResourceTriplets.Gantry]: GANTRY_PANE_MINIMUMS,
 	[ResourceTriplets.Servo]: SERVO_PANE_MINIMUMS,
+	[ResourceTriplets.Gripper]: GRIPPER_PANE_MINIMUMS,
+	[ResourceTriplets.Board]: BOARD_PANE_MINIMUMS,
+	[ResourceTriplets.Switch]: SWITCH_PANE_MINIMUMS,
+	[ResourceTriplets.Button]: BUTTON_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.

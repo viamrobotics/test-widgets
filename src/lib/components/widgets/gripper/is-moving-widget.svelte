@@ -17,4 +17,5 @@
 	api={ResourceTriplets.Gripper}
 	{partID}
 	{resourceName}
+	isCompact
 />

@@ -3,12 +3,13 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import GpioWrite from './gpio-write.svelte'
+	import { toError } from './to-error'
 
 	interface Props {
 		partID: string
 		resourceName: string
 		pin: string
-		setLastError: (err: Error | null) => void
+		setLastError: (error: Error | null) => void
 	}
 
 	const { pin, partID, resourceName, setLastError }: Props = $props()
@@ -26,24 +27,30 @@
 		try {
 			await setStateMutation.mutateAsync([pin, high])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
-	const setDutyCycle = async (dutyCyclePct: number) => {
+	const setDutyCycle = async (dutyCycleFraction: number) => {
 		try {
-			await setDutyCycleMutation.mutateAsync([pin, dutyCyclePct])
+			await setDutyCycleMutation.mutateAsync([pin, dutyCycleFraction])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 	const setFrequency = async (frequencyHz: number) => {
 		try {
 			await setFrequencyMutation.mutateAsync([pin, frequencyHz])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 </script>

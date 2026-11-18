@@ -27,6 +27,7 @@ const CONTROL_ENTRY_IDS: Readonly<Record<string, ReadonlySet<string>>> = {
 	[ResourceTriplets.Base]: new Set(['quick-move']),
 	[ResourceTriplets.Gantry]: new Set(['quick-move']),
 	[ResourceTriplets.Servo]: new Set(['quick-move']),
+	[ResourceTriplets.Gripper]: new Set(['open-grab']),
 }
 
 /** The pane slot and minimum key for a resource's composite card, which has no registry id. */

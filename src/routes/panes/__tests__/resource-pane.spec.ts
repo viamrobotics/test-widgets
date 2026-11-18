@@ -18,6 +18,10 @@ const motion = resource('motion', 'motion-1')
 const base = resource('base', 'base-1')
 const gantry = resource('gantry', 'gantry-1')
 const servo = resource('servo', 'servo-1')
+const gripper = resource('gripper', 'gripper-1')
+const board = resource('board', 'board-1')
+const switchResource = resource('switch', 'switch-1')
+const button = resource('button', 'button-1')
 
 describe('Resource panes', () => {
 	it("offers an arm's composite and its six entries", () => {
@@ -51,6 +55,22 @@ describe('Resource panes', () => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		const controls = entryPanes(target).filter(({ data }) => data.kind === 'control')
 		expect(controls.map(({ id }) => id)).toEqual([`${name}::quick-move`])
+	})
+
+	it('makes open-grab the gripper control and open an api', () => {
+		const kinds = Object.fromEntries(entryPanes(gripper).map(({ id, data }) => [id, data.kind]))
+		expect(kinds['gripper-1::open-grab']).toBe('control')
+		expect(kinds['gripper-1::open']).toBe('api')
+		expect(Object.values(kinds).filter((kind) => kind === 'control')).toHaveLength(1)
+	})
+
+	it.each([
+		['board-1', board],
+		['switch-1', switchResource],
+		['button-1', button],
+	])('offers %s a composite and no entries', (name, target) => {
+		expect(compositePane(target)?.id).toBe(`${name}::composite`)
+		expect(entryPanes(target)).toEqual([])
 	})
 
 	it('titles manual-mode with the resource alone and an api pane with its method', () => {
@@ -97,6 +117,16 @@ describe('Resource panes', () => {
 		['servo-1::is-moving', 162, 73],
 		['servo-1::stop', 162, 85],
 		['servo-1::quick-move', 162, 75],
+		['gripper-1::composite', 240, 207],
+		['gripper-1::open-grab', 190, 94],
+		['gripper-1::is-holding-something', 196, 99],
+		['gripper-1::is-moving', 162, 99],
+		['gripper-1::open', 162, 96],
+		['gripper-1::grab', 162, 142],
+		['gripper-1::stop', 162, 104],
+		['board-1::composite', 210, 236],
+		['switch-1::composite', 147, 105],
+		['button-1::composite', 162, 92],
 	])("snaps %s to its board's minimum", (id, width, height) => {
 		const pane = [
 			compositePane(arm),
@@ -105,11 +135,16 @@ describe('Resource panes', () => {
 			compositePane(base),
 			compositePane(gantry),
 			compositePane(servo),
+			compositePane(gripper),
+			compositePane(board),
+			compositePane(switchResource),
+			compositePane(button),
 			...entryPanes(arm),
 			...entryPanes(motor),
 			...entryPanes(base),
 			...entryPanes(gantry),
 			...entryPanes(servo),
+			...entryPanes(gripper),
 		].find((candidate) => candidate?.id === id)
 		expect(pane && resourcePaneMinimum(pane.data)).toEqual({ width, height })
 	})

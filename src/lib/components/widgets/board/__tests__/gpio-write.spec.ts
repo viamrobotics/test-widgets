@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -8,93 +8,101 @@ import Subject from '../gpio-write.svelte'
 
 const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 	render(Subject, {
-		setState: vi.fn(),
-		setDutyCycle: vi.fn(),
-		setFrequency: vi.fn(),
+		setState: vi.fn(async () => true),
+		setDutyCycle: vi.fn(async () => true),
+		setFrequency: vi.fn(async () => true),
 		...props,
 	})
 
+const STATE_SET = 0
+const DUTY_CYCLE_SET = 1
+const FREQUENCY_SET = 2
+
+const setButton = (position: number) => {
+	const button = screen.getAllByRole('button', { name: 'Set' }).at(position)
+	if (!button) throw new Error(`No Set button at ${position}`)
+	return button
+}
+
 describe('Board GPIO Write', () => {
 	let user: ReturnType<typeof userEvent.setup>
-	let setState: () => void
-	let setDutyCycle: () => void
-	let setFrequency: () => void
 
 	beforeEach(() => {
 		user = userEvent.setup()
-		setState = vi.fn()
-		setDutyCycle = vi.fn()
-		setFrequency = vi.fn()
 	})
 
-	it('calls setState', async () => {
+	it('draws State as Low then High, with High picked', () => {
+		renderSubject({})
+
+		const state = within(screen.getByRole('group', { name: 'State' }))
+		const [first, second] = state.getAllByRole('radio')
+		expect(first).toHaveAccessibleName('Low')
+		expect(second).toHaveAccessibleName('High')
+		expect(second).toHaveAttribute('aria-checked', 'true')
+		expect(first).toHaveAttribute('aria-checked', 'false')
+	})
+
+	it('calls setState with true for the default High', async () => {
+		const setState = vi.fn(async () => true)
 		renderSubject({ setState })
 
-		const highButton = screen.getByRole('button', {
-			name: /high/iu,
-		})
-		const lowButton = screen.getByRole('button', {
-			name: /low/iu,
-		})
-		const setStateButton = screen.getAllByRole('button', { name: /Set/iu }).at(0)!
-		await user.click(highButton)
-		await user.click(setStateButton)
+		await user.click(setButton(STATE_SET))
+
 		expect(setState).toHaveBeenCalledWith(true)
-		await user.click(lowButton)
-		await user.click(setStateButton)
+	})
+
+	it('calls setState with false once Low is picked', async () => {
+		const setState = vi.fn(async () => true)
+		renderSubject({ setState })
+		await user.click(screen.getByRole('radio', { name: 'Low' }))
+
+		await user.click(setButton(STATE_SET))
+
 		expect(setState).toHaveBeenCalledWith(false)
 	})
 
-	it('calls setDutyCycle', async () => {
-		renderSubject({
-			setDutyCycle,
-		})
+	it('calls setDutyCycle with the typed percent divided by 100', async () => {
+		const setDutyCycle = vi.fn(async () => true)
+		renderSubject({ setDutyCycle })
 
-		const dutyCycleInput = screen.getByRole('spinbutton', {
-			name: /PWM duty cycle/iu,
-		})
-		await user.clear(dutyCycleInput)
-		await user.type(dutyCycleInput, '73')
-		const setDutyCycleButton = screen.getAllByRole('button', { name: /Set/iu }).at(1)!
-		await user.click(setDutyCycleButton)
+		const dutyCycle = screen.getByRole('spinbutton', { name: 'Duty cycle' })
+		await user.clear(dutyCycle)
+		await user.type(dutyCycle, '73')
+		await user.click(setButton(DUTY_CYCLE_SET))
 
 		expect(setDutyCycle).toHaveBeenCalledWith(0.73)
 	})
 
-	it('calls setFrequency', async () => {
-		renderSubject({
-			setFrequency,
-		})
+	it('calls setFrequency with the typed hertz', async () => {
+		const setFrequency = vi.fn(async () => true)
+		renderSubject({ setFrequency })
 
-		const frequencyInput = screen.getByRole('spinbutton', {
-			name: /PWM frequency/iu,
-		})
-		await user.clear(frequencyInput)
-		await user.type(frequencyInput, '1000')
-		const setFrequencyButton = screen.getAllByRole('button', { name: /Set/iu }).at(2)!
-		await user.click(setFrequencyButton)
+		const frequency = screen.getByRole('spinbutton', { name: 'Frequency' })
+		await user.clear(frequency)
+		await user.type(frequency, '1000')
+		await user.click(setButton(FREQUENCY_SET))
 
 		expect(setFrequency).toHaveBeenCalledWith(1000)
 	})
 
-	it('displays empty initial values for all sections', () => {
+	it('bounds Duty cycle to 0 to 100 and Frequency from 0, each in whole steps', () => {
 		renderSubject({})
 
-		const highStateButton = screen.getByRole('button', {
-			name: /high/iu,
-		})
-		const lowStateButton = screen.getByRole('button', {
-			name: /low/iu,
-		})
-		const frequencyInput = screen.getByRole('spinbutton', {
-			name: /PWM frequency/iu,
-		})
-		const dutyCycleInput = screen.getByRole('spinbutton', {
-			name: /PWM duty cycle/iu,
-		})
-		expect(highStateButton).toHaveAttribute('aria-pressed', 'true')
-		expect(lowStateButton).toHaveAttribute('aria-pressed', 'false')
-		expect(frequencyInput).toHaveValue(0)
-		expect(dutyCycleInput).toHaveValue(0)
+		const dutyCycle = screen.getByRole('spinbutton', { name: 'Duty cycle' })
+		const frequency = screen.getByRole('spinbutton', { name: 'Frequency' })
+		expect(dutyCycle).toHaveValue(0)
+		expect(dutyCycle).toHaveAttribute('min', '0')
+		expect(dutyCycle).toHaveAttribute('max', '100')
+		expect(dutyCycle).toHaveAttribute('step', '1')
+		expect(frequency).toHaveValue(0)
+		expect(frequency).toHaveAttribute('min', '0')
+		expect(frequency).toHaveAttribute('step', '1')
+	})
+
+	it('suffixes Duty cycle with % and Frequency with Hz', () => {
+		renderSubject({})
+
+		expect(screen.getByRole('spinbutton', { name: 'Duty cycle' })).toHaveAccessibleDescription('%')
+		expect(screen.getByRole('spinbutton', { name: 'Frequency' })).toHaveAccessibleDescription('Hz')
 	})
 })

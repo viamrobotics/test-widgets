@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { StatusDot } from '@viamrobotics/prime-ui'
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
@@ -21,13 +22,40 @@
 	)
 
 	const grabMutation = createResourceMutation(client, 'grab')
+
+	const isGrabbed = $derived(grabMutation.data)
+
+	const grabbedLabelId = $props.id()
 </script>
 
 <ApiSection
 	method="Grab"
 	api={ResourceTriplets.Gripper}
 	mutations={[grabMutation]}
-	class="grow-0 flex-col gap-3"
+	class="grow-0 flex-col gap-4"
 >
-	<Grab onGrab={() => grabMutation.mutate([], {})} />
+	<div class="flex">
+		<Grab onGrab={() => grabMutation.mutate([], {})} />
+	</div>
+	<div class="flex min-w-0 items-center gap-2">
+		<span
+			id={grabbedLabelId}
+			class="text-subtle-1 text-xs">Grabbed</span
+		>
+		<span
+			role="group"
+			aria-labelledby={grabbedLabelId}
+			class="readout font-roboto-mono inline-flex items-center gap-2"
+		>
+			{#if isGrabbed === undefined}
+				-
+			{:else}
+				<StatusDot
+					state={isGrabbed ? 'success' : 'disabled'}
+					label="Grabbed"
+				/>
+				{isGrabbed ? 'Yes' : 'No'}
+			{/if}
+		</span>
+	</div>
 </ApiSection>

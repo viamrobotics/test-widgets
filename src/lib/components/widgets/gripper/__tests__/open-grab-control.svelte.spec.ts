@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../open-grab-control.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 interface MutationState {
 	mutate: Mock
@@ -47,7 +48,7 @@ describe('Gripper Open / Grab control', () => {
 	it('calls the open mutation when Open is clicked', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getByRole('button', { name: 'open' }))
+		await userEvent.click(screen.getByRole('button', { name: 'Open' }))
 
 		expect(mutations.open.mutate).toHaveBeenCalledWith([], {})
 	})
@@ -55,9 +56,16 @@ describe('Gripper Open / Grab control', () => {
 	it('calls the grab mutation when Grab is clicked', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getByRole('button', { name: 'grab' }))
+		await userEvent.click(screen.getByRole('button', { name: 'Grab' }))
 
 		expect(mutations.grab.mutate).toHaveBeenCalledWith([], {})
+	})
+
+	it('draws Open and Grab as extra-small buttons', () => {
+		renderSubject()
+
+		expect(screen.getByRole('button', { name: 'Open' })).toHaveClass('button-xs')
+		expect(screen.getByRole('button', { name: 'Grab' })).toHaveClass('button-xs')
 	})
 
 	it('shows an open error in the section indicator', () => {
@@ -83,5 +91,23 @@ describe('Gripper Open / Grab control', () => {
 		renderSubject()
 
 		expect(screen.getByRole('button', { name: '2 errors, copy to clipboard' })).toBeInTheDocument()
+	})
+})
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Gripper Open / Grab control in a 320 px pane', () => {
+	it('does not scroll horizontally', () => {
+		const { pane, root } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe('320px')
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

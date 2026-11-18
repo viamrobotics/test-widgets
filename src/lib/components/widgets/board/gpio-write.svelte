@@ -1,107 +1,69 @@
 <script lang="ts">
-	import { Label, NumericInput, ToggleButtons } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { NumberField, ToggleButtons } from '@viamrobotics/prime-controls'
 
 	import ConfirmingButton from './confirming-button.svelte'
-	import PinSection from './pin-section.svelte'
 
 	interface Props {
-		setState: (high: boolean) => void
-		setDutyCycle: (dutyCyclePct: number) => void
-		setFrequency: (frequencyHz: number) => void
+		setState: (high: boolean) => Promise<boolean>
+		/** Takes the duty cycle as the board does, 0 to 1. */
+		setDutyCycle: (dutyCycleFraction: number) => Promise<boolean>
+		setFrequency: (frequencyHz: number) => Promise<boolean>
 	}
 
 	const { setState, setDutyCycle, setFrequency }: Props = $props()
 
-	let desiredPinState: 'High' | 'Low' = $state('High')
-	let desiredDutyCycle = $state(0)
-	let desiredFrequency = $state(0)
+	const LEVEL_ITEMS = [
+		{ value: 'low', label: 'Low' },
+		{ value: 'high', label: 'High' },
+	]
+	const PERCENT = 100
 
-	const changePinState = (event: CustomEvent<string>) => {
-		desiredPinState = event.detail as 'High' | 'Low'
-	}
+	let level = $state('high')
+	let dutyCyclePercent = $state<number | undefined>(0)
+	let frequencyHz = $state<number | undefined>(0)
 </script>
 
-<PinSection>
-	{#snippet title()}Write pin{/snippet}
-	<div class="flex w-full p-3 text-xs">
+<div class="flex flex-col gap-1">
+	<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 		<ToggleButtons
-			cx="w-fit!"
-			options={['High', 'Low']}
-			selected={desiredPinState}
-			on:input={changePinState}
-		>
-			{#snippet legend()}
-				State
-			{/snippet}
-		</ToggleButtons>
+			class="flex-1"
+			label="State"
+			items={LEVEL_ITEMS}
+			bind:value={level}
+		/>
 		<ConfirmingButton
-			class="mt-auto ml-auto w-full max-w-11"
-			onclick={() => {
-				setState(desiredPinState === 'High')
-			}}
-		>
-			Set
-		</ConfirmingButton>
+			verb="Set"
+			onclick={() => setState(level === 'high')}
+		/>
 	</div>
-	<div class="flex h-full max-h-35 flex-col gap-4 p-3">
-		<div class="relative flex w-full">
-			<Label cx="w-fit!">
-				<h5>
-					PWM duty cycle
-					<abbr class="text-disabled">(0-100%)</abbr>
-				</h5>
-
-				<NumericInput
-					slot="input"
-					cx="max-w-[124px]"
-					value={desiredDutyCycle}
-					placeholder="0"
-					step={1}
-					on:change={(event) => {
-						desiredDutyCycle = numberValueFromEvent(event) ?? 0
-					}}
-				/>
-			</Label>
-			<!-- NOTE(zp,2024-06-27) This is absolute because the label text overflows the input
-          and would push the button out of the parent container-->
-			<ConfirmingButton
-				class="absolute right-0 bottom-0 w-full max-w-11"
-				onclick={() => {
-					// Duty cycle is displayed as [0, 100] but [0, 1] values are expected
-					setDutyCycle(desiredDutyCycle / 100)
-				}}
-			>
-				Set
-			</ConfirmingButton>
-		</div>
-		<div class="flex w-full">
-			<Label>
-				<h5>
-					PWM frequency
-					<abbr class="text-disabled">(Hz)</abbr>
-				</h5>
-
-				<NumericInput
-					slot="input"
-					value={desiredFrequency}
-					cx="max-w-[124px]"
-					placeholder="0"
-					step={0.01}
-					on:change={(event) => {
-						desiredFrequency = numberValueFromEvent(event) ?? 0
-					}}
-				/>
-			</Label>
-			<ConfirmingButton
-				class="mt-auto ml-auto w-full max-w-11"
-				onclick={() => {
-					setFrequency(desiredFrequency)
-				}}
-			>
-				Set
-			</ConfirmingButton>
-		</div>
+	<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+		<NumberField
+			class="min-w-37.5 flex-1"
+			label="Duty cycle"
+			suffix="%"
+			min={0}
+			max={PERCENT}
+			step={1}
+			bind:value={dutyCyclePercent}
+		/>
+		<!-- The field shows 0 to 100 and the board takes 0 to 1. -->
+		<ConfirmingButton
+			verb="Set"
+			onclick={() => setDutyCycle((dutyCyclePercent ?? 0) / PERCENT)}
+		/>
 	</div>
-</PinSection>
+	<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+		<NumberField
+			class="min-w-37.5 flex-1"
+			label="Frequency"
+			suffix="Hz"
+			min={0}
+			step={1}
+			bind:value={frequencyHz}
+		/>
+		<ConfirmingButton
+			verb="Set"
+			onclick={() => setFrequency(frequencyHz ?? 0)}
+		/>
+	</div>
+</div>

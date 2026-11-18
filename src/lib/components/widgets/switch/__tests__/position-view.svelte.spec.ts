@@ -1,18 +1,24 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../position-view.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const state = vi.hoisted(
 	(): {
-		mutateAsync: Mock
+		mutate: Mock
 		refetch: Mock
+		position: number
+		positions: [number, string[]]
 		mutationError: Error | null
 		queryError: Error | null
 	} => ({
-		mutateAsync: vi.fn(),
+		mutate: vi.fn(),
 		refetch: vi.fn(),
+		position: 1,
+		positions: [3, ['Off', 'On', 'Auto']],
 		mutationError: null,
 		queryError: null,
 	})
@@ -28,7 +34,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	return {
 		createResourceClient: vi.fn(() => ({ current: {} })),
 		createResourceQuery: vi.fn((_client: unknown, method: string) => ({
-			data: method === 'getPosition' ? 1 : [3, ['Off', 'On', 'Auto']],
+			data: method === 'getPosition' ? state.position : state.positions,
 			isLoading: false,
 			isSuccess: true,
 			isError: false,
@@ -40,7 +46,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 			queryKey: [],
 		})),
 		createResourceMutation: vi.fn(() => ({
-			mutateAsync: state.mutateAsync,
+			mutate: state.mutate,
 			isPending: false,
 			get error() {
 				return state.mutationError
@@ -50,6 +56,23 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	}
 })
 
+const settleOnSuccess = (_args: unknown, options?: { onSettled?: () => void }) => {
+	options?.onSettled?.()
+}
+
+const nextFrame = () =>
+	new Promise<void>((resolve) => {
+		requestAnimationFrame(() => {
+			resolve()
+		})
+	})
+
+const settleLayout = async () => {
+	await document.fonts.ready
+	await nextFrame()
+	await nextFrame()
+}
+
 const renderSubject = () =>
 	render(Subject, {
 		props: { partID: 'test-part', resourceName: 'test-switch' },
@@ -57,10 +80,13 @@ const renderSubject = () =>
 
 describe('Switch position widget', () => {
 	beforeEach(() => {
-		state.mutateAsync = vi.fn()
+		state.mutate = vi.fn(settleOnSuccess)
 		state.refetch = vi.fn()
+		state.position = 1
+		state.positions = [3, ['Off', 'On', 'Auto']]
 		state.mutationError = null
 		state.queryError = null
+		vi.mocked(createResourceQuery).mockClear()
 	})
 
 	it('renders the SetPosition section heading', () => {
@@ -69,12 +95,22 @@ describe('Switch position widget', () => {
 		expect(screen.getByRole('heading', { name: 'SetPosition' })).toBeInTheDocument()
 	})
 
-	it('sets the position and refetches when a position is picked', async () => {
+	it('polls the position every 500 ms and reads the count once', () => {
 		renderSubject()
 
-		await userEvent.click(screen.getByRole('button', { name: 'Auto' }))
+		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getPosition', {
+			refetchInterval: 500,
+		})
+		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getNumberOfPositions')
+	})
 
-		expect(state.mutateAsync).toHaveBeenCalledWith([2])
+	it('sets the position and refetches it when a position is picked', async () => {
+		renderSubject()
+
+		await userEvent.click(await screen.findByRole('radio', { name: 'Auto' }))
+
+		expect(state.mutate).toHaveBeenCalledTimes(1)
+		expect(state.mutate).toHaveBeenCalledWith([2], expect.anything())
 		expect(state.refetch).toHaveBeenCalledTimes(1)
 	})
 
@@ -92,5 +128,68 @@ describe('Switch position widget', () => {
 		renderSubject()
 
 		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Switch position widget in a 320 px pane', () => {
+	beforeEach(() => {
+		state.mutate = vi.fn(settleOnSuccess)
+		state.position = 1
+		state.positions = [3, ['Off', 'On', 'Auto']]
+		state.mutationError = null
+		state.queryError = null
+	})
+
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('draws 3 labeled positions as the toggle group', async () => {
+		renderInPane()
+		await settleLayout()
+
+		expect(screen.getByRole('group', { name: 'Position' })).toBeInTheDocument()
+		expect(screen.getAllByRole('radio')).toHaveLength(3)
+		expect(screen.queryByRole('combobox', { name: 'Position' })).not.toBeInTheDocument()
+	})
+
+	it('draws 13 numbered positions as a Select', async () => {
+		state.positions = [13, []]
+
+		renderInPane()
+		await settleLayout()
+
+		expect(screen.getByRole('combobox', { name: 'Position' })).toBeInTheDocument()
+		expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+	})
+
+	it('does not scroll horizontally with 3 labeled positions', async () => {
+		const { pane, root } = renderInPane()
+		await settleLayout()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
+	})
+
+	it('does not scroll horizontally with 13 numbered positions', async () => {
+		state.positions = [13, []]
+
+		const { pane, root } = renderInPane()
+		await settleLayout()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

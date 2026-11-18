@@ -1,22 +1,20 @@
 <script lang="ts">
-	import { Pill } from '@viamrobotics/prime-core'
+	import type { ClassValue } from 'svelte/elements'
+
+	import { Tooltip } from '@viamrobotics/prime-ui'
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
-	import StatusPill from '$lib/components/status-pill.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
-
-	import ClosedGripperSvg from './closed-gripper-svg.svelte'
-	import OpenGripperSvg from './open-gripper-svg.svelte'
 
 	interface Props {
 		partID: string
 		resourceName: string
+		class?: ClassValue
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, class: className }: Props = $props()
 
 	const client = createResourceClient(
 		GripperClient,
@@ -27,29 +25,32 @@
 	const query = createResourceQuery(client, 'isHoldingSomething', {
 		refetchInterval: 500,
 	})
+
+	const badgeTone = $derived(query.data ? 'badge-success' : 'badge-neutral')
+
+	const badgeText = $derived.by(() => {
+		if (query.data === undefined) return '-'
+		return query.data ? 'Holding' : 'Empty'
+	})
 </script>
 
 <ApiSection
 	method="IsHoldingSomething"
 	api={ResourceTriplets.Gripper}
-	class="grow flex-col gap-4"
+	class={['grow flex-col gap-4', className]}
 	queries={[query]}
 >
-	<div class="flex items-center gap-2">
-		{#if query.data !== undefined}
-			{#if query.data}
-				<ClosedGripperSvg />
-			{:else}
-				<OpenGripperSvg />
-			{/if}
-			<StatusPill
-				isActive={query.data}
-				activeText="Holding"
-				inactiveText="Empty"
-			/>
-		{:else}
-			<Pill value="Loading" />
-		{/if}
-	</div>
-	<Section.Text class="mt-auto">Updates automatically</Section.Text>
+	<Tooltip>
+		<Tooltip.Trigger>
+			<!-- Keyboard focus is the only way to open the tooltip without a pointer. -->
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<span
+				class={['badge', badgeTone]}
+				tabindex="0"
+			>
+				{badgeText}
+			</span>
+		</Tooltip.Trigger>
+		<Tooltip.Content>Updates automatically</Tooltip.Content>
+	</Tooltip>
 </ApiSection>

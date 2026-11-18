@@ -10,138 +10,82 @@ const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 	render(Subject, {
 		gpioState: undefined,
 		pwmDutyCycle: undefined,
-		pwmFreq: undefined,
-		getState: vi.fn(),
-		getDutyCycle: vi.fn(),
-		getFrequency: vi.fn(),
+		pwmFrequency: undefined,
+		getState: vi.fn(async () => true),
+		getDutyCycle: vi.fn(async () => true),
+		getFrequency: vi.fn(async () => true),
 		...props,
 	})
 
+const row = (name: string) => within(screen.getByRole('group', { name }))
+
 describe('Board GPIO Read', () => {
 	let user: ReturnType<typeof userEvent.setup>
-	let getState: () => void
-	let getDutyCycle: () => void
-	let getFrequency: () => void
 
 	beforeEach(() => {
 		user = userEvent.setup()
-		getState = vi.fn()
-		getDutyCycle = vi.fn()
-		getFrequency = vi.fn()
 	})
 
-	it('calls getState', async () => {
-		renderSubject({
-			getState,
-		})
+	it('calls getState from the State row', async () => {
+		const getState = vi.fn(async () => true)
+		renderSubject({ getState })
 
-		const stateSection = screen.getByRole('region', { name: 'State' })
-		const getStateButton = within(stateSection).getByRole('button', {
-			name: /get/iu,
-		})
-		await user.click(getStateButton)
+		await user.click(row('State').getByRole('button', { name: 'Get' }))
 
-		expect(getState).toHaveBeenCalled()
+		expect(getState).toHaveBeenCalledOnce()
 	})
 
-	it('calls getDutyCycle', async () => {
-		renderSubject({
-			getDutyCycle,
-		})
+	it('calls getDutyCycle from the Duty cycle row', async () => {
+		const getDutyCycle = vi.fn(async () => true)
+		renderSubject({ getDutyCycle })
 
-		const dutyCycleSection = screen.getByRole('region', {
-			name: /PWM duty cycle/iu,
-		})
-		const getDutyCycleButton = within(dutyCycleSection).getByRole('button', {
-			name: /get/iu,
-		})
-		await user.click(getDutyCycleButton)
+		await user.click(row('Duty cycle').getByRole('button', { name: 'Get' }))
 
-		expect(getDutyCycle).toHaveBeenCalled()
+		expect(getDutyCycle).toHaveBeenCalledOnce()
 	})
 
-	it('calls getFrequency', async () => {
-		renderSubject({
-			getFrequency,
-		})
+	it('calls getFrequency from the Frequency row', async () => {
+		const getFrequency = vi.fn(async () => true)
+		renderSubject({ getFrequency })
 
-		const frequencySection = screen.getByRole('region', {
-			name: /PWM frequency/iu,
-		})
-		const getFrequencyButton = within(frequencySection).getByRole('button', {
-			name: /get/iu,
-		})
-		await user.click(getFrequencyButton)
+		await user.click(row('Frequency').getByRole('button', { name: 'Get' }))
 
-		expect(getFrequency).toHaveBeenCalled()
+		expect(getFrequency).toHaveBeenCalledOnce()
 	})
 
-	it('displays empty values for all sections', () => {
+	it('reads - in every row before a read', () => {
 		renderSubject({})
 
-		const stateSection = screen.getByRole('region', { name: /State/iu })
-		const stateOutput = within(stateSection).getByRole('status')
-		const dutyCycleSection = screen.getByRole('region', {
-			name: /PWM duty cycle/iu,
-		})
-		const dutyCycleOutput = within(dutyCycleSection).getByRole('status')
-		const frequencySection = screen.getByRole('region', {
-			name: /PWM frequency/iu,
-		})
-		const frequencyOutput = within(frequencySection).getByRole('status')
-		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toMatchTextContent(/––/iu)
-		expect(dutyCycleOutput).toBeInTheDocument()
-		expect(dutyCycleOutput).toMatchTextContent(/––/iu)
-		expect(frequencyOutput).toBeInTheDocument()
-		expect(frequencyOutput).toMatchTextContent(/––/iu)
+		expect(row('State').getByRole('status')).toHaveTextContent('-')
+		expect(row('Duty cycle').getByRole('status')).toHaveTextContent('- %')
+		expect(row('Frequency').getByRole('status')).toHaveTextContent('- Hz')
 	})
 
-	it('displays state==high', () => {
-		renderSubject({
-			gpioState: true,
-		})
+	it('reads a high state as High beside a dot named High', () => {
+		renderSubject({ gpioState: true })
 
-		const stateSection = screen.getByRole('region', { name: /State/iu })
-		const stateOutput = within(stateSection).getByRole('status')
-		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toMatchTextContent(/High/iu)
+		const state = row('State').getByRole('status')
+		expect(state).toHaveTextContent('High')
+		expect(within(state).getByRole('img', { name: 'High' })).toBeInTheDocument()
 	})
 
-	it('displays state==low', () => {
-		renderSubject({
-			gpioState: false,
-		})
+	it('reads a low state as Low beside a dot named Low', () => {
+		renderSubject({ gpioState: false })
 
-		const stateSection = screen.getByRole('region', { name: /State/iu })
-		const stateOutput = within(stateSection).getByRole('status')
-		expect(stateOutput).toBeInTheDocument()
-		expect(stateOutput).toMatchTextContent(/Low/iu)
+		const state = row('State').getByRole('status')
+		expect(state).toHaveTextContent('Low')
+		expect(within(state).getByRole('img', { name: 'Low' })).toBeInTheDocument()
 	})
 
-	it('displays PWM duty cycle', () => {
-		renderSubject({
-			pwmDutyCycle: 50,
-		})
+	it('shows the duty cycle from 0 to 100 with its % unit inside the announced value', () => {
+		renderSubject({ pwmDutyCycle: 0.5 })
 
-		const dutyCycleSection = screen.getByRole('region', {
-			name: /PWM duty cycle/iu,
-		})
-		const dutyCycleOutput = within(dutyCycleSection).getByRole('status')
-		expect(dutyCycleOutput).toBeInTheDocument()
-		expect(dutyCycleOutput).toMatchTextContent(/50.0000/iu)
+		expect(row('Duty cycle').getByRole('status')).toHaveTextContent('50.00 %')
 	})
 
-	it('displays PWM frequency', () => {
-		renderSubject({
-			pwmFreq: 1000,
-		})
+	it('shows the frequency in whole hertz with its Hz unit inside the announced value', () => {
+		renderSubject({ pwmFrequency: 1000 })
 
-		const frequencySection = screen.getByRole('region', {
-			name: /PWM frequency/iu,
-		})
-		const frequencyOutput = within(frequencySection).getByRole('status')
-		expect(frequencyOutput).toBeInTheDocument()
-		expect(frequencyOutput).toMatchTextContent(/1000.00/iu)
+		expect(row('Frequency').getByRole('status')).toHaveTextContent('1000 Hz')
 	})
 })

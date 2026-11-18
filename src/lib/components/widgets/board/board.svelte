@@ -13,11 +13,9 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="p-4">
-			<ReadWritePins
-				{partID}
-				{resourceName}
-			/>
-		</div>
+		<ReadWritePins
+			{partID}
+			{resourceName}
+		/>
 	{/snippet}
 </ConnectionStatus>
