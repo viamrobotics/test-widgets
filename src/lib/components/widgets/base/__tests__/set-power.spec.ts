@@ -1,7 +1,7 @@
 import type { Vector3 } from '@viamrobotics/sdk'
 import type { ComponentProps } from 'svelte'
 
-import { fireEvent, render, screen, within } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -16,11 +16,9 @@ describe('Base SetPower', () => {
 		setPower = vi.fn()
 	})
 
-	// Point drops an emptied axis back to its last value, so `user.clear` would leave the old text
-	// in place. Selecting the text first lets the typed value replace it.
 	const replaceValue = async (input: HTMLElement, text: string) => {
-		await user.tripleClick(input)
-		await user.keyboard(text)
+		await user.clear(input)
+		await user.type(input, text)
 	}
 
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
@@ -53,9 +51,7 @@ describe('Base SetPower', () => {
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
 			await replaceValue(xInput, '0.4')
-			// Typing the leading "-" never lands: Point reverts the empty value that "-" reads as. A
-			// whole value arriving at once, as a paste does, reaches it.
-			await fireEvent.input(yInput, { target: { value: '-0.5' } })
+			await replaceValue(yInput, '-0.5')
 			await replaceValue(zInput, '1')
 		}
 

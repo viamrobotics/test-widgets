@@ -16,11 +16,9 @@ describe('Base SetVelocity', () => {
 		setVelocity = vi.fn()
 	})
 
-	// Point drops an emptied axis back to its last value, so `user.clear` would leave the old text
-	// in place. Selecting the text first lets the typed value replace it.
 	const replaceValue = async (input: HTMLElement, text: string) => {
-		await user.tripleClick(input)
-		await user.keyboard(text)
+		await user.clear(input)
+		await user.type(input, text)
 	}
 
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
@@ -61,5 +59,15 @@ describe('Base SetVelocity', () => {
 		await user.click(executeButton)
 
 		expect(setVelocity).toHaveBeenCalledWith({ x: 10, y: 20, z: 30 }, { x: 5, y: 10, z: 15 })
+	})
+
+	it('sends a negative value typed into a cleared axis', async () => {
+		renderSubject({})
+		const linear = screen.getByRole('group', { name: /^linear/iu })
+
+		await replaceValue(within(linear).getByRole('spinbutton', { name: /^Y/u }), '-25')
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(setVelocity).toHaveBeenCalledWith({ x: 0, y: -25, z: 0 }, { x: 0, y: 0, z: 15 })
 	})
 })

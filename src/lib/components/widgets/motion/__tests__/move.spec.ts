@@ -59,14 +59,17 @@ describe('Motion move', () => {
 
 		renderSubject({ storageKey: 'test-move-stored' })
 
-		expect(screen.getByText('Set')).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /^World state\s*Set$/u })).toHaveAttribute(
+			'aria-expanded',
+			'false'
+		)
 	})
 
 	it('marks a JSON editor invalid and names the error when its value fails to parse', async () => {
 		localStorage.setItem('test-move-invalid/world-state', JSON.stringify('{"obstacles": '))
 		renderSubject({ storageKey: 'test-move-invalid' })
 
-		await user.click(screen.getByRole('button', { name: 'World state' }))
+		await user.click(screen.getByRole('button', { name: /^World state\s*Set$/u }))
 
 		const editor = screen.getByRole('textbox', { name: 'World state' })
 		expect(editor).toHaveAttribute('aria-invalid', 'true')
@@ -78,7 +81,7 @@ describe('Motion move', () => {
 		localStorage.setItem('test-move-valid/world-state', JSON.stringify('{"obstacles": []}'))
 		renderSubject({ storageKey: 'test-move-valid' })
 
-		await user.click(screen.getByRole('button', { name: 'World state' }))
+		await user.click(screen.getByRole('button', { name: /^World state\s*Set$/u }))
 
 		const editor = screen.getByRole('textbox', { name: 'World state' })
 		expect(editor).toHaveAttribute('aria-invalid', 'false')

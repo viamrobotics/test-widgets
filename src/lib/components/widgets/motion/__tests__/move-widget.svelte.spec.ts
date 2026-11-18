@@ -124,7 +124,7 @@ describe('Motion composite in a 320 px pane', () => {
 		const user = userEvent.setup()
 		const { pane, root } = renderInPane()
 
-		await user.click(screen.getByRole('button', { name: 'World state' }))
+		await user.click(screen.getByRole('button', { name: /^World state\s*Set$/u }))
 		await user.click(screen.getByRole('button', { name: 'Constraints' }))
 
 		expect(screen.getByRole('textbox', { name: 'World state' }).textContent).toContain(longLine)

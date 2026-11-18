@@ -143,29 +143,15 @@
 		theta: useRadians ? ' rad' : '°',
 	})
 
-	// prime-controls Point drops an empty or partial entry, such as a lone "-", and writes the held
-	// value back over it. Holding those events back keeps the user's keystrokes until they parse.
-	let isRestoringEntry = false
+	// A pose always holds a number for theta, so an emptied field writes nothing. This lets the field
+	// stay empty while the user types, as Point does for its axes, until a number or a blur.
+	let isThetaCleared = $state(false)
 
-	const holdUnparsedEntry = (event: Event) => {
-		const input = event.target
-		if (isRestoringEntry || !(input instanceof HTMLInputElement) || input.type !== 'number') {
-			return
+	const writeTheta = (next: number | undefined) => {
+		isThetaCleared = next === undefined
+		if (next !== undefined) {
+			handleValueChange('theta', next)
 		}
-		if (input.value === '') {
-			event.stopPropagation()
-		}
-	}
-
-	// Leaving an empty field lets its input event through, so the binding shows the held value again.
-	const restoreEmptyEntry = (event: FocusEvent) => {
-		const input = event.target
-		if (!(input instanceof HTMLInputElement) || input.type !== 'number' || input.value !== '') {
-			return
-		}
-		isRestoringEntry = true
-		input.dispatchEvent(new Event('input'))
-		isRestoringEntry = false
 	}
 
 	interface StatusIndicator {
@@ -279,8 +265,6 @@
 	<div
 		role="group"
 		aria-labelledby={headingId}
-		oninputcapture={holdUnparsedEntry}
-		onfocusoutcapture={restoreEmptyEntry}
 		class="grid grid-cols-1 items-start gap-2 @min-[38.75rem]:grid-cols-2 @min-[38.75rem]:gap-4"
 	>
 		<Point
@@ -332,14 +316,10 @@
 					step={useRadians ? THETA_RADIANS_STEP : THETA_DEGREES_STEP}
 					state={indicators.theta?.state}
 					aria-describedby={indicators.theta && statusId('theta')}
-					bind:value={
-						() => thetaValue,
-						(next) => {
-							if (next !== undefined) {
-								handleValueChange('theta', next)
-							}
-						}
-					}
+					onblur={() => {
+						isThetaCleared = false
+					}}
+					bind:value={() => (isThetaCleared ? undefined : thetaValue), writeTheta}
 				/>
 				{@render fieldDetails('theta')}
 			</div>

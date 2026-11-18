@@ -21,9 +21,10 @@
 	const isInvalid = $derived(parseError !== undefined)
 </script>
 
-<div class="relative min-w-0">
+<div class="min-w-0">
 	<Folder
 		{title}
+		summary={hasValue && !isOpen ? 'Set' : undefined}
 		bind:open={isOpen}
 	>
 		<p class="text-subtle-2 text-xs">Optional JSON</p>
@@ -45,12 +46,4 @@
 			</span>
 		{/if}
 	</Folder>
-	<!-- prime-controls Folder takes a string title only, so the collapsed row's caption sits over it. -->
-	{#if hasValue && !isOpen}
-		<span
-			class="text-subtle-2 pointer-events-none absolute top-0 right-6 flex h-6 items-center text-xs"
-		>
-			Set
-		</span>
-	{/if}
 </div>
