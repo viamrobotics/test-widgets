@@ -134,8 +134,8 @@ importers:
         specifier: ^0.183.1
         version: 0.183.1
       '@viamrobotics/prime-controls':
-        specifier: 0.4.0
-        version: 0.4.0(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
+        specifier: 0.4.1
+        version: 0.4.1(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
       '@viamrobotics/prime-core':
         specifier: ^0.1.22
         version: 0.1.22(@internationalized/date@3.12.4)(svelte@5.56.3(@typescript-eslint/types@8.59.1))
@@ -149,8 +149,8 @@ importers:
         specifier: ^0.1.2
         version: 0.1.2(@zag-js/svelte@1.48.0(svelte@5.56.3(@typescript-eslint/types@8.59.1)))(@zag-js/tree-view@1.48.0)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
       '@viamrobotics/prime-ui':
-        specifier: ^0.4.0
-        version: 0.4.0(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
+        specifier: ^0.4.1
+        version: 0.4.1(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
       '@viamrobotics/sdk':
         specifier: ^0.76.0
         version: 0.76.0
@@ -1443,8 +1443,8 @@ packages:
       svelte:
         optional: true
 
-  '@viamrobotics/prime-controls@0.4.0':
-    resolution: {integrity: sha512-HYrSgmdvUjHOxBazv2zdbdhEHrSVDXzXkz9tMm41Gzi3qIPe+grk3wnfJ5alapkyGkrjUtFwL/SdIecikhnm3A==}
+  '@viamrobotics/prime-controls@0.4.1':
+    resolution: {integrity: sha512-St4py6i3n25L5sZLB79Q1BDudwh/LxBrYSlO09TDHs0xrEi9MG+3eShFll7Ifq9+C/Bij0gjeyBZZD7dWDUdSg==}
     peerDependencies:
       svelte: ^5.29.0
 
@@ -1473,8 +1473,8 @@ packages:
       '@zag-js/tree-view': ^1.46.0
       svelte: ^5.29.0
 
-  '@viamrobotics/prime-ui@0.4.0':
-    resolution: {integrity: sha512-trAh5hldjSdd5RdKTuQ7YlGYMR9JgJscn1jBDy3+tpvpFDh3dthQ1Du9k5TaIuNNNwcdNWjA0evBSN1FGlhrtw==}
+  '@viamrobotics/prime-ui@0.4.1':
+    resolution: {integrity: sha512-8CmavbW1iGGfj5d3Qh7Nfma/1hk0jjq7ps0pqLFD5Poab737rL6tj1pjk8A6MBJ1gRNlM65yszkmBUF1Nn+bSg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -3903,8 +3903,8 @@ snapshots:
 
   '@floating-ui/dom@1.7.6':
     dependencies:
-      '@floating-ui/core': 1.7.5
-      '@floating-ui/utils': 0.2.11
+      '@floating-ui/core': 1.8.0
+      '@floating-ui/utils': 0.2.12
 
   '@floating-ui/dom@1.8.0':
     dependencies:
@@ -4655,10 +4655,10 @@ snapshots:
     optionalDependencies:
       svelte: 5.56.3(@typescript-eslint/types@8.59.1)
 
-  '@viamrobotics/prime-controls@0.4.0(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)':
+  '@viamrobotics/prime-controls@0.4.1(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)':
     dependencies:
       '@mdi/js': 7.4.47
-      '@viamrobotics/prime-ui': 0.4.0(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
+      '@viamrobotics/prime-ui': 0.4.1(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)
       '@viamrobotics/tailwind-config': 1.8.1(tailwindcss@4.2.4)
       svelte: 5.56.3(@typescript-eslint/types@8.59.1)
     transitivePeerDependencies:
@@ -4730,7 +4730,7 @@ snapshots:
     transitivePeerDependencies:
       - tailwindcss
 
-  '@viamrobotics/prime-ui@0.4.0(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)':
+  '@viamrobotics/prime-ui@0.4.1(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(tailwindcss@4.2.4)':
     dependencies:
       '@internationalized/date': 3.12.4
       '@mdi/js': 7.4.47
