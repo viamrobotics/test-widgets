@@ -1,7 +1,10 @@
 <script lang="ts">
-	import { Label, Switch } from '@viamrobotics/prime-core'
-	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { BaseClient, MachineConnectionEvent, type Vector3 } from '@viamrobotics/sdk'
+	import {
+		createResourceClient,
+		createResourceMutation,
+		useConnectionStatus,
+	} from '@viamrobotics/svelte-sdk'
 
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
@@ -21,45 +24,41 @@
 		() => resourceName
 	)
 
+	const connectionStatus = useConnectionStatus(() => partID)
+	const isConnected = $derived(connectionStatus.current === MachineConnectionEvent.CONNECTED)
+
 	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+	const stopMutation = createResourceMutation(client, 'stop')
 
 	const quickSetPower = (linear: Vector3, angular: Vector3) => {
 		quickSetPowerMutation.mutate([linear, angular], {})
 	}
 
-	const sectionErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
+	const stop = () => {
+		stopMutation.mutate([], {})
+	}
 
-	let isKeyboardEnabled = $state(false)
+	const sectionErrors = useSectionErrors(() => ({
+		mutations: [quickSetPowerMutation, stopMutation],
+	}))
 </script>
 
 <Section
 	errorReporter={sectionErrors}
-	class="flex-row flex-wrap gap-2"
+	class="flex-col gap-2"
 >
-	<div class="flex flex-col gap-0.5">
-		<Section.Heading>
-			Quick move
-			{#snippet aside()}
-				<Section.Errors errors={sectionErrors.errors} />
-			{/snippet}
-		</Section.Heading>
-		<Label cx="w-fit!">
-			Keyboard control
-
-			<Switch
-				slot="input"
-				on={isKeyboardEnabled}
-				on:change={() => (isKeyboardEnabled = !isKeyboardEnabled)}
-			/>
-		</Label>
-	</div>
+	<Section.Heading>
+		Quick move
+		{#snippet aside()}
+			<Section.Errors errors={sectionErrors.errors} />
+		{/snippet}
+	</Section.Heading>
 
 	<Section.Body>
-		<div class="flex grow flex-wrap justify-between gap-2">
-			<QuickMove
-				setPower={quickSetPower}
-				{isKeyboardEnabled}
-			/>
-		</div>
+		<QuickMove
+			setPower={quickSetPower}
+			{stop}
+			{isConnected}
+		/>
 	</Section.Body>
 </Section>

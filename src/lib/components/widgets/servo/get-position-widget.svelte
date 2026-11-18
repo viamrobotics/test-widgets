@@ -4,7 +4,6 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import { Section } from '$lib/components/section'
-	import { formatNumeric } from '$lib/format'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
@@ -23,6 +22,14 @@
 	const positionQuery = createResourceQuery(client, 'getPosition', {
 		refetchInterval: 500,
 	})
+
+	const MISSING_VALUE = '-'
+
+	const positionText = $derived(
+		positionQuery.data === undefined ? MISSING_VALUE : String(Math.round(positionQuery.data))
+	)
+
+	const labelId = $props.id()
 </script>
 
 <ApiSection
@@ -31,12 +38,21 @@
 	api={ResourceTriplets.Servo}
 	queries={[positionQuery]}
 >
-	{#if positionQuery.data !== undefined}
-		<!-- span required to get unit closer to position reading -->
-		<span class="flex flex-row gap-1">
-			<span class="font-roboto-mono font-normal">{formatNumeric(positionQuery.data)}</span>
-			<abbr class="text-subtle-2">º</abbr>
+	<div class="flex min-w-0 items-center gap-2">
+		<span
+			id={labelId}
+			class="text-subtle-1 w-14 shrink-0 text-xs"
+		>
+			Position
 		</span>
-	{/if}
+		<span
+			role="group"
+			aria-labelledby={labelId}
+			class="readout font-roboto-mono"
+		>
+			<span class="readout-value">{positionText}</span>
+			<span class="readout-suffix">°</span>
+		</span>
+	</div>
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

@@ -48,10 +48,58 @@ const MOTION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	[COMPOSITE_SLOT]: { width: 220, height: 600 },
 }
 
+/**
+ * The base pane minimums in px, from "Batch 4.2 measured sizes" in
+ * `.claude/plans/prime-controls-migration/phase-4-rollout-actuator-widgets.md`. Estimates, not
+ * measurements. Quick move takes its captured height, 237, because the pane must hold the pad
+ * while keyboard capture shows its status line, and the idle 197 is one line shorter. The
+ * composite takes "about 1080 idle, 1120 captured" as 1120 for the same reason. GetProperties
+ * has no registry entry, so it has no row.
+ */
+const BASE_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 286, height: 1120 },
+	'quick-move': { width: 286, height: 237 },
+	'move-straight': { width: 180, height: 137 },
+	spin: { width: 218, height: 137 },
+	'set-power': { width: 248, height: 201 },
+	'set-velocity': { width: 270, height: 201 },
+	'is-moving': { width: 162, height: 73 },
+	stop: { width: 162, height: 85 },
+}
+
+/**
+ * The gantry pane minimums in px, from the same table. Heights assume three axes. The composite's
+ * "about 1300" is 1300, and move-to-position takes its stacked height, 509. GetLengths and Stop
+ * have no registry entry, so they have no row.
+ */
+const GANTRY_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 200, height: 1300 },
+	'get-position': { width: 162, height: 277 },
+	'move-to-position': { width: 164, height: 509 },
+	home: { width: 162, height: 167 },
+	'is-moving': { width: 162, height: 73 },
+	'quick-move': { width: 181, height: 155 },
+}
+
+/**
+ * The servo pane minimums in px, from the same table. The composite's "about 410" is 410.
+ */
+const SERVO_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 178, height: 410 },
+	move: { width: 178, height: 139 },
+	'get-position': { width: 162, height: 97 },
+	'is-moving': { width: 162, height: 73 },
+	stop: { width: 162, height: 85 },
+	'quick-move': { width: 162, height: 75 },
+}
+
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
 	[ResourceTriplets.Motor]: MOTOR_PANE_MINIMUMS,
 	[ResourceTriplets.Arm]: ARM_PANE_MINIMUMS,
 	[ResourceTriplets.Motion]: MOTION_PANE_MINIMUMS,
+	[ResourceTriplets.Base]: BASE_PANE_MINIMUMS,
+	[ResourceTriplets.Gantry]: GANTRY_PANE_MINIMUMS,
+	[ResourceTriplets.Servo]: SERVO_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.

@@ -22,49 +22,68 @@ describe('Servo Move', () => {
 			...props,
 		})
 
-	it('sets the desired angle to zero when the Zero button is clicked', async () => {
+	const angleField = () => screen.getByRole('spinbutton', { name: /desired angle/iu })
+	const restoreButton = () => screen.getByRole('button', { name: /reset desired angle/iu })
+
+	it('draws no Quick set buttons', () => {
 		renderSubject({ currentPosition: 45 })
 
-		const zeroButton = screen.getByRole('button', { name: /zero/iu })
-		await user.click(zeroButton)
-
-		const numericInput = screen.getByRole('spinbutton')
-		expect(numericInput).toHaveValue(0)
+		expect(screen.queryByRole('button', { name: /zero/iu })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: /^current position$/iu })).not.toBeInTheDocument()
 	})
 
-	it('sets the desired angle to the current position when the Current position button is clicked', async () => {
+	it('starts the field at the current position, with the restore button disabled', () => {
 		renderSubject({ currentPosition: 45 })
 
-		const currentPositionButton = screen.getByRole('button', {
-			name: /current position/iu,
-		})
-		await user.click(currentPositionButton)
+		expect(angleField()).toHaveValue(45)
+		expect(restoreButton()).toBeDisabled()
+		expect(restoreButton()).toHaveAccessibleName('Reset desired angle to its current value, 45°')
+	})
 
-		const numericInput = screen.getByRole('spinbutton')
-		expect(numericInput).toHaveValue(45)
+	it('holds an edit while the live position moves, and restores it on the button', async () => {
+		const { rerender } = renderSubject({ currentPosition: 45 })
+
+		await user.clear(angleField())
+		await user.type(angleField(), '120')
+		await rerender({ currentPosition: 50 })
+
+		expect(angleField()).toHaveValue(120)
+		expect(restoreButton()).toBeEnabled()
+		expect(restoreButton()).toHaveTextContent('50°')
+
+		await user.click(restoreButton())
+
+		expect(angleField()).toHaveValue(50)
+		expect(restoreButton()).toBeDisabled()
+		expect(moveTo).not.toHaveBeenCalled()
 	})
 
 	it('calls moveTo with the desired angle when the Execute button is clicked', async () => {
 		renderSubject({})
 
-		const numericInput = screen.getByRole('spinbutton')
-		await user.clear(numericInput)
-		await user.type(numericInput, '90')
-
-		const executeButton = screen.getByRole('button', { name: /execute/iu })
-		await user.click(executeButton)
+		await user.clear(angleField())
+		await user.type(angleField(), '90')
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(moveTo).toHaveBeenCalledWith(90)
 	})
 
-	it('displays an error when desired angle is negative', async () => {
+	it('puts the field in the error state and disables Execute for a negative angle', async () => {
 		renderSubject({})
 
-		const numericInput = screen.getByRole('spinbutton')
-		await user.clear(numericInput)
-		await user.type(numericInput, '-1{Tab}')
+		await user.clear(angleField())
+		await user.type(angleField(), '-1{Tab}')
 
-		const warning = screen.getByText(/must be non-negative/iu)
-		expect(warning).toBeInTheDocument()
+		expect(angleField()).toBeInvalid()
+		expect(screen.getByText(/must be non-negative/iu)).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
+	})
+
+	it('disables Execute while the field is empty', async () => {
+		renderSubject({ currentPosition: 45 })
+
+		await user.clear(angleField())
+
+		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
 	})
 })

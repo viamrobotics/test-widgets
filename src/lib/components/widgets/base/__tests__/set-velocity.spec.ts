@@ -16,6 +16,13 @@ describe('Base SetVelocity', () => {
 		setVelocity = vi.fn()
 	})
 
+	// Point drops an emptied axis back to its last value, so `user.clear` would leave the old text
+	// in place. Selecting the text first lets the typed value replace it.
+	const replaceValue = async (input: HTMLElement, text: string) => {
+		await user.tripleClick(input)
+		await user.keyboard(text)
+	}
+
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		render(Subject, {
 			setVelocity,
@@ -26,34 +33,28 @@ describe('Base SetVelocity', () => {
 		renderSubject({})
 
 		{
-			const linVel = screen.getByRole('region', { name: /linear velocity/iu })
+			const linVel = screen.getByRole('group', { name: /^linear/iu })
 			const xInput = within(linVel).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(linVel).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(linVel).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '10')
-			await user.clear(yInput)
-			await user.type(yInput, '20')
-			await user.clear(zInput)
-			await user.type(zInput, '30')
+			await replaceValue(xInput, '10')
+			await replaceValue(yInput, '20')
+			await replaceValue(zInput, '30')
 		}
 		{
-			const angVel = screen.getByRole('region', { name: /angular velocity/iu })
+			const angVel = screen.getByRole('group', { name: /^angular/iu })
 			const xInput = within(angVel).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(angVel).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(angVel).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '5')
-			await user.clear(yInput)
-			await user.type(yInput, '10')
-			await user.clear(zInput)
-			await user.type(zInput, '15')
+			await replaceValue(xInput, '5')
+			await replaceValue(yInput, '10')
+			await replaceValue(zInput, '15')
 		}
 
 		const executeButton = screen.getByRole('button', { name: /execute/iu })

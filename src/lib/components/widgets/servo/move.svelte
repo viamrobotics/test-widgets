@@ -1,99 +1,92 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { mdiBackupRestore, mdiPlayCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { type FieldState, Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		currentPosition: number
 		moveTo: (angle: number) => void
 	}
 
+	const NEGATIVE_MESSAGE = 'Desired angle must be non-negative'
+
 	const { currentPosition, moveTo }: Props = $props()
 
-	let desiredAngle = $state(0)
+	// Until the user edits, the field follows the live position. An emptied field is held as NaN,
+	// so it stays empty while typing and Execute waits.
+	let edited = $state<number | undefined>()
 
-	const desiredAngleErrorID = $props.id()
+	const desiredAngle = $derived(edited ?? currentPosition)
+	const isEdited = $derived(edited !== undefined)
+	const isNegative = $derived(desiredAngle < 0)
+	const isValid = $derived(Number.isFinite(desiredAngle) && !isNegative)
+	const message = $derived(isNegative ? NEGATIVE_MESSAGE : undefined)
+
+	const fieldState = $derived.by((): FieldState | undefined => {
+		if (Number.isNaN(desiredAngle) || isNegative) return 'error'
+		return undefined
+	})
+
+	const current = $derived(`${currentPosition}°`)
+
+	const getField = () => (Number.isNaN(desiredAngle) ? undefined : desiredAngle)
+	const setField = (value: number | undefined) => {
+		edited = value !== undefined && Number.isFinite(value) ? value : Number.NaN
+	}
 </script>
 
-<div class="flex flex-col gap-5">
-	<Label cx="max-w-[100px]">
-		<div class="flex flex-col gap-1">
-			<p class="relative">
-				Desired angle
-				<abbr class="text-subtle-2">(º)</abbr>
-				<!-- absolute so that the tooltip can extend past the label width -->
-				<span class="absolute ml-1">
-					<Tooltip>
-						<Icon
-							name="information-outline"
-							cx="text-gray-6"
-						/>
-
-						<p
-							slot="description"
-							class="text-xs"
-						>
-							Accepts angles between 0-180 degrees
-						</p>
-					</Tooltip>
-				</span>
-			</p>
-			<NumericInput
-				type="integer"
-				value={desiredAngle}
-				on:change={(event) => {
-					desiredAngle = numberValueFromEvent(event) ?? 0
-				}}
-				step={1}
-				aria-errormessage={desiredAngleErrorID}
-			/>
-		</div>
-	</Label>
-	{#if desiredAngle < 0}
-		<p
-			id={desiredAngleErrorID}
-			class="text-danger-dark text-xs"
-		>
-			Desired angle must be non-negative
-		</p>
-	{/if}
-	<div class="mb-2 flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<span slot="description">
-					Will update the "Desired angle" input value but will not execute
-				</span>
+<div class="flex min-w-0 flex-col gap-1">
+	<div class="flex flex-wrap items-end gap-2">
+		<div class="min-w-40 flex-1">
+			<Tooltip disabled={message === undefined}>
+				<Tooltip.Trigger class="block min-w-0">
+					<NumberField
+						label="Desired angle"
+						hint="Accepts angles between 0-180 degrees"
+						suffix="°"
+						step={1}
+						min={0}
+						state={fieldState}
+						bind:value={getField, setField}
+					/>
+				</Tooltip.Trigger>
+				<Tooltip.Content class="max-w-72">{message}</Tooltip.Content>
 			</Tooltip>
-		</span>
-		<div class="flex flex-row gap-2">
-			<Button
-				onclick={() => {
-					desiredAngle = 0
-				}}
-			>
-				Zero
-			</Button>
-			<Button
-				onclick={() => {
-					desiredAngle = currentPosition
-				}}
-			>
-				Current position
-			</Button>
+			{#if message !== undefined}
+				<!-- The tooltip is not in the page until it opens, so screen readers get the message here. -->
+				<span class="sr-only">{message}</span>
+			{/if}
 		</div>
+		<button
+			type="button"
+			class="button button-compact ml-auto"
+			disabled={!isValid}
+			onclick={() => {
+				moveTo(desiredAngle)
+			}}
+		>
+			<Icon
+				icon={mdiPlayCircleOutline}
+				size="sm"
+			/>
+			Execute
+		</button>
 	</div>
-	<Button
-		class="w-fit"
-		icon="play-circle-outline"
-		variant="dark"
-		onclick={() => moveTo(desiredAngle)}
-	>
-		Execute
-	</Button>
+	<div class="flex justify-end">
+		<button
+			type="button"
+			class="button button-ghost button-xs font-roboto-mono"
+			aria-label="Reset desired angle to its current value, {current}"
+			disabled={!isEdited}
+			onclick={() => {
+				edited = undefined
+			}}
+		>
+			<Icon
+				icon={mdiBackupRestore}
+				size="sm"
+			/>
+			{current}
+		</button>
+	</div>
 </div>

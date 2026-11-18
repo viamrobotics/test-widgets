@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte'
 
-import { render, screen, within } from '@testing-library/svelte'
+import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -20,30 +20,26 @@ describe('Gantry quick-move', () => {
 			...props,
 		})
 
-	it('renders a row for each position', () => {
+	it('renders a group for each axis', () => {
 		renderSubject({
 			positions: [1, 2, 3],
 		})
 
-		const rows = screen.getAllByRole('row')
-		// 3 for positions, 1 for header
-		expect(rows).toHaveLength(3 + 1)
+		expect(screen.getByRole('group', { name: 'Axis 0' })).toBeInTheDocument()
+		expect(screen.getByRole('group', { name: 'Axis 2' })).toBeInTheDocument()
+		expect(screen.queryByRole('row')).not.toBeInTheDocument()
+		expect(screen.getAllByRole('button')).toHaveLength(6)
 	})
 
-	it('calls quickMove with the correct parameters when minus button is clicked on row 0', async () => {
+	it('calls quickMove with the correct parameters when minus button is clicked on axis 0', async () => {
 		const moveTo = vi.fn()
 		renderSubject({
 			positions: [1, 2],
 			moveTo,
 		})
 
-		const rows = screen.getAllByRole('row')
-		expect(rows).toHaveLength(3)
-
-		const axis0 = rows[1]!
-
-		const minusButton = within(axis0).getByRole('button', {
-			name: 'minus-ten-degrees',
+		const minusButton = screen.getByRole('button', {
+			name: 'Axis 0, −10 mm',
 		})
 		expect(minusButton).toBeInTheDocument()
 		await user.click(minusButton)
@@ -51,20 +47,15 @@ describe('Gantry quick-move', () => {
 		expect(moveTo).toHaveBeenCalledWith([-9, 2], [50, 50])
 	})
 
-	it('calls quickMove with the correct parameters when minus button is clicked on row 1', async () => {
+	it('calls quickMove with the correct parameters when minus button is clicked on axis 1', async () => {
 		const moveTo = vi.fn()
 		renderSubject({
 			positions: [1, 2, 3],
 			moveTo,
 		})
 
-		const rows = screen.getAllByRole('row')
-		expect(rows).toHaveLength(4)
-
-		const axis1 = rows[2]!
-
-		const minusButton = within(axis1).getByRole('button', {
-			name: 'minus-ten-degrees',
+		const minusButton = screen.getByRole('button', {
+			name: 'Axis 1, −10 mm',
 		})
 		expect(minusButton).toBeInTheDocument()
 		await user.click(minusButton)
@@ -80,7 +71,7 @@ describe('Gantry quick-move', () => {
 		})
 
 		const plusButton = screen.getByRole('button', {
-			name: 'plus-ten-degrees',
+			name: 'Axis 0, +10 mm',
 		})
 		expect(plusButton).toBeInTheDocument()
 		await user.click(plusButton)
