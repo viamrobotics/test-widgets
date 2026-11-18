@@ -33,7 +33,8 @@
 	const machineStatus = useMachineStatus(() => partID)
 
 	// Motors first so the first motor still opens the layout, then arms, motion services, bases,
-	// gantries, servos, grippers, boards, switches, and buttons.
+	// gantries, servos, grippers, boards, switches, buttons, sensors, movement sensors, power sensors,
+	// encoders, and input controllers.
 	const HOSTED_APIS = [
 		ResourceTriplets.Motor,
 		ResourceTriplets.Arm,
@@ -45,6 +46,11 @@
 		ResourceTriplets.Board,
 		ResourceTriplets.Switch,
 		ResourceTriplets.Button,
+		ResourceTriplets.Sensor,
+		ResourceTriplets.MovementSensor,
+		ResourceTriplets.PowerSensor,
+		ResourceTriplets.Encoder,
+		ResourceTriplets.InputController,
 	]
 	const resources = $derived(
 		HOSTED_APIS.flatMap((api) =>

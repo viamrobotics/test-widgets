@@ -7,6 +7,7 @@
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Webgamepad from './webgamepad.svelte'
@@ -39,19 +40,33 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex flex-wrap items-center justify-between gap-2 p-4 pb-3">
+		<div class="p-2">
 			<RefetchController
 				{refetchInterval}
 				queries={[eventsQuery]}
 			/>
-			{#if isWebgamepad}
-				<Webgamepad
-					{partID}
-					{resourceName}
-					refetch={eventsQuery.refetch}
-				/>
-			{/if}
 		</div>
+
+		{#if isWebgamepad}
+			<Section.Scope
+				method="TriggerEvent"
+				api={ResourceTriplets.InputController}
+			>
+				<div class="flex flex-col gap-2 p-2">
+					<Section.Heading>
+						<Section.Method />
+						{#snippet aside()}
+							<Section.Errors />
+						{/snippet}
+					</Section.Heading>
+					<Webgamepad
+						{partID}
+						{resourceName}
+						refetch={eventsQuery.refetch}
+					/>
+				</div>
+			</Section.Scope>
+		{/if}
 
 		<ApiSection
 			method="GetEvents"
@@ -62,6 +77,7 @@
 			{#if eventsQuery.data !== undefined}
 				<ReadingsList
 					data={Object.fromEntries(eventsQuery.data.map(({ control, value }) => [control, value]))}
+					showCopy={false}
 				/>
 			{/if}
 		</ApiSection>

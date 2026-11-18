@@ -66,16 +66,18 @@ describe('ML model service widget', () => {
 	it('polls Metadata only at the rate picked', async () => {
 		renderSubject()
 
-		await user.selectOptions(screen.getByRole('combobox'), RefetchRates.FIVE_SEC)
+		await user.click(screen.getByRole('combobox', { name: 'Refresh rate' }))
+		await user.click(await screen.findByRole('option', { name: RefetchRates.FIVE_SEC }))
 
 		expect(activePollingIntervals()).toEqual([5000])
 	})
 
 	it('refetches Metadata when manual refresh is pressed', async () => {
 		renderSubject()
-		await user.selectOptions(screen.getByRole('combobox'), RefetchRates.MANUAL)
+		await user.click(screen.getByRole('combobox', { name: 'Refresh rate' }))
+		await user.click(await screen.findByRole('option', { name: RefetchRates.MANUAL }))
 
-		await user.click(screen.getByRole('button', { name: /refetch/iu }))
+		await user.click(screen.getByRole('button', { name: 'Refresh' }))
 
 		expect(refetch).toHaveBeenCalledTimes(1)
 	})

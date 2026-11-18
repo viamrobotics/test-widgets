@@ -44,14 +44,6 @@
 	{#snippet tooltip()}
 		Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
 	{/snippet}
-	{#if positionQuery.data !== undefined}
-		{@const [position, encoderPositionType] = positionQuery.data}
-		<div class="font-roboto-mono flex flex-col gap-2 text-sm">
-			<Position
-				{position}
-				{encoderPositionType}
-			/>
-		</div>
-	{/if}
+	<Position data={positionQuery.data} />
 	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

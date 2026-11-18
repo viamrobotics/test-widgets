@@ -3,7 +3,7 @@
   Adds controls for toggling between a satellite and map view.
 -->
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
+	import { Checkbox, Field, Label } from '@viamrobotics/prime-ui'
 	import { fromStore } from 'svelte/store'
 
 	import { useMapLibre } from '../hooks.svelte'
@@ -13,21 +13,24 @@
 	const { satellite, mapProvider, apiKey, maxZoom, ...context } = useMapLibre()
 	const map = fromStore(context.map)
 
-	const onClick = () => {
-		satellite.set(!$satellite)
+	const setSatellite = (checked: boolean) => {
+		satellite.set(checked)
 
 		if ($mapProvider === MapProviders.googleMaps && $apiKey) {
 			try {
-				const style = getGoogleMapsStyle($apiKey, $maxZoom, $satellite ? 'satellite' : 'roadmap')
+				const style = getGoogleMapsStyle($apiKey, $maxZoom, checked ? 'satellite' : 'roadmap')
 				map.current.setStyle(style)
 			} catch (error) {
 				console.error('Failed to toggle satellite view:', error)
-				satellite.set(!$satellite)
+				satellite.set(!checked)
 			}
 		} else {
-			map.current.setLayoutProperty('satellite', 'visibility', $satellite ? 'visible' : 'none')
+			map.current.setLayoutProperty('satellite', 'visibility', checked ? 'visible' : 'none')
 		}
 	}
 </script>
 
-<Button onclick={onClick}>{$satellite ? 'Map' : 'Satellite'}</Button>
+<Field class="flex items-center gap-2">
+	<Checkbox bind:checked={() => $satellite, setSatellite} />
+	<Label>Satellite</Label>
+</Field>

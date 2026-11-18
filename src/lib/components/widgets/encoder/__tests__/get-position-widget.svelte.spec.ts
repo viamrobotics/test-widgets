@@ -1,8 +1,12 @@
+import '../../../../../app.css'
+
 import { fireEvent, render, screen } from '@testing-library/svelte'
+import { EncoderPositionType } from '@viamrobotics/sdk'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../get-position-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 interface Properties {
 	ticksCountSupported: boolean
@@ -92,12 +96,12 @@ describe('Encoder GetPosition widget', () => {
 	})
 
 	it('renders an angle position in degrees with one decimal', () => {
-		state.position = [123.456, 2]
+		state.position = [123.456, EncoderPositionType.ANGLE_DEGREES]
 
 		renderSubject()
 
 		expect(screen.getByText('123.5')).toBeInTheDocument()
-		expect(screen.getByText('º')).toBeInTheDocument()
+		expect(screen.getByText('°')).toBeInTheDocument()
 	})
 
 	it('renders a ticks position with two decimals and a ticks unit', () => {
@@ -160,5 +164,37 @@ describe('Encoder GetPosition widget', () => {
 		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/encoder position unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Encoder GetPosition widget in a 320 px pane', () => {
+	beforeEach(() => {
+		state.properties = undefined
+		state.position = undefined
+		state.positionError = null
+	})
+
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		state.position = [123456.789, 1]
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

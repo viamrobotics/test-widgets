@@ -3,6 +3,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import Orientation from './orientation.svelte'
@@ -32,4 +33,5 @@
 	{#if query.data !== undefined}
 		<Orientation data={query.data} />
 	{/if}
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

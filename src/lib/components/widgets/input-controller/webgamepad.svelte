@@ -4,7 +4,6 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import { Section } from '$lib/components/section'
-	import StatusPill from '$lib/components/status-pill.svelte'
 
 	import type { StandardGamepadEvent } from './standard-gamepad-event'
 
@@ -65,13 +64,38 @@
 		rightStick: { x: 'AbsoluteRX', y: 'AbsoluteRY' },
 	}
 
-	const triggerEvent = async (event: StandardGamepadEvent) => {
+	const BUTTON_EVENT_NAMES = new Set(['ButtonPress', 'ButtonRelease'])
+
+	// The last event sent per control, so a release can neutralize what is still held.
+	const lastSentByControl = new Map<string, { event: string; value: number }>()
+
+	const currentEventTime = () => {
 		// NOTE(ethanlook): Share this helper
 		const now = Date.now()
-		const time = {
+		return {
 			seconds: BigInt(Math.floor(now / 1000)),
 			nanos: (now % 1000) * 1_000_000,
 		}
+	}
+
+	const isHeld = (last: { event: string; value: number }) =>
+		last.event === 'ButtonPress' || last.value !== 0
+
+	const neutralEventName = (lastEventName: string) =>
+		BUTTON_EVENT_NAMES.has(lastEventName) ? 'ButtonRelease' : 'PositionChangeAbs'
+
+	const sendEvents = async (events: InputControllerEvent[]) => {
+		await Promise.allSettled(
+			events.map(async (icEvent) => triggerEventMutation.mutateAsync([icEvent]))
+		)
+	}
+
+	const triggerEvent = async (event: StandardGamepadEvent) => {
+		// Nothing is sent until the user engages forwarding.
+		if (!isForwarding) {
+			return
+		}
+		const time = currentEventTime()
 
 		const events: InputControllerEvent[] = []
 
@@ -108,9 +132,11 @@
 			events.push({ event: eventType, control, value, time })
 		}
 
-		await Promise.allSettled(
-			events.map(async (icEvent) => triggerEventMutation.mutateAsync([icEvent]))
-		)
+		for (const icEvent of events) {
+			lastSentByControl.set(icEvent.control, { event: icEvent.event, value: icEvent.value })
+		}
+
+		await sendEvents(events)
 
 		refetch()
 	}
@@ -119,7 +145,53 @@
 	// but to display it here we need to use another store
 	// and pass down the setter.
 	let isConnected = $state(false)
+
+	let isForwarding = $state(false)
+
+	const badgeTone = $derived(isConnected ? 'badge-success' : 'badge-neutral')
+	const badgeText = $derived(isConnected ? 'Connected' : 'Disconnected')
+
+	// Every release path lands here. Once forwarding is off it does nothing, so two paths firing
+	// together send the neutral events once.
+	const releaseForwarding = () => {
+		if (!isForwarding) {
+			return
+		}
+		isForwarding = false
+
+		const time = currentEventTime()
+		const neutralEvents: InputControllerEvent[] = []
+		for (const [control, last] of lastSentByControl) {
+			if (isHeld(last)) {
+				neutralEvents.push({ event: neutralEventName(last.event), control, value: 0, time })
+			}
+		}
+		lastSentByControl.clear()
+
+		void sendEvents(neutralEvents)
+	}
+
+	const toggleForwarding = () => {
+		if (isForwarding) {
+			releaseForwarding()
+			return
+		}
+		isForwarding = true
+	}
+
+	// Unmount is a release path: closing the pane with a stick held must not leave it driving.
+	$effect(() => releaseForwarding)
 </script>
+
+<svelte:window onblur={releaseForwarding} />
+
+<svelte:document
+	onvisibilitychange={() => {
+		if (document.visibilityState === 'hidden') {
+			releaseForwarding()
+		}
+	}}
+/>
 
 <!-- Hidden because a Threlte Canvas isn't actually shown,
      but the context must be provided. -->
@@ -129,14 +201,25 @@
 			onChange={triggerEvent}
 			onConnectionChange={(connected) => {
 				isConnected = connected
+				// An unplugged gamepad has nothing left to forward.
+				if (!connected) {
+					releaseForwarding()
+				}
 			}}
 		/>
 	</Canvas>
 </div>
 
-<StatusPill
-	isActive={isConnected}
-	activeText="Connected"
-	inactiveText="Disconnected"
-/>
+<div class="flex flex-wrap items-center gap-2">
+	<span class={['badge', badgeTone]}>{badgeText}</span>
+	<button
+		type="button"
+		class={['button button-xs', isForwarding && 'button-dark']}
+		aria-pressed={isForwarding}
+		disabled={!isConnected}
+		onclick={toggleForwarding}
+	>
+		Forward gamepad
+	</button>
+</div>
 <Section.Error error={triggerEventMutation.error} />

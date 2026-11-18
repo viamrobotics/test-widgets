@@ -3,6 +3,7 @@ import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../get-compass-heading-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const { queryState } = vi.hoisted(() => {
 	const state: { data: unknown; error: Error | null } = {
@@ -52,6 +53,14 @@ describe('MovementSensor GetCompassHeading widget', () => {
 		expect(screen.getByText('123.46')).toBeInTheDocument()
 	})
 
+	it('reads the heading as degrees', () => {
+		queryState.data = 90
+
+		renderSubject()
+
+		expect(screen.getByRole('group', { name: 'Heading' })).toHaveTextContent('90.00 °')
+	})
+
 	it('polls getCompassHeading every 500 ms', () => {
 		renderSubject()
 
@@ -67,5 +76,31 @@ describe('MovementSensor GetCompassHeading widget', () => {
 		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/compass heading unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('MovementSensor GetCompassHeading widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		queryState.data = 359.987_65
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

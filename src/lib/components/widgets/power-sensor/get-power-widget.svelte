@@ -3,6 +3,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PowerReading from './power-reading.svelte'
@@ -29,7 +30,6 @@
 	api={ResourceTriplets.PowerSensor}
 	class="grow flex-col gap-4"
 >
-	{#if query.data !== undefined}
-		<PowerReading data={query.data} />
-	{/if}
+	<PowerReading data={query.data} />
+	<Section.Text class="mt-auto">Updates automatically</Section.Text>
 </ApiSection>

@@ -35,6 +35,11 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 				resourceStatus('board-1', 'board'),
 				resourceStatus('switch-1', 'switch'),
 				resourceStatus('button-1', 'button'),
+				resourceStatus('sensor-1', 'sensor'),
+				resourceStatus('movement-sensor-1', 'movement_sensor'),
+				resourceStatus('power-sensor-1', 'power_sensor'),
+				resourceStatus('encoder-1', 'encoder'),
+				resourceStatus('input-controller-1', 'input_controller'),
 			],
 		},
 	}),
@@ -195,6 +200,18 @@ describe('Pane playground', () => {
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
 		expect(tree.getByRole('button', { name: /gripper-1/u })).toBeInTheDocument()
 		for (const name of ['board-1', 'switch-1', 'button-1']) {
+			expect(tree.getByRole('treeitem', { name })).toBeInTheDocument()
+		}
+	})
+
+	it("lists the machine's sensors, power sensors, encoders, and input controllers", () => {
+		renderSubject()
+
+		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
+		for (const name of ['movement-sensor-1', 'power-sensor-1', 'encoder-1']) {
+			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
+		}
+		for (const name of ['sensor-1', 'input-controller-1']) {
 			expect(tree.getByRole('treeitem', { name })).toBeInTheDocument()
 		}
 	})
