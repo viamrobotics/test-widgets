@@ -56,7 +56,7 @@
 			class="flex items-start justify-between gap-2 border-b px-4 py-3"
 		>
 			<ManualMode
-				title="ManualMode"
+				title="SetManualMode"
 				isManualMode={manualModeQuery.data ?? false}
 				isPending={setManualModeMutation.isPending}
 				{setManualMode}

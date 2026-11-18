@@ -1,7 +1,7 @@
 import type { FloatRect, LayoutNode } from '@viamrobotics/prime-panes'
 import type { ResourceName } from '@viamrobotics/sdk'
 
-import { compositePane, entryPanes, type MotorPane } from './motor-pane'
+import { compositePane, entryPanes, type ResourcePane } from './resource-pane'
 
 // IsMoving's recommended and maximum width on the Motor-Frames registry table. The height fits
 // today's IsMoving body, which is taller than the compact badge the table measures.
@@ -15,7 +15,9 @@ const SET_POWER_SHARE = 0.4
  * SetRPM, GoFor, and GoTo in a stack under SetPower, and IsMoving floating over them. Falls back
  * to the composite alone when the registry no longer lists one of those entries.
  */
-export const initialMotorLayout = (resource: ResourceName): LayoutNode<MotorPane> | undefined => {
+export const initialMotorLayout = (
+	resource: ResourceName
+): LayoutNode<ResourcePane> | undefined => {
 	const composite = compositePane(resource)
 	const entries = entryPanes(resource)
 	const entry = (id: string) =>

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import StatusPill from '$lib/components/status-pill.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { mdiInformationOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import { useCountdown } from './use-countdown.svelte'
 
@@ -16,12 +15,15 @@
 
 	const { title, isManualMode, isPending, setManualMode }: Props = $props()
 
-	let enabledFor = $state(90)
-	let enableAfter = $state(5)
+	// An emptied field reads as 0: no time limit for Enable for, no delay for Enable after.
+	const EMPTY_FIELD_SECONDS = 0
+
+	let enabledFor = $state<number | undefined>(90)
+	let enableAfter = $state<number | undefined>(5)
 	let lastAction = $state<'enter' | 'exit' | undefined>()
 
 	const countdown = useCountdown(() => {
-		setManualMode(true, enabledFor)
+		setManualMode(true, enabledFor ?? EMPTY_FIELD_SECONDS)
 	})
 
 	const isEntering = $derived(countdown.isCounting || (isPending && lastAction === 'enter'))
@@ -31,10 +33,11 @@
 		if (isExiting) return 'Exiting manual mode'
 		return ''
 	})
+	const statusText = $derived(isManualMode ? 'Manual mode' : 'Disabled')
 
 	const enter = () => {
 		lastAction = 'enter'
-		countdown.start(enableAfter)
+		countdown.start(enableAfter ?? EMPTY_FIELD_SECONDS)
 	}
 
 	const exit = () => {
@@ -49,112 +52,102 @@
 	}
 </script>
 
-<div class="flex min-w-0 flex-col gap-2">
-	<div class="flex flex-wrap items-center gap-3">
+<!-- Two rows in a narrow pane. From a 584 px container it is one row: Enter, Exit, the timing sentence, then the status. -->
+<div class="@container min-w-0 grow">
+	<div class="flex flex-wrap items-center gap-x-2 gap-y-3 @[584px]:flex-nowrap">
 		{#if title}
-			<h3 class="font-mono text-sm font-semibold">{title}</h3>
+			<h3 class="w-full font-mono text-sm font-semibold">{title}</h3>
 		{/if}
-		<!-- No `progress`: the prime-core spinner collides with the `pill` utility in tailwind-config 1.6 and later. -->
-		<Button
-			variant="dark"
-			disabled={isPending || countdown.isCounting}
-			aria-busy={isEntering}
-			onclick={enter}
-		>
-			Enter
-		</Button>
-		<Button
-			variant="dark"
-			disabled={isPending}
-			aria-busy={isExiting}
-			onclick={exit}
-		>
-			Exit
-		</Button>
+		<div class="order-1 flex items-center gap-2">
+			<button
+				type="button"
+				class="button button-dark button-xs"
+				disabled={isPending || countdown.isCounting || isManualMode}
+				aria-busy={isEntering}
+				onclick={enter}
+			>
+				{#if isEntering}
+					<span
+						class="progress-dots"
+						aria-hidden="true"
+					></span>
+				{/if}
+				{#if countdown.isCounting}
+					<span>Enabling in {countdown.secondsRemaining}s</span>
+				{:else}
+					Enter
+				{/if}
+			</button>
+			<button
+				type="button"
+				class="button button-dark button-xs"
+				disabled={isPending}
+				aria-busy={isExiting}
+				onclick={exit}
+			>
+				{#if isExiting}
+					<span
+						class="progress-dots"
+						aria-hidden="true"
+					></span>
+				{/if}
+				Exit
+			</button>
+		</div>
 		<span
 			class="sr-only"
 			role="status"
 		>
 			{pendingAnnouncement}
 		</span>
-		{#if countdown.isCounting}
-			<span class="text-subtle-2 text-xs">Enabling in {countdown.secondsRemaining}s</span>
-		{/if}
-		<Label
-			position="left"
-			cx="max-w-fit gap-1 text-xs"
+		<span
+			class={[
+				'badge order-2 ml-auto whitespace-nowrap @[584px]:order-3',
+				isManualMode && 'badge-success',
+			]}
 		>
-			<span class="flex flex-row items-center gap-1 whitespace-nowrap">
-				Enabled for (s)
-				<Tooltip>
-					<Icon
-						name="information-outline"
-						cx="text-gray-6"
-					/>
-
-					<p
-						slot="description"
-						class="text-xs"
-					>
-						How long manual mode stays enabled, in seconds. 0 means no time limit.
-					</p>
-				</Tooltip>
-			</span>
-
-			<span
-				slot="input"
-				class="w-20"
-			>
-				<NumericInput
-					value={enabledFor}
-					on:change={(event) => {
-						enabledFor = numberValueFromEvent(event) ?? 0
-					}}
-				/>
-			</span>
-		</Label>
-		<Label
-			position="left"
-			cx="max-w-fit gap-1 text-xs"
+			{statusText}
+		</span>
+		<div
+			role="group"
+			aria-label="Manual mode timing"
+			class="order-3 flex w-full min-w-0 flex-wrap items-center gap-1.5 text-xs @[584px]:order-2 @[584px]:w-auto @[584px]:flex-nowrap"
 		>
-			<span class="flex flex-row items-center gap-1 whitespace-nowrap">
-				Enable after (s)
-				<Tooltip>
-					<Icon
-						name="information-outline"
-						cx="text-gray-6"
-					/>
-
-					<p
-						slot="description"
-						class="text-xs"
+			<span>Enable for</span>
+			<NumberField
+				aria-label="Enable for, seconds"
+				suffix="s"
+				min={0}
+				class="min-w-16 flex-1 @[584px]:w-16 @[584px]:flex-none"
+				bind:value={enabledFor}
+			/>
+			<span>after</span>
+			<NumberField
+				aria-label="Enable after, seconds"
+				suffix="s"
+				min={0}
+				class="min-w-16 flex-1 @[584px]:w-16 @[584px]:flex-none"
+				bind:value={enableAfter}
+			/>
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button size-6"
+						aria-label="About manual mode timing"
 					>
-						Countdown before manual mode is entered, in seconds. 0 enters immediately.
-					</p>
-				</Tooltip>
-			</span>
-
-			<span
-				slot="input"
-				class="w-20"
-			>
-				<NumericInput
-					value={enableAfter}
-					on:change={(event) => {
-						enableAfter = numberValueFromEvent(event) ?? 0
-					}}
-				/>
-			</span>
-		</Label>
-		<StatusPill
-			isActive={isManualMode}
-			activeText="Enabled"
-			inactiveText="Disabled"
-		/>
+						<Icon
+							icon={mdiInformationOutline}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content class="max-w-72 text-xs">
+					This arm can be moved by hand in manual mode, which puts it into gravity compensation or
+					servo release mode. Enable for is how long manual mode stays on, in seconds, and 0 means
+					no time limit. Enable after is the delay before manual mode starts, in seconds.
+				</Tooltip.Content>
+			</Tooltip>
+		</div>
 	</div>
-
-	<p class="text-subtle-2 text-xs">
-		Manual mode puts the arm into gravity compensation or servo release mode so the arm can be moved
-		by hand.
-	</p>
 </div>

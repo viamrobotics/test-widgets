@@ -9,6 +9,7 @@ import Subject from '../joint-position-jogging.svelte'
 import { DEFAULT_JOG_QUEUE_TIMING } from '../useJogQueue.svelte'
 
 const timing = DEFAULT_JOG_QUEUE_TIMING
+const TOOLTIP_OPEN_DELAY_MS = 300
 
 describe('Arm joint-position-jogging', () => {
 	let user: ReturnType<typeof userEvent.setup>
@@ -34,8 +35,13 @@ describe('Arm joint-position-jogging', () => {
 
 	const jogStepSelect = () => screen.getByRole('combobox', { name: /jog step/iu })
 
+	const chooseJogStep = async (label: string) => {
+		await user.click(jogStepSelect())
+		await user.click(await screen.findByRole('option', { name: label }))
+	}
+
 	const increaseButton = (jointIndex: number, degrees: number) =>
-		screen.getByRole('button', { name: `Increase joint ${jointIndex} by ${degrees} degrees` })
+		screen.getByRole('button', { name: `Joint ${jointIndex}, plus ${degrees} degrees` })
 
 	const row = (jointIndex: number) => screen.getAllByRole('listitem')[jointIndex]!
 
@@ -44,7 +50,7 @@ describe('Arm joint-position-jogging', () => {
 	it('defaults the jog step to 5 degrees', () => {
 		renderSubject()
 
-		expect(jogStepSelect()).toHaveValue('5')
+		expect(jogStepSelect()).toHaveTextContent('5°')
 		expect(increaseButton(0, 5)).toMatchTextContent('+5°')
 	})
 
@@ -59,17 +65,23 @@ describe('Arm joint-position-jogging', () => {
 		expect(rows[1]).toMatchTextContent('-4.50°')
 	})
 
-	it('explains tapping and holding on each jog button', () => {
+	it('explains tapping and holding in the About jogging tooltip', async () => {
 		renderSubject()
 
-		expect(screen.getByText('Tap or hold to add 5°')).toBeInTheDocument()
-		expect(screen.getByText('Tap or hold to subtract 5°')).toBeInTheDocument()
+		await user.hover(screen.getByRole('button', { name: 'About jogging' }))
+		await vi.advanceTimersByTimeAsync(TOOLTIP_OPEN_DELAY_MS)
+
+		const tooltip = await screen.findByRole('tooltip')
+		expect(tooltip.textContent).toContain('Tap or hold a jog button to step its joint.')
 	})
 
-	it('offers 1, 5, 10, and 15 degree jog steps', () => {
+	it('offers 1, 5, 10, and 15 degree jog steps', async () => {
 		renderSubject()
 
-		const labels = screen.getAllByRole('option').map((option) => option.textContent?.trim())
+		await user.click(jogStepSelect())
+
+		const options = await screen.findAllByRole('option')
+		const labels = options.map((option) => option.textContent?.trim())
 		expect(labels).toEqual(['1°', '5°', '10°', '15°'])
 	})
 
@@ -77,7 +89,7 @@ describe('Arm joint-position-jogging', () => {
 		const moveToJointPositions = vi.fn().mockResolvedValue(undefined)
 		renderSubject({ positions: [10], moveToJointPositions })
 
-		await user.selectOptions(jogStepSelect(), '10')
+		await chooseJogStep('10°')
 		await user.click(increaseButton(0, 10))
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
@@ -135,7 +147,7 @@ describe('Arm joint-position-jogging', () => {
 			moveToJointPositions,
 		})
 
-		await user.selectOptions(jogStepSelect(), '15')
+		await chooseJogStep('15°')
 		await user.click(increaseButton(0, 15))
 
 		expect(rowStatus(0)).toMatchTextContent('Joint 0 will move to 360.00°')
@@ -182,7 +194,7 @@ describe('Arm joint-position-jogging', () => {
 
 		vi.advanceTimersByTime(timing.resultDisplayMs)
 		await tick()
-		expect(within(row(0)).queryByRole('status')).not.toBeInTheDocument()
+		expect(rowStatus(0)).toBeEmptyDOMElement()
 		expect(row(0)).toMatchTextContent('0.00°')
 	})
 
@@ -208,7 +220,29 @@ describe('Arm joint-position-jogging', () => {
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
-		expect(within(row(0)).queryByRole('status')).not.toBeInTheDocument()
+		expect(rowStatus(0)).toBeEmptyDOMElement()
+	})
+
+	it('keeps an empty status in every idle row, so the first step is announced', () => {
+		renderSubject({ positions: [0, 0, 0] })
+
+		const statuses = screen.getAllByRole('status')
+		expect(statuses).toHaveLength(3)
+		expect(statuses.filter((status) => status.textContent?.trim() !== '')).toEqual([])
+	})
+
+	it('marks a sending step with progress dots and a queued step without them', async () => {
+		const moveToJointPositions = vi.fn(() => new Promise<void>(() => {}))
+		renderSubject({ positions: [0, 0], moveToJointPositions })
+
+		await user.click(increaseButton(0, 5))
+		vi.advanceTimersByTime(timing.sendDebounceMs)
+		await tick()
+		await user.click(increaseButton(1, 5))
+
+		expect(rowStatus(0).querySelector('.badge-pending .progress-dots')).toBeInTheDocument()
+		expect(rowStatus(1).querySelector('.badge-pending')).toBeInTheDocument()
+		expect(rowStatus(1).querySelector('.progress-dots')).not.toBeInTheDocument()
 	})
 
 	it('keeps the badge of the first joint while a second joint is jogged', async () => {

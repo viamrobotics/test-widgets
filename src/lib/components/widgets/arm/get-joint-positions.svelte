@@ -1,7 +1,6 @@
 <script lang="ts">
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
-	import Table from '$lib/components/table.svelte'
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
 	interface Props {
@@ -16,39 +15,42 @@
 		positions.map((pos) => (useRadians ? degreesToRadians(pos) : pos))
 	)
 
+	const labelId = $props.id()
+
 	const copyData = $derived(`[${displayPositions.join(', ')}]`)
 </script>
 
-<div class="flex min-w-0 flex-col gap-4">
-	<!-- Controls Header -->
-	<div class="flex items-center justify-between">
-		<span class="text-sm">Current Positions</span>
-		<div class="flex gap-1">
-			<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
-			<CopyButton data={copyData} />
-		</div>
+<div class="flex min-w-0 flex-col gap-3">
+	<div class="flex items-center gap-1">
+		<span
+			id={labelId}
+			class="text-subtle-1 min-w-0 flex-1 truncate text-xs"
+		>
+			Current Positions
+		</span>
+		<AngleUnitToggle
+			{useRadians}
+			onToggle={() => {
+				useRadians = !useRadians
+			}}
+		/>
+		<CopyButton data={copyData} />
 	</div>
 
-	<Table>
-		<thead>
-			<tr>
-				<th> Joint </th>
-				<th>Position ({useRadians ? 'radians' : 'degrees'})</th>
-			</tr>
-		</thead>
-		<tbody>
-			<!-- joint ids are just the index in the list of values, we need to use index for the key -->
-			{#each displayPositions as pos, index (index)}
-				<tr>
-					<th> {index} </th>
-					<th> {formatNumeric(pos)} </th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
+	<div
+		role="group"
+		aria-labelledby={labelId}
+		class="flex flex-col gap-1"
+	>
+		<!-- joint ids are just the index in the list of values, we need to use index for the key -->
+		{#each displayPositions as pos, index (index)}
+			<div class="flex min-w-0 items-center gap-2">
+				<span class="text-subtle-1 w-14 shrink-0 text-xs">Joint {index}</span>
+				<span class="readout font-roboto-mono">
+					<span class="readout-value">{formatNumeric(pos)}</span>
+					<span class="readout-suffix">{useRadians ? 'rad' : '°'}</span>
+				</span>
+			</div>
+		{/each}
+	</div>
 </div>

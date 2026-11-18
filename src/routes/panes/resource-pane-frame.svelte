@@ -11,13 +11,17 @@
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import { Section } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
-	import { type MotorPane, motorPaneLabel, motorPaneMethod } from './motor-pane'
-	import { motorPaneBodyMinWidth } from './motor-pane-minimums'
+	import {
+		type ResourcePane,
+		resourcePaneAPI,
+		resourcePaneLabel,
+		resourcePaneMethod,
+	} from './resource-pane'
+	import { resourcePaneBodyMinWidth } from './resource-pane-minimums'
 
 	interface Props {
-		node: PaneNode<MotorPane>
+		node: PaneNode<ResourcePane>
 		paneState: PaneState
 		partID: string
 		/** Removes the floating window with this entry id. */
@@ -27,14 +31,14 @@
 	const { node, paneState, partID, onclose }: Props = $props()
 
 	const pane = $derived(node.data)
-	const method = $derived(motorPaneMethod(pane))
-	const label = $derived(motorPaneLabel(pane))
+	const method = $derived(resourcePaneMethod(pane))
+	const label = $derived(resourcePaneLabel(pane))
 	const widgets = $derived(pane.kind === 'composite' ? [pane.widget] : pane.entry.widgets)
-	const bodyMinWidth = $derived(motorPaneBodyMinWidth(pane))
+	const bodyMinWidth = $derived(resourcePaneBodyMinWidth(pane))
 </script>
 
-{#snippet tab(tabNode: PaneNode<MotorPane>)}
-	{@const tabMethod = motorPaneMethod(tabNode.data)}
+{#snippet tab(tabNode: PaneNode<ResourcePane>)}
+	{@const tabMethod = resourcePaneMethod(tabNode.data)}
 	<span class="flex min-w-0 items-center gap-1">
 		<span class="truncate">{tabNode.data.resource.name}</span>
 		{#if tabMethod}
@@ -168,7 +172,7 @@
 {#if method}
 	<Section.Scope
 		{method}
-		api={ResourceTriplets.Motor}
+		api={resourcePaneAPI(pane)}
 	>
 		{@render frame()}
 	</Section.Scope>

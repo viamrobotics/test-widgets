@@ -9,8 +9,8 @@ const state = vi.hoisted((): { mutationErrors: Record<string, Error> } => ({
 	mutationErrors: {},
 }))
 
-const motorStatus = (name: string) => ({
-	name: { name, namespace: 'rdk', type: 'component', subtype: 'motor' },
+const resourceStatus = (name: string, subtype: string, type = 'component') => ({
+	name: { name, namespace: 'rdk', type, subtype },
 	state: robotApi.ResourceStatus_State.READY,
 	revision: '1',
 	error: '',
@@ -19,9 +19,17 @@ const motorStatus = (name: string) => ({
 vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 	...(await importOriginal<typeof import('@viamrobotics/svelte-sdk')>()),
 	useConnectionStatus: () => ({ current: 'connected' }),
+	useResourceStatuses: () => ({ current: [] }),
 	useMachineStatus: () => ({
 		query: { isPending: false, error: null },
-		current: { resources: [motorStatus('motor-1'), motorStatus('motor-2')] },
+		current: {
+			resources: [
+				resourceStatus('motor-1', 'motor'),
+				resourceStatus('motor-2', 'motor'),
+				resourceStatus('arm-1', 'arm'),
+				resourceStatus('motion-1', 'motion', 'service'),
+			],
+		},
 	}),
 	createResourceClient: () => ({ current: {} }),
 	createResourceQuery: () => ({
@@ -152,5 +160,30 @@ describe('Pane playground', () => {
 				paneHeader('motor-2::composite').getByRole('button', { name: 'Move motor-2' })
 			).toHaveFocus()
 		})
+	})
+
+	it("lists the machine's arms and motion services beside its motors", () => {
+		renderSubject()
+
+		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
+		for (const name of ['motor-1', 'motor-2', 'arm-1']) {
+			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
+		}
+		// Motion has a composite and no entries, so its row is a leaf.
+		expect(tree.getByRole('treeitem', { name: 'motion-1' })).toBeInTheDocument()
+	})
+
+	it('titles a picked arm control with the resource alone and an arm api with its method', async () => {
+		const user = userEvent.setup()
+		renderSubject()
+		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
+
+		await user.click(tree.getByRole('treeitem', { name: 'Manual mode' }))
+		await user.click(tree.getAllByRole('treeitem', { name: 'Stop' }).at(-1) ?? document.body)
+
+		const control = await waitFor(() => paneHeader('arm-1::manual-mode'))
+		expect(control.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1')
+		const api = paneHeader('arm-1::stop')
+		expect(api.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1 Stop')
 	})
 })

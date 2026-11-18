@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiClose, mdiContentPaste } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		onPaste: (data: string) => boolean
@@ -20,19 +21,25 @@
 		}, 750)
 	}
 
-	const iconName = $derived(
+	const icon = $derived(
 		// eslint-disable-next-line unicorn/no-nested-ternary
-		isPasteSuccessful === null ? 'content-paste' : isPasteSuccessful ? 'check' : 'close'
+		isPasteSuccessful === null ? mdiContentPaste : isPasteSuccessful ? mdiCheck : mdiClose
 	)
 </script>
 
 <Tooltip>
-	<IconButton
-		onclick={handlePasteClick}
-		aria-label={ariaLabel}
-		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
-		icon={iconName}
-		label="Paste from clipboard"
-	/>
-	<span slot="description">{ariaLabel}</span>
+	<Tooltip.Trigger>
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label={ariaLabel}
+			onclick={handlePasteClick}
+		>
+			<Icon
+				{icon}
+				size="sm"
+			/>
+		</button>
+	</Tooltip.Trigger>
+	<Tooltip.Content>{ariaLabel}</Tooltip.Content>
 </Tooltip>

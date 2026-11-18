@@ -3,6 +3,7 @@ import { createResourceMutation, createResourceQuery } from '@viamrobotics/svelt
 import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../manual-mode-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 vi.mock('@viamrobotics/sdk', () => ({
 	ArmClient: class {},
@@ -59,15 +60,14 @@ describe('Arm SetManualMode widget', () => {
 		expect(screen.getByRole('button', { name: 'Enter' })).toBeInTheDocument()
 	})
 
-	it('renders an inline ManualMode title instead of a section title in band mode', () => {
+	it('renders an inline SetManualMode title instead of a section title in band mode', () => {
 		mockQueries()
 
 		render(Subject, {
 			props: { partID: 'test-part', resourceName: 'test-arm', band: true },
 		})
 
-		expect(screen.getByRole('heading', { name: 'ManualMode' })).toBeInTheDocument()
-		expect(screen.queryByText('SetManualMode')).not.toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: 'SetManualMode' })).toBeInTheDocument()
 	})
 
 	it('polls getManualMode every second while manual mode is supported', () => {
@@ -95,11 +95,25 @@ describe('Arm SetManualMode widget', () => {
 		expect(createResourceMutation).toHaveBeenCalledWith(expect.anything(), 'setManualMode')
 	})
 
-	it('shows the enabled pill from the polled manual mode state', () => {
+	it('shows manual mode on from the polled state', () => {
 		mockQueries({ manualMode: true })
 
 		renderSubject()
 
-		expect(screen.getByText('Enabled')).toBeInTheDocument()
+		expect(screen.getByText('Manual mode')).toBeInTheDocument()
+	})
+})
+
+describe('Arm SetManualMode widget in a 320 px pane', () => {
+	it('does not scroll horizontally', () => {
+		mockQueries()
+		render(PaneSubject, { props: { widget: Subject } })
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+
+		expect(screen.getByRole('button', { name: 'Enter' })).toBeInTheDocument()
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

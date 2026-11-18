@@ -14,6 +14,22 @@ export interface MoveInput {
 export type MoveArgs = [PoseInFrame, string, WorldState | undefined, Constraints | undefined]
 
 /**
+ * Parses optional `WorldState` proto JSON. Empty or whitespace-only input is omitted.
+ *
+ * @throws When the input is not valid `WorldState` JSON.
+ */
+export const parseWorldState = (json: string): WorldState | undefined =>
+	json.trim() === '' ? undefined : WorldState.fromJsonString(json)
+
+/**
+ * Parses optional `Constraints` proto JSON. Empty or whitespace-only input is omitted.
+ *
+ * @throws When the input is not valid `Constraints` JSON.
+ */
+export const parseConstraints = (json: string): Constraints | undefined =>
+	json.trim() === '' ? undefined : Constraints.fromJsonString(json)
+
+/**
  * Builds the positional arguments for `MotionClient.move` from form inputs.
  *
  * Empty or whitespace-only JSON fields are omitted (passed as `undefined`).
@@ -30,13 +46,10 @@ export const parseMoveArgs = (frameName: string, input: MoveInput): MoveArgs => 
 		pose: input.pose,
 	}
 
-	const worldState =
-		input.worldStateJson.trim() === '' ? undefined : WorldState.fromJsonString(input.worldStateJson)
-
-	const constraints =
-		input.constraintsJson.trim() === ''
-			? undefined
-			: Constraints.fromJsonString(input.constraintsJson)
-
-	return [destination, frameName, worldState, constraints]
+	return [
+		destination,
+		frameName,
+		parseWorldState(input.worldStateJson),
+		parseConstraints(input.constraintsJson),
+	]
 }

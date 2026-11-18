@@ -47,7 +47,8 @@
 		</ViamProvider>
 	{:else}
 		<p class="text-subtle-1 mx-auto max-w-md py-8 text-sm">
-			No machines yet. Add one from the widgets view to lay its motors out here.
+			No machines yet. Add one from the widgets view to lay its motors, arms, and motion services
+			out here.
 		</p>
 	{/if}
 </div>
