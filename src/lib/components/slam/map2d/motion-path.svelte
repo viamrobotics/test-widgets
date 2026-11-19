@@ -10,11 +10,10 @@
 -->
 <script lang="ts">
 	import { T } from '@threlte/core'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
-
-	import { themeColor } from '$lib/theme-color'
 
 	import { renderOrder } from './render-order'
 
@@ -46,6 +45,10 @@
 
 	const geometry = $derived(updatePath(path))
 
+	// LineMaterial's color setter needs a value, so an unset token falls back to an empty string, which
+	// three.js reads as its default white.
+	const pathColor = themeColor('--color-power-wire-bright') ?? ''
+
 	// three.js frees a geometry's GPU buffers only on an explicit dispose.
 	$effect(() => {
 		const drawn = geometry
@@ -60,7 +63,7 @@
 	>
 		<T
 			is={LineMaterial}
-			color={themeColor('--color-power-wire-bright')}
+			color={pathColor}
 			linewidth={1}
 		/>
 		<T is={geometry} />

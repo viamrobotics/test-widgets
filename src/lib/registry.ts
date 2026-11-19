@@ -14,9 +14,13 @@ import {
 	ArmMoveToPositionWidget,
 	ArmStopWidget,
 	ArmWidget,
+	AudioInputControls,
+	AudioInputGetAudioWidget,
 	AudioInputGetPropertiesWidget,
 	AudioInputWidget,
+	AudioOutputControls,
 	AudioOutputGetPropertiesWidget,
+	AudioOutputPlayWidget,
 	AudioOutputWidget,
 	BaseIsMovingWidget,
 	BaseMoveStraightWidget,
@@ -33,6 +37,8 @@ import {
 	CameraGetPointCloudWidget,
 	CameraGetPropertiesWidget,
 	CameraWidget,
+	DiscoveryControls,
+	DiscoveryDiscoverResourcesWidget,
 	DiscoveryWidget,
 	EncoderGetPositionWidget,
 	EncoderWidget,
@@ -133,12 +139,16 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.AudioInput]: {
 		widget: AudioInputWidget,
 		apis: [
+			{ id: 'controls', label: 'Controls', widgets: [AudioInputControls] },
+			{ id: 'get-audio', label: 'GetAudio', widgets: [AudioInputGetAudioWidget] },
 			{ id: 'get-properties', label: 'GetProperties', widgets: [AudioInputGetPropertiesWidget] },
 		],
 	},
 	[ResourceTriplets.AudioOutput]: {
 		widget: AudioOutputWidget,
 		apis: [
+			{ id: 'controls', label: 'Controls', widgets: [AudioOutputControls] },
+			{ id: 'play', label: 'Play', widgets: [AudioOutputPlayWidget] },
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
@@ -249,7 +259,17 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Switch]: { widget: SwitchWidget, apis: [] },
 
 	// services
-	[ResourceTriplets.Discovery]: { widget: DiscoveryWidget, apis: [] },
+	[ResourceTriplets.Discovery]: {
+		widget: DiscoveryWidget,
+		apis: [
+			{ id: 'controls', label: 'Controls', widgets: [DiscoveryControls] },
+			{
+				id: 'discover-resources',
+				label: 'DiscoverResources',
+				widgets: [DiscoveryDiscoverResourcesWidget],
+			},
+		],
+	},
 	[ResourceTriplets.MLModel]: {
 		widget: MLModelServiceWidget,
 		apis: [{ id: 'metadata', label: 'Metadata', widgets: [MLModelServiceMetadataWidget] }],

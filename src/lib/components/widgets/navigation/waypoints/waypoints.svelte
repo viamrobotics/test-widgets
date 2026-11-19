@@ -2,8 +2,9 @@
 	import type { Waypoint as WaypointType } from '@viamrobotics/sdk'
 	import type { LngLat } from 'maplibre-gl'
 
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
+
 	import { MapLibreMarker, useMapLibreEvent } from '$lib/components/maplibre'
-	import { themeColor } from '$lib/theme-color'
 
 	interface Props {
 		waypoints: WaypointType[]

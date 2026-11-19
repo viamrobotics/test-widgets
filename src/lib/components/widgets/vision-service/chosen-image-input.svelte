@@ -17,7 +17,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { mdiPlayCircleOutline, mdiUpload } from '@mdi/js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
+	import { FileField } from '@viamrobotics/prime-controls'
 	import { Icon } from '@viamrobotics/prime-ui'
 
 	interface Props {
@@ -39,7 +40,7 @@
 
 	const isAcceptedType = (type: string): type is AcceptedType => ACCEPTED_TYPE_SET.has(type)
 
-	let input = $state<HTMLInputElement>()
+	let files = $state.raw<File[]>([])
 	let chosen = $state<ChosenImage>()
 	let readError = $state<string>()
 
@@ -63,13 +64,16 @@
 		}
 	}
 
-	const handleChange = async () => {
-		const file = input?.files?.[0]
-		if (file === undefined) {
-			return
-		}
+	const setFiles = async (next: File[] | undefined) => {
+		files = next ?? []
 		latestPick += 1
 		const pick = latestPick
+		const file = files[0]
+		if (file === undefined) {
+			chosen = undefined
+			readError = undefined
+			return
+		}
 		try {
 			const image = await readImage(file)
 			if (pick === latestPick) {
@@ -83,43 +87,17 @@
 			}
 		}
 	}
-
-	const fileLabel = $derived(chosen?.file.name ?? 'No image chosen')
 </script>
 
 <div class="flex flex-col gap-2">
-	<div class="flex flex-wrap items-center gap-2">
-		<input
-			bind:this={input}
-			type="file"
-			accept={ACCEPTED_TYPES.join(',')}
-			class="hidden"
-			tabindex="-1"
-			aria-hidden="true"
-			onchange={handleChange}
-		/>
-		<button
-			type="button"
-			class="button"
-			onclick={() => input?.click()}
-		>
-			<Icon
-				icon={mdiUpload}
-				size="sm"
-			/>
-			Choose image
-		</button>
-		{#if readError === undefined}
-			<p class="text-subtle-2 min-w-0 truncate text-xs">{fileLabel}</p>
-		{:else}
-			<p
-				role="alert"
-				class="text-danger-dark min-w-0 text-xs"
-			>
-				{readError}
-			</p>
-		{/if}
-	</div>
+	<FileField
+		label="Image"
+		placeholder="No image chosen"
+		accept={ACCEPTED_TYPES.join(',')}
+		state={readError === undefined ? undefined : 'error'}
+		hint={readError}
+		bind:value={() => files, setFiles}
+	/>
 
 	{@render children?.()}
 

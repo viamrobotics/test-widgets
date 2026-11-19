@@ -1,17 +1,59 @@
-export const MimeToCodec: Record<string, string> = {
-	'audio/mpeg': 'mp3',
-	'audio/mp3': 'mp3',
-	'audio/wav': 'wav',
-	'audio/x-wav': 'wav',
-	'audio/aac': 'aac',
-	'audio/ogg': 'opus',
-	'audio/flac': 'flac',
-	'audio/x-flac': 'flac',
+interface CodecFormat {
+	/** File extensions, without the dot, that hold this codec. */
+	extensions: string[]
+	/** MIME types a browser reports for files that hold this codec. */
+	mimeTypes: string[]
 }
 
-// Raw PCM formats have no standard MIME type; map by file extension directly.
-export const ExtToCodec: Record<string, string> = {
-	pcm16: 'pcm16',
-	pcm32: 'pcm32',
-	pcm32_float: 'pcm32_float',
+const CODEC_FORMATS: Record<string, CodecFormat> = {
+	mp3: { extensions: ['mp3'], mimeTypes: ['audio/mpeg', 'audio/mp3'] },
+	wav: { extensions: ['wav'], mimeTypes: ['audio/wav', 'audio/x-wav'] },
+	aac: { extensions: ['aac'], mimeTypes: ['audio/aac'] },
+	opus: { extensions: ['ogg'], mimeTypes: ['audio/ogg'] },
+	flac: { extensions: ['flac'], mimeTypes: ['audio/flac', 'audio/x-flac'] },
+	// Raw PCM formats have no standard MIME type; they map by file extension directly.
+	pcm16: { extensions: ['pcm16'], mimeTypes: [] },
+	pcm32: { extensions: ['pcm32'], mimeTypes: [] },
+	pcm32_float: { extensions: ['pcm32_float'], mimeTypes: [] },
+}
+
+const entries = Object.entries(CODEC_FORMATS)
+
+const MIME_TO_CODEC: Record<string, string> = Object.fromEntries(
+	entries.flatMap(([codec, format]) => format.mimeTypes.map((mime) => [mime, codec]))
+)
+
+const EXTENSION_TO_CODEC: Record<string, string> = Object.fromEntries(
+	entries
+		.filter(([, format]) => format.mimeTypes.length === 0)
+		.flatMap(([codec, format]) => format.extensions.map((extension) => [extension, codec]))
+)
+
+/**
+ * The codec an audio file holds, read from its MIME type, then an `audio/<extension>` type,
+ * then its extension.
+ *
+ * @returns The codec, or `undefined` when the file is not a format Play accepts.
+ */
+export const codecFromFile = (file: File): string | undefined => {
+	const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+	return (
+		MIME_TO_CODEC[file.type] ?? MIME_TO_CODEC[`audio/${extension}`] ?? EXTENSION_TO_CODEC[extension]
+	)
+}
+
+/**
+ * The `accept` value of a file input that offers `codecs`: each codec's extensions and MIME
+ * types. Codecs this module does not know add nothing.
+ *
+ * @returns The comma-separated list, or `undefined` when no offered codec is known, so the
+ *   input accepts any file.
+ */
+export const acceptForCodecs = (codecs: string[]): string | undefined => {
+	const tokens = codecs.flatMap((codec) => {
+		const format = CODEC_FORMATS[codec]
+		if (format === undefined) return []
+		return [...format.extensions.map((extension) => `.${extension}`), ...format.mimeTypes]
+	})
+	return tokens.length === 0 ? undefined : tokens.join(',')
 }

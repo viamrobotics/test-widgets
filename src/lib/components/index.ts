@@ -10,9 +10,13 @@ export { default as ArmMoveToPositionWidget } from './widgets/arm/move-to-positi
 export { default as ArmStopWidget } from './widgets/arm/stop-widget.svelte'
 
 export { default as AudioInputWidget } from './widgets/audio-input/audio-input.svelte'
+export { default as AudioInputControls } from './widgets/audio-input/audio-input-controls.svelte'
+export { default as AudioInputGetAudioWidget } from './widgets/audio-input/get-audio-widget.svelte'
 export { default as AudioInputGetPropertiesWidget } from './widgets/audio-input/get-properties-widget.svelte'
 
 export { default as AudioOutputWidget } from './widgets/audio-output/audio-output.svelte'
+export { default as AudioOutputControls } from './widgets/audio-output/audio-output-controls.svelte'
+export { default as AudioOutputPlayWidget } from './widgets/audio-output/play-widget.svelte'
 export { default as AudioOutputGetPropertiesWidget } from './widgets/audio-output/get-properties-widget.svelte'
 
 export { default as BaseWidget } from './widgets/base/base.svelte'
@@ -42,6 +46,8 @@ export type {
 	ComponentPreviewSnippet,
 } from './widgets/discovery/component-preview.ts'
 export { default as DiscoveryWidget } from './widgets/discovery/discovery.svelte'
+export { default as DiscoveryControls } from './widgets/discovery/discovery-controls.svelte'
+export { default as DiscoveryDiscoverResourcesWidget } from './widgets/discovery/discover-resources-widget.svelte'
 
 export { default as DoCommandWidget } from './widgets/do-command/do-command.svelte'
 export { default as ResourceDoCommandWidget } from './widgets/do-command/resource-do-command.svelte'

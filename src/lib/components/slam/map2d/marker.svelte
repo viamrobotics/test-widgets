@@ -14,8 +14,7 @@
 
 <script lang="ts">
 	import { T } from '@threlte/core'
-
-	import { themeColor } from '$lib/theme-color'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 
 	import { renderOrder } from './render-order'
 

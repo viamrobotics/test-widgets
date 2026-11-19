@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Badge } from '@viamrobotics/prime-core'
-
 	import { formatNumeric } from '$lib/format'
 
 	interface Props {
@@ -9,18 +7,20 @@
 
 	const { rtt }: Props = $props()
 
-	const getBadgeVariant = (currentRtt: number) => {
-		if (currentRtt < 50) {
-			return 'success'
+	/** Round trips under this many ms read as healthy. */
+	const SUCCESS_BELOW_MS = 50
+	/** Round trips under this many ms read as slow, and from here as failing. */
+	const WARNING_BELOW_MS = 500
+
+	const getBadgeClass = (currentRtt: number) => {
+		if (currentRtt < SUCCESS_BELOW_MS) {
+			return 'badge-success'
 		}
-		if (currentRtt < 500) {
-			return 'warning'
+		if (currentRtt < WARNING_BELOW_MS) {
+			return 'badge-warning'
 		}
-		return 'danger'
+		return 'badge-danger'
 	}
 </script>
 
-<Badge
-	label={`${formatNumeric(rtt, 0)} ms`}
-	variant={getBadgeVariant(rtt)}
-/>
+<span class={['badge', getBadgeClass(rtt)]}>RTT {formatNumeric(rtt, 0)} ms</span>

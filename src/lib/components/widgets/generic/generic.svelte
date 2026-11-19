@@ -26,18 +26,26 @@
 	})
 </script>
 
-<div class="flex flex-col py-2 pl-4">
-	<Section.Heading>
-		<Section.Method
-			method="DoCommand"
-			{api}
-		/>
-	</Section.Heading>
-</div>
+<Section.Scope
+	method="DoCommand"
+	{api}
+>
+	<div class="flex flex-col py-2 pl-4">
+		<Section.Heading>
+			<Section.Method
+				method="DoCommand"
+				{api}
+			/>
+			{#snippet aside()}
+				<Section.Errors />
+			{/snippet}
+		</Section.Heading>
+	</div>
 
-{#key genericResourceName}
-	<DoCommand
-		{partID}
-		resource={genericResourceName}
-	/>
-{/key}
+	{#key genericResourceName}
+		<DoCommand
+			{partID}
+			resource={genericResourceName}
+		/>
+	{/key}
+</Section.Scope>

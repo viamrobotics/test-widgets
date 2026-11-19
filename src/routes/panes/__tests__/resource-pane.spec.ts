@@ -5,7 +5,14 @@ import { describe, expect, it } from 'vitest'
 import { compositePane, entryPanes, resourcePaneMethod } from '../resource-pane'
 import { resourcePaneMinimum } from '../resource-pane-minimums'
 
-const SERVICE_SUBTYPES: ReadonlySet<string> = new Set(['motion', 'vision', 'navigation', 'slam'])
+const SERVICE_SUBTYPES: ReadonlySet<string> = new Set([
+	'motion',
+	'vision',
+	'navigation',
+	'slam',
+	'discovery',
+	'mlmodel',
+])
 
 const resource = (subtype: string, name: string): ResourceName => ({
 	namespace: 'rdk',
@@ -33,6 +40,10 @@ const camera = resource('camera', 'camera-1')
 const vision = resource('vision', 'vision-1')
 const navigation = resource('navigation', 'navigation-1')
 const slam = resource('slam', 'slam-1')
+const audioInput = resource('audio_in', 'audio-input-1')
+const audioOutput = resource('audio_out', 'audio-output-1')
+const discovery = resource('discovery', 'discovery-1')
+const mlModel = resource('mlmodel', 'ml-model-1')
 
 describe('Resource panes', () => {
 	it("offers an arm's composite and its six entries", () => {
@@ -122,6 +133,18 @@ describe('Resource panes', () => {
 		expect(moveToPosition && resourcePaneMethod(moveToPosition.data)).toBe('MoveToPosition')
 	})
 
+	it('makes metadata an api pane and no pane of ml-model-1 a control', () => {
+		expect(entryPanes(mlModel).map(({ data }) => data.kind)).toEqual(['api'])
+	})
+
+	it('makes play and get-properties api panes of audio-output-1', () => {
+		const kinds = Object.fromEntries(
+			entryPanes(audioOutput).map((pane) => [pane.id, pane.data.kind])
+		)
+		expect(kinds['audio-output-1::play']).toBe('api')
+		expect(kinds['audio-output-1::get-properties']).toBe('api')
+	})
+
 	it('offers motion its composite only', () => {
 		expect(compositePane(motion)?.id).toBe('motion-1::composite')
 		expect(entryPanes(motion)).toEqual([])
@@ -130,6 +153,9 @@ describe('Resource panes', () => {
 	it.each([
 		['navigation-1::controls', navigation],
 		['slam-1::controls', slam],
+		['audio-input-1::controls', audioInput],
+		['discovery-1::controls', discovery],
+		['audio-output-1::controls', audioOutput],
 	])('makes %s a control pane', (id, target) => {
 		const pane = entryPanes(target).find((candidate) => candidate.id === id)
 		expect(pane?.data.kind).toBe('control')
@@ -224,6 +250,19 @@ describe('Resource panes', () => {
 		['slam-1::get-position', 225, 351],
 		['slam-1::get-point-cloud-map', 167, 145],
 		['slam-1::get-properties', 246, 241],
+		['audio-input-1::composite', 78, 404],
+		['audio-input-1::controls', 110, 267],
+		['audio-input-1::get-audio', 284, 183],
+		['audio-input-1::get-properties', 239, 147],
+		['discovery-1::composite', 191, 123],
+		['discovery-1::controls', 219, 467],
+		['discovery-1::discover-resources', 172, 127],
+		['ml-model-1::composite', 288, 491],
+		['ml-model-1::metadata', 288, 461],
+		['audio-output-1::composite', 78, 450],
+		['audio-output-1::controls', 116, 200],
+		['audio-output-1::play', 254, 229],
+		['audio-output-1::get-properties', 239, 147],
 	])("snaps %s to its board's minimum", (id, width, height) => {
 		const pane = [
 			compositePane(arm),
@@ -254,6 +293,14 @@ describe('Resource panes', () => {
 			...entryPanes(navigation),
 			compositePane(slam),
 			...entryPanes(slam),
+			compositePane(audioInput),
+			...entryPanes(audioInput),
+			compositePane(discovery),
+			...entryPanes(discovery),
+			compositePane(mlModel),
+			...entryPanes(mlModel),
+			compositePane(audioOutput),
+			...entryPanes(audioOutput),
 		].find((candidate) => candidate?.id === id)
 		expect(pane && resourcePaneMinimum(pane.data)).toEqual({ width, height })
 	})

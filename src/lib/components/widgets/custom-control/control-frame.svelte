@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { GuestLayout } from '@viamrobotics/post-message-sdk/host'
 	import type { Snippet } from 'svelte'
 
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
@@ -13,15 +14,20 @@
 		resourceName: string
 		html: string
 		loading?: Snippet
+		onLayout?: (layout: GuestLayout) => void
 	}
 
-	const { partID, resourceName, html, loading }: Props = $props()
+	const { partID, resourceName, html, loading, onLayout }: Props = $props()
 
 	const robot = useRobotClient(() => partID)
 	const srcdoc = $derived(prepareArtifact(html))
 
 	let iframe = $state<HTMLIFrameElement | null>(null)
 	let height = $state<number>()
+	let layout = $state<GuestLayout>({})
+
+	const toPixels = (length: number | undefined) =>
+		length === undefined ? undefined : `${length}px`
 
 	const controlHost = createControlHost({
 		getRobot: () => robot.current,
@@ -29,6 +35,10 @@
 		resourceName: () => resourceName,
 		onHeight: (px) => {
 			height = px
+		},
+		onLayout: (bounded) => {
+			layout = bounded
+			onLayout?.(bounded)
 		},
 	})
 
@@ -43,8 +53,10 @@
 		bind:this={iframe}
 		sandbox="allow-scripts"
 		title="Custom control for {resourceName}"
-		class="block h-40 max-h-[80vh] min-h-px w-full border-0"
-		style:height={height === undefined ? undefined : `${height}px`}
+		class="block h-40 min-h-px w-full border-0"
+		style:height={toPixels(height)}
+		style:min-width={toPixels(layout.minWidth)}
+		style:min-height={toPixels(layout.minHeight)}
 		{srcdoc}
 	></iframe>
 

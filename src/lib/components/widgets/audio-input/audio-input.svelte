@@ -1,18 +1,8 @@
 <script lang="ts">
-	import { Button, Label, NumericInput, Select } from '@viamrobotics/prime-core'
-	import { AudioInClient } from '@viamrobotics/sdk'
-	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import Properties from '$lib/components/audio-properties.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import { Section } from '$lib/components/section'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
-	import { createAudioCapturer } from './create-audio-capturer.svelte.ts'
+	import GetAudioWidget from './get-audio-widget.svelte'
+	import GetPropertiesWidget from './get-properties-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -20,140 +10,20 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const refetchInterval = createRefetchIntervalStore(
-		() => partID,
-		() => resourceName,
-		'audio-input'
-	)
-
-	const client = createResourceClient(
-		AudioInClient,
-		() => partID,
-		() => resourceName
-	)
-
-	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
-		refetchInterval: refetchInterval.current,
-	}))
-
-	let captureCodec = $state('')
-	let captureDuration = $state(3)
-
-	const capture = createAudioCapturer(client)
-
-	const availableCodecs = $derived(
-		propertiesQuery.data?.supportedCodecs.length ? propertiesQuery.data.supportedCodecs : ['pcm16']
-	)
-
-	const selectedCodec = $derived(captureCodec || availableCodecs[0]!)
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="p-4 pb-3">
-			<RefetchController
-				{refetchInterval}
-				queries={[propertiesQuery]}
-			/>
-		</div>
-
 		<div class="@container">
-			<div class="flex flex-col divide-y @2xl:flex-row @2xl:divide-x @2xl:divide-y-0">
-				<div class="flex w-full flex-col divide-y">
-					<ApiSection
-						method="GetAudio"
-						api={ResourceTriplets.AudioInput}
-						mutations={[capture]}
-						class="flex-row flex-wrap gap-2"
-					>
-						{#snippet subheading()}
-							<Section.Text>Capture audio from the device</Section.Text>
-						{/snippet}
-						<div class="flex grow flex-wrap justify-between gap-2">
-							<div class="flex flex-col gap-2">
-								<Label cx="gap-1 text-xs">
-									Codec
-									<Select
-										slot="input"
-										value={selectedCodec}
-										on:change={(e) => {
-											captureCodec = (e.target as HTMLSelectElement).value
-										}}
-									>
-										{#each availableCodecs as codec (codec)}
-											<option value={codec}>{codec}</option>
-										{/each}
-									</Select>
-								</Label>
-								<Label cx="gap-1 text-xs">
-									Duration (seconds, 0 = stream until stopped)
-									<NumericInput
-										slot="input"
-										value={captureDuration}
-										on:change={(e) => {
-											captureDuration = numberValueFromEvent(e) ?? 3
-										}}
-									/>
-								</Label>
-							</div>
-
-							<div class="mt-auto flex flex-col items-start gap-2">
-								{#if capture.status === 'recording'}
-									<p class="font-roboto-mono text-subtle-1 text-xs">
-										{(capture.totalBytes / 1024).toFixed(1)} kB captured
-									</p>
-									<Button
-										icon="stop-circle-outline"
-										onclick={capture.stop}
-									>
-										Stop
-									</Button>
-								{:else}
-									{#if capture.downloadUrl}
-										<p class="font-roboto-mono text-subtle-1 text-xs">
-											{(capture.totalBytes / 1024).toFixed(1)} kB captured
-										</p>
-										<a
-											href={capture.downloadUrl}
-											download="audio-capture.{selectedCodec}"
-											rel="external"
-										>
-											<Button icon="download">Download</Button>
-										</a>
-									{/if}
-									<Button
-										icon="play-circle-outline"
-										onclick={() => capture.start(selectedCodec, captureDuration)}
-										disabled={!client.current}
-									>
-										{capture.status === 'done' ? 'Capture Again' : 'Start Capture'}
-									</Button>
-								{/if}
-							</div>
-						</div>
-					</ApiSection>
-				</div>
-
-				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
-					<ApiSection
-						method="GetProperties"
-						api={ResourceTriplets.AudioInput}
-						queries={[propertiesQuery]}
-						class="relative grow flex-col gap-4"
-					>
-						{#snippet subheading()}
-							<Section.Text>Audio input properties</Section.Text>
-						{/snippet}
-						{#if propertiesQuery.data !== undefined}
-							<Properties
-								supportedCodecs={propertiesQuery.data.supportedCodecs}
-								sampleRateHz={propertiesQuery.data.sampleRateHz}
-								numChannels={propertiesQuery.data.numChannels}
-							/>
-						{/if}
-					</ApiSection>
-				</div>
+			<div class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-y-0">
+				<GetAudioWidget
+					{partID}
+					{resourceName}
+				/>
+				<GetPropertiesWidget
+					{partID}
+					{resourceName}
+				/>
 			</div>
 		</div>
 	{/snippet}

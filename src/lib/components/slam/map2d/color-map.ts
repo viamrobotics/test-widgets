@@ -1,6 +1,5 @@
+import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 import { type BufferAttribute, Color, Vector3 } from 'three'
-
-import { themeColor } from '$lib/theme-color'
 
 /*
  * this color map is greyscale. The color map is being used map probability values of a PCD
