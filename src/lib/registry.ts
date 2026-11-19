@@ -28,6 +28,10 @@ import {
 	BaseWidget,
 	BoardWidget,
 	ButtonWidget,
+	CameraControls,
+	CameraGetImagesWidget,
+	CameraGetPointCloudWidget,
+	CameraGetPropertiesWidget,
 	CameraWidget,
 	DiscoveryWidget,
 	EncoderGetPositionWidget,
@@ -76,6 +80,14 @@ import {
 	SlamGetPositionWidget,
 	SlamWidget,
 	SwitchWidget,
+	VisionServiceCaptureAllFromCameraWidget,
+	VisionServiceControls,
+	VisionServiceGetClassificationsFromCameraWidget,
+	VisionServiceGetClassificationsWidget,
+	VisionServiceGetDetectionsFromCameraWidget,
+	VisionServiceGetDetectionsWidget,
+	VisionServiceGetObjectPointCloudsWidget,
+	VisionServiceGetPropertiesWidget,
 	VisionServiceWidget,
 } from './components/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
@@ -137,7 +149,15 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	},
 	[ResourceTriplets.Board]: { widget: BoardWidget, apis: [] },
 	[ResourceTriplets.Button]: { widget: ButtonWidget, apis: [] },
-	[ResourceTriplets.Camera]: { widget: CameraWidget, apis: [] },
+	[ResourceTriplets.Camera]: {
+		widget: CameraWidget,
+		apis: [
+			{ id: 'controls', label: 'Controls', widgets: [CameraControls] },
+			{ id: 'get-images', label: 'GetImages', widgets: [CameraGetImagesWidget] },
+			{ id: 'get-point-cloud', label: 'GetPointCloud', widgets: [CameraGetPointCloudWidget] },
+			{ id: 'get-properties', label: 'GetProperties', widgets: [CameraGetPropertiesWidget] },
+		],
+	},
 	[ResourceTriplets.Encoder]: {
 		widget: EncoderWidget,
 		apis: [{ id: 'get-position', label: 'GetPosition', widgets: [EncoderGetPositionWidget] }],
@@ -229,7 +249,39 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: SlamWidget,
 		apis: [{ id: 'get-position', label: 'GetPosition', widgets: [SlamGetPositionWidget] }],
 	},
-	[ResourceTriplets.Vision]: { widget: VisionServiceWidget, apis: [] },
+	[ResourceTriplets.Vision]: {
+		widget: VisionServiceWidget,
+		apis: [
+			{ id: 'controls', label: 'Controls', widgets: [VisionServiceControls] },
+			{
+				id: 'capture-all-from-camera',
+				label: 'CaptureAllFromCamera',
+				widgets: [VisionServiceCaptureAllFromCameraWidget],
+			},
+			{ id: 'get-properties', label: 'GetProperties', widgets: [VisionServiceGetPropertiesWidget] },
+			{
+				id: 'get-object-point-clouds',
+				label: 'GetObjectPointClouds',
+				widgets: [VisionServiceGetObjectPointCloudsWidget],
+			},
+			{
+				id: 'get-detections-from-camera',
+				label: 'GetDetectionsFromCamera',
+				widgets: [VisionServiceGetDetectionsFromCameraWidget],
+			},
+			{
+				id: 'get-classifications-from-camera',
+				label: 'GetClassificationsFromCamera',
+				widgets: [VisionServiceGetClassificationsFromCameraWidget],
+			},
+			{ id: 'get-detections', label: 'GetDetections', widgets: [VisionServiceGetDetectionsWidget] },
+			{
+				id: 'get-classifications',
+				label: 'GetClassifications',
+				widgets: [VisionServiceGetClassificationsWidget],
+			},
+		],
+	},
 }
 
 /**

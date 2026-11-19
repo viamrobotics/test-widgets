@@ -31,6 +31,10 @@ export { default as ButtonWidget } from './widgets/button/button.svelte'
 export { default as ButtonPushWidget } from './widgets/button/push.svelte'
 
 export { default as CameraWidget } from './widgets/camera/camera.svelte'
+export { default as CameraControls } from './widgets/camera/camera-controls.svelte'
+export { default as CameraGetImagesWidget } from './widgets/camera/get-images-widget.svelte'
+export { default as CameraGetPointCloudWidget } from './widgets/camera/get-point-cloud-widget.svelte'
+export { default as CameraGetPropertiesWidget } from './widgets/camera/get-properties-widget.svelte'
 export { default as LiveOrPollingVideo } from './widgets/camera/live-or-polling-video.svelte'
 
 export type {
@@ -112,6 +116,14 @@ export { default as SwitchWidget } from './widgets/switch/switch.svelte'
 export { labelToColor } from './widgets/vision-service/color'
 export { getImageSize, type Size } from './widgets/vision-service/get-image-size'
 export { default as VisionServiceWidget } from './widgets/vision-service/vision-service.svelte'
+export { default as VisionServiceControls } from './widgets/vision-service/vision-service-controls.svelte'
+export { default as VisionServiceCaptureAllFromCameraWidget } from './widgets/vision-service/capture-all-from-camera-widget.svelte'
+export { default as VisionServiceGetPropertiesWidget } from './widgets/vision-service/get-properties-widget.svelte'
+export { default as VisionServiceGetObjectPointCloudsWidget } from './widgets/vision-service/get-object-point-clouds-widget.svelte'
+export { default as VisionServiceGetDetectionsFromCameraWidget } from './widgets/vision-service/get-detections-from-camera-widget.svelte'
+export { default as VisionServiceGetClassificationsFromCameraWidget } from './widgets/vision-service/get-classifications-from-camera-widget.svelte'
+export { default as VisionServiceGetDetectionsWidget } from './widgets/vision-service/get-detections-widget.svelte'
+export { default as VisionServiceGetClassificationsWidget } from './widgets/vision-service/get-classifications-widget.svelte'
 
 export { default as RefetchController } from './refetch-controller.svelte'
 

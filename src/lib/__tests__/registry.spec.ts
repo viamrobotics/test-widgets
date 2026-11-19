@@ -41,7 +41,7 @@ describe('availableAPIWidgets', () => {
 	})
 
 	it('maps a resource with a card but no API widgets to an empty list', () => {
-		expect(availableAPIWidgets()['rdk:component:camera']).toEqual([])
+		expect(availableAPIWidgets()['rdk:component:board']).toEqual([])
 	})
 
 	it('registers the motion service as widget-only (no standalone API widgets)', () => {
@@ -81,7 +81,7 @@ describe('apiWidgetsForResource', () => {
 	})
 
 	it('returns an empty list for a recognized resource with no API widgets', () => {
-		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'camera'))).toEqual([])
+		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'board'))).toEqual([])
 	})
 
 	it('keeps the servo ids the app persists, with get-position and stop added last', () => {

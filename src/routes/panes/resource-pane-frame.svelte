@@ -79,7 +79,7 @@
 							size="sm"
 							class="text-subtle-2 shrink-0"
 						/>
-						<span class="shrink-0"><Section.Method /></span>
+						<span class="min-w-0 truncate"><Section.Method /></span>
 					</h2>
 				{:else}
 					<h2 class="min-w-0 flex-1 truncate px-1 font-semibold in-data-stacked:hidden">

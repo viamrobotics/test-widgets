@@ -5,8 +5,6 @@
 	import { Canvas } from '@threlte/core'
 	import { Folder, Panel } from '@viamrobotics/prime-controls'
 	import { Progress } from '@viamrobotics/prime-ui'
-	import { useResizeObserver } from 'runed'
-	import { untrack } from 'svelte'
 	import { provideFontFamilies } from 'threlte-uikit'
 
 	import type {
@@ -64,7 +62,6 @@
 
 	const img = document.createElement('img')
 
-	let src = $state('')
 	let naturalSize = $state<{ width: number; height: number }>()
 
 	const pictureInPictureCanvas = document.createElement('canvas')
@@ -77,9 +74,12 @@
 		pictureInPictureCanvas.getContext('2d')?.drawImage(img, 0, 0)
 	}
 
+	const fps = useMeasureFps()
+
+	// Each frame arrives as a new source, so a load is one frame for the fps badge.
 	const handleImageLoad = () => {
+		fps.measure()
 		naturalSize = { width: img.naturalWidth, height: img.naturalHeight }
-		setSize()
 		drawPictureInPictureFrame()
 	}
 
@@ -92,23 +92,25 @@
 		for (const track of pictureInPictureStream?.getTracks() ?? []) track.stop()
 	})
 
-	let url = ''
-
 	const getImageSrc = (image: string | Uint8Array | undefined) => {
 		if (typeof image === 'string') {
 			return `data:image/jpeg;base64,${image}`
 		} else if (image !== undefined) {
-			URL.revokeObjectURL(url)
-			url = URL.createObjectURL(new Blob([new Uint8Array(image)], { type: 'image/jpeg' }))
-			return url
+			return URL.createObjectURL(new Blob([new Uint8Array(image)], { type: 'image/jpeg' }))
 		}
 
 		return ''
 	}
 
+	const src = $derived(getImageSrc(data?.image?.image))
+
+	// The hidden element decodes each frame for its natural size, the screenshot, and picture-in-picture.
 	$effect.pre(() => {
-		img.src = getImageSrc(data?.image?.image)
-		src = img.src
+		const frameSrc = src
+		img.src = frameSrc
+		return () => {
+			if (frameSrc.startsWith('blob:')) URL.revokeObjectURL(frameSrc)
+		}
 	})
 
 	provideFontFamilies({
@@ -119,54 +121,24 @@
 		},
 	})
 
-	let container = $state<HTMLElement>()
-	let size = $state<Size>()
+	let containerWidth = $state(0)
 
 	// Tailwind's @2xl container width: the legend starts open from it and collapsed below it.
 	const LEGEND_OPEN_WIDTH_PX = 672
 
-	let isWide = $state<boolean>()
-	let isLegendOpen = $state(false)
+	const isWide = $derived(containerWidth >= LEGEND_OPEN_WIDTH_PX)
 
-	useResizeObserver(
-		() => container,
-		() => {
-			setSize()
-		}
-	)
-
-	const followBreakpoint = (width: number) => {
-		const nextIsWide = width >= LEGEND_OPEN_WIDTH_PX
-		if (nextIsWide === isWide) return
-		isWide = nextIsWide
-		isLegendOpen = nextIsWide
-	}
+	// Follows the breakpoint, and a person's toggle holds until the width crosses it again.
+	let isLegendOpen = $derived(isWide)
 
 	// The frame's media box spans its width at the image's ratio, so the boxes scale by the same factor.
-	const setSize = () => {
-		if (!container) return
-		const width = container.clientWidth
-		followBreakpoint(width)
-		if (img.naturalWidth === 0 || img.naturalHeight === 0) return
-		size = getImageSize(img, {
-			maxWidth: width,
-			maxHeight: (width * img.naturalHeight) / img.naturalWidth,
+	const size = $derived.by((): Size | undefined => {
+		if (!naturalSize || naturalSize.width === 0 || naturalSize.height === 0) return undefined
+		if (containerWidth === 0) return undefined
+		return getImageSize(img, {
+			maxWidth: containerWidth,
+			maxHeight: (containerWidth * naturalSize.height) / naturalSize.width,
 		})
-	}
-
-	$effect(() => {
-		void container
-		untrack(setSize)
-	})
-
-	const fps = useMeasureFps()
-
-	let lastSrc = ''
-	$effect(() => {
-		if (src !== lastSrc) {
-			fps.measure()
-			lastSrc = src
-		}
 	})
 
 	const aspectRatio = $derived(
@@ -215,7 +187,7 @@
 {#snippet media()}
 	<div
 		class="flex size-full items-center justify-center"
-		bind:this={container}
+		bind:clientWidth={containerWidth}
 	>
 		{#if size}
 			<div
@@ -256,7 +228,12 @@
 		>
 			<Folder
 				title="Legend"
-				bind:open={isLegendOpen}
+				bind:open={
+					() => isLegendOpen,
+					(open) => {
+						isLegendOpen = open
+					}
+				}
 			>
 				<Legend
 					classifications={data?.classifications}

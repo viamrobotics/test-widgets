@@ -4,16 +4,20 @@
 
 	import { T, useThrelte } from '@threlte/core'
 	import { OrbitControls } from '@threlte/extras'
-	import { Color } from 'three'
+	import { Color, Vector4 } from 'three'
 	import { PCDLoader } from 'three/examples/jsm/loaders/PCDLoader.js'
+
+	import type { MediaFrameCapture } from '$lib/components/media-frame/media-frame-capture'
 
 	interface Props {
 		object: PointCloudObject
+		/** Set by the scene to a function that captures this view as a PNG. Bind it to read it. */
+		capture?: () => Promise<MediaFrameCapture>
 	}
 
-	const { object }: Props = $props()
+	let { object, capture = $bindable() }: Props = $props()
 
-	const { scene, invalidate } = useThrelte()
+	const { scene, invalidate, renderer, camera, dom, canvas } = useThrelte()
 	scene.background = new Color(0xe0_e0_e0)
 
 	const loader = new PCDLoader()
@@ -51,6 +55,56 @@
 			invalidate()
 		}
 	})
+
+	const drawViewOnly = (left: number, bottom: number, width: number, height: number) => {
+		const viewport = renderer.getViewport(new Vector4())
+		const scissor = renderer.getScissor(new Vector4())
+		const scissorTest = renderer.getScissorTest()
+
+		renderer.setViewport(left, bottom, width, height)
+		renderer.setScissor(left, bottom, width, height)
+		renderer.setScissorTest(true)
+		renderer.render(scene, camera.current)
+
+		renderer.setViewport(viewport)
+		renderer.setScissor(scissor)
+		renderer.setScissorTest(scissorTest)
+	}
+
+	// Every view shares one on-demand canvas, which clears its buffer once shown, so this draws the
+	// view and copies its cell in the same task, then redraws the rest.
+	const captureView = async (): Promise<MediaFrameCapture> => {
+		const cell = dom.getBoundingClientRect()
+		const bounds = canvas.getBoundingClientRect()
+		const left = cell.left - bounds.left
+		const top = cell.top - bounds.top
+		const pixelRatio = renderer.getPixelRatio()
+
+		drawViewOnly(left, bounds.bottom - cell.bottom, cell.width, cell.height)
+
+		const width = Math.round(cell.width * pixelRatio)
+		const height = Math.round(cell.height * pixelRatio)
+		const image = new OffscreenCanvas(width, height)
+		const context = image.getContext('2d')
+		if (!context) throw new Error('No 2D context to copy the object point cloud into')
+		context.drawImage(
+			canvas,
+			left * pixelRatio,
+			top * pixelRatio,
+			width,
+			height,
+			0,
+			0,
+			width,
+			height
+		)
+		invalidate()
+
+		const blob = await image.convertToBlob({ type: 'image/png' })
+		return { binaryData: new Uint8Array(await blob.arrayBuffer()), mimeType: blob.type }
+	}
+
+	capture = captureView
 </script>
 
 <T.PerspectiveCamera

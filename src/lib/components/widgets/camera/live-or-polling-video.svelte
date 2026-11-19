@@ -8,6 +8,7 @@
 	import { useResizeObserver } from 'runed'
 	import { untrack } from 'svelte'
 
+	import { toError } from '$lib/components/media-frame/to-error'
 	import Progress from '$lib/components/progress.svelte'
 	import { Section } from '$lib/components/section'
 	import { formatNumeric } from '$lib/format'
@@ -61,7 +62,9 @@
 
 	let videoElement = $state.raw<HTMLVideoElement>()
 	let isStreamLoading = $state(false)
-	let streamError: Error | null
+	let streamError = $state.raw<Error>()
+	// A polled frame that could not be decoded, cleared by the next frame that could.
+	let frameError = $state.raw<Error>()
 	let vfcID = 0
 	let liveStreamStart: DOMHighResTimeStamp | undefined
 
@@ -133,14 +136,13 @@
 	const disableStream = async () => {
 		try {
 			isStreamLoading = false
-			streamError = null
 			const last = streamClient
 			streamClient = undefined
 			last?.off('track', handleTrack)
 			await last?.remove(resourceName)
 			liveStreamStart = undefined
 		} catch (nextError: unknown) {
-			lastError = nextError as Error
+			streamError = toError(nextError)
 		}
 	}
 
@@ -152,6 +154,7 @@
 
 	const startStream = async (robotClient: RobotClient, name: string, live: boolean) => {
 		try {
+			streamError = undefined
 			await disableStream()
 			// Don't setMediaStream(null) here or else the PiP thrashes.
 
@@ -172,12 +175,18 @@
 				setMediaStream(canvas.captureStream())
 			}
 		} catch (nextError) {
-			streamError = nextError as Error
+			streamError = toError(nextError)
 		}
 	}
 
+	const pollingError = $derived(error ?? frameError)
+	// One overlay shows the live stream's error while Live, and the polling query's or the frame decode's otherwise.
+	const lastError = $derived(isLive ? streamError : pollingError)
+
+	// A polling error pauses the stream until it clears. A live stream error stays until the stream's inputs change.
 	$effect(() => {
-		if (client.current && !lastError) {
+		const isPollingBlocked = !isLive && pollingError !== undefined
+		if (client.current && !isPollingBlocked) {
 			void startStream(client.current, resourceName, isLive)
 		}
 	})
@@ -192,15 +201,14 @@
 			})
 	})
 
+	const stopStream = async () => {
+		await disableStream()
+		setMediaStream(null)
+	}
+
 	$effect(() => {
 		if (lastError) {
-			disableStream()
-				.then(() => {
-					setMediaStream(null)
-				})
-				.catch((nextError: unknown) => {
-					lastError = nextError as Error
-				})
+			void stopStream()
 		}
 	})
 
@@ -212,38 +220,43 @@
 		}
 	})
 
+	interface FrameDraw {
+		cancelled: boolean
+		objectUrl?: string
+	}
+
+	const decodeFrame = async (bytes: Uint8Array, mimeType: string) => {
+		if (mimeType !== VIAM_DEPTH_MIME_TYPE) {
+			return new Blob([new Uint8Array(bytes)], { type: mimeType || 'image/jpeg' })
+		}
+		return getBlobForViamDepth(bytes)
+	}
+
+	// Writes the decode result from the promise, after the effect that started it has returned.
+	const drawFrame = async (bytes: Uint8Array, mimeType: string, draw: FrameDraw) => {
+		const blob = await decodeFrame(bytes, mimeType)
+		if (draw.cancelled) return
+		if (!blob) {
+			frameError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
+			return
+		}
+		frameError = undefined
+		draw.objectUrl = URL.createObjectURL(blob)
+		img.src = draw.objectUrl
+	}
+
 	$effect(() => {
 		const matchingImage = pickImageForSource(data?.images, sourceName)
 		if (!matchingImage?.image) {
 			return
 		}
 
-		const bytes = new Uint8Array(matchingImage.image)
-		let cancelled = false
-		let objectUrl: string | undefined
-
-		const render = async () => {
-			let blob: Blob | undefined
-			if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
-				blob = await getBlobForViamDepth(bytes)
-				if (!blob) {
-					lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
-					return
-				}
-			} else {
-				blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
-			}
-			if (cancelled) return
-			lastError = undefined
-			objectUrl = URL.createObjectURL(blob)
-			img.src = objectUrl
-		}
-
-		void render()
+		const draw: FrameDraw = { cancelled: false }
+		void drawFrame(new Uint8Array(matchingImage.image), matchingImage.mimeType, draw)
 
 		return () => {
-			cancelled = true
-			if (objectUrl) URL.revokeObjectURL(objectUrl)
+			draw.cancelled = true
+			if (draw.objectUrl) URL.revokeObjectURL(draw.objectUrl)
 		}
 	})
 
@@ -311,18 +324,6 @@
 
 		id = videoElement?.requestVideoFrameCallback?.(measure)
 		return () => id && videoElement?.cancelVideoFrameCallback(id)
-	})
-
-	// Errors are null during loading, so keep the latest errors during polling.
-	let lastError = $state.raw<Error>()
-	$effect(() => {
-		if (!isLive && error) {
-			lastError = error
-		} else if (isLive && streamError) {
-			lastError = streamError
-		} else {
-			lastError = undefined
-		}
 	})
 </script>
 
