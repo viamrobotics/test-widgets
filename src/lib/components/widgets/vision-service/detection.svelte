@@ -4,6 +4,7 @@
 
 	import { lightTextColors } from './color'
 	import { type Detection, useDetections } from './context.svelte'
+	import { BOX_BORDER_WIDTH_PX, INACTIVE_BOX_COLOR } from './draw-detection-boxes'
 
 	const { size } = useThrelte()
 
@@ -35,8 +36,8 @@
 	positionType="absolute"
 	positionLeft={factoredxMin}
 	positionTop={factoredyMin}
-	borderColor={isActive ? detection.color : '#aaa'}
-	borderWidth={2}
+	borderColor={isActive ? detection.color : INACTIVE_BOX_COLOR}
+	borderWidth={BOX_BORDER_WIDTH_PX}
 	width={factoredxMax - factoredxMin}
 	height={factoredyMax - factoredyMin}
 	onpointerenter={() => {

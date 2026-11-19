@@ -1,16 +1,31 @@
 <script lang="ts">
 	import type { GeometriesInFrame, Geometry } from '@viamrobotics/sdk'
 
-	import { Expandable, Icon } from '@viamrobotics/prime-core'
+	import { Folder } from '@viamrobotics/prime-controls'
 
 	interface Props {
 		geometries: GeometriesInFrame
 	}
 
+	interface Cell {
+		tag: string
+		value: string
+	}
+
+	interface Group {
+		label: string
+		unit: string
+		cells: Cell[]
+	}
+
 	const { geometries }: Props = $props()
 
+	const id = $props.id()
+
+	const MISSING_VALUE = '-'
+
 	const formatNumber = (value: number | undefined): string => {
-		if (value === undefined) return '—'
+		if (value === undefined) return MISSING_VALUE
 		return value.toFixed(3)
 	}
 
@@ -22,32 +37,44 @@
 		return `${typeCase} ${index}`
 	}
 
-	const getDimensionsDisplay = (geometry: Geometry): { label: string; value: string[] }[] => {
+	const getShapeGroups = (geometry: Geometry): Group[] => {
 		const { geometryType } = geometry
 
 		switch (geometryType.case) {
 			case 'box': {
-				const box = geometryType.value
+				const dims = geometryType.value.dimsMm
 				return [
 					{
 						label: 'Dimensions',
-						value: [
-							`x: ${formatNumber(box.dimsMm?.x)}mm`,
-							`y: ${formatNumber(box.dimsMm?.y)}mm`,
-							`z: ${formatNumber(box.dimsMm?.z)}mm`,
+						unit: 'mm',
+						cells: [
+							{ tag: 'X', value: formatNumber(dims?.x) },
+							{ tag: 'Y', value: formatNumber(dims?.y) },
+							{ tag: 'Z', value: formatNumber(dims?.z) },
 						],
 					},
 				]
 			}
 			case 'sphere': {
-				const sphere = geometryType.value
-				return [{ label: 'Radius', value: [`${formatNumber(sphere.radiusMm)}mm`] }]
+				return [
+					{
+						label: 'Radius',
+						unit: 'mm',
+						cells: [{ tag: 'R', value: formatNumber(geometryType.value.radiusMm) }],
+					},
+				]
 			}
 			case 'capsule': {
 				const capsule = geometryType.value
 				return [
-					{ label: 'Radius', value: [`${formatNumber(capsule.radiusMm)}mm`] },
-					{ label: 'Length', value: [`${formatNumber(capsule.lengthMm)}mm`] },
+					{
+						label: 'Capsule',
+						unit: 'mm',
+						cells: [
+							{ tag: 'Radius', value: formatNumber(capsule.radiusMm) },
+							{ tag: 'Length', value: formatNumber(capsule.lengthMm) },
+						],
+					},
 				]
 			}
 			default: {
@@ -55,62 +82,72 @@
 			}
 		}
 	}
+
+	const getGroups = (geometry: Geometry): Group[] => {
+		const { center } = geometry
+		const groups = getShapeGroups(geometry)
+		if (!center) return groups
+		return [
+			...groups,
+			{
+				label: 'Position',
+				unit: 'mm',
+				cells: [
+					{ tag: 'X', value: formatNumber(center.x) },
+					{ tag: 'Y', value: formatNumber(center.y) },
+					{ tag: 'Z', value: formatNumber(center.z) },
+				],
+			},
+			{
+				label: 'Rotation',
+				unit: '°',
+				cells: [{ tag: 'θ', value: formatNumber(center.theta) }],
+			},
+		]
+	}
 </script>
 
-<div class="flex flex-col gap-1 p-2">
+<div class="flex flex-col gap-2">
 	{#each geometries.geometries as geometry, index (`${index}:${geometry.label}`)}
-		<Expandable
-			class="border-light border"
-			triggerClass="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium hover:bg-gray-50"
-			contentClass="px-3 pb-3"
+		<Folder
+			title={getGeometryLabel(geometry, index)}
+			open={index === 0}
 		>
-			{#snippet trigger({ isOpen })}
-				<Icon
-					name={isOpen ? 'chevron-down' : 'chevron-right'}
-					cx="h-4 w-4 shrink-0 text-gray-500"
-				/>
-				<span class="truncate">{getGeometryLabel(geometry, index)}</span>
-			{/snippet}
-			{#snippet content()}
-				<dl class="text-subtle-1 flex flex-col gap-1 text-sm">
-					{#each getDimensionsDisplay(geometry) as { label, value } (label)}
-						<div class="flex flex-col gap-0.5">
-							<dt class="font-bold">{label}</dt>
-							<dd class="flex flex-col pl-2 font-mono">
-								{#each value as v, i (i)}
-									<span>{v}</span>
-								{/each}
-							</dd>
+			<div class="flex flex-col gap-2">
+				{#each getGroups(geometry) as group (group.label)}
+					<div
+						role="group"
+						aria-label={group.label}
+						class="flex flex-col gap-1"
+					>
+						<span class="text-subtle-1 text-xs">{group.label}</span>
+						<div class="grid min-w-0 grid-cols-3 gap-1">
+							{#each group.cells as cell (cell.tag)}
+								<div class="flex min-w-0 flex-col gap-1">
+									<span
+										id="{id}-{index}-{group.label}-{cell.tag}"
+										class="text-subtle-1 truncate text-xs">{cell.tag}</span
+									>
+									<span
+										role="group"
+										aria-labelledby="{id}-{index}-{group.label}-{cell.tag}"
+										class="readout font-roboto-mono"
+									>
+										<span class="readout-value">{cell.value}</span>
+										<span class="readout-suffix">{group.unit}</span>
+									</span>
+								</div>
+							{/each}
 						</div>
-					{/each}
-
-					{#if geometry.center}
-						<div class="flex flex-col gap-0.5">
-							<dt class="font-bold">Position</dt>
-							<dd class="flex flex-col pl-2 font-mono">
-								<span>x: {formatNumber(geometry.center.x)}</span>
-								<span>y: {formatNumber(geometry.center.y)}</span>
-								<span>z: {formatNumber(geometry.center.z)}</span>
-							</dd>
-						</div>
-					{/if}
-
-					{#if geometry.center?.theta}
-						<div class="flex flex-col gap-0.5">
-							<dt class="font-bold">Rotation</dt>
-							<dd class="pl-2 font-mono">
-								θ: {formatNumber(geometry.center.theta)}°
-							</dd>
-						</div>
-					{/if}
-				</dl>
-			{/snippet}
-		</Expandable>
+					</div>
+				{/each}
+			</div>
+		</Folder>
 	{/each}
 
 	{#if geometries.referenceFrame}
-		<div class="text-subtle-2 mt-1 px-1 text-xs">
-			Reference frame: <span class="font-mono">{geometries.referenceFrame}</span>
-		</div>
+		<p class="text-subtle-2 text-xs">
+			Reference frame: <span class="font-roboto-mono">{geometries.referenceFrame}</span>
+		</p>
 	{/if}
 </div>

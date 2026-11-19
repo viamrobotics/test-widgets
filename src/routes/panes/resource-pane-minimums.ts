@@ -143,54 +143,73 @@ const BUTTON_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 }
 
 /**
- * The sensor pane minimum in px, from "Batch 5.1 measured sizes" in
- * `.claude/plans/prime-controls-migration/phase-5-rollout-sensing-media-service-widgets.md`, the
- * sensor row, 162 x 131. GetReadings is the composite and the control interface. An estimate.
- * Sensor has no API entries.
+ * The sensor pane minimum in px, measured from the rendered widget by
+ * `__tests__/pane-minimums.svelte.spec.ts`, which fails when this row drifts more than 2 px. It
+ * replaces the "Batch 5.1 measured sizes" board estimate, 162 x 131. The height holds four
+ * readings. GetReadings is the composite and the control interface. Sensor has no API entries.
  */
 const SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 162, height: 131 },
+	[COMPOSITE_SLOT]: { width: 261, height: 399 },
 }
 
 /**
- * The movement sensor pane minimums in px, from the same table. The composite takes its 320 px
- * height, 1485, not the 1446 at its minimum width, because a pane opened at 320 px would
- * otherwise scroll. GetAccuracy's height is its base, before 30 per accuracy key.
+ * The movement sensor pane minimums in px, measured by the same spec, not board estimates. The
+ * composite reports every method supported, with its readings hidden. GetAccuracy's height has no
+ * accuracy keys. Each API pane is as wide as its header, which holds the method's name.
  */
 const MOVEMENT_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 269, height: 1485 },
-	'get-position': { width: 194, height: 157 },
-	'get-orientation': { width: 282, height: 115 },
-	'get-compass-heading': { width: 170, height: 97 },
-	'get-accuracy': { width: 218, height: 191 },
+	[COMPOSITE_SLOT]: { width: 241, height: 1220 },
+	'get-position': { width: 232, height: 193 },
+	'get-orientation': { width: 254, height: 145 },
+	'get-compass-heading': { width: 275, height: 131 },
+	'get-accuracy': { width: 232, height: 227 },
 }
 
 /**
- * The power sensor pane minimums in px, from the same table. The composite's 181 x 359 is with
- * its readings hidden.
+ * The power sensor pane minimums in px, measured by the same spec, not board estimates. The
+ * composite's readings are hidden.
  */
 const POWER_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 181, height: 359 },
-	'get-voltage': { width: 162, height: 97 },
-	'get-current': { width: 162, height: 97 },
-	'get-power': { width: 162, height: 97 },
+	[COMPOSITE_SLOT]: { width: 213, height: 453 },
+	'get-voltage': { width: 225, height: 125 },
+	'get-current': { width: 225, height: 125 },
+	'get-power': { width: 210, height: 125 },
 }
 
 /**
- * The encoder pane minimums in px, from the same table. The composite's "about 396" at its
- * 224 px minimum width is 396.
+ * The encoder pane minimums in px, measured by the same spec, not board estimates, with both
+ * angle and ticks supported.
  */
 const ENCODER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 224, height: 396 },
-	'get-position': { width: 162, height: 97 },
+	[COMPOSITE_SLOT]: { width: 213, height: 319 },
+	'get-position': { width: 232, height: 125 },
 }
 
 /**
- * The input controller pane minimum in px, from the same table's composite row, 190 x "about 960"
- * with 4 controls, so 960. Input controller has no API entries.
+ * The input controller pane minimum in px, measured by the same spec, not a board estimate, with
+ * four controls. A resource named `webgamepad` also renders the gamepad and scrolls at this
+ * height. Input controller has no API entries.
  */
 const INPUT_CONTROLLER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 190, height: 960 },
+	[COMPOSITE_SLOT]: { width: 213, height: 387 },
+}
+
+/**
+ * The camera pane minimum in px, measured by the same spec, not the "Batch 5.2 measured sizes"
+ * estimates. The height is the ratio-wins floor: the header, the 16:9 feed at the minimum width,
+ * the controls below it, and GetPointCloud waiting on its splash. Camera has no API entries.
+ */
+const CAMERA_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 229, height: 809 },
+}
+
+/**
+ * The vision service pane minimum in px, measured by the same spec, not a board estimate. The
+ * capture is a 16:9 frame with detections and classifications, and object point clouds wait on
+ * their splash. Vision has no API entries.
+ */
+const VISION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 266, height: 804 },
 }
 
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
@@ -209,6 +228,8 @@ const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>
 	[ResourceTriplets.PowerSensor]: POWER_SENSOR_PANE_MINIMUMS,
 	[ResourceTriplets.Encoder]: ENCODER_PANE_MINIMUMS,
 	[ResourceTriplets.InputController]: INPUT_CONTROLLER_PANE_MINIMUMS,
+	[ResourceTriplets.Camera]: CAMERA_PANE_MINIMUMS,
+	[ResourceTriplets.Vision]: VISION_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.

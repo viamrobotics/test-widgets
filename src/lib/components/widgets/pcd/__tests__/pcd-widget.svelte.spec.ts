@@ -39,6 +39,7 @@ const renderedCameraUp = (scenes: Scene[]) => {
 
 describe('PCD widget', () => {
 	const data = new TextEncoder().encode(pcd)
+	const label = 'GetPointCloud'
 	let user: ReturnType<typeof userEvent.setup>
 	let scenes: Scene[]
 
@@ -48,31 +49,44 @@ describe('PCD widget', () => {
 	})
 
 	it('shows a default point size of 0.02', () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 
 		expect(screen.getByRole('spinbutton', { name: /point size/iu })).toHaveValue(0.02)
 	})
 
 	it('shows a default camera up vector of +z', () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 
-		expect(screen.getByRole('combobox', { name: /camera up vector/iu })).toHaveValue('0,0,1')
+		expect(screen.getByRole('combobox', { name: /camera up vector/iu })).toHaveTextContent('+z')
+	})
+
+	it('names the frame after its label', () => {
+		render(Subject, { data, label })
+
+		expect(screen.getByRole('group', { name: label })).toBeInTheDocument()
+	})
+
+	it('offers the screenshot, picture-in-picture, and raw data downloads', () => {
+		render(Subject, { data, label })
+
+		expect(screen.getByRole('button', { name: /screenshot/iu })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /download raw data/iu })).toBeInTheDocument()
 	})
 
 	it('renders the point cloud at the default point size', async () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 
 		await expect.poll(() => renderedPointSize(scenes)).toBe(0.02)
 	})
 
 	it('points the scene camera up along +z by default', async () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 
 		await expect.poll(() => renderedCameraUp(scenes)).toEqual([0, 0, 1])
 	})
 
 	it('renders the point cloud at a point size the user enters', async () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 		const sizeInput = screen.getByRole('spinbutton', { name: /point size/iu })
 		await user.clear(sizeInput)
 
@@ -83,9 +97,10 @@ describe('PCD widget', () => {
 	})
 
 	it('points the scene camera along the up vector the user selects', async () => {
-		render(Subject, { data })
+		render(Subject, { data, label })
 
-		await user.selectOptions(screen.getByRole('combobox', { name: /camera up vector/iu }), '0,-1,0')
+		await user.click(screen.getByRole('combobox', { name: /camera up vector/iu }))
+		await user.click(await screen.findByRole('option', { name: '-y' }))
 
 		await expect.poll(() => renderedCameraUp(scenes)).toEqual([0, -1, 0])
 	})

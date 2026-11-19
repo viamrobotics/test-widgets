@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
-
 	interface Props {
 		data: Uint8Array
 	}
@@ -8,7 +6,7 @@
 	const { data }: Props = $props()
 
 	const downloadRawData = () => {
-		const file = new File([data as BlobPart], 'pointcloud.pcd', {
+		const file = new File([new Uint8Array(data)], 'pointcloud.pcd', {
 			type: 'pointcloud/pcd',
 		})
 		const url = URL.createObjectURL(file)
@@ -22,4 +20,10 @@
 	}
 </script>
 
-<Button onclick={downloadRawData}>Download raw data</Button>
+<button
+	type="button"
+	class="button button-xs"
+	onclick={downloadRawData}
+>
+	Download raw data
+</button>

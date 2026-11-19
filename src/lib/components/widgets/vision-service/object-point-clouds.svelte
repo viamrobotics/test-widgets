@@ -60,23 +60,20 @@
 	})
 </script>
 
-<div class="relative h-[600px] max-h-[80vh] bg-white">
-	<div class="relative z-10 h-full overflow-x-auto overflow-y-scroll p-4">
-		<div class="grid grid-cols-[repeat(auto-fit,320px)] justify-center gap-4">
-			{#each items as item (item.id)}
-				<div class="w-[320px] shadow-sm">
-					<div
-						bind:this={item.dom}
-						class="h-[320px] w-[320px]"
-					></div>
-					<div class="bg-white p-2">
-						{#if item.object.geometries}
-							<GeometryDetails geometries={item.object.geometries} />
-						{/if}
-					</div>
-				</div>
-			{/each}
-		</div>
+<div class="@container relative">
+	<div class="relative z-10 grid grid-cols-1 gap-4 @2xl:grid-cols-2">
+		{#each items as item (item.id)}
+			<div class="flex min-w-0 flex-col gap-2">
+				<div
+					bind:this={item.dom}
+					data-testid="object-point-cloud-cell"
+					class="aspect-square w-full"
+				></div>
+				{#if item.object.geometries}
+					<GeometryDetails geometries={item.object.geometries} />
+				{/if}
+			</div>
+		{/each}
 	</div>
 
 	<div class="absolute inset-0">

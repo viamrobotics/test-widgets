@@ -1,23 +1,29 @@
 <script lang="ts">
+	import type { QueryObserverResult } from '@tanstack/svelte-query'
+	import type { Snippet } from 'svelte'
+
 	import * as Sentry from '@sentry/svelte'
-	import { createMutation, type QueryObserverResult } from '@tanstack/svelte-query'
-	import { Button, Label, Select } from '@viamrobotics/prime-core'
-	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
+	import { CameraClient, type RobotClient, StreamClient } from '@viamrobotics/sdk'
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
 	import { useResizeObserver } from 'runed'
 	import { untrack } from 'svelte'
 
-	import { assertExists } from '$lib/assert'
-	import ApiSection from '$lib/components/api-section.svelte'
 	import Progress from '$lib/components/progress.svelte'
 	import { Section } from '$lib/components/section'
 	import { formatNumeric } from '$lib/format'
 	import { useMeasureFps } from '$lib/fps.svelte'
 	import { usePip } from '$lib/pip/context.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
+	import SetStreamOptions from './set-stream-options.svelte'
+
+	/** One presented video frame: the measured frame rate and the frame's own size in pixels. */
+	interface VideoFrameInfo {
+		fps: number
+		width: number
+		height: number
+	}
 
 	interface Props {
 		resourceName: string
@@ -31,6 +37,10 @@
 		showMousePositionTooltip?: boolean
 		sourceName?: string
 		refetch: () => Promise<unknown>
+		/** Host content rendered directly under the video, above the SetStreamOptions section. */
+		controls?: Snippet
+		/** Called on each presented frame. When set, the host draws the fps badge, so the video omits its own. */
+		onFrame?: (frame: VideoFrameInfo) => void
 	}
 
 	const {
@@ -45,6 +55,8 @@
 		showMousePositionTooltip = false,
 		sourceName = '',
 		refetch,
+		controls,
+		onFrame,
 	}: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
@@ -117,8 +129,6 @@
 	}
 
 	let streamClient: StreamClient | undefined
-	let resolutionOptions = $state<streamApi.Resolution[]>([])
-	let selectedResolution: streamApi.Resolution | undefined
 
 	const disableStream = async () => {
 		try {
@@ -128,36 +138,17 @@
 			streamClient = undefined
 			last?.off('track', handleTrack)
 			await last?.remove(resourceName)
-			resolutionOptions = []
-			selectedResolution = undefined
 			liveStreamStart = undefined
 		} catch (nextError: unknown) {
 			lastError = nextError as Error
 		}
 	}
 
-	const handleResolutionChange = (event: Event) => {
-		if (event.target instanceof HTMLSelectElement) {
-			const [width, height] = event.target.value.split('x').map(Number) as [number, number]
-			selectedResolution = new streamApi.Resolution({ width, height })
-		}
+	// Until the first frame arrives the video has no size of its own, so it holds the feed's usual ratio.
+	let hasFrame = $state(false)
+	const updateHasFrame = () => {
+		hasFrame = (videoElement?.videoWidth ?? 0) > 0
 	}
-
-	// NOTE(ELP): I don't know that this will be used anywhere else, so I'm
-	// opting to leave it here for now. This could be moved to a shared
-	// createMutation function.
-	const mutationOptions = $derived({
-		mutationKey: [partID, resourceName, 'setOptions'],
-		mutationFn: async (resolution?: streamApi.Resolution) => {
-			assertExists(streamClient, 'Expected stream client')
-			if (resolution) {
-				return streamClient.setOptions(resourceName, resolution.width, resolution.height)
-			}
-			return streamClient.resetOptions(resourceName)
-		},
-	})
-
-	const resolutionMutation = createMutation(() => mutationOptions)
 
 	const startStream = async (robotClient: RobotClient, name: string, live: boolean) => {
 		try {
@@ -172,8 +163,6 @@
 				streamClient = new StreamClient(robotClient)
 				streamClient.on('track', handleTrack)
 				await streamClient.getStream(name)
-				resolutionOptions = await streamClient.getOptions(name)
-				selectedResolution = resolutionOptions[0]
 			} else {
 				// Polling
 
@@ -292,9 +281,9 @@
 		let absX = 0
 		let absY = 0
 
-		if (isLive && selectedResolution) {
-			absX = pctX * selectedResolution.width
-			absY = pctY * selectedResolution.height
+		if (isLive) {
+			absX = pctX * videoElement.videoWidth
+			absY = pctY * videoElement.videoHeight
 		} else {
 			absX = pctX * canvas.width
 			absY = pctY * canvas.height
@@ -314,8 +303,9 @@
 	$effect(() => {
 		let id: number | undefined
 
-		const measure = (now: DOMHighResTimeStamp) => {
+		const measure = (now: DOMHighResTimeStamp, metadata: VideoFrameCallbackMetadata) => {
 			fps.measure(now)
+			onFrame?.({ fps: fps.current, width: metadata.width, height: metadata.height })
 			id = videoElement?.requestVideoFrameCallback?.(measure)
 		}
 
@@ -340,7 +330,7 @@
 	<!-- One overlay merges the live stream error with the polling query's error. -->
 	{#if lastError}
 		<div
-			class="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+			class="bg-medium/50 absolute inset-0 flex items-center justify-center"
 			style:width={overlayWidth}
 			style:height={overlayHeight}
 		>
@@ -351,21 +341,26 @@
 		</div>
 	{:else if isLive ? isStreamLoading : isLoading}
 		<div
-			class="absolute top-0 left-0 h-64 w-80 max-w-full"
+			class="absolute inset-0"
 			style:width={overlayWidth}
 			style:height={overlayHeight}
 		>
 			<Progress />
 		</div>
 	{/if}
-	<div
-		class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
-	>
-		{fps.current.toFixed(1)}fps
-	</div>
+	{#if !onFrame}
+		<div
+			class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
+		>
+			{fps.current.toFixed(1)}fps
+		</div>
+	{/if}
 	<video
 		bind:this={videoElement}
-		class={videoClass}
+		class={[videoClass, !hasFrame && 'aspect-video']}
+		onloadedmetadata={updateHasFrame}
+		onresize={updateHasFrame}
+		onemptied={updateHasFrame}
 		onmouseenter={handleMouseEnterVideo}
 		onmouseleave={handleMouseLeaveVideo}
 		onmousemove={handleMouseMoveWithinVideo}
@@ -399,57 +394,11 @@
 	</div>
 {/if}
 
+{@render controls?.()}
+
 {#if showResolutionOptions && isLive}
-	<ApiSection
-		method="SetStreamOptions"
-		api={ResourceTriplets.Camera}
-		mutations={[resolutionMutation]}
-		class={['flex-row flex-wrap gap-2', '-m-4 mt-4']}
-	>
-		{#snippet subheading()}
-			<Section.Text>Change the resolution of the live stream video feed</Section.Text>
-		{/snippet}
-		<div class="flex grow flex-wrap justify-between gap-2">
-			<Label cx="max-w-[96px] gap-1 text-xs">
-				<span class="flex gap-1 whitespace-nowrap">
-					Resolution
-					<abbr class="text-disabled">(width x height)</abbr>
-				</span>
-				<Select
-					slot="input"
-					on:change={handleResolutionChange}
-				>
-					{#each resolutionOptions as { width, height } (`${width}x${height}`)}
-						<option>
-							{width}x{height}
-						</option>
-					{/each}
-					{#if resolutionOptions.length === 0}
-						<option disabled>Camera did not return resolution options</option>
-					{/if}
-				</Select>
-			</Label>
-			<div class="flex flex-row items-end gap-2">
-				<Button
-					onclick={() => {
-						resolutionMutation.mutate(undefined)
-					}}
-				>
-					Reset
-				</Button>
-				<Button
-					icon="play-circle-outline"
-					variant="dark"
-					disabled={resolutionOptions.length === 0}
-					onclick={() => {
-						if (selectedResolution) {
-							resolutionMutation.mutate(selectedResolution)
-						}
-					}}
-				>
-					Execute
-				</Button>
-			</div>
-		</div>
-	</ApiSection>
+	<SetStreamOptions
+		{partID}
+		{resourceName}
+	/>
 {/if}

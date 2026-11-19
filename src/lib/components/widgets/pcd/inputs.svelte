@@ -1,73 +1,70 @@
 <script lang="ts">
 	import type { Vector3Tuple } from 'three'
 
-	import { Label, NumericInput, Select } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
-
-	import Download from './download.svelte'
+	import { Folder, NumberField, Panel, Select } from '@viamrobotics/prime-controls'
+	import { untrack } from 'svelte'
 
 	interface Props {
 		pointSize: number
 		up: Vector3Tuple
-		data: Uint8Array
 		onPointSizeChange: (value: number) => void
 		onUpChange: (value: Vector3Tuple) => void
 	}
 
-	const { pointSize, up, data, onPointSizeChange, onUpChange }: Props = $props()
+	const { pointSize, up, onPointSizeChange, onUpChange }: Props = $props()
 
 	const coordSystems = [
-		['+y', '0,1,0'],
-		['-y', '0,-1,0'],
-		['+z', '0,0,1'],
-		['-z', '0,0,-1'],
-		['+x', '1,0,0'],
-		['-x', '-1,0,0'],
-	] as const
+		{ label: '+y', value: '0,1,0' },
+		{ label: '-y', value: '0,-1,0' },
+		{ label: '+z', value: '0,0,1' },
+		{ label: '-z', value: '0,0,-1' },
+		{ label: '+x', value: '1,0,0' },
+		{ label: '-x', value: '-1,0,0' },
+	]
 
-	const handlePointSizeChange = (event: Event) => {
-		const value = numberValueFromEvent(event)
-		if (value !== undefined) {
+	const parseUp = (value: string): Vector3Tuple | undefined => {
+		const [x, y, z, ...rest] = value.split(',').map(Number)
+		if (x === undefined || y === undefined || z === undefined || rest.length > 0) return undefined
+		return [x, y, z]
+	}
+
+	// An emptied field stays empty while the user types, and the scene keeps its last valid size.
+	let pointSizeField = $state<number | undefined>(untrack(() => pointSize))
+
+	const getPointSize = () => pointSizeField
+	const setPointSize = (value: number | undefined) => {
+		pointSizeField = value
+		if (value !== undefined && Number.isFinite(value)) {
 			onPointSizeChange(value)
 		}
 	}
 
-	const handleUpChange = (event: Event) => {
-		if (event.target instanceof HTMLSelectElement) {
-			onUpChange(event.target.value.split(',').map(Number) as Vector3Tuple)
+	const getUp = () => up.toString()
+	const setUp = (value: string) => {
+		const next = parseUp(value)
+		if (next) {
+			onUpChange(next)
 		}
 	}
 </script>
 
-<div class="flex flex-col gap-2 @2xl:w-1/3">
-	<Label>
-		Point size
-
-		<NumericInput
-			slot="input"
-			step={0.01}
-			min={0}
-			value={pointSize}
-			on:change={handlePointSizeChange}
-		/>
-	</Label>
-
-	<Label>
-		Camera up vector
-
-		<Select
-			slot="input"
-			on:change={handleUpChange}
-		>
-			{#each coordSystems as [text, coord] (coord)}
-				<option
-					selected={coord === up.toString()}
-					value={coord}>{text}</option
-				>
-			{/each}
-		</Select>
-	</Label>
-
-	<Download {data} />
+<div class="absolute top-2 right-2 z-10 flex max-h-full max-w-full flex-col">
+	<Panel
+		aria-label="View"
+		class="min-h-0 overflow-auto"
+	>
+		<Folder title="View">
+			<NumberField
+				label="Point size"
+				step={0.01}
+				min={0}
+				bind:value={getPointSize, setPointSize}
+			/>
+			<Select
+				items={coordSystems}
+				aria-label="Camera up vector"
+				bind:value={getUp, setUp}
+			/>
+		</Folder>
+	</Panel>
 </div>

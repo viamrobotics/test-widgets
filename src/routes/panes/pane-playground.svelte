@@ -13,6 +13,7 @@
 	import { tick, untrack } from 'svelte'
 
 	import { getResourceAPI } from '$lib/get-resource-api'
+	import { providePip } from '$lib/pip/context.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { initialMotorLayout } from './initial-motor-layout'
@@ -32,9 +33,12 @@
 
 	const machineStatus = useMachineStatus(() => partID)
 
+	// The camera widget reads picture-in-picture from context, as the widgets view provides it.
+	providePip(() => partID)
+
 	// Motors first so the first motor still opens the layout, then arms, motion services, bases,
 	// gantries, servos, grippers, boards, switches, buttons, sensors, movement sensors, power sensors,
-	// encoders, and input controllers.
+	// encoders, input controllers, cameras, and vision services.
 	const HOSTED_APIS = [
 		ResourceTriplets.Motor,
 		ResourceTriplets.Arm,
@@ -51,6 +55,8 @@
 		ResourceTriplets.PowerSensor,
 		ResourceTriplets.Encoder,
 		ResourceTriplets.InputController,
+		ResourceTriplets.Camera,
+		ResourceTriplets.Vision,
 	]
 	const resources = $derived(
 		HOSTED_APIS.flatMap((api) =>
@@ -129,7 +135,7 @@
 		{:else if machineStatus.current === undefined}
 			<p class="text-subtle-2 p-2 text-sm">Loading resources...</p>
 		{:else if resources.length === 0}
-			<p class="text-subtle-2 p-2 text-sm">This machine has no motors, arms, or motion services.</p>
+			<p class="text-subtle-2 p-2 text-sm">This machine has no resources the playground hosts.</p>
 		{:else}
 			<ResourceTree
 				{resources}
