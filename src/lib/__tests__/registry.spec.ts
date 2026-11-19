@@ -94,13 +94,12 @@ describe('apiWidgetsForResource', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
 
-	it('keeps the arm ids the app persists, with stop added last', () => {
+	it('keeps the arm ids the app persists, with quick move removed and stop last', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'arm')).map((widget) => widget.id)
 		).toEqual([
 			'move-to-joint-positions',
 			'move-to-position',
-			'quick-move',
 			'get-joint-positions',
 			'is-moving',
 			'manual-mode',

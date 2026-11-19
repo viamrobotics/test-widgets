@@ -1,6 +1,6 @@
 import type { Pose } from '@viamrobotics/sdk'
 
-import { render, screen, within } from '@testing-library/svelte'
+import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MotionClient } from '@viamrobotics/sdk'
 import { createResourceClient, useResourceStatuses } from '@viamrobotics/svelte-sdk'
@@ -135,10 +135,7 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(screen.getByRole('button', { name: 'Motion service' })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		)
+		expect(screen.getByRole('radio', { name: 'Motion service' })).toBeChecked()
 		expect(
 			screen.getByText(/movement goes through motion planning and attempts to avoid obstacles/iu)
 		).toBeInTheDocument()
@@ -147,8 +144,8 @@ describe('MoveToPositionControl', () => {
 	it('hides the toggle and shows the danger banner when no motion service exists', () => {
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(screen.queryByRole('button', { name: 'Motion service' })).not.toBeInTheDocument()
-		expect(screen.queryByRole('button', { name: 'Arm' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('radio', { name: 'Motion service' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('radio', { name: 'Arm' })).not.toBeInTheDocument()
 		expect(
 			screen.getByText(/the arm will not avoid obstacles when moving\. use with caution/iu)
 		).toBeInTheDocument()
@@ -159,7 +156,7 @@ describe('MoveToPositionControl', () => {
 		mockFrameSystem(['some-other-arm'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(screen.queryByRole('button', { name: 'Motion service' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('radio', { name: 'Motion service' })).not.toBeInTheDocument()
 		expect(
 			screen.getByText(/arm-1 has no frame, so the motion service cannot plan for it/iu)
 		).toBeInTheDocument()
@@ -195,7 +192,9 @@ describe('MoveToPositionControl', () => {
 
 		expect(queryOptionsFor('getPose')).toMatchObject({ enabled: true, refetchInterval: 250 })
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
-		expect(within(screen.getByRole('status')).getByText(/arm is moving/iu)).toBeInTheDocument()
+		expect(screen.getAllByRole('status').map((status) => status.textContent.trim())).toContain(
+			'Arm is moving'
+		)
 	})
 
 	it('reseeds the pose editor from the newly active frame when the mode changes', async () => {
@@ -204,7 +203,7 @@ describe('MoveToPositionControl', () => {
 
 		expect(poseInputValues()).toEqual([1, 2, 3, 4, 5, 6, 7])
 
-		await user.click(screen.getByRole('button', { name: 'Arm' }))
+		await user.click(screen.getByRole('radio', { name: 'Arm' }))
 
 		expect(poseInputValues()).toEqual([11, 12, 13, 14, 15, 16, 17])
 	})
@@ -213,7 +212,7 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		await user.click(screen.getByRole('button', { name: 'Arm' }))
+		await user.click(screen.getByRole('radio', { name: 'Arm' }))
 
 		expect(
 			screen.getByText(/the arm will not avoid obstacles when moving\. use with caution/iu)
@@ -238,12 +237,9 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		const armButton = screen.getByRole('button', { name: 'Arm' })
+		const armButton = screen.getByRole('radio', { name: 'Arm' })
 		expect(armButton).toBeDisabled()
-		expect(screen.getByRole('button', { name: 'Motion service' })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		)
+		expect(screen.getByRole('radio', { name: 'Motion service' })).toBeChecked()
 
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 		expect(moveMutate).toHaveBeenCalledWith(
@@ -257,7 +253,7 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		await user.click(screen.getByRole('button', { name: 'Arm' }))
+		await user.click(screen.getByRole('radio', { name: 'Arm' }))
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(moveToPositionMutate).toHaveBeenCalledWith([armPose], {})
@@ -284,14 +280,17 @@ describe('MoveToPositionControl', () => {
 		mockMotionServiceNames(['custom-motion', 'builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		expect(screen.getByRole('combobox')).toHaveValue('builtin')
+		expect(screen.getByRole('combobox', { name: 'Motion service name' })).toHaveTextContent(
+			'builtin'
+		)
 	})
 
 	it('targets the motion client at the selected non-builtin service', async () => {
 		mockMotionServiceNames(['custom-motion', 'builtin'])
 		render(Subject, { props: { partID: 'part-1', resourceName: 'arm-1' } })
 
-		await user.selectOptions(screen.getByRole('combobox'), 'custom-motion')
+		await user.click(screen.getByRole('combobox', { name: 'Motion service name' }))
+		await user.click(await screen.findByRole('option', { name: 'custom-motion' }))
 
 		expect(currentMotionServiceName()).toBe('custom-motion')
 	})

@@ -8,27 +8,32 @@
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 
-	import { compositePane, entryPanes, type MotorPane, motorPaneTreeLabel } from './motor-pane'
+	import {
+		compositePane,
+		entryPanes,
+		type ResourcePane,
+		resourcePaneTreeLabel,
+	} from './resource-pane'
 
 	interface Props {
-		motors: ResourceName[]
+		resources: ResourceName[]
 		/** The pane id of the last pick, shown as the selected row. */
 		selected: string | undefined
-		onpick: (pane: PaneNode<MotorPane>) => void
+		onpick: (pane: PaneNode<ResourcePane>) => void
 	}
 
-	const { motors, selected, onpick }: Props = $props()
+	const { resources, selected, onpick }: Props = $props()
 
-	interface MotorTreeNode {
-		pane: PaneNode<MotorPane>
-		children?: MotorTreeNode[]
+	interface ResourceTreeNode {
+		pane: PaneNode<ResourcePane>
+		children?: ResourceTreeNode[]
 	}
 
 	const nodes = $derived(
-		motors.flatMap((motor): MotorTreeNode[] => {
-			const composite = compositePane(motor)
+		resources.flatMap((resource): ResourceTreeNode[] => {
+			const composite = compositePane(resource)
 			if (!composite) return []
-			return [{ pane: composite, children: entryPanes(motor).map((pane) => ({ pane })) }]
+			return [{ pane: composite, children: entryPanes(resource).map((pane) => ({ pane })) }]
 		})
 	)
 
@@ -38,7 +43,7 @@
 		)
 	)
 
-	// Every motor starts open. The first toggle takes over from that default.
+	// Every resource starts open. The first toggle takes over from that default.
 	let toggledExpanded = $state<string[]>()
 	const expanded = $derived(toggledExpanded ?? nodes.map(({ pane }) => pane.id))
 
@@ -47,25 +52,25 @@
 		if (pane) onpick(pane)
 	}
 
-	const ROW =
+	const ROW_CLASSES =
 		'focus-ring flex min-w-0 cursor-pointer items-center gap-1 rounded-sm py-1 pr-2 text-sm hover:bg-light data-[selected]:bg-medium data-[disabled]:cursor-not-allowed data-[disabled]:text-disabled'
 </script>
 
 <Tree
 	{nodes}
 	nodeToValue={({ pane }) => pane.id}
-	nodeToString={({ pane }) => motorPaneTreeLabel(pane.data)}
+	nodeToString={({ pane }) => resourcePaneTreeLabel(pane.data)}
 	nodeToChildren={({ children }) => children}
 	bind:expanded={() => expanded, (next) => (toggledExpanded = next)}
 	bind:selected={() => (selected ? [selected] : []), pick}
-	aria-label="Motors"
+	aria-label="Resources"
 	class="flex flex-col"
 >
-	{#snippet node(item: MotorTreeNode, state: TreeNodeState)}
+	{#snippet node(item: ResourceTreeNode, state: TreeNodeState)}
 		{#if state.isBranch}
 			<Tree.Branch>
 				<Tree.BranchControl
-					class={ROW}
+					class={ROW_CLASSES}
 					style="padding-inline-start: calc((var(--depth) - 1) * 1rem + 0.25rem)"
 				>
 					<Tree.BranchTrigger
@@ -87,16 +92,16 @@
 					>
 						<ResourceIcon type="component" />
 					</span>
-					<span class="truncate">{motorPaneTreeLabel(item.pane.data)}</span>
+					<span class="truncate">{resourcePaneTreeLabel(item.pane.data)}</span>
 				</Tree.BranchControl>
 				<Tree.BranchContent />
 			</Tree.Branch>
 		{:else}
 			<Tree.Item
-				class={ROW}
+				class={ROW_CLASSES}
 				style="padding-inline-start: calc(var(--depth) * 1rem + 0.25rem)"
 			>
-				<span class="truncate">{motorPaneTreeLabel(item.pane.data)}</span>
+				<span class="truncate">{resourcePaneTreeLabel(item.pane.data)}</span>
 			</Tree.Item>
 		{/if}
 	{/snippet}

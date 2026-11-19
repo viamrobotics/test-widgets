@@ -71,8 +71,12 @@
 	queries={[...queries, poseQuery]}
 	mutations={[move, parseFailure]}
 >
-	<div class="flex min-w-0 flex-col gap-4">
-		{@render children?.()}
+	<div class="flex min-w-0 flex-col gap-3">
+		{#if children}
+			<div class="flex min-w-0 flex-col gap-2">
+				{@render children()}
+			</div>
+		{/if}
 		<Move
 			{frameName}
 			{destination}

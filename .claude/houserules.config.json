@@ -87,6 +87,9 @@
   "ledger": {
     "enabled": false
   },
+  "design": {
+    "themeEntry": "src/app.css"
+  },
   "targets": [
     {
       "name": "test-widgets",

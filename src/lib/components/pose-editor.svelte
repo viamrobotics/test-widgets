@@ -2,17 +2,31 @@
 	lang="ts"
 	module
 >
+	import type { PointAxis } from '@viamrobotics/prime-controls'
 	import type { Pose } from '@viamrobotics/sdk'
 
-	const poseLabelsList: [keyof Pose, string][] = [
-		['x', 'X'],
-		['y', 'Y'],
-		['z', 'Z'],
-		['oX', 'OX'],
-		['oY', 'OY'],
-		['oZ', 'OZ'],
-		['theta', 'θ'],
-	]
+	type PoseKey = keyof Pose
+
+	const POSE_KEYS: PoseKey[] = ['x', 'y', 'z', 'oX', 'oY', 'oZ', 'theta']
+
+	const FIELD_LABELS: Record<PoseKey, string> = {
+		x: 'X',
+		y: 'Y',
+		z: 'Z',
+		oX: 'OX',
+		oY: 'OY',
+		oZ: 'OZ',
+		theta: 'θ',
+	}
+
+	const POSITION_KEYS: Partial<Record<PointAxis, PoseKey>> = { x: 'x', y: 'y', z: 'z' }
+	const ORIENTATION_KEYS: Partial<Record<PointAxis, PoseKey>> = { x: 'oX', y: 'oY', z: 'oZ' }
+	const ORIENTATION_LABELS = { x: FIELD_LABELS.oX, y: FIELD_LABELS.oY, z: FIELD_LABELS.oZ }
+
+	const POSITION_STEP = 0.1
+	const ORIENTATION_STEP = 0.01
+	const THETA_DEGREES_STEP = 0.1
+	const THETA_RADIANS_STEP = 0.01
 
 	export interface PoseFieldStatus {
 		current: number
@@ -23,15 +37,16 @@
 </script>
 
 <script lang="ts">
+	import type { FieldState } from '@viamrobotics/prime-ui'
 	import type { Snippet } from 'svelte'
 
-	import { Icon, IconButton, NumericInput, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiBackupRestore, mdiInformationOutline } from '@mdi/js'
+	import { NumberField, Point, type PointValue } from '@viamrobotics/prime-controls'
+	import { Hint, Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 	import { parsePastedPose } from '$lib/parse-pasted-pose'
 
@@ -46,12 +61,44 @@
 
 	const { pose, heading, description, fieldStatus, onFieldReset, onPoseChange }: Props = $props()
 
+	const uid = $props.id()
+	const headingId = `${uid}-heading`
+	const aboutId = `${uid}-about`
+	const statusId = (key: PoseKey) => `${uid}-${key}-status`
+
 	let useRadians = $state(false)
 
-	const displayPose = $derived({
-		...pose,
-		theta: useRadians ? degreesToRadians(pose.theta) : pose.theta,
+	interface TypedValue {
+		shown: number
+		stored: number
+	}
+
+	// The number under the cursor, kept unrounded while the pose still holds it, so a field
+	// bound per keystroke never rewrites a third decimal the user is typing.
+	let typed = $state<Partial<Record<PoseKey, TypedValue>>>({})
+
+	const toDisplay = (key: PoseKey, value: number) =>
+		key === 'theta' && useRadians ? degreesToRadians(value) : value
+
+	const shownValue = (key: PoseKey): number => {
+		const entry = typed[key]
+		if (entry?.stored === pose[key]) {
+			return entry.shown
+		}
+		return Number.parseFloat(formatNumeric(toDisplay(key, pose[key])))
+	}
+
+	const positionValue: PointValue = $derived({
+		x: shownValue('x'),
+		y: shownValue('y'),
+		z: shownValue('z'),
 	})
+	const orientationValue: PointValue = $derived({
+		x: shownValue('oX'),
+		y: shownValue('oY'),
+		z: shownValue('oZ'),
+	})
+	const thetaValue: number = $derived(shownValue('theta'))
 
 	// Copy the stored pose (theta in degrees) so it round-trips through paste
 	// regardless of the display unit currently selected.
@@ -66,137 +113,236 @@
 		return true
 	}
 
-	const handleValueChange = (key: keyof Pose, inputValue: number) => {
-		const nextValue = key === 'theta' && useRadians ? radiansToDegrees(inputValue) : inputValue
-		onPoseChange({ ...pose, [key]: nextValue })
+	const handleValueChange = (key: PoseKey, inputValue: number) => {
+		const stored = key === 'theta' && useRadians ? radiansToDegrees(inputValue) : inputValue
+		typed = { ...typed, [key]: { shown: inputValue, stored } }
+		onPoseChange({ ...pose, [key]: stored })
 	}
 
-	const poseUnits = $derived({
-		x: 'mm',
-		y: 'mm',
-		z: 'mm',
+	const handlePointChange = (
+		keys: Partial<Record<PointAxis, PoseKey>>,
+		previous: PointValue,
+		next: PointValue
+	) => {
+		for (const axis of ['x', 'y', 'z'] satisfies PointAxis[]) {
+			const key = keys[axis]
+			const value = next[axis]
+			if (key !== undefined && value !== undefined && value !== previous[axis]) {
+				handleValueChange(key, value)
+			}
+		}
+	}
+
+	const units = $derived<Record<PoseKey, string>>({
+		x: ' mm',
+		y: ' mm',
+		z: ' mm',
 		oX: '',
 		oY: '',
 		oZ: '',
-		theta: useRadians ? 'rad' : 'deg',
+		theta: useRadians ? ' rad' : '°',
 	})
 
-	const toDisplay = (key: keyof Pose, value: number) =>
-		key === 'theta' && useRadians ? degreesToRadians(value) : value
+	// prime-controls Point drops an empty or partial entry, such as a lone "-", and writes the held
+	// value back over it. Holding those events back keeps the user's keystrokes until they parse.
+	let isRestoringEntry = false
+
+	const holdUnparsedEntry = (event: Event) => {
+		const input = event.target
+		if (isRestoringEntry || !(input instanceof HTMLInputElement) || input.type !== 'number') {
+			return
+		}
+		if (input.value === '') {
+			event.stopPropagation()
+		}
+	}
+
+	// Leaving an empty field lets its input event through, so the binding shows the held value again.
+	const restoreEmptyEntry = (event: FocusEvent) => {
+		const input = event.target
+		if (!(input instanceof HTMLInputElement) || input.type !== 'number' || input.value !== '') {
+			return
+		}
+		isRestoringEntry = true
+		input.dispatchEvent(new Event('input'))
+		isRestoringEntry = false
+	}
 
 	interface StatusIndicator {
-		status: 'info' | 'warn'
+		state: FieldState
 		message: string
 	}
 
-	const statusIndicator = (
-		key: keyof Pose,
-		label: string,
-		status: PoseFieldStatus | undefined
-	): StatusIndicator | undefined => {
+	const statusIndicator = (key: PoseKey): StatusIndicator | undefined => {
+		const status = fieldStatus?.(key)
 		if (status?.drift !== undefined) {
-			const unit = poseUnits[key] ? ` ${poseUnits[key]}` : ''
 			const amount = formatNumeric(toDisplay(key, status.drift))
-			return { status: 'warn', message: `Arm moved ${amount}${unit} since you edited ${label}.` }
+			return { state: 'warn', message: `Arm moved ${amount}${units[key]}.` }
 		}
 		if (status?.isEdited && status.isMoving) {
-			return { status: 'info', message: 'The arm is moving. Your edit is kept.' }
+			return { state: 'info', message: 'The arm is moving. Your edit is kept.' }
 		}
 		return undefined
 	}
+
+	const indicators = $derived.by(() => {
+		const byKey: Partial<Record<PoseKey, StatusIndicator>> = {}
+		for (const key of POSE_KEYS) {
+			byKey[key] = statusIndicator(key)
+		}
+		return byKey
+	})
 </script>
 
-<div class="flex min-w-0 flex-col gap-4">
-	<div class="flex items-center justify-between">
-		<span class="flex flex-row items-center gap-1 text-sm">
-			{@render heading()}
+{#snippet fieldDetails(key: PoseKey)}
+	{@const status = fieldStatus?.(key)}
+	{@const indicator = indicators[key]}
+	{@const label = FIELD_LABELS[key]}
+	{#if indicator}
+		<Hint
+			id={statusId(key)}
+			state={indicator.state}
+		>
+			{indicator.message}
+		</Hint>
+	{/if}
+	{#if status && onFieldReset}
+		{@const current = formatNumeric(toDisplay(key, status.current))}
+		<div class="flex min-w-0 justify-end">
+			<button
+				type="button"
+				class="button button-ghost button-xs max-w-full min-w-0"
+				aria-label="Reset {label} to its current value, {current}"
+				disabled={!status.isEdited}
+				onclick={() => {
+					onFieldReset(key)
+				}}
+			>
+				<Icon
+					icon={mdiBackupRestore}
+					size="sm"
+				/>
+				<span class="truncate">{current}</span>
+			</button>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet pointDetails(keys: Partial<Record<PointAxis, PoseKey>>, axis: PointAxis)}
+	{@const key = keys[axis]}
+	{#if key}
+		{@render fieldDetails(key)}
+	{/if}
+{/snippet}
+
+<div class="@container flex min-w-0 flex-col gap-2">
+	<div class="flex items-center gap-1">
+		<div class="flex min-w-0 flex-1 items-center gap-1">
+			<span
+				id={headingId}
+				class="text-subtle-1 min-w-0 truncate text-xs"
+			>
+				{@render heading()}
+			</span>
 			{#if description}
 				<Tooltip>
-					<Icon
-						name="information-outline"
-						cx="text-gray-6"
-					/>
-
-					<span slot="description">{@render description()}</span>
+					<Tooltip.Trigger class="flex shrink-0">
+						<button
+							id={aboutId}
+							type="button"
+							aria-label="About"
+							aria-labelledby="{aboutId} {headingId}"
+							class="text-subtle-2 focus-ring hover:text-default flex min-h-6 min-w-6 items-center justify-center rounded-sm"
+						>
+							<Icon
+								icon={mdiInformationOutline}
+								size="sm"
+							/>
+						</button>
+					</Tooltip.Trigger>
+					<Tooltip.Content class="max-w-72 text-xs">{@render description()}</Tooltip.Content>
 				</Tooltip>
 			{/if}
-		</span>
-		<div class="flex gap-1">
-			<AngleUnitToggle
-				{useRadians}
-				onToggle={() => {
-					useRadians = !useRadians
-				}}
-			/>
-			<CopyButton data={copyData} />
-			<PasteButton onPaste={handlePaste} />
 		</div>
+		<AngleUnitToggle
+			{useRadians}
+			onToggle={() => {
+				useRadians = !useRadians
+				typed = { ...typed, theta: undefined }
+			}}
+		/>
+		<CopyButton data={copyData} />
+		<PasteButton onPaste={handlePaste} />
 	</div>
 
-	<Table>
-		<thead>
-			<tr>
-				<th>Pose</th>
-				<th>Value</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each poseLabelsList as labelList (labelList)}
-				{@const [key, label] = labelList}
-				{@const value = Number.parseFloat(formatNumeric(displayPose[key]))}
-				{@const status = fieldStatus?.(key)}
-				{@const indicator = statusIndicator(key, label, status)}
-				<tr>
-					<th>
-						<span class="relative inline-flex justify-center">
-							{label}
-							<abbr class="text-subtle-2 absolute left-full ml-1">{poseUnits[key]}</abbr>
-						</span>
-					</th>
-					<th>
-						<div class="flex flex-col items-center gap-1 pt-2">
-							<div class="relative w-24">
-								<Tooltip
-									state={indicator ? undefined : 'invisible'}
-									targetClass="block"
-									let:tooltipID
-								>
-									<NumericInput
-										cx={['max-w-24', indicator && 'pr-7']}
-										{value}
-										state={indicator?.status}
-										aria-label="{label} target"
-										aria-describedby={indicator ? tooltipID : undefined}
-										on:change={(event) => {
-											handleValueChange(key, numberValueFromEvent(event) ?? 0)
-										}}
-									/>
-									<span slot="description">{indicator?.message}</span>
-								</Tooltip>
-								{#if status?.isEdited && onFieldReset}
-									<span class="absolute top-1/2 left-full ml-1 -translate-y-1/2">
-										<Tooltip>
-											<IconButton
-												icon="backup-restore"
-												label="Reset {label} to current"
-												onclick={() => {
-													onFieldReset(key)
-												}}
-											/>
-											<span slot="description">Reset {label} to its current value</span>
-										</Tooltip>
-									</span>
-								{/if}
-							</div>
-							{#if status}
-								<span class="text-subtle-2 font-roboto-mono text-xs font-normal">
-									Current {formatNumeric(toDisplay(key, status.current))}
-								</span>
-							{/if}
-						</div>
-					</th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
+	<!-- One column up to the width where two columns each keep 98 px axes, as at 320 px. -->
+	<div
+		role="group"
+		aria-labelledby={headingId}
+		oninputcapture={holdUnparsedEntry}
+		onfocusoutcapture={restoreEmptyEntry}
+		class="grid grid-cols-1 items-start gap-2 @min-[38.75rem]:grid-cols-2 @min-[38.75rem]:gap-4"
+	>
+		<Point
+			label="Position, mm"
+			step={POSITION_STEP}
+			axes={{
+				x: { state: indicators.x?.state, describedBy: indicators.x && statusId('x') },
+				y: { state: indicators.y?.state, describedBy: indicators.y && statusId('y') },
+				z: { state: indicators.z?.state, describedBy: indicators.z && statusId('z') },
+			}}
+			bind:value={
+				() => positionValue,
+				(next) => {
+					handlePointChange(POSITION_KEYS, positionValue, next)
+				}
+			}
+		>
+			{#snippet details(axis)}
+				{@render pointDetails(POSITION_KEYS, axis)}
+			{/snippet}
+		</Point>
+
+		<div class="flex min-w-0 flex-col gap-2">
+			<Point
+				label="Orientation"
+				labels={ORIENTATION_LABELS}
+				step={ORIENTATION_STEP}
+				axes={{
+					x: { state: indicators.oX?.state, describedBy: indicators.oX && statusId('oX') },
+					y: { state: indicators.oY?.state, describedBy: indicators.oY && statusId('oY') },
+					z: { state: indicators.oZ?.state, describedBy: indicators.oZ && statusId('oZ') },
+				}}
+				bind:value={
+					() => orientationValue,
+					(next) => {
+						handlePointChange(ORIENTATION_KEYS, orientationValue, next)
+					}
+				}
+			>
+				{#snippet details(axis)}
+					{@render pointDetails(ORIENTATION_KEYS, axis)}
+				{/snippet}
+			</Point>
+
+			<div class="flex min-w-0 flex-col gap-1">
+				<NumberField
+					label={FIELD_LABELS.theta}
+					suffix={useRadians ? 'rad' : '°'}
+					step={useRadians ? THETA_RADIANS_STEP : THETA_DEGREES_STEP}
+					state={indicators.theta?.state}
+					aria-describedby={indicators.theta && statusId('theta')}
+					bind:value={
+						() => thetaValue,
+						(next) => {
+							if (next !== undefined) {
+								handleValueChange('theta', next)
+							}
+						}
+					}
+				/>
+				{@render fieldDetails('theta')}
+			</div>
+		</div>
+	</div>
 </div>

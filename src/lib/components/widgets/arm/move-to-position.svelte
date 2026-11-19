@@ -23,10 +23,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import PoseEditor from '$lib/components/pose-editor.svelte'
-	import StatusPill from '$lib/components/status-pill.svelte'
 
 	import { useEditedTargets } from './use-edited-targets.svelte'
 
@@ -67,6 +67,8 @@
 		}
 	}
 
+	const quickSetId = $props.id()
+
 	const resetToZero = () => {
 		for (const key of POSE_KEYS) {
 			targets.edit(key, 0)
@@ -79,7 +81,7 @@
 	system.
 {/snippet}
 
-<div class="flex min-w-0 flex-col gap-4">
+<div class="flex min-w-0 flex-col gap-3">
 	<PoseEditor
 		pose={desiredPosition}
 		onPoseChange={handlePoseChange}
@@ -97,45 +99,69 @@
 		{#snippet heading()}Pose Values{/snippet}
 	</PoseEditor>
 
-	<div class="mb-2 flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
+	<div class="flex flex-col gap-1">
+		<div class="flex items-center gap-1">
+			<span
+				id={quickSetId}
+				class="text-subtle-1 text-xs"
+			>
+				Quick set
+			</span>
 			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<span slot="description"> Will update the pose values but will not execute </span>
+				<Tooltip.Trigger class="flex shrink-0">
+					<button
+						type="button"
+						aria-label="About Quick set"
+						class="text-subtle-2 focus-ring hover:text-default flex min-h-6 min-w-6 items-center justify-center rounded-sm"
+					>
+						<Icon
+							icon={mdiInformationOutline}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Will update the pose values but will not execute</Tooltip.Content>
 			</Tooltip>
-		</span>
-		<div class="flex flex-col gap-2 sm:flex-row">
-			<Button onclick={resetToZero}>Zero</Button>
-			<Button
+		</div>
+		<div
+			role="group"
+			aria-labelledby={quickSetId}
+			class="flex flex-wrap gap-2"
+		>
+			<button
+				type="button"
+				class="button button-xs"
+				onclick={resetToZero}
+			>
+				Zero
+			</button>
+			<button
+				type="button"
+				class="button button-xs"
 				onclick={() => {
 					targets.resetAll()
 				}}
 			>
 				Current position
-			</Button>
+			</button>
 		</div>
 	</div>
 	<div class="mt-auto flex items-center gap-2">
-		<Button
-			class="w-fit"
-			icon="play-circle-outline"
-			variant="dark"
+		<button
+			type="button"
+			class="button button-dark button-compact"
 			disabled={isMoving}
 			onclick={() => moveToPosition(desiredPosition)}
 		>
+			<Icon
+				icon={mdiPlayCircleOutline}
+				size="sm"
+			/>
 			Execute
-		</Button>
+		</button>
 		<span role="status">
 			{#if isMoving}
-				<StatusPill
-					isActive
-					activeText="Arm is moving"
-				/>
+				<span class="badge badge-success">Arm is moving</span>
 			{/if}
 		</span>
 	</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiSync } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		useRadians: boolean
@@ -7,18 +8,23 @@
 	}
 
 	const { useRadians, onToggle }: Props = $props()
+
+	const label = $derived(useRadians ? 'Switch to Degrees' : 'Switch to Radians')
 </script>
 
 <Tooltip>
-	<button
-		onclick={onToggle}
-		aria-label={useRadians ? 'Switch to Degrees' : 'Switch to Radians'}
-		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
-	>
-		<Icon name="sync" />
-	</button>
-
-	<span slot="description">
-		{useRadians ? 'Switch to Degrees' : 'Switch to Radians'}
-	</span>
+	<Tooltip.Trigger>
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label={label}
+			onclick={onToggle}
+		>
+			<Icon
+				icon={mdiSync}
+				size="sm"
+			/>
+		</button>
+	</Tooltip.Trigger>
+	<Tooltip.Content>{label}</Tooltip.Content>
 </Tooltip>

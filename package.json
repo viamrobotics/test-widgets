@@ -230,12 +230,13 @@
 		"@sentry/svelte": ">=8",
 		"@threlte/core": ">=8",
 		"@threlte/extras": ">=9",
-		"@viamrobotics/prime-controls": ">=0.2",
+		"@viamrobotics/prime-controls": ">=0.3",
+		"@viamrobotics/prime-editor": ">=0.1",
 		"@viamrobotics/prime-core": ">=0.1",
 		"@viamrobotics/prime-ui": ">=0.3",
 		"@viamrobotics/sdk": ">=0.76.0",
 		"@viamrobotics/svelte-sdk": ">=1.5",
-		"@viamrobotics/tailwind-config": ">=1.7",
+		"@viamrobotics/tailwind-config": ">=1.8",
 		"lodash-es": ">=4",
 		"maplibre-gl": ">=6",
 		"runed": ">=0.28",
@@ -282,14 +283,15 @@
 		"@types/lodash-es": "^4.17.12",
 		"@types/node": "^25.6.0",
 		"@types/three": "^0.183.1",
-		"@viamrobotics/prime-controls": "0.2.0",
+		"@viamrobotics/prime-controls": "0.3.0",
+		"@viamrobotics/prime-editor": "^0.1.0",
 		"@viamrobotics/prime-core": "^0.1.22",
 		"@viamrobotics/prime-panes": "^0.1.2",
 		"@viamrobotics/prime-tree": "^0.1.2",
 		"@viamrobotics/prime-ui": "^0.3.0",
 		"@viamrobotics/sdk": "^0.76.0",
 		"@viamrobotics/svelte-sdk": "^1.5.4",
-		"@viamrobotics/tailwind-config": "^1.7.0",
+		"@viamrobotics/tailwind-config": "^1.8.0",
 		"@vitest/browser": "^5.0.5",
 		"@vitest/browser-playwright": "^5.0.1",
 		"@vitest/coverage-v8": "^5.0.1",
@@ -334,12 +336,12 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"uuid": ">=14.0.0"
+			"uuid": ">=14.0.0",
+			"@codemirror/lang-json>@codemirror/language": "^6.13.1"
 		}
 	},
 	"dependencies": {
 		"@mdi/js": "^7.4.47",
-		"@viamrobotics/post-message-sdk": "0.2.1",
-		"svelte-tweakpane-ui": "^1.5.17"
+		"@viamrobotics/post-message-sdk": "0.2.1"
 	}
 }
