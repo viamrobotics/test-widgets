@@ -1,60 +1,62 @@
+import type { AudioOutClient } from '@viamrobotics/sdk'
+
 import { flushSync } from 'svelte'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createAudioPlayer } from '../create-audio-player.svelte.ts'
 
-type MockAudioOutClient = {
-	play: ReturnType<typeof vi.fn>
+const makePlayer = (play: AudioOutClient['play']) => {
+	let player: ReturnType<typeof createAudioPlayer> | undefined
+	const cleanup = $effect.root(() => {
+		player = createAudioPlayer({ current: { play } })
+	})
+	if (player === undefined) throw new Error('The player was not created')
+	return { player, cleanup }
 }
 
-const makeClient = (mockPlay: ReturnType<typeof vi.fn>): { current: MockAudioOutClient } => ({
-	current: {
-		play: mockPlay,
-	},
-})
-
-describe('createAudioPlay', () => {
+describe('createAudioPlayer', () => {
 	it('successful play sets status to done', async () => {
-		const mockPlay = vi.fn().mockResolvedValue(undefined)
-
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const client = makeClient(mockPlay) as any
-
-		let playContext: ReturnType<typeof createAudioPlayer> | undefined
-
-		const cleanup = $effect.root(() => {
-			playContext = createAudioPlayer(client)
-		})
+		const { player, cleanup } = makePlayer(
+			vi.fn<AudioOutClient['play']>().mockResolvedValue(undefined)
+		)
 
 		try {
-			await playContext!.play(new Uint8Array([1, 2, 3]), 'wav', 48000, 1)
+			await player.play(new Uint8Array([1, 2, 3]), 'wav', 48_000, 1)
 			flushSync()
 
-			expect(playContext!.status).toBe('done')
-			expect(playContext!.error).toBeNull()
+			expect(player.status).toBe('done')
+			expect(player.error).toBeNull()
+		} finally {
+			cleanup()
+		}
+	})
+
+	it('sends the bytes with the codec, sample rate, and channels', async () => {
+		const play = vi.fn<AudioOutClient['play']>().mockResolvedValue(undefined)
+		const { player, cleanup } = makePlayer(play)
+
+		try {
+			await player.play(new Uint8Array([1, 2, 3]), 'flac', 44_100, 2)
+
+			const [data, info] = play.mock.calls[0]!
+			expect(data).toEqual(new Uint8Array([1, 2, 3]))
+			expect(info).toMatchObject({ codec: 'flac', sampleRateHz: 44_100, numChannels: 2 })
 		} finally {
 			cleanup()
 		}
 	})
 
 	it('failed play sets status to error with the error message', async () => {
-		const mockPlay = vi.fn().mockRejectedValue(new Error('playback failed'))
-
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const client = makeClient(mockPlay) as any
-
-		let playContext: ReturnType<typeof createAudioPlayer> | undefined
-
-		const cleanup = $effect.root(() => {
-			playContext = createAudioPlayer(client)
-		})
+		const { player, cleanup } = makePlayer(
+			vi.fn<AudioOutClient['play']>().mockRejectedValue(new Error('playback failed'))
+		)
 
 		try {
-			await playContext!.play(new Uint8Array([1, 2, 3]), 'wav', 48000, 1)
+			await player.play(new Uint8Array([1, 2, 3]), 'wav', 48_000, 1)
 			flushSync()
 
-			expect(playContext!.status).toBe('error')
-			expect(playContext!.error?.message).toBe('playback failed')
+			expect(player.status).toBe('error')
+			expect(player.error?.message).toBe('playback failed')
 		} finally {
 			cleanup()
 		}

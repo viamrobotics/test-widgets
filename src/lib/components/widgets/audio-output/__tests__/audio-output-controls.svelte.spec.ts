@@ -1,0 +1,413 @@
+import type { AudioOutClient } from '@viamrobotics/sdk'
+
+import { fireEvent, render, screen } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+import { userEvent as browserUserEvent } from 'vitest/browser'
+
+import Subject from '../audio-output-controls.svelte'
+import Pane from './__fixtures__/audio-output-controls-in-320-pane.svelte'
+import WidePane from './__fixtures__/audio-output-controls-in-672-pane.svelte'
+
+interface ControlsState {
+	properties: { supportedCodecs: string[]; sampleRateHz: number; numChannels: number } | undefined
+	play: Mock<AudioOutClient['play']>
+}
+
+const state = vi.hoisted(
+	(): ControlsState => ({
+		properties: undefined,
+		play: vi.fn<AudioOutClient['play']>(),
+	})
+)
+
+vi.mock('@viamrobotics/svelte-sdk', async () => {
+	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')
+	return {
+		createResourceClient: vi.fn(() => ({
+			current: {
+				play: (...args: Parameters<AudioOutClient['play']>) => state.play(...args),
+			},
+		})),
+		createResourceQuery: vi.fn(() => ({
+			get data() {
+				return state.properties
+			},
+			isLoading: false,
+			isSuccess: true,
+			isError: false,
+			fetchStatus: 'idle',
+			error: null,
+		})),
+		useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
+	}
+})
+
+const PROPS = { partID: 'test-part', resourceName: 'test-audio-out' }
+const DEVICE_SAMPLE_RATE_HZ = 16_000
+const HELD_MS = 300
+const INT16_HALF_SCALE = 16_384
+
+const RealAudioContext = globalThis.AudioContext
+const contexts: AudioContext[] = []
+const microphones: MediaStream[] = []
+
+class RecordedAudioContext extends RealAudioContext {
+	constructor(options?: AudioContextOptions) {
+		super(options)
+		contexts.push(this)
+	}
+}
+
+const openOscillatorMicrophone = () => {
+	const context = new RealAudioContext()
+	const oscillator = context.createOscillator()
+	const destination = context.createMediaStreamDestination()
+	oscillator.connect(destination)
+	oscillator.start()
+	microphones.push(destination.stream)
+	return Promise.resolve(destination.stream)
+}
+
+const deferred = <TValue>() => {
+	let resolve: (value: TValue) => void = () => undefined
+	const promise = new Promise<TValue>((settle) => {
+		resolve = settle
+	})
+	return { promise, resolve }
+}
+
+let getUserMedia: Mock<MediaDevices['getUserMedia']>
+let user: ReturnType<typeof userEvent.setup>
+
+const grantUserActivation = async () => {
+	await browserUserEvent.click(document.body)
+}
+
+beforeEach(async () => {
+	await grantUserActivation()
+	state.properties = {
+		supportedCodecs: ['pcm16', 'wav'],
+		sampleRateHz: DEVICE_SAMPLE_RATE_HZ,
+		numChannels: 2,
+	}
+	state.play = vi.fn<AudioOutClient['play']>().mockResolvedValue(undefined)
+	contexts.length = 0
+	microphones.length = 0
+	vi.stubGlobal('AudioContext', RecordedAudioContext)
+	getUserMedia = vi
+		.spyOn(navigator.mediaDevices, 'getUserMedia')
+		.mockImplementation(openOscillatorMicrophone)
+	user = userEvent.setup()
+})
+
+const renderSubject = () => render(Subject, { props: PROPS })
+
+const talkButton = () => screen.getByRole('button', { name: 'Hold to talk' })
+const playButton = () => screen.getByRole('button', { name: 'Play' })
+
+const waitMs = (ms: number) =>
+	new Promise<void>((resolve) => {
+		setTimeout(resolve, ms)
+	})
+
+const pressTalk = async () => {
+	await fireEvent.pointerDown(talkButton(), { button: 0 })
+	await vi.waitFor(() => expect(microphones).toHaveLength(1))
+}
+
+const holdUntilHeard = async () => {
+	await pressTalk()
+	await waitMs(HELD_MS)
+}
+
+const microphoneTrackStates = () =>
+	microphones.flatMap((stream) => stream.getTracks().map((track) => track.readyState))
+
+const clipPeak = (bytes: Uint8Array) => {
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+	let peak = 0
+	for (let offset = 0; offset < bytes.byteLength; offset += 2) {
+		peak = Math.max(peak, Math.abs(view.getInt16(offset, true)))
+	}
+	return peak
+}
+
+const sentClip = () => {
+	const [call] = state.play.mock.calls
+	if (call === undefined) throw new Error('Play was not called')
+	const [audioData, info] = call
+	return { audioData, info }
+}
+
+const chooseFile = async (file: File) => {
+	const input = screen.getByLabelText('Audio file')
+	if (!(input instanceof HTMLInputElement)) throw new Error('The file field has no input')
+	const transfer = new DataTransfer()
+	transfer.items.add(file)
+	input.files = transfer.files
+	await fireEvent.change(input)
+}
+
+const WAV_BYTES = new Uint8Array([1, 2, 3, 4])
+const wavFile = () => new File([WAV_BYTES], 'greeting.wav', { type: 'audio/wav' })
+
+describe('AudioOutputControls', () => {
+	it('asks for no microphone and creates no AudioContext before a press', () => {
+		renderSubject()
+
+		expect(getUserMedia).not.toHaveBeenCalled()
+		expect(contexts).toHaveLength(0)
+	})
+
+	it('presses Hold to talk while it is held', async () => {
+		renderSubject()
+
+		await pressTalk()
+
+		expect(talkButton()).toHaveAttribute('aria-pressed', 'true')
+	})
+
+	it("sends what was heard on release as one mono pcm16 clip at GetProperties' sample rate", async () => {
+		renderSubject()
+		await holdUntilHeard()
+
+		await fireEvent.pointerUp(talkButton())
+
+		await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+		const { audioData, info } = sentClip()
+		expect(info).toEqual(
+			expect.objectContaining({
+				codec: 'pcm16',
+				sampleRateHz: DEVICE_SAMPLE_RATE_HZ,
+				numChannels: 1,
+			})
+		)
+		expect(audioData.byteLength % 2, 'whole int16 samples').toBe(0)
+		expect(
+			clipPeak(audioData),
+			'the full scale oscillator reaches past half scale'
+		).toBeGreaterThan(INT16_HALF_SCALE)
+	})
+
+	it('records at 48000 Hz when GetProperties reports no sample rate', async () => {
+		state.properties = { supportedCodecs: [], sampleRateHz: 0, numChannels: 0 }
+		renderSubject()
+
+		await pressTalk()
+
+		expect(contexts.map((context) => context.sampleRate)).toEqual([48_000])
+	})
+
+	it('sends nothing for a release before any audio was heard', async () => {
+		const microphone = deferred<MediaStream>()
+		getUserMedia.mockImplementation(() => microphone.promise)
+		renderSubject()
+		await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+		await fireEvent.pointerUp(talkButton())
+		microphone.resolve(await openOscillatorMicrophone())
+		await waitMs(HELD_MS)
+
+		expect(state.play).not.toHaveBeenCalled()
+		expect(microphoneTrackStates(), 'the late microphone is stopped').toEqual(['ended'])
+	})
+
+	it.each([
+		{
+			path: 'pointer up on the button',
+			release: async () => fireEvent.pointerUp(talkButton()),
+		},
+		{
+			path: 'pointer up outside the button',
+			release: async () => fireEvent.pointerUp(globalThis.window),
+		},
+		{
+			path: 'pointer cancel',
+			release: async () => fireEvent.pointerCancel(talkButton()),
+		},
+		{
+			path: 'window blur',
+			release: async () => fireEvent.blur(globalThis.window),
+		},
+		{
+			path: 'a hidden tab',
+			release: async () => {
+				vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
+				await fireEvent(document, new Event('visibilitychange'))
+			},
+		},
+	])('ends recording and sends the clip on $path', async ({ release }) => {
+		renderSubject()
+		await holdUntilHeard()
+
+		await release()
+
+		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+		expect(microphoneTrackStates()).toEqual(['ended'])
+		await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+	})
+
+	it.each(['Space', 'Enter'])(
+		'holds while %s is down and ends recording on its key up',
+		async (keyName) => {
+			renderSubject()
+			talkButton().focus()
+			await user.keyboard(`[${keyName}>]`)
+			await vi.waitFor(() => expect(microphones).toHaveLength(1))
+			expect(talkButton(), 'held while the key is down').toHaveAttribute('aria-pressed', 'true')
+			await waitMs(HELD_MS)
+
+			await user.keyboard(`[/${keyName}]`)
+
+			expect(talkButton(), 'released on key up').toHaveAttribute('aria-pressed', 'false')
+			expect(microphoneTrackStates()).toEqual(['ended'])
+		}
+	)
+
+	it('ends recording, stops the microphone, and closes the context on unmount', async () => {
+		const { unmount } = renderSubject()
+		await holdUntilHeard()
+
+		unmount()
+
+		expect(microphoneTrackStates()).toEqual(['ended'])
+		await vi.waitFor(() => expect(contexts.map((context) => context.state)).toEqual(['closed']))
+	})
+
+	it('reports a denied microphone in the section indicator', async () => {
+		getUserMedia.mockRejectedValue(new DOMException('Permission denied', 'NotAllowedError'))
+		renderSubject()
+
+		await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+		expect(
+			await screen.findByRole('button', { name: '1 error, copy to clipboard' })
+		).toBeInTheDocument()
+	})
+
+	it('keeps Hold to talk enabled and unpressed after a denied microphone', async () => {
+		getUserMedia.mockRejectedValue(new DOMException('Permission denied', 'NotAllowedError'))
+		renderSubject()
+
+		await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-pressed', 'false'))
+		expect(talkButton()).toBeEnabled()
+	})
+
+	it('plays a chosen file through Play with its codec and GetProperties’ format', async () => {
+		renderSubject()
+		await chooseFile(wavFile())
+
+		await user.click(playButton())
+
+		await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+		const { audioData, info } = sentClip()
+		expect([...audioData]).toEqual([...WAV_BYTES])
+		expect(info).toEqual(
+			expect.objectContaining({
+				codec: 'wav',
+				sampleRateHz: DEVICE_SAMPLE_RATE_HZ,
+				numChannels: 2,
+			})
+		)
+	})
+
+	it('keeps Play disabled with no file', () => {
+		renderSubject()
+
+		expect(playButton()).toBeDisabled()
+	})
+
+	it('marks an unsupported file invalid and keeps Play disabled', async () => {
+		renderSubject()
+
+		await chooseFile(new File([WAV_BYTES], 'notes.txt', { type: 'text/plain' }))
+
+		expect(screen.getByLabelText('Audio file')).toHaveAttribute('aria-invalid', 'true')
+		expect(playButton()).toBeDisabled()
+	})
+
+	it('disables Play while Hold to talk is held', async () => {
+		renderSubject()
+		await chooseFile(wavFile())
+
+		await pressTalk()
+
+		expect(playButton()).toBeDisabled()
+	})
+
+	it('disables Play and marks Hold to talk busy while its clip is sending', async () => {
+		state.play.mockReturnValue(new Promise(() => undefined))
+		renderSubject()
+		await chooseFile(wavFile())
+		await holdUntilHeard()
+
+		await fireEvent.pointerUp(talkButton())
+
+		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+		expect(playButton()).toBeDisabled()
+	})
+
+	it('ignores a press of Hold to talk while its clip is sending', async () => {
+		state.play.mockReturnValue(new Promise(() => undefined))
+		renderSubject()
+		await holdUntilHeard()
+		await fireEvent.pointerUp(talkButton())
+		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+
+		await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+		expect(getUserMedia).toHaveBeenCalledTimes(1)
+		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	it('disables Hold to talk while a file plays', async () => {
+		state.play.mockReturnValue(new Promise(() => undefined))
+		renderSubject()
+		await chooseFile(wavFile())
+
+		await user.click(playButton())
+
+		await vi.waitFor(() => expect(playButton()).toHaveAttribute('aria-busy', 'true'))
+		expect(talkButton()).toBeDisabled()
+	})
+
+	it('ignores a press of Play while a file plays', async () => {
+		state.play.mockReturnValue(new Promise(() => undefined))
+		renderSubject()
+		await chooseFile(wavFile())
+		await user.click(playButton())
+		await vi.waitFor(() => expect(playButton()).toHaveAttribute('aria-busy', 'true'))
+
+		await user.click(playButton())
+
+		expect(state.play).toHaveBeenCalledTimes(1)
+	})
+
+	it('keeps the root and the pane within 320 px with the file row under Hold to talk', async () => {
+		render(Pane, { props: { widget: Subject } })
+		await chooseFile(wavFile())
+
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild ?? pane
+		const talk = screen.getByRole('group', { name: 'Talk' }).getBoundingClientRect()
+		const file = screen.getByRole('group', { name: 'Play a file' }).getBoundingClientRect()
+		expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
+		expect(file.top, 'the file row starts below Hold to talk').toBeGreaterThanOrEqual(talk.bottom)
+	})
+
+	it('puts the talk group and the file group in two columns in a 672 px pane', () => {
+		render(WidePane, { props: { widget: Subject } })
+
+		const talk = screen.getByRole('group', { name: 'Talk' }).getBoundingClientRect()
+		const file = screen.getByRole('group', { name: 'Play a file' }).getBoundingClientRect()
+
+		expect(file.left, 'the file group starts right of the talk group').toBeGreaterThanOrEqual(
+			talk.right
+		)
+		expect(file.top, 'both groups start on one row').toBe(talk.top)
+	})
+})

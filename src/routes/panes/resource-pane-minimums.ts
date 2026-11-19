@@ -215,15 +215,15 @@ const CAMERA_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
  * it, while every other query is resolved with one detection and two classifications.
  */
 const VISION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 295, height: 1528 },
+	[COMPOSITE_SLOT]: { width: 295, height: 1512 },
 	controls: { width: 266, height: 458 },
 	'capture-all-from-camera': { width: 274, height: 303 },
 	'get-properties': { width: 265, height: 186 },
 	'get-object-point-clouds': { width: 202, height: 217 },
 	'get-detections-from-camera': { width: 232, height: 177 },
 	'get-classifications-from-camera': { width: 232, height: 223 },
-	'get-detections': { width: 192, height: 201 },
-	'get-classifications': { width: 227, height: 235 },
+	'get-detections': { width: 271, height: 169 },
+	'get-classifications': { width: 271, height: 203 },
 }
 
 /**
@@ -259,6 +259,56 @@ const SLAM_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	'get-properties': { width: 246, height: 241 },
 }
 
+/**
+ * The audio input pane minimums in px, measured by the same spec, not board estimates. GetProperties
+ * is resolved with two channels, 48000 Hz, and the `pcm16` and `mp3` codecs. Every pane is measured
+ * idle, with no capture or listen started. The composite's and `controls`' fields sit in
+ * `grid-cols-1` tracks of `min-w-0` rows, which add no min-content width, so their widths are the
+ * header's own floor rather than a widget's.
+ */
+const AUDIO_INPUT_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 78, height: 404 },
+	controls: { width: 110, height: 267 },
+	'get-audio': { width: 284, height: 183 },
+	'get-properties': { width: 239, height: 147 },
+}
+
+/**
+ * The discovery service pane minimums in px, measured by the same spec, not board estimates. The
+ * composite and DiscoverResources are measured idle, before DiscoverResources is pressed. `controls`
+ * is measured with the result resolved to two configs and one grouped pair, `cam-0` and `cam-1`,
+ * that share an API and a model.
+ */
+const DISCOVERY_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 191, height: 123 },
+	controls: { width: 219, height: 467 },
+	'discover-resources': { width: 172, height: 127 },
+}
+
+/**
+ * The ML model service pane minimums in px, measured by the same spec, not board estimates, with
+ * metadata resolved to one input tensor and one output tensor. Metadata is the composite's only
+ * query.
+ */
+const ML_MODEL_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 288, height: 491 },
+	metadata: { width: 288, height: 461 },
+}
+
+/**
+ * The audio output pane minimums in px, measured by the same spec, not board estimates. GetProperties
+ * is resolved with two channels, 48000 Hz, and the `pcm16` and `mp3` codecs. Every pane is measured
+ * idle, with no file chosen and nothing pressed. The composite's width is under the header's floor,
+ * as audio input's is: its fields sit in `grid-cols-1` tracks of `min-w-0` rows, which add no
+ * min-content width.
+ */
+const AUDIO_OUTPUT_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 78, height: 450 },
+	controls: { width: 116, height: 200 },
+	play: { width: 254, height: 229 },
+	'get-properties': { width: 239, height: 147 },
+}
+
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
 	[ResourceTriplets.Motor]: MOTOR_PANE_MINIMUMS,
 	[ResourceTriplets.Arm]: ARM_PANE_MINIMUMS,
@@ -279,6 +329,10 @@ const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>
 	[ResourceTriplets.Vision]: VISION_PANE_MINIMUMS,
 	[ResourceTriplets.Navigation]: NAVIGATION_PANE_MINIMUMS,
 	[ResourceTriplets.Slam]: SLAM_PANE_MINIMUMS,
+	[ResourceTriplets.AudioInput]: AUDIO_INPUT_PANE_MINIMUMS,
+	[ResourceTriplets.Discovery]: DISCOVERY_PANE_MINIMUMS,
+	[ResourceTriplets.MLModel]: ML_MODEL_PANE_MINIMUMS,
+	[ResourceTriplets.AudioOutput]: AUDIO_OUTPUT_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.

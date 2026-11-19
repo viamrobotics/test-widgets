@@ -1,14 +1,16 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
+	import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 	import { Button, Switch } from '@viamrobotics/prime-core'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk'
 	import { PersistedState, useResizeObserver } from 'runed'
 	import { Pane, Splitpanes } from 'svelte-splitpanes'
 
 	import { providePip } from '$lib'
-	import OperationsAndSessionsView from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
+	import OperationsAndSessions from '$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
 	import { type NamedResourceStatus } from '$lib/resource'
@@ -28,6 +30,8 @@
 	const { partID, urlHash, children }: Props = $props()
 
 	providePip(() => partID)
+
+	let isDrawerOpen = $state(false)
 
 	const machineStatus = useMachineStatus(() => partID)
 	const connectionStatus = useConnectionStatus(() => partID)
@@ -92,6 +96,7 @@
 
 	const instanceId = $props.id()
 	const singleCardLabelId = `single-card-label-${instanceId}`
+	const drawerBodyId = `${instanceId}-ops-sessions-drawer`
 
 	const minSidebarPct = 17
 	const sidebarPct = new PersistedState('sideBarPct', minSidebarPct)
@@ -163,7 +168,33 @@
 					resources={displayedResources}
 				/>
 
-				<OperationsAndSessionsView {partID} />
+				<!-- z-10 keeps the drawer above the maplibre Google Maps floating element. -->
+				<section
+					class="bg-light border-light fixed bottom-0 z-10 w-full border-t"
+					aria-label="Operations and sessions drawer"
+				>
+					<h2 class="m-0">
+						<button
+							type="button"
+							class="text-default flex h-8 w-full items-center gap-2 px-2 text-xs"
+							aria-controls={drawerBodyId}
+							aria-expanded={isDrawerOpen}
+							onclick={() => (isDrawerOpen = !isDrawerOpen)}
+						>
+							<Icon icon={isDrawerOpen ? mdiChevronDown : mdiChevronUp} />
+							Operations and sessions
+						</button>
+					</h2>
+					<div
+						id={drawerBodyId}
+						class="h-[calc(30vh-2rem)] overflow-y-auto px-4 pt-3 pb-4"
+						hidden={!isDrawerOpen}
+					>
+						{#if isDrawerOpen}
+							<OperationsAndSessions {partID} />
+						{/if}
+					</div>
+				</section>
 			</main>
 		</Pane>
 	</Splitpanes>

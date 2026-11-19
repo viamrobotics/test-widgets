@@ -26,7 +26,7 @@ Use the semantic Tailwind tokens from `@viamrobotics/tailwind-config`, imported 
 - Borders: `border-light`, `border-medium`, `border-dark`.
 - Status: `danger`, `warning`, `success`, `info`, each with `-dark`, `-medium`, `-light`. Use for meaning, not decoration.
 
-WebGL and canvas drawing (shaders, Three.js materials, `<canvas>` fills, MapLibre markers and layers) cannot take a class. Read the token there with `themeColor('--color-<name>')` from `src/lib/theme-color.ts`, with the whole variable name written as a literal, because Tailwind emits a theme variable only when a scanned source names it in full. A literal hex is legitimate only where no tailwind-config token has that value.
+WebGL and canvas drawing (shaders, Three.js materials, `<canvas>` fills, MapLibre markers and layers) cannot take a class. Read the token there with `themeColor('--color-<name>')`, imported from `@viamrobotics/tailwind-config/theme-color`, with the whole variable name written as a literal, because Tailwind emits a theme variable only when a scanned source names it in full. A literal hex is legitimate only where no tailwind-config token has that value.
 
 `src/app.css` also carries a Tailwind v3 border-color compatibility block (`@layer base` setting `border-color: var(--color-gray-200, currentcolor)`). It stays until every element sets an explicit border color. Do not "clean it up".
 

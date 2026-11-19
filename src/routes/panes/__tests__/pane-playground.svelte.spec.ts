@@ -40,6 +40,10 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 				resourceStatus('power-sensor-1', 'power_sensor'),
 				resourceStatus('encoder-1', 'encoder'),
 				resourceStatus('input-controller-1', 'input_controller'),
+				resourceStatus('audio-input-1', 'audio_in'),
+				resourceStatus('audio-output-1', 'audio_out'),
+				resourceStatus('discovery-1', 'discovery', 'service'),
+				resourceStatus('ml-model-1', 'mlmodel', 'service'),
 			],
 		},
 	}),
@@ -213,6 +217,15 @@ describe('Pane playground', () => {
 		}
 		for (const name of ['sensor-1', 'input-controller-1']) {
 			expect(tree.getByRole('treeitem', { name })).toBeInTheDocument()
+		}
+	})
+
+	it("lists the machine's audio inputs, audio outputs, discovery services, and ML model services", () => {
+		renderSubject()
+
+		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
+		for (const name of ['audio-input-1', 'audio-output-1', 'discovery-1', 'ml-model-1']) {
+			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
 		}
 	})
 

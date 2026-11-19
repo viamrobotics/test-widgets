@@ -1,47 +1,31 @@
-import { appRobotApi, type JsonValue } from '@viamrobotics/sdk'
-import { omit } from 'lodash-es'
+import type { appRobotApi } from '@viamrobotics/sdk'
 
 // The below code was copied from `ui/src/lib/resource-type.ts`
 const TRIPLET_SEPARATOR = ':'
-
-type ResourceTripletString =
-	`${string}${typeof TRIPLET_SEPARATOR}${string}${typeof TRIPLET_SEPARATOR}${string}`
+const TRIPLET_PARTS = 3
 
 /** Check if a string is a valid API or model triplet. */
-const isResourceTriplet = (value: string | undefined): value is ResourceTripletString => {
-	const parts = value?.split(TRIPLET_SEPARATOR)
+const isResourceTriplet = (value: string): boolean => {
+	const parts = value.split(TRIPLET_SEPARATOR)
 
-	return parts?.length === 3 && Boolean(parts[0] && parts[1] && parts[2])
+	return parts.length === TRIPLET_PARTS && parts.every((part) => part !== '')
 }
 
-/** An app-safe version of the resource config without deprecated fields. */
-export type SafeResourceConfig = Omit<appRobotApi.ComponentConfig, 'namespace' | 'type'>
-
-type SortableComponentConfig = appRobotApi.ComponentConfig & Record<string, unknown>
-
 /**
- * Transforms the provided component config to ensure it is safe to add the machine part's config
+ * Returns a copy of the component config that is safe to add to a machine part's config. With a
+ * qualified API and model, the deprecated `namespace` and `type` fields are cleared.
  *
  * @param resource The resource config to validate
  */
-export const transformComponentConfig = (resource: appRobotApi.ComponentConfig) => {
-	const hasQualifiedAPI = isResourceTriplet(resource.api)
-	const hasQualifiedModel = isResourceTriplet(resource.model)
-	let next: SafeResourceConfig = resource.clone()
+export const transformComponentConfig = (
+	resource: appRobotApi.ComponentConfig
+): appRobotApi.ComponentConfig => {
+	const next = resource.clone()
 
-	if (hasQualifiedAPI && hasQualifiedModel) {
-		next = omit(next, 'namespace')
-		next = omit(next, 'type')
+	if (isResourceTriplet(next.api) && isResourceTriplet(next.model)) {
+		next.namespace = ''
+		next.type = ''
 	}
 
-	return new appRobotApi.ComponentConfig(next).toJson() as SortableComponentConfig
-}
-
-/**
- * Parses the provided component config json to add to a part's config
- *
- * @param resource The resource json to parse
- */
-export const parseComponentConfig = (resource: Record<string, unknown>) => {
-	return appRobotApi.ComponentConfig.fromJson(resource as JsonValue)
+	return next
 }

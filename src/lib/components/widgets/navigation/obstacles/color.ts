@@ -1,4 +1,4 @@
-import { themeColor } from '$lib/theme-color'
+import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 
 // The map meshes and the legend swatches share these tokens, so each swatch matches its mesh.
 const getColorVariable = (hoveredLabel: string | null, label: string) => {
@@ -11,8 +11,8 @@ const getColorVariable = (hoveredLabel: string | null, label: string) => {
 	return '--color-cyberpunk-bright'
 }
 
-/** The resolved color, for a three.js material. */
-export const getColor = (hoveredLabel: string | null, label: string): string =>
+/** The resolved color, for a three.js material. Undefined when the token is unset, which leaves the material's default. */
+export const getColor = (hoveredLabel: string | null, label: string): string | undefined =>
 	themeColor(getColorVariable(hoveredLabel, label))
 
 /** A `var(--color-...)` reference, for an inline CSS style. */

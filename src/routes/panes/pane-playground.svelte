@@ -38,7 +38,8 @@
 
 	// Motors first so the first motor still opens the layout, then arms, motion services, bases,
 	// gantries, servos, grippers, boards, switches, buttons, sensors, movement sensors, power sensors,
-	// encoders, input controllers, cameras, vision services, navigation services, and SLAM services.
+	// encoders, input controllers, cameras, vision services, navigation services, SLAM services, audio
+	// inputs, audio outputs, discovery services, and ML model services.
 	const HOSTED_APIS = [
 		ResourceTriplets.Motor,
 		ResourceTriplets.Arm,
@@ -59,6 +60,10 @@
 		ResourceTriplets.Vision,
 		ResourceTriplets.Navigation,
 		ResourceTriplets.Slam,
+		ResourceTriplets.AudioInput,
+		ResourceTriplets.AudioOutput,
+		ResourceTriplets.Discovery,
+		ResourceTriplets.MLModel,
 	]
 	const resources = $derived(
 		HOSTED_APIS.flatMap((api) =>

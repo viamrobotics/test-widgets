@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte'
 import { Detection } from '@viamrobotics/sdk'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
@@ -44,7 +44,7 @@ const executeButton = () => screen.getByRole('button', { name: 'Execute' })
 const chooseImage = async (container: HTMLElement) => {
 	const file = await createImageFile()
 	await chooseFile(container, file)
-	await screen.findByText('scene.png')
+	await waitFor(() => expect(executeButton()).toBeEnabled())
 	return file
 }
 
@@ -60,10 +60,24 @@ describe('GetDetections widget', () => {
 		state.error = null
 	})
 
+	it('marks a file that is not a JPEG or PNG invalid and holds Execute back', async () => {
+		const { container } = render(Subject, { props: PROPS })
+
+		await chooseFile(container, new File(['text'], 'notes.txt', { type: 'text/plain' }))
+
+		expect(await screen.findByLabelText('Image')).toBeInvalid()
+		expect(
+			screen.getByText('notes.txt is not a JPEG or PNG image', {
+				selector: '[role="tooltip"] *, *',
+			})
+		).toBeInTheDocument()
+		expect(executeButton()).toBeDisabled()
+	})
+
 	it('holds Execute back until an image is chosen', () => {
 		render(Subject, { props: PROPS })
 
-		expect(screen.getByText('No image chosen')).toBeInTheDocument()
+		expect(screen.getByLabelText('Image')).toBeInTheDocument()
 		expect(executeButton()).toBeDisabled()
 	})
 

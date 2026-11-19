@@ -2,7 +2,13 @@ import type { PaneNode } from '@viamrobotics/prime-panes'
 import type { ResourceName } from '@viamrobotics/sdk'
 
 import { render } from '@testing-library/svelte'
-import { Detection, EncoderPositionType, navigationApi, slamApi } from '@viamrobotics/sdk'
+import {
+	appRobotApi,
+	Detection,
+	EncoderPositionType,
+	navigationApi,
+	slamApi,
+} from '@viamrobotics/sdk'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PaneSize } from '../layout-minimum'
@@ -254,6 +260,50 @@ const slamData = () => ({
 // GetPointCloudMap fetches on a press, so the idle state has no map to show.
 const slamIdleData = () => ({ getProperties: SLAM_PROPERTIES, getPosition: SLAM_POSITION })
 
+const AUDIO_INPUT_DATA = {
+	getProperties: { numChannels: 2, sampleRateHz: 48_000, supportedCodecs: ['pcm16', 'mp3'] },
+}
+
+const AUDIO_OUTPUT_DATA = {
+	getProperties: { numChannels: 2, sampleRateHz: 48_000, supportedCodecs: ['pcm16', 'mp3'] },
+}
+
+const DISCOVERED_CONFIGS = [
+	new appRobotApi.ComponentConfig({
+		name: 'cam-0',
+		api: 'rdk:component:camera',
+		model: 'rdk:builtin:webcam',
+	}),
+	new appRobotApi.ComponentConfig({
+		name: 'cam-1',
+		api: 'rdk:component:camera',
+		model: 'rdk:builtin:webcam',
+	}),
+	new appRobotApi.ComponentConfig({
+		name: 'motor-1',
+		api: 'rdk:component:motor',
+		model: 'rdk:builtin:gpio',
+	}),
+]
+
+const DISCOVERY_RESOLVED_DATA = { discoverResources: DISCOVERED_CONFIGS }
+
+const ML_MODEL_DATA = {
+	metadata: {
+		metadata: {
+			name: 'person-detector',
+			type: 'tflite_detector',
+			description: 'Finds people in a frame',
+			inputInfo: [
+				{ name: 'image', dataType: 'uint8', shape: [1n, 320n, 320n, 3n], description: 'RGB frame' },
+			],
+			outputInfo: [
+				{ name: 'scores', dataType: 'float32', shape: [1n, 10n], description: 'Confidence' },
+			],
+		},
+	},
+}
+
 interface MinimumRow {
 	id: string
 	resource: ResourceName
@@ -269,6 +319,15 @@ const camera = resource('camera', 'camera-1')
 const vision = resource('vision', 'vision-1', 'service')
 const navigation = resource('navigation', 'navigation-1', 'service')
 const slam = resource('slam', 'slam-1', 'service')
+const audioInput = resource('audio_in', 'audio-input-1')
+const audioOutput = resource('audio_out', 'audio-output-1')
+const discovery = resource('discovery', 'discovery-1', 'service')
+const mlModel = resource('mlmodel', 'ml-model-1', 'service')
+const audioInputData = () => AUDIO_INPUT_DATA
+const audioOutputData = () => AUDIO_OUTPUT_DATA
+const discoveryIdleData = () => ({})
+const discoveryResolvedData = () => DISCOVERY_RESOLVED_DATA
+const mlModelData = () => ML_MODEL_DATA
 const navigationData = () => NAVIGATION_DATA
 
 const ROWS: MinimumRow[] = [
@@ -337,6 +396,19 @@ const ROWS: MinimumRow[] = [
 	{ id: 'slam-1::get-position', resource: slam, data: slamData },
 	{ id: 'slam-1::get-point-cloud-map', resource: slam, data: slamIdleData },
 	{ id: 'slam-1::get-properties', resource: slam, data: slamData },
+	{ id: 'audio-input-1::composite', resource: audioInput, data: audioInputData },
+	{ id: 'audio-input-1::controls', resource: audioInput, data: audioInputData },
+	{ id: 'audio-input-1::get-audio', resource: audioInput, data: audioInputData },
+	{ id: 'audio-input-1::get-properties', resource: audioInput, data: audioInputData },
+	{ id: 'audio-output-1::composite', resource: audioOutput, data: audioOutputData },
+	{ id: 'audio-output-1::controls', resource: audioOutput, data: audioOutputData },
+	{ id: 'audio-output-1::play', resource: audioOutput, data: audioOutputData },
+	{ id: 'audio-output-1::get-properties', resource: audioOutput, data: audioOutputData },
+	{ id: 'discovery-1::composite', resource: discovery, data: discoveryIdleData },
+	{ id: 'discovery-1::controls', resource: discovery, data: discoveryResolvedData },
+	{ id: 'discovery-1::discover-resources', resource: discovery, data: discoveryIdleData },
+	{ id: 'ml-model-1::composite', resource: mlModel, data: mlModelData },
+	{ id: 'ml-model-1::metadata', resource: mlModel, data: mlModelData },
 ]
 
 const paneFor = (row: MinimumRow): PaneNode<ResourcePane> => {

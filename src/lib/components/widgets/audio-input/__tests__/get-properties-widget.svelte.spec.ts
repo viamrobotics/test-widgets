@@ -3,6 +3,7 @@ import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../get-properties-widget.svelte'
+import Pane from './__fixtures__/in-320-pane.svelte'
 
 interface Properties {
 	supportedCodecs: string[]
@@ -55,7 +56,7 @@ describe('Audio input GetProperties widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('opus, flac')).toBeInTheDocument()
+		expect(screen.getByText('Supported codecs: opus, flac')).toBeInTheDocument()
 	})
 
 	it('renders the sample rate in hertz', () => {
@@ -63,7 +64,8 @@ describe('Audio input GetProperties widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('44100 Hz')).toBeInTheDocument()
+		expect(screen.getByText('44100')).toBeInTheDocument()
+		expect(screen.getByText('Hz')).toBeInTheDocument()
 	})
 
 	it('renders the channel count', () => {
@@ -74,12 +76,29 @@ describe('Audio input GetProperties widget', () => {
 		expect(screen.getByText('7')).toBeInTheDocument()
 	})
 
-	it('polls getProperties every 500 ms', () => {
+	it('reads getProperties once, with no polling', () => {
 		renderSubject()
 
 		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getProperties', {
-			refetchInterval: 500,
+			refetchInterval: false,
 		})
+	})
+
+	it('reads - for no codecs', () => {
+		queryState.data = { supportedCodecs: [], sampleRateHz: 44_100, numChannels: 7 }
+
+		renderSubject()
+
+		expect(screen.getByText('Supported codecs: -')).toBeInTheDocument()
+	})
+
+	it('keeps the root and the pane within 320 px', () => {
+		const { container } = render(Pane, { props: { widget: Subject } })
+
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild ?? container
+		expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
 	})
 
 	it("shows the query error in the section's error indicator", async () => {

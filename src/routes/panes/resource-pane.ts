@@ -32,6 +32,9 @@ const CONTROL_ENTRY_IDS: Readonly<Record<string, ReadonlySet<string>>> = {
 	[ResourceTriplets.Vision]: new Set(['controls']),
 	[ResourceTriplets.Navigation]: new Set(['controls']),
 	[ResourceTriplets.Slam]: new Set(['controls']),
+	[ResourceTriplets.AudioInput]: new Set(['controls']),
+	[ResourceTriplets.Discovery]: new Set(['controls']),
+	[ResourceTriplets.AudioOutput]: new Set(['controls']),
 }
 
 /** The pane slot and minimum key for a resource's composite card, which has no registry id. */
