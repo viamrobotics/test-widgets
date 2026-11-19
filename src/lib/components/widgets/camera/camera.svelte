@@ -1,13 +1,23 @@
 <script lang="ts">
+	import { mdiPlayCircleOutline } from '@mdi/js'
 	import { Canvas } from '@threlte/core'
-	import { Button, Label, Select, Switch, ToggleButtons } from '@viamrobotics/prime-core'
+	import { Select } from '@viamrobotics/prime-controls'
+	import { Checkbox, Field, Icon, Label } from '@viamrobotics/prime-ui'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
 	import { untrack } from 'svelte'
 
-	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
+	import type {
+		MediaFrameAddToDataset,
+		MediaFrameCapture,
+		MediaFramePictureInPicture,
+	} from '$lib/components/media-frame/media-frame-capture'
+
+	import { useAddToDatasetAction } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import MediaFrame from '$lib/components/media-frame/media-frame.svelte'
+	import Progress from '$lib/components/progress.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
@@ -18,14 +28,15 @@
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
-	import ExportScreenshot from './export-screenshot.svelte'
+	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { getPanoCoverageFromXmp } from './get-pano-coverage-from-xmp'
 	import { getSourceNames } from './get-source-names'
 	import { getXmpJsonFromImageBytes, type XmpJson } from './get-xmp-json-from-image'
 	import LiveOrPollingVideo from './live-or-polling-video.svelte'
 	import LiveThreeSixtyCameraView from './live-three-sixty-camera-view.svelte'
 	import { pickImageForSource } from './pick-image-for-source'
-	import PictureInPictureButton from './picture-in-picture-button.svelte'
+	import SectionErrorReporterReset from './section-error-reporter-reset.svelte'
+	import SetStreamOptions from './set-stream-options.svelte'
 	import ThreeSixtyCameraView from './three-sixty-camera-view.svelte'
 
 	interface Props {
@@ -37,14 +48,30 @@
 
 	const { partID, resourceName, autoplay = false }: Props = $props()
 
+	// GetPointCloud returns a large payload, so it never polls faster than once a second.
+	const POINT_CLOUD_MIN_INTERVAL_MS = 1000
+
+	// The feed's ratio until its first frame reports its own size, and the 360 view's ratio always.
+	const DEFAULT_ASPECT_RATIO = '16 / 9'
+
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
 		'camera'
 	)
 
+	const pointCloudRefetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'camera-point-cloud'
+	)
+
+	// Each key stores `true` to wait, so its "Start feed automatically" checkbox shows the inverse.
 	const waitToStartFeed = $derived(
 		new PersistedState(`camera-wait-to-start-feed/${partID}/${resourceName}`, false)
+	)
+	const waitToStartPointCloud = $derived(
+		new PersistedState(`camera-wait-to-start-point-cloud/${partID}/${resourceName}`, true)
 	)
 
 	let isPlaying = $derived(!waitToStartFeed.current)
@@ -52,15 +79,37 @@
 	// "Start feed", so later prop changes do not restart the feed.
 	if (untrack(() => autoplay)) isPlaying = true
 
-	let isShowingPointcloud = $state(false)
+	let isPointCloudRunning = $derived(!waitToStartPointCloud.current)
+
+	const getStartsFeedAutomatically = () => !waitToStartFeed.current
+	const setStartsFeedAutomatically = (checked: boolean) => {
+		waitToStartFeed.current = !checked
+	}
+
+	const getStartsPointCloudAutomatically = () => !waitToStartPointCloud.current
+	const setStartsPointCloudAutomatically = (checked: boolean) => {
+		waitToStartPointCloud.current = !checked
+	}
+
+	const startFeed = () => {
+		isPlaying = true
+	}
+
 	let selectedSource = $state('')
 	let sourceNames = $state<string[]>([])
 	let displayAs360 = $state(false)
+	let showMousePositionTooltip = $state(false)
 
-	const { addImageToDataset } = useAddImageToDataset()
-	const setIsShowingPointcloud = (event: CustomEvent<boolean>) => {
-		isShowingPointcloud = event.detail
+	const sourceItems = $derived(sourceNames.map((name) => ({ value: name, label: name })))
+	const getSelectedSource = () => selectedSource
+	const selectSource = (next: string | undefined) => {
+		if (next) selectedSource = next
 	}
+
+	const id = $props.id()
+	const imagesHeadingId = `${id}-images`
+	const pointCloudHeadingId = `${id}-point-cloud`
+	const sourceLabelId = `${id}-source`
 
 	const client = createResourceClient(
 		CameraClient,
@@ -69,6 +118,7 @@
 	)
 
 	const isLive = $derived(refetchInterval.current === RefetchIntervals.LIVE)
+	const isShowingVideo = $derived(isPlaying && !displayAs360)
 
 	const imageQuery = createResourceQuery(
 		client,
@@ -121,18 +171,19 @@
 		panoCoverage?.kind === 'gpano' ? 'Display as panorama' : 'Display as 360°'
 	)
 
+	const pointCloudInterval = $derived.by(() => {
+		const interval = pointCloudRefetchInterval.current
+		if (typeof interval !== 'number') return interval
+		return Math.max(interval, POINT_CLOUD_MIN_INTERVAL_MS)
+	})
+
 	const pointcloudQuery = createResourceQuery(client, 'getPointCloud', () => ({
-		enabled: isShowingPointcloud,
-		refetchInterval:
-			// Cap PCD refresh rate at once per second
-			typeof refetchInterval.current === 'number'
-				? Math.max(refetchInterval.current, 1000)
-				: refetchInterval.current,
+		enabled: isPointCloudRunning,
+		refetchInterval: pointCloudInterval,
 	}))
 
-	// A separate, disabled query for exporting a screenshot
-	// since this button should work regardless of refetch
-	// interval and not affect the image feed.
+	// A separate, disabled query for the full-resolution screenshot,
+	// so it works at any refresh rate and does not affect the feed.
 	const exportScreenshotQuery = createResourceQuery(
 		client,
 		'getImages',
@@ -143,237 +194,300 @@
 		}
 	)
 
-	let exportScreenshotError = $state<Error | null>(null)
-	const pip = usePip()
-
-	const imagesErrors = useSectionErrors(() => ({
-		mutations: [{ error: exportScreenshotError }, { error: pip.error ?? null }],
-	}))
+	// The frame's Screenshot, Picture-in-picture, and Add to dataset report their own failures here.
+	const imagesErrors = useSectionErrors(() => ({}))
 
 	const pointcloudErrors = useSectionErrors(() => ({ queries: [pointcloudQuery] }))
 
-	// Firefox has native support for picture-in-picture and does not need
-	// to be requested separately. Don't show a "toggle pip" button in Firefox.
-	const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
+	const pip = usePip()
 
-	const onSourceSelect = (event: Event) => {
-		const { value } = event.target as HTMLSelectElement
-		selectedSource = value
+	// No stream of its own: pip plays the one `LiveOrPollingVideo` registers under the camera's name.
+	const pictureInPicture = $derived<MediaFramePictureInPicture>({ key: resourceName })
+
+	$effect(() => {
+		if (resourceName === pip.resourceName) {
+			pip.setRate(refetchInterval.current)
+		}
+	})
+
+	let feedFps = $state<number>()
+	let feedAspectRatio = $state(DEFAULT_ASPECT_RATIO)
+
+	const updateFeedFrame = (frame: { fps: number; width: number; height: number }) => {
+		feedFps = frame.fps
+		if (frame.width > 0 && frame.height > 0) {
+			feedAspectRatio = `${frame.width} / ${frame.height}`
+		}
 	}
 
-	let mousePostionTooltip = $state<'On' | 'Off'>('Off')
-	const setMousePostionTooltip = (event: CustomEvent<string>) => {
-		mousePostionTooltip = event.detail as 'On' | 'Off'
+	const frameAspectRatio = $derived(isShowingVideo ? feedAspectRatio : DEFAULT_ASPECT_RATIO)
+	const frameFps = $derived(isShowingVideo ? feedFps : undefined)
+
+	type GetImagesResponse = NonNullable<typeof imageQuery.data>
+
+	const requireSelectedImage = (response: GetImagesResponse | undefined) => {
+		const image = pickImageForSource(response?.images, selectedSource)
+		if (!image?.image) {
+			throw new Error(`GetImages returned no image for ${selectedSource || resourceName}`)
+		}
+		return image
 	}
+
+	const captureFullResolution = async (): Promise<MediaFrameCapture> => {
+		const { data, error } = await exportScreenshotQuery.refetch()
+		if (error) throw error
+
+		const image = requireSelectedImage(data)
+		const bytes = new Uint8Array(image.image)
+		if (image.mimeType !== VIAM_DEPTH_MIME_TYPE) {
+			return { binaryData: bytes, mimeType: image.mimeType || 'image/jpeg' }
+		}
+
+		// Depth frames save as the PNG the feed shows, since no viewer opens the raw format.
+		const png = await getBlobForViamDepth(bytes)
+		if (!png) throw new Error('Failed to decode depth image')
+		return { binaryData: new Uint8Array(await png.arrayBuffer()), mimeType: png.type }
+	}
+
+	const latestImages = async () => {
+		if (!isLive) return imageQuery.data
+		// The live feed is WebRTC and holds no bytes, so Live fetches one frame.
+		const { data, error } = await imageQuery.refetch()
+		if (error) throw error
+		return data
+	}
+
+	const captureSelectedImage = async (): Promise<MediaFrameCapture> => {
+		const image = requireSelectedImage(await latestImages())
+		return { binaryData: new Uint8Array(image.image), mimeType: image.mimeType }
+	}
+
+	const getAddToDatasetAction = useAddToDatasetAction(() => ({
+		partID,
+		cameraName: resourceName,
+		methodName: 'getImages',
+	}))
+
+	const addToDataset = $derived.by((): MediaFrameAddToDataset | undefined => {
+		const action = getAddToDatasetAction()
+		if (!action) return undefined
+		return { ...action, capture: captureSelectedImage }
+	})
 </script>
+
+{#snippet checkboxField(
+	label: string,
+	getChecked: () => boolean,
+	setChecked: (checked: boolean) => void
+)}
+	<Field class="flex items-center gap-2">
+		<Checkbox bind:checked={getChecked, setChecked} />
+		<Label>{label}</Label>
+	</Field>
+{/snippet}
+
+{#snippet feedMedia()}
+	{#if isShowingVideo}
+		<SectionErrorReporterReset>
+			<LiveOrPollingVideo
+				{partID}
+				{resourceName}
+				videoClass="block h-auto w-full"
+				{isLive}
+				data={imageQuery.data}
+				error={imageQuery.error}
+				isLoading={imageQuery.isLoading}
+				refetch={imageQuery.refetch}
+				{showMousePositionTooltip}
+				sourceName={selectedSource}
+				onFrame={updateFeedFrame}
+			/>
+		</SectionErrorReporterReset>
+	{:else if isPlaying && isLive}
+		<div class="size-full">
+			<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
+			<Canvas renderMode="always">
+				<LiveThreeSixtyCameraView
+					{partID}
+					{resourceName}
+					coverage={panoCoverage}
+				/>
+			</Canvas>
+		</div>
+	{:else if isPlaying}
+		<div class="size-full">
+			<Canvas>
+				<ThreeSixtyCameraView
+					data={imageQuery.data}
+					coverage={panoCoverage}
+				/>
+			</Canvas>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet pointCloudCheckbox()}
+	{@render checkboxField(
+		'Start feed automatically',
+		getStartsPointCloudAutomatically,
+		setStartsPointCloudAutomatically
+	)}
+{/snippet}
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<section class="flex flex-col">
-			<div class="flex flex-col gap-0.5 p-4 pb-0">
-				<Section.Heading>
-					<Section.Method
-						method="GetImages"
-						api={ResourceTriplets.Camera}
-					/>
-					{#snippet aside()}
-						<Section.Errors errors={imagesErrors.errors} />
-					{/snippet}
-				</Section.Heading>
-			</div>
-			<div class="p-4">
-				{#if isPlaying}
-					{#if displayAs360}
-						<div class="h-80 w-full">
-							{#if isLive}
-								<!-- renderMode="always" keeps the live VideoTexture advancing each frame -->
-								<Canvas renderMode="always">
-									<LiveThreeSixtyCameraView
-										{partID}
-										{resourceName}
-										coverage={panoCoverage}
+		<div class="flex flex-col">
+			<Section
+				errorReporter={imagesErrors}
+				class="flex-col px-0 py-0"
+			>
+				<div class="p-4 pb-3">
+					<Section.Heading>
+						<span id={imagesHeadingId}>
+							<Section.Method
+								method="GetImages"
+								api={ResourceTriplets.Camera}
+							/>
+						</span>
+						{#snippet aside()}
+							<Section.Errors errors={imagesErrors.errors} />
+						{/snippet}
+					</Section.Heading>
+				</div>
+
+				<div
+					role="group"
+					aria-labelledby={imagesHeadingId}
+					class="flex flex-col"
+				>
+					<MediaFrame
+						label={resourceName}
+						media={feedMedia}
+						aspectRatio={frameAspectRatio}
+						running={isPlaying}
+						onStart={startFeed}
+						bind:startAutomatically={getStartsFeedAutomatically, setStartsFeedAutomatically}
+						fps={frameFps}
+						screenshot={captureFullResolution}
+						{pictureInPicture}
+						{addToDataset}
+						bind:cursorPosition={showMousePositionTooltip}
+					>
+						<div class="min-w-0">
+							<RefetchController
+								{refetchInterval}
+								allowLive
+								queries={[imageQuery]}
+							/>
+						</div>
+
+						{#if sourceNames.length > 0 && !isLive}
+							<div class="flex items-center gap-2">
+								<span
+									id={sourceLabelId}
+									class="text-subtle-1 shrink-0 text-xs"
+								>
+									Source
+								</span>
+								<div class="max-w-50 min-w-0 flex-1">
+									<Select
+										items={sourceItems}
+										bind:value={getSelectedSource, selectSource}
+										aria-labelledby={sourceLabelId}
 									/>
-								</Canvas>
-							{:else}
-								<Canvas>
-									<ThreeSixtyCameraView
-										data={imageQuery.data}
-										coverage={panoCoverage}
+								</div>
+							</div>
+						{/if}
+
+						{#if panoCoverage}
+							{@render checkboxField(
+								panoToggleLabel,
+								() => displayAs360,
+								(checked) => {
+									displayAs360 = checked
+								}
+							)}
+						{/if}
+
+						{#if isShowingVideo && isLive}
+							<SetStreamOptions
+								{partID}
+								{resourceName}
+								class="-mx-4 -mb-4"
+							/>
+						{/if}
+					</MediaFrame>
+				</div>
+			</Section>
+
+			<Section
+				errorReporter={pointcloudErrors}
+				class="flex-col border-t px-0 py-0"
+			>
+				<div class="p-4 pb-3">
+					<Section.Heading>
+						<span id={pointCloudHeadingId}>
+							<Section.Method
+								method="GetPointCloud"
+								api={ResourceTriplets.Camera}
+							/>
+						</span>
+						{#snippet aside()}
+							<Section.Errors errors={pointcloudErrors.errors} />
+							<Section.Tooltip>
+								Get depth measurement data from cameras with depth sensing support
+							</Section.Tooltip>
+						{/snippet}
+					</Section.Heading>
+				</div>
+
+				<div
+					role="group"
+					aria-labelledby={pointCloudHeadingId}
+					class="flex flex-col"
+				>
+					{#if isPointCloudRunning && pointcloudQuery.data !== undefined}
+						<PCDWidget
+							data={pointcloudQuery.data}
+							label={resourceName}
+						>
+							{@render pointCloudCheckbox()}
+						</PCDWidget>
+					{:else}
+						<div class="bg-medium relative flex aspect-square w-full items-center justify-center">
+							{#if !isPointCloudRunning}
+								<button
+									type="button"
+									class="button button-dark"
+									onclick={() => {
+										isPointCloudRunning = true
+									}}
+								>
+									<Icon
+										icon={mdiPlayCircleOutline}
+										size="sm"
 									/>
-								</Canvas>
+									Start point cloud
+								</button>
+							{:else if pointcloudErrors.isLoading}
+								<div class="absolute inset-0">
+									<Progress />
+								</div>
 							{/if}
 						</div>
-					{:else}
-						<LiveOrPollingVideo
-							{partID}
-							{resourceName}
-							showResolutionOptions
-							videoClass="h-auto max-w-full"
-							{isLive}
-							data={imageQuery.data}
-							error={imageQuery.error}
-							isLoading={imageQuery.isLoading}
-							refetch={imageQuery.refetch}
-							showMousePositionTooltip={mousePostionTooltip === 'On'}
-							sourceName={selectedSource}
+						<div class="px-4 pt-3">
+							{@render pointCloudCheckbox()}
+						</div>
+					{/if}
+
+					<div class="p-4">
+						<RefetchController
+							refetchInterval={pointCloudRefetchInterval}
+							queries={[pointcloudQuery]}
 						/>
-					{/if}
-				{:else}
-					<div class="bg-medium flex h-64 w-full items-center justify-center">
-						<Button
-							icon="play-circle-outline"
-							variant="dark"
-							onclick={() => {
-								isPlaying = true
-							}}
-						>
-							Start feed
-						</Button>
-					</div>
-				{/if}
-
-				<div class="mt-3 flex flex-wrap items-start gap-2">
-					<RefetchController
-						{refetchInterval}
-						allowLive
-						queries={[imageQuery, pointcloudQuery]}
-					/>
-					<ExportScreenshot
-						name={client.current?.name ?? ''}
-						sourceName={selectedSource}
-						getImage={exportScreenshotQuery.refetch}
-						onExportError={(error) => {
-							exportScreenshotError = error
-						}}
-					/>
-					{#if addImageToDataset}
-						<Button
-							icon="layers-triple-outline"
-							onclick={async () => {
-								let imgData
-								if (refetchInterval.current === RefetchIntervals.LIVE) {
-									const { isSuccess, data } = await imageQuery.refetch()
-									if (!isSuccess) return
-									imgData = data
-								} else {
-									imgData = imageQuery.data
-								}
-
-								const matchingImage = pickImageForSource(imgData?.images, selectedSource)
-								const image = matchingImage?.image
-								const mimeType = matchingImage?.mimeType
-
-								if (image) {
-									addImageToDataset({
-										binaryData: new Uint8Array(image),
-										partID,
-										componentType: 'camera',
-										componentName: resourceName,
-										methodName: 'captureAllFromCamera',
-										mimeType: mimeType ?? 'image/png',
-										dataRequestTimes: [new Date(), new Date()],
-									})
-								}
-							}}
-						>
-							Add to dataset
-						</Button>
-					{/if}
-					{#if !isFirefox}
-						<PictureInPictureButton
-							{resourceName}
-							rate={refetchInterval.current}
-						/>
-					{/if}
-				</div>
-				<div class="flex flex-col gap-4">
-					<div class="flex w-full max-w-80 items-start gap-4">
-						{#if sourceNames.length > 0 && refetchInterval.current !== RefetchIntervals.LIVE}
-							<Label>
-								Source
-								<Select
-									value={selectedSource}
-									on:change={onSourceSelect}
-									slot="input"
-								>
-									{#each sourceNames as name (name)}
-										<option value={name}>{name}</option>
-									{/each}
-								</Select>
-							</Label>
-						{/if}
-						{#if panoCoverage}
-							<Label>
-								{panoToggleLabel}
-								<ToggleButtons
-									slot="input"
-									options={['On', 'Off']}
-									selected={displayAs360 ? 'On' : 'Off'}
-									on:input={(event) => {
-										displayAs360 = event.detail === 'On'
-									}}
-								/>
-							</Label>
-						{/if}
-					</div>
-					<div class="flex w-full max-w-80 items-start gap-4">
-						<Label>
-							Start feed automatically
-							<ToggleButtons
-								slot="input"
-								options={['Yes', 'No']}
-								selected={waitToStartFeed.current ? 'No' : 'Yes'}
-								on:input={(event) => {
-									waitToStartFeed.current = event.detail === 'No'
-								}}
-							/>
-						</Label>
-						<Label>
-							Mouse position tooltip
-							<ToggleButtons
-								slot="input"
-								options={['On', 'Off']}
-								selected={mousePostionTooltip}
-								on:input={setMousePostionTooltip}
-							/>
-						</Label>
 					</div>
 				</div>
-			</div>
-		</section>
-
-		<Section
-			errorReporter={pointcloudErrors}
-			class="flex-col gap-4"
-		>
-			<div class="flex flex-col gap-0.5">
-				<Section.Heading>
-					<Section.Method
-						method="GetPointCloud"
-						api={ResourceTriplets.Camera}
-					/>
-					{#snippet aside()}
-						<Section.Errors errors={pointcloudErrors.errors} />
-					{/snippet}
-				</Section.Heading>
-				<p class="text-subtle-2 text-xs">
-					Get depth measurement data from cameras with depth sensing support
-				</p>
-			</div>
-
-			<Switch
-				annotated
-				on:change={setIsShowingPointcloud}
-				on={isShowingPointcloud}
-			/>
-
-			{#if isShowingPointcloud}
-				<Section.Body isLoading={pointcloudErrors.isLoading}>
-					{#if pointcloudQuery.data !== undefined}
-						<PCDWidget data={pointcloudQuery.data} />
-					{/if}
-				</Section.Body>
-			{/if}
-		</Section>
+			</Section>
+		</div>
 	{/snippet}
 </ConnectionStatus>

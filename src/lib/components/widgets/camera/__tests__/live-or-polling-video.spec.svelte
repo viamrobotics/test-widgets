@@ -10,10 +10,11 @@
 	interface Props {
 		partID: string
 		resourceName: string
-		error: Error
+		error?: Error
+		isLive?: boolean
 	}
 
-	const { partID, resourceName, error }: Props = $props()
+	const { partID, resourceName, error, isLive = false }: Props = $props()
 
 	providePip(() => partID)
 	const queryClient = new QueryClient()
@@ -27,7 +28,7 @@
 		<LiveOrPollingVideo
 			{partID}
 			{resourceName}
-			isLive={false}
+			{isLive}
 			data={undefined}
 			{error}
 			isLoading={false}

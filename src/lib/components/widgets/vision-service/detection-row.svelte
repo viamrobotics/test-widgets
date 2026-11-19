@@ -16,8 +16,10 @@
 
 	let node: HTMLElement | undefined
 
+	const isSelected = $derived(context.selected === detection.id)
+
 	$effect(() => {
-		if (context.selected === detection.id && node) {
+		if (isSelected && node) {
 			node.scrollIntoView({ block: 'nearest' })
 		}
 	})
@@ -25,16 +27,18 @@
 
 <button
 	bind:this={node}
+	type="button"
+	aria-pressed={isSelected}
 	class={[
-		'hover:bg-light w-full py-1 pl-11 text-left',
-		(context.hovered.has(detection.id) || context.selected === detection.id) && 'bg-light',
+		'button button-ghost button-compact w-full justify-start',
+		(context.hovered.has(detection.id) || isSelected) && 'bg-light',
 	]}
 	onpointerenter={() => context.hovered.add(detection.id)}
 	onpointerleave={() => context.hovered.delete(detection.id)}
 	onclick={() => {
-		context.selected = context.selected === detection.id ? null : detection.id
+		context.selected = isSelected ? null : detection.id
 	}}
 >
 	{@render label()}
-	<span class="text-subtle-2 pl-1">{detection.confidence}%</span>
+	<span class="text-subtle-2">{detection.confidence}%</span>
 </button>

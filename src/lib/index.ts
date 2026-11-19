@@ -1,7 +1,9 @@
 export {
+	type AddImageToDatasetForm,
 	createAddImageToDatasetContext,
 	type ImageData,
 	useAddImageToDataset,
+	useAddToDatasetAction,
 } from './add-image-to-dataset'
 
 export { clientForResource, supportsDoCommand } from './client-map'
@@ -14,7 +16,7 @@ export {
 	/** @deprecated use `isKnownResource` instead. Will be deleted in the next release  */
 	isKnownResource as hasWidget,
 } from './is-known-resource'
-export { providePip, usePip } from './pip/context.svelte'
+export { hasPip, providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
 export type { ResourceTriplet } from './resource-triplet'
 export type {
