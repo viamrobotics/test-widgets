@@ -155,14 +155,14 @@ const SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 /**
  * The movement sensor pane minimums in px, measured by the same spec, not board estimates. The
  * composite reports every method supported, with its readings hidden. GetAccuracy's height has no
- * accuracy keys. Each API pane is as wide as its header, which holds the method's name.
+ * accuracy keys. The header's method name truncates, so each API pane's width comes from its body.
  */
 const MOVEMENT_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	[COMPOSITE_SLOT]: { width: 241, height: 1220 },
-	'get-position': { width: 232, height: 193 },
-	'get-orientation': { width: 254, height: 145 },
-	'get-compass-heading': { width: 275, height: 131 },
-	'get-accuracy': { width: 232, height: 227 },
+	'get-position': { width: 208, height: 193 },
+	'get-orientation': { width: 152, height: 161 },
+	'get-compass-heading': { width: 211, height: 131 },
+	'get-accuracy': { width: 185, height: 227 },
 }
 
 /**
@@ -171,9 +171,9 @@ const MOVEMENT_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
  */
 const POWER_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	[COMPOSITE_SLOT]: { width: 213, height: 453 },
-	'get-voltage': { width: 225, height: 125 },
-	'get-current': { width: 225, height: 125 },
-	'get-power': { width: 210, height: 125 },
+	'get-voltage': { width: 197, height: 125 },
+	'get-current': { width: 189, height: 125 },
+	'get-power': { width: 178, height: 125 },
 }
 
 /**
@@ -182,7 +182,7 @@ const POWER_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
  */
 const ENCODER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	[COMPOSITE_SLOT]: { width: 213, height: 319 },
-	'get-position': { width: 232, height: 125 },
+	'get-position': { width: 164, height: 125 },
 }
 
 /**
@@ -195,21 +195,35 @@ const INPUT_CONTROLLER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 }
 
 /**
- * The camera pane minimum in px, measured by the same spec, not the "Batch 5.2 measured sizes"
- * estimates. The height is the ratio-wins floor: the header, the 16:9 feed at the minimum width,
- * the controls below it, and GetPointCloud waiting on its splash. Camera has no API entries.
+ * The camera pane minimums in px, measured by the same spec, not the "Batch 5.2 measured sizes"
+ * estimates. The composite is a stack of the API widgets, and `controls` is the live feed. The
+ * heights are measured idle: GetImages and GetPointCloud fetch on a press, so each is measured
+ * before it, with GetProperties resolved. The header's method name truncates, so each API pane's width comes from its body.
  */
 const CAMERA_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 229, height: 809 },
+	[COMPOSITE_SLOT]: { width: 278, height: 797 },
+	controls: { width: 229, height: 477 },
+	'get-images': { width: 184, height: 155 },
+	'get-point-cloud': { width: 152, height: 93 },
+	'get-properties': { width: 278, height: 489 },
 }
 
 /**
- * The vision service pane minimum in px, measured by the same spec, not a board estimate. The
- * capture is a 16:9 frame with detections and classifications, and object point clouds wait on
- * their splash. Vision has no API entries.
+ * The vision service pane minimums in px, measured by the same spec, not board estimates. The
+ * composite is a stack of the API widgets, and `controls` is the live capture. The heights are
+ * measured idle: Capture and GetObjectPointClouds fetch on a press, so each is measured before
+ * it, while every other query is resolved with one detection and two classifications.
  */
 const VISION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
-	[COMPOSITE_SLOT]: { width: 266, height: 804 },
+	[COMPOSITE_SLOT]: { width: 295, height: 1528 },
+	controls: { width: 266, height: 458 },
+	'capture-all-from-camera': { width: 274, height: 303 },
+	'get-properties': { width: 265, height: 186 },
+	'get-object-point-clouds': { width: 202, height: 217 },
+	'get-detections-from-camera': { width: 232, height: 177 },
+	'get-classifications-from-camera': { width: 232, height: 223 },
+	'get-detections': { width: 192, height: 201 },
+	'get-classifications': { width: 227, height: 235 },
 }
 
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {

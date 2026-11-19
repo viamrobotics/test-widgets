@@ -5,7 +5,7 @@
 	import { createAddImageToDatasetContext, type ImageData } from '$lib/add-image-to-dataset'
 	import { providePip } from '$lib/pip/context.svelte'
 
-	import Camera from '../camera.svelte'
+	import CameraControls from '../../camera-controls.svelte'
 
 	interface Props {
 		partID: string
@@ -24,7 +24,7 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<Camera
+	<CameraControls
 		{partID}
 		{resourceName}
 		{autoplay}

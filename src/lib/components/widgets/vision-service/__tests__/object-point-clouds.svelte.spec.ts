@@ -1,6 +1,7 @@
 import '../../../../../app.css'
-import { render, screen } from '@testing-library/svelte'
-import { describe, expect, it } from 'vitest'
+import { render, screen, within } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../object-point-clouds.svelte'
 import {
@@ -10,6 +11,28 @@ import {
 
 const renderSubject = () =>
 	render(Subject, { props: { objects: [objectWithBoxAndSphere, objectWithMissingValues] } })
+
+const renderFramed = () =>
+	render(Subject, {
+		props: { objects: [objectWithBoxAndSphere, objectWithMissingValues], isFramed: true },
+	})
+
+const nextSavedBlob = () =>
+	new Promise<Blob>((resolve) => {
+		const blobsByUrl = new Map<string, Blob>()
+		const createObjectURL = URL.createObjectURL.bind(URL)
+		vi.spyOn(URL, 'createObjectURL').mockImplementation((object) => {
+			const url = createObjectURL(object)
+			if (object instanceof Blob) blobsByUrl.set(url, object)
+			return url
+		})
+		vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+			this: HTMLAnchorElement
+		) {
+			const blob = blobsByUrl.get(this.href)
+			if (blob) resolve(blob)
+		})
+	})
 
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
@@ -68,5 +91,44 @@ describe('<ObjectPointClouds>', () => {
 		expect(wide.height).toBeCloseTo(wide.width, 0)
 		expect(wide.width).toBeLessThan(400)
 		expect(wide.width).toBeGreaterThan(300)
+	})
+
+	it('renders no frame or Screenshot unless framed', () => {
+		renderSubject()
+
+		expect(screen.queryByRole('button', { name: 'Screenshot' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('heading', { name: 'Object 1' })).not.toBeInTheDocument()
+	})
+
+	it('frames each view under its own heading when framed', async () => {
+		renderFramed()
+
+		const second = screen.getByRole('region', { name: 'Object 2' })
+		const frameGroup = within(second).getByRole('group', { name: 'Object 2 point cloud' })
+		expect(within(frameGroup).getByTestId('object-point-cloud-cell')).toBeInTheDocument()
+		expect(
+			await within(frameGroup).findByRole('button', { name: 'Screenshot' })
+		).toBeInTheDocument()
+	})
+
+	it('saves a PNG of only its own view from Screenshot', async () => {
+		const { container } = renderFramed()
+		const root = container.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('no root')
+		root.style.width = '400px'
+		const saved = nextSavedBlob()
+		const first = screen.getByRole('region', { name: 'Object 1' })
+		const cell = within(first).getByTestId('object-point-cloud-cell')
+		const screenshotButton = await within(first).findByRole('button', { name: 'Screenshot' })
+
+		await userEvent.click(screenshotButton)
+
+		const blob = await saved
+		expect(blob.type).toBe('image/png')
+		const bitmap = await createImageBitmap(blob)
+		expect(bitmap.width).toBe(Math.round(cell.getBoundingClientRect().width * devicePixelRatio))
+		expect(bitmap.height, 'the capture is the cell, not the whole shared canvas').toBe(
+			Math.round(cell.getBoundingClientRect().height * devicePixelRatio)
+		)
 	})
 })

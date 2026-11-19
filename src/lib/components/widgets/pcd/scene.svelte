@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { T } from '@threlte/core'
+	import { T, useThrelte } from '@threlte/core'
 	import { CameraControls, Gizmo, Grid } from '@threlte/extras'
 	import { Vector3, type Vector3Tuple } from 'three'
+
+	import type { MediaFrameCapture } from '../../media-frame/media-frame-capture'
 
 	import Points from './points.svelte'
 
@@ -9,9 +11,29 @@
 		data: Uint8Array
 		up: Vector3Tuple
 		pointSize: number
+		/** Set by the scene to a function that captures the drawn view as a PNG. Bind it to read it. */
+		capture?: () => Promise<MediaFrameCapture>
 	}
 
-	const { data, up, pointSize }: Props = $props()
+	let { data, up, pointSize, capture = $bindable() }: Props = $props()
+
+	const { scene, camera, renderer, invalidate } = useThrelte()
+
+	// The canvas renders on demand and clears its buffer after the frame, so this draws the scene and
+	// copies the pixels in the same task.
+	const captureView = async (): Promise<MediaFrameCapture> => {
+		const { domElement } = renderer
+		renderer.render(scene, camera.current)
+		const image = new OffscreenCanvas(domElement.width, domElement.height)
+		const context = image.getContext('2d')
+		if (!context) throw new Error('No 2D context to copy the point cloud into')
+		context.drawImage(domElement, 0, 0)
+		invalidate()
+		const blob = await image.convertToBlob({ type: 'image/png' })
+		return { binaryData: new Uint8Array(await blob.arrayBuffer()), mimeType: blob.type }
+	}
+
+	capture = captureView
 
 	const upToPlane = ([x, y, z]: Vector3Tuple) => {
 		if (x !== 0) {

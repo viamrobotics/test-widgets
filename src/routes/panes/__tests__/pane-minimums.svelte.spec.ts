@@ -135,10 +135,45 @@ const INPUT_CONTROLLER_DATA = {
 	],
 }
 
+const CAMERA_PROPERTIES = {
+	supportsPcd: true,
+	frameRate: 30,
+	mimeTypes: ['image/jpeg', 'image/png'],
+	intrinsicParameters: {
+		widthPx: 640,
+		heightPx: 360,
+		focalXPx: 500.5,
+		focalYPx: 500.5,
+		centerXPx: 320,
+		centerYPx: 180,
+	},
+	distortionParameters: { model: 'brown_conrady', parameters: [0.1, -0.2, 0.01, 0.02, 0.3] },
+}
+
 const cameraData = () => ({
 	getImages: { images: [{ sourceName: 'color', mimeType: 'image/jpeg', image: frames.jpeg }] },
 	getPointCloud: POINT_CLOUD,
+	getProperties: CAMERA_PROPERTIES,
 })
+
+// GetImages and GetPointCloud fetch on a press, so the idle state has no point cloud to show.
+const cameraIdleData = () => ({ getProperties: CAMERA_PROPERTIES })
+
+const VISION_DETECTIONS = [
+	new Detection({
+		xMin: 100n,
+		yMin: 60n,
+		xMax: 300n,
+		yMax: 240n,
+		confidence: 0.9,
+		className: 'person',
+	}),
+]
+
+const VISION_CLASSIFICATIONS = [
+	{ className: 'dog', confidence: 0.5 },
+	{ className: 'dragon', confidence: 0.4 },
+]
 
 const visionData = () => ({
 	getProperties: {
@@ -149,23 +184,24 @@ const visionData = () => ({
 	},
 	captureAllFromCamera: {
 		image: { image: frames.png, mimeType: 'image/png' },
-		detections: [
-			new Detection({
-				xMin: 100n,
-				yMin: 60n,
-				xMax: 300n,
-				yMax: 240n,
-				confidence: 0.9,
-				className: 'person',
-			}),
-		],
-		classifications: [
-			{ className: 'dog', confidence: 0.5 },
-			{ className: 'dragon', confidence: 0.4 },
-		],
+		detections: VISION_DETECTIONS,
+		classifications: VISION_CLASSIFICATIONS,
 	},
 	getObjectPointClouds: [],
+	getDetectionsFromCamera: VISION_DETECTIONS,
+	getClassificationsFromCamera: VISION_CLASSIFICATIONS,
 })
+
+const VISION_PRESS_FETCHED_METHODS: ReadonlySet<string> = new Set([
+	'captureAllFromCamera',
+	'getObjectPointClouds',
+])
+
+// Capture and GetObjectPointClouds fetch on a press, so the idle state has neither result.
+const visionIdleData = () =>
+	Object.fromEntries(
+		Object.entries(visionData()).filter(([method]) => !VISION_PRESS_FETCHED_METHODS.has(method))
+	)
 
 interface MinimumRow {
 	id: string
@@ -219,8 +255,20 @@ const ROWS: MinimumRow[] = [
 		resource: inputController,
 		data: () => INPUT_CONTROLLER_DATA,
 	},
-	{ id: 'camera-1::composite', resource: camera, data: cameraData },
-	{ id: 'vision-1::composite', resource: vision, data: visionData },
+	{ id: 'camera-1::composite', resource: camera, data: cameraIdleData },
+	{ id: 'vision-1::composite', resource: vision, data: visionIdleData },
+	{ id: 'camera-1::controls', resource: camera, data: cameraData },
+	{ id: 'camera-1::get-images', resource: camera, data: cameraIdleData },
+	{ id: 'camera-1::get-point-cloud', resource: camera, data: cameraIdleData },
+	{ id: 'camera-1::get-properties', resource: camera, data: cameraData },
+	{ id: 'vision-1::controls', resource: vision, data: visionData },
+	{ id: 'vision-1::capture-all-from-camera', resource: vision, data: visionIdleData },
+	{ id: 'vision-1::get-properties', resource: vision, data: visionData },
+	{ id: 'vision-1::get-object-point-clouds', resource: vision, data: visionIdleData },
+	{ id: 'vision-1::get-detections-from-camera', resource: vision, data: visionData },
+	{ id: 'vision-1::get-classifications-from-camera', resource: vision, data: visionData },
+	{ id: 'vision-1::get-detections', resource: vision, data: visionData },
+	{ id: 'vision-1::get-classifications', resource: vision, data: visionData },
 ]
 
 const paneFor = (row: MinimumRow): PaneNode<ResourcePane> => {
@@ -326,5 +374,31 @@ describe('PANE_MINIMUMS', () => {
 			drift,
 			`${row.id} renders at ${String(measured.width)} x ${String(measured.height)}, PANE_MINIMUMS lists ${String(listed.width)} x ${String(listed.height)}`
 		).toBeLessThanOrEqual(TOLERANCE_PX)
+	})
+})
+
+describe('pane header at 320 px', () => {
+	it('ends the GetClassificationsFromCamera method name left of the action buttons', async () => {
+		state.data = visionData()
+		const pane = paneFor({
+			id: 'vision-1::get-classifications-from-camera',
+			resource: vision,
+			data: visionData,
+		})
+		render(InPaneFrame, { paneNode: pane, partID: PART_ID })
+		await afterLayoutSettles()
+		const { host, header } = renderedPaneParts()
+
+		host.style.width = '320px'
+		await afterLayoutSettles()
+
+		const methodName = header.querySelector<HTMLElement>('h2 > span:last-child')
+		const actions = header.querySelector<HTMLElement>('div.shrink-0')
+		if (!methodName || !actions) throw new Error('No header method name or actions')
+		expect(methodName.textContent).toContain('GetClassificationsFromCamera')
+		expect(
+			methodName.getBoundingClientRect().right,
+			'the method name runs under the action buttons'
+		).toBeLessThanOrEqual(actions.getBoundingClientRect().left)
 	})
 })

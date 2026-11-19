@@ -7,7 +7,7 @@ import { resourcePaneMinimum } from '../resource-pane-minimums'
 
 const resource = (subtype: string, name: string): ResourceName => ({
 	namespace: 'rdk',
-	type: subtype === 'motion' ? 'service' : 'component',
+	type: subtype === 'motion' || subtype === 'vision' ? 'service' : 'component',
 	subtype,
 	name,
 })
@@ -27,6 +27,8 @@ const movementSensor = resource('movement_sensor', 'movement-sensor-1')
 const powerSensor = resource('power_sensor', 'power-sensor-1')
 const encoder = resource('encoder', 'encoder-1')
 const inputController = resource('input_controller', 'input-controller-1')
+const camera = resource('camera', 'camera-1')
+const vision = resource('vision', 'vision-1')
 
 describe('Resource panes', () => {
 	it("offers an arm's composite and its six entries", () => {
@@ -67,6 +69,18 @@ describe('Resource panes', () => {
 		expect(kinds['gripper-1::open-grab']).toBe('control')
 		expect(kinds['gripper-1::open']).toBe('api')
 		expect(Object.values(kinds).filter((kind) => kind === 'control')).toHaveLength(1)
+	})
+
+	it.each([
+		['camera-1', camera],
+		['vision-1', vision],
+	])('makes controls the only control pane of %s and its other entries apis', (_name, target) => {
+		const panes = entryPanes(target)
+		expect(panes.length).toBeGreaterThan(1)
+		for (const { id, data } of panes) {
+			expect(data.kind, id).toBe(id.endsWith('::controls') ? 'control' : 'api')
+		}
+		expect(panes.filter(({ data }) => data.kind === 'control')).toHaveLength(1)
 	})
 
 	it.each([
@@ -150,16 +164,16 @@ describe('Resource panes', () => {
 		['button-1::composite', 162, 92],
 		['sensor-1::composite', 261, 399],
 		['movement-sensor-1::composite', 241, 1220],
-		['movement-sensor-1::get-position', 232, 193],
-		['movement-sensor-1::get-orientation', 254, 145],
-		['movement-sensor-1::get-compass-heading', 275, 131],
-		['movement-sensor-1::get-accuracy', 232, 227],
+		['movement-sensor-1::get-position', 208, 193],
+		['movement-sensor-1::get-orientation', 152, 161],
+		['movement-sensor-1::get-compass-heading', 211, 131],
+		['movement-sensor-1::get-accuracy', 185, 227],
 		['power-sensor-1::composite', 213, 453],
-		['power-sensor-1::get-voltage', 225, 125],
-		['power-sensor-1::get-current', 225, 125],
-		['power-sensor-1::get-power', 210, 125],
+		['power-sensor-1::get-voltage', 197, 125],
+		['power-sensor-1::get-current', 189, 125],
+		['power-sensor-1::get-power', 178, 125],
 		['encoder-1::composite', 213, 319],
-		['encoder-1::get-position', 232, 125],
+		['encoder-1::get-position', 164, 125],
 		['input-controller-1::composite', 213, 387],
 	])("snaps %s to its board's minimum", (id, width, height) => {
 		const pane = [

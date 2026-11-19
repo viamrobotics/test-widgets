@@ -35,27 +35,12 @@
 
 	const findCanvas = () => container?.querySelector('canvas') ?? undefined
 
-	// The canvas renders on demand and clears its buffer after the frame, so the blob is read in the same task.
-	const screenshot = () =>
-		new Promise<MediaFrameCapture>((resolve, reject) => {
-			const canvas = findCanvas()
-			if (!canvas) {
-				reject(new Error('The point cloud has no canvas to capture'))
-				return
-			}
-			canvas.toBlob((blob) => {
-				if (!blob) {
-					reject(new Error('The point cloud canvas produced no image'))
-					return
-				}
-				blob
-					.arrayBuffer()
-					.then((buffer) => {
-						resolve({ binaryData: new Uint8Array(buffer), mimeType: blob.type })
-					})
-					.catch(reject)
-			}, 'image/png')
-		})
+	let capture = $state<() => Promise<MediaFrameCapture>>()
+
+	const screenshot = async () => {
+		if (!capture) throw new Error('The point cloud has no canvas to capture')
+		return capture()
+	}
 
 	const pictureInPicture = $derived({
 		key: `${label}-point-cloud`,
@@ -73,6 +58,7 @@
 				{data}
 				{up}
 				{pointSize}
+				bind:capture
 			/>
 		</Canvas>
 	</div>
