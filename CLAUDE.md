@@ -38,14 +38,7 @@ Organize code by feature with **one focused unit per file**. File names should d
 
 ## Topic-specific rules
 
-Detailed guidance lives in `.claude/rules/`. Path-scoped rules load when Claude reads matching files; rules without `paths` load every session. Kit-managed rules (svelte, typescript, three, testing, design, accessibility, code-comments, prose-voice, code-cleanliness) are installed and documented by houserules, see the houserules block below. The repo-owned rules:
-
-| Rule                     | Loads when                                     |
-| ------------------------ | ---------------------------------------------- |
-| `testing-frontend.md`    | editing `src/**/*.spec.ts` or `vite.config.ts` |
-| `frontend-aesthetics.md` | editing `.svelte` or `.css`                    |
-| `threlte-widgets.md`     | editing `.svelte` or `.svelte.ts` under `src/` |
-| `viam-context.md`        | editing anything under `src/`                  |
+Detailed guidance lives in `.claude/rules/`. Each rule's `paths:` frontmatter sets when it loads. Repo-owned rules: `testing-frontend.md`, `frontend-aesthetics.md`, `threlte-widgets.md`, `viam-context.md`. The rest are kit-managed by houserules.
 
 <!-- houserules:claude-md start -->
 
@@ -60,8 +53,8 @@ Fuller templates live in `.claude/templates/`.
   the commit**.
 - Too big to hold in one plan: scaffold with `/plan-project`, then execute each phase with
   `/orchestrate`.
-- Building UI, an artifact, or a deck? Take colors, type, and spacing from
-  `.claude/design/tokens.json`, never a palette of your own.
+- Building UI, an artifact, or a deck? Take colors, type, and spacing from the Tailwind theme
+  via `node .claude/scripts/design.mjs token <name>`, never a palette of your own.
 
 ### Conventions
 
