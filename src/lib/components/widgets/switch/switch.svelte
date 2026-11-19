@@ -29,15 +29,17 @@
 		refetchInterval: 500,
 	})
 
-	const numPositionsQuery = createResourceQuery(client, 'getNumberOfPositions', {
-		refetchInterval: 500,
-	})
+	const numberOfPositionsQuery = createResourceQuery(client, 'getNumberOfPositions')
 
 	const setPositionMutation = createResourceMutation(client, 'setPosition')
 
-	const onSelect = async (position: number) => {
-		await setPositionMutation.mutateAsync([position])
-		await positionQuery.refetch()
+	// No optimistic write: the selection follows GetPosition, re-read once SetPosition settles.
+	const onSelect = (position: number) => {
+		setPositionMutation.mutate([position], {
+			onSettled: () => {
+				void positionQuery.refetch()
+			},
+		})
 	}
 </script>
 
@@ -47,13 +49,13 @@
 			class="flex-col gap-4"
 			method="SetPosition"
 			api={ResourceTriplets.Switch}
-			queries={[positionQuery, numPositionsQuery]}
+			queries={[positionQuery, numberOfPositionsQuery]}
 			mutations={[setPositionMutation]}
 		>
-			{#if positionQuery.data !== undefined && numPositionsQuery.data !== undefined}
+			{#if positionQuery.data !== undefined && numberOfPositionsQuery.data !== undefined}
 				<Position
-					numPositions={numPositionsQuery.data[0]}
-					labels={numPositionsQuery.data[1]}
+					numPositions={numberOfPositionsQuery.data[0]}
+					labels={numberOfPositionsQuery.data[1]}
 					currentPosition={positionQuery.data}
 					{onSelect}
 				/>

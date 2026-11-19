@@ -3,19 +3,20 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import GpioRead from './gpio-read.svelte'
+	import { toError } from './to-error'
 
 	interface Props {
 		partID: string
 		resourceName: string
 		pin: string
-		setLastError: (err: Error | null) => void
+		setLastError: (error: Error | null) => void
 	}
 
 	const { pin, partID, resourceName, setLastError }: Props = $props()
 
 	let gpioState = $state<boolean>()
 	let pwmDutyCycle = $state<number>()
-	let pwmFreq = $state<number>()
+	let pwmFrequency = $state<number>()
 
 	const client = createResourceClient(
 		BoardClient,
@@ -31,29 +32,32 @@
 
 	const getState = async () => {
 		try {
-			const data = await getStateMutation.mutateAsync([pin])
-			gpioState = data
+			gpioState = await getStateMutation.mutateAsync([pin])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 	const getDutyCycle = async () => {
 		try {
-			const data = await getDutyCycleMutation.mutateAsync([pin])
-			pwmDutyCycle = data
+			pwmDutyCycle = await getDutyCycleMutation.mutateAsync([pin])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 	const getFrequency = async () => {
 		try {
-			const data = await getFrequencyMutation.mutateAsync([pin])
-			pwmFreq = data
+			pwmFrequency = await getFrequencyMutation.mutateAsync([pin])
 			setLastError(null)
+			return true
 		} catch (error) {
-			setLastError(error as Error)
+			setLastError(toError(error))
+			return false
 		}
 	}
 </script>
@@ -61,7 +65,7 @@
 <GpioRead
 	{gpioState}
 	{pwmDutyCycle}
-	{pwmFreq}
+	{pwmFrequency}
 	{getState}
 	{getDutyCycle}
 	{getFrequency}

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
 	import { ButtonClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import { Section } from '$lib/components/section'
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	interface Props {
 		partID: string
@@ -19,14 +19,41 @@
 	)
 
 	const pushMutation = createResourceMutation(client, 'push')
+
+	// Set on the press itself, because the mutation's own pending state reaches the component a tick later.
+	let isPending = $state(false)
+
+	const push = () => {
+		if (isPending) return
+		isPending = true
+		pushMutation.mutate([], {
+			onSettled: () => {
+				isPending = false
+			},
+		})
+	}
 </script>
 
-<Button
-	onclick={() => {
-		pushMutation.mutate([], {})
-	}}
-	class="font-roboto-mono w-20 p-3 uppercase"
+<ApiSection
+	method="Push"
+	api={ResourceTriplets.Button}
+	mutations={[pushMutation]}
 >
-	Push
-</Button>
-<Section.Error error={pushMutation.error} />
+	<div class="flex">
+		<!-- Not disabled while in flight, so focus stays put. The handler ignores the press instead. -->
+		<button
+			type="button"
+			class="button button-compact"
+			aria-busy={isPending}
+			onclick={push}
+		>
+			{#if isPending}
+				<span
+					class="progress-dots"
+					aria-hidden="true"
+				></span>
+			{/if}
+			Push
+		</button>
+	</div>
+</ApiSection>

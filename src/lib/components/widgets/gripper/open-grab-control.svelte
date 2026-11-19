@@ -52,9 +52,15 @@
 	</Section.Heading>
 
 	<Section.Body>
-		<div class="flex flex-wrap gap-4">
-			<Open onOpen={() => openMutation.mutate([], {})} />
-			<Grab onGrab={() => grabMutation.mutate([], {})} />
+		<div class="flex flex-wrap items-center gap-2">
+			<Open
+				size="xs"
+				onOpen={() => openMutation.mutate([], {})}
+			/>
+			<Grab
+				size="xs"
+				onGrab={() => grabMutation.mutate([], {})}
+			/>
 		</div>
 	</Section.Body>
 </Section>

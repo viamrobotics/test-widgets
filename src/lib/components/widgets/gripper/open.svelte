@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
-
-	import OpenGripperSvg from './open-gripper-svg.svelte'
-
 	interface Props {
 		onOpen: () => void
+		size?: 'compact' | 'xs'
 	}
 
-	const { onOpen }: Props = $props()
+	const SIZE_CLASSES = {
+		compact: 'button-compact',
+		xs: 'button-xs',
+	}
+
+	const { onOpen, size = 'compact' }: Props = $props()
 </script>
 
-<Button
+<button
+	type="button"
+	class={['button', SIZE_CLASSES[size]]}
 	onclick={onOpen}
-	class="w-20 p-3 py-3"
 >
-	<div class="flex flex-col gap-2">
-		<OpenGripperSvg />
-		<p class="font-roboto-mono text-xs uppercase">open</p>
-	</div>
-</Button>
+	Open
+</button>
