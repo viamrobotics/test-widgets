@@ -36,6 +36,18 @@ describe('Slam position', () => {
 		expect(defs[2]).toMatchTextContent('3.5')
 	})
 
+	it('applies units: m on position, none on orientation, ° on theta', () => {
+		renderSubject({})
+
+		const defs = screen.getAllByRole('definition')
+
+		expect(defs[0]).toMatchTextContent('m')
+		expect(defs[2]).toMatchTextContent('m')
+		expect(defs[3]).not.toMatchTextContent(/[a-z°]/iu)
+		expect(defs[5]).not.toMatchTextContent(/[a-z°]/iu)
+		expect(defs[6]).toMatchTextContent('°')
+	})
+
 	it('renders empty position', () => {
 		renderSubject({ position: emptyPosition })
 

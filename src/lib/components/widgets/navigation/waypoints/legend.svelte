@@ -2,7 +2,8 @@
 	import type { Waypoint } from '@viamrobotics/sdk'
 	import type { Map } from 'maplibre-gl'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiImageFilterCenterFocus, mdiTrashCanOutline } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		map?: Map | undefined
@@ -15,53 +16,82 @@
 
 	const { map, waypoints, hovered, onEnter, onLeave, onRemove }: Props = $props()
 
-	const flyTo = (lng: number, lat: number) => {
+	const FOCUS_ZOOM = 20
+	const FOCUS_SPEED = 2
+
+	const rows = $derived(
+		waypoints.flatMap((waypoint) => {
+			const { location } = waypoint
+			if (!location) return []
+			return [{ id: waypoint.id, location }]
+		})
+	)
+
+	const flyTo = (location: { latitude: number; longitude: number }) => {
 		map?.flyTo({
-			center: [lng, lat],
-			zoom: 20,
-			speed: 2,
+			center: [location.longitude, location.latitude],
+			zoom: FOCUS_ZOOM,
+			speed: FOCUS_SPEED,
 		})
 	}
 </script>
 
-{#each waypoints.filter((waypoint) => waypoint.location) as waypoint, index (waypoint.id)}
-	<li
-		class="group border-b-medium flex items-center justify-between border-b p-2 pl-2 last:border-b-0"
-		class:bg-light={hovered === waypoint.id}
-		onpointerenter={() => onEnter(waypoint.id)}
-		onpointerleave={() => onLeave()}
-	>
-		<small class="max-w-[66%] overflow-hidden text-sm text-ellipsis">
-			Waypoint {index + 1}
-		</small>
+<ul
+	aria-label="Waypoints"
+	class="flex flex-col"
+>
+	{#each rows as { id, location }, index (id)}
+		<li
+			class={[
+				'border-light flex items-center gap-1 border-b px-1 py-0.5 last:border-b-0',
+				hovered === id && 'bg-light',
+			]}
+			onpointerenter={() => onEnter(id)}
+			onpointerleave={() => onLeave()}
+		>
+			<div class="flex min-w-0 flex-1 flex-col">
+				<span class="truncate text-xs font-semibold">Waypoint {index + 1}</span>
+				<span class="text-subtle-2 truncate text-xs">
+					{location.latitude}, {location.longitude}
+				</span>
+			</div>
 
-		<div class="flex gap-1">
-			<Tooltip let:tooltipID>
-				<IconButton
-					aria-describedby={tooltipID}
-					icon="image-filter-center-focus"
-					label="Focus waypoint {index + 1}"
-					on:click={(event) => {
-						if (!waypoint.location) {
-							return
-						}
-
-						event.stopPropagation()
-
-						flyTo(waypoint.location.longitude, waypoint.location.latitude)
-					}}
-				/>
-
-				<p slot="description">
-					{waypoint.location?.latitude.toString()}, {waypoint.location?.longitude.toString()}
-				</p>
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button size-6"
+						aria-label="Focus waypoint {index + 1}"
+						onclick={(event) => {
+							event.stopPropagation()
+							flyTo(location)
+						}}
+					>
+						<Icon
+							icon={mdiImageFilterCenterFocus}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Focus on the map</Tooltip.Content>
 			</Tooltip>
 
-			<IconButton
-				icon="trash-can-outline"
-				label="Remove waypoint {index + 1}"
-				on:click={() => onRemove(waypoint.id)}
-			/>
-		</div>
-	</li>
-{/each}
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button size-6"
+						aria-label="Remove waypoint {index + 1}"
+						onclick={() => onRemove(id)}
+					>
+						<Icon
+							icon={mdiTrashCanOutline}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Remove</Tooltip.Content>
+			</Tooltip>
+		</li>
+	{/each}
+</ul>

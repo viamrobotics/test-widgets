@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { SliderInput } from '@viamrobotics/prime-core'
+	import { NumberField } from '@viamrobotics/prime-controls'
 	import { LngLat } from 'maplibre-gl'
 
 	interface Props {
@@ -19,36 +19,39 @@
 
 	const { label, readonly = false, lng, lat, oninput, children }: Props = $props()
 
-	let latInput = $state.raw<HTMLInputElement>()
-	let lngInput = $state.raw<HTMLInputElement>()
+	const setLat = (value: number | undefined) => {
+		if (value !== undefined && Number.isFinite(value)) {
+			oninput(new LngLat(lng ?? 0, value))
+		}
+	}
+
+	const setLng = (value: number | undefined) => {
+		if (value !== undefined && Number.isFinite(value)) {
+			oninput(new LngLat(value, lat ?? 0))
+		}
+	}
 </script>
 
-<div class="flex items-end gap-1.5">
-	<SliderInput
-		bind:input={latInput}
-		type="number"
-		label={label ?? 'Latitude'}
-		placeholder="0"
-		incrementor={readonly ? undefined : 'slider'}
-		value={lat}
+<div
+	role="group"
+	aria-label={label ?? 'Latitude, longitude'}
+	class="flex items-end gap-1.5"
+>
+	<NumberField
+		label="Lat"
+		suffix="°"
 		step={1}
 		class="grow"
-		on:change={() => oninput(new LngLat(lng ?? 0, latInput?.valueAsNumber ?? 0))}
-		on:input={() => oninput(new LngLat(lng ?? 0, latInput?.valueAsNumber ?? 0))}
 		{readonly}
+		bind:value={() => lat, setLat}
 	/>
-	<SliderInput
-		bind:input={lngInput}
-		type="number"
-		label={label ? '' : 'Longitude'}
-		placeholder="0"
-		incrementor={readonly ? undefined : 'slider'}
-		value={lng}
+	<NumberField
+		label="Lng"
+		suffix="°"
 		step={1}
 		class="grow"
-		on:change={() => oninput(new LngLat(lngInput?.valueAsNumber ?? 0, lat ?? 0))}
-		on:input={() => oninput(new LngLat(lngInput?.valueAsNumber ?? 0, lat ?? 0))}
 		{readonly}
+		bind:value={() => lng, setLng}
 	/>
 	{@render children?.()}
 </div>

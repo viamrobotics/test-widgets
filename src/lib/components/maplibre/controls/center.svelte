@@ -3,8 +3,9 @@
   Adds an lat, lng set of inputs for viewing and setting the map center.
 -->
 <script lang="ts">
-	import { persisted } from '@viamrobotics/prime-core'
-	import { LngLat } from 'maplibre-gl'
+	import type { LngLat } from 'maplibre-gl'
+
+	import { PersistedState } from 'runed'
 	import { fromStore } from 'svelte/store'
 
 	import { useMapLibre, useMapLibreEvent } from '../hooks.svelte'
@@ -13,7 +14,7 @@
 	const { center, ...context } = useMapLibre()
 	const map = fromStore(context.map)
 
-	const lastPosition = persisted<{ center: LngLat; zoom: number }>(
+	const lastPosition = new PersistedState<{ center: { lng: number; lat: number }; zoom: number }>(
 		'viam-blocks-navigation-map-center',
 		{
 			center: map.current.getCenter(),
@@ -21,19 +22,15 @@
 		}
 	)
 
-	if ($lastPosition) {
-		map.current.jumpTo({ center: $lastPosition.center, zoom: $lastPosition.zoom })
-	}
+	map.current.jumpTo({ center: lastPosition.current.center, zoom: lastPosition.current.zoom })
 
 	const handleInput = (center: LngLat) => {
 		map.current.jumpTo({ center })
 	}
 
 	useMapLibreEvent('move', () => {
-		lastPosition.set({
-			center: map.current.getCenter(),
-			zoom: map.current.getZoom(),
-		})
+		const { lng, lat } = map.current.getCenter()
+		lastPosition.current = { center: { lng, lat }, zoom: map.current.getZoom() }
 	})
 </script>
 

@@ -1,107 +1,97 @@
 <script lang="ts">
-	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
+	import { mdiPlayCircleOutline, mdiStopCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
 
-	import type { SectionMutation } from '$lib/components/section/use-section-errors.svelte'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { ResourceTriplets } from '$lib/resource-triplet'
-
-	import type { PosePosition } from './pose'
-
-	interface Props {
-		destination: PosePosition | undefined
-		updateDestination: (_: Partial<PosePosition>) => void
-		moveOnMap: (planDeviationM: number | undefined) => void
-		stopPlan: () => void
-		mutations: SectionMutation[]
+	interface Destination {
+		x: number
+		y: number
 	}
 
-	const { destination, updateDestination, moveOnMap, stopPlan, mutations }: Props = $props()
+	interface Props {
+		/** End position X in meters. Bound, because a map click also sets it. */
+		x?: number
+		/** End position Y in meters. Bound, because a map click also sets it. */
+		y?: number
+		moveOnMap: (destination: Destination, planDeviationM: number | undefined) => void
+		stopPlan: () => void
+	}
 
-	const destinationID = $props.id()
+	let { x = $bindable(), y = $bindable(), moveOnMap, stopPlan }: Props = $props()
+
+	const endPositionID = $props.id()
 
 	let planDeviationM = $state<number>()
+
+	const finiteOrUndefined = (value: number | undefined) =>
+		value !== undefined && Number.isFinite(value) ? value : undefined
+
+	// An empty X or Y field is `undefined`, so it holds back Execute.
+	const destination = $derived.by((): Destination | undefined => {
+		const validX = finiteOrUndefined(x)
+		const validY = finiteOrUndefined(y)
+		if (validX === undefined || validY === undefined) return undefined
+		return { x: validX, y: validY }
+	})
+
+	const execute = () => {
+		if (destination) {
+			moveOnMap(destination, finiteOrUndefined(planDeviationM))
+		}
+	}
 </script>
 
-<ApiSection
-	class="grow flex-col gap-4"
-	method="MoveOnMap"
-	api={ResourceTriplets.Motion}
-	{mutations}
->
-	<Label>
-		Plan deviation <abbr>(m)</abbr>
+<div class="flex flex-col gap-2">
+	<NumberField
+		label="Plan deviation"
+		suffix="m"
+		placeholder="1"
+		step={0.01}
+		bind:value={planDeviationM}
+	/>
 
-		<NumericInput
-			slot="input"
-			placeholder="1"
-			value={planDeviationM}
-			on:change={(event) => {
-				planDeviationM = numberValueFromEvent(event)
-			}}
-		/>
-	</Label>
-	<section
-		class="border-light text-subtle-1 w-fit divide-y border text-xs"
-		aria-labelledby={destinationID}
+	<div
+		role="group"
+		aria-labelledby={endPositionID}
+		class="flex flex-col gap-2"
 	>
-		<h4
-			class="bg-light flex flex-row place-content-center gap-1 px-2 py-1.5"
-			id={destinationID}
+		<p
+			id={endPositionID}
+			class="text-subtle-1 text-xs font-semibold"
 		>
 			End position
-			<abbr class="text-disabled">(m)</abbr>
-		</h4>
-		<div class="flex flex-wrap gap-2 px-3 py-2.5">
-			<Label>
-				X
-
-				<NumericInput
-					slot="input"
-					cx="text-default"
-					value={destination?.x}
-					on:change={(event) => {
-						updateDestination({
-							x: numberValueFromEvent(event) ?? 0,
-						})
-					}}
-				/>
-			</Label>
-			<Label>
-				Y
-
-				<NumericInput
-					slot="input"
-					cx="text-default"
-					value={destination?.y}
-					on:change={(event) => {
-						updateDestination({
-							y: numberValueFromEvent(event) ?? 0,
-						})
-					}}
-				/>
-			</Label>
-		</div>
-	</section>
-
-	<div>
-		<Button
-			class="mt-auto w-fit"
-			icon="play-circle-outline"
-			variant="dark"
-			disabled={!destination}
-			onclick={() => moveOnMap(planDeviationM)}
-		>
-			Execute
-		</Button>
-		<Button
-			class="mt-auto w-fit"
-			icon="stop-circle-outline"
-			variant="danger"
-			onclick={() => stopPlan()}
-		>
-			Stop
-		</Button>
+		</p>
+		<NumberField
+			label="X"
+			suffix="m"
+			step={0.01}
+			bind:value={x}
+		/>
+		<NumberField
+			label="Y"
+			suffix="m"
+			step={0.01}
+			bind:value={y}
+		/>
 	</div>
-</ApiSection>
+
+	<div class="flex flex-wrap items-center gap-2">
+		<button
+			type="button"
+			class="button button-compact"
+			aria-disabled={destination === undefined || undefined}
+			onclick={execute}
+		>
+			<Icon icon={mdiPlayCircleOutline} />
+			Execute
+		</button>
+		<button
+			type="button"
+			class="button button-danger button-outline button-compact"
+			onclick={stopPlan}
+		>
+			<Icon icon={mdiStopCircleOutline} />
+			Stop
+		</button>
+	</div>
+</div>

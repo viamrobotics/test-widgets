@@ -14,6 +14,8 @@
 	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 
+	import { themeColor } from '$lib/theme-color'
+
 	import { renderOrder } from './render-order'
 
 	interface Props {
@@ -42,11 +44,12 @@
 		return lineGeometry
 	}
 
-	let geometry: LineGeometry | undefined = $state()
+	const geometry = $derived(updatePath(path))
 
-	$effect.pre(() => {
-		geometry?.dispose()
-		geometry = updatePath(path)
+	// three.js frees a geometry's GPU buffers only on an explicit dispose.
+	$effect(() => {
+		const drawn = geometry
+		return () => drawn?.dispose()
 	})
 </script>
 
@@ -57,7 +60,7 @@
 	>
 		<T
 			is={LineMaterial}
-			color="#FF0047"
+			color={themeColor('--color-power-wire-bright')}
 			linewidth={1}
 		/>
 		<T is={geometry} />

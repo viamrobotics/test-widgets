@@ -1,5 +1,6 @@
-import { theme } from '@viamrobotics/prime-core/theme'
 import { type BufferAttribute, Color, Vector3 } from 'three'
+
+import { themeColor } from '$lib/theme-color'
 
 /*
  * this color map is greyscale. The color map is being used map probability values of a PCD
@@ -18,7 +19,6 @@ const colorMapGrey = [
 	[10, 10, 10],
 	[0, 0, 0],
 ].map(([red, green, blue]) => new Vector3(red, green, blue).multiplyScalar(1 / 255))
-const USER_GENERATED_POINT_COLOR = new Color(theme.extend.colors.cyberpunk)
 
 /*
  * Find the desired color bucket for a given probability. This assumes the probability will be a value from 0 to 100
@@ -40,6 +40,8 @@ const colorBuckets = (probability: number): Vector3 => {
 }
 
 export const mapColorAttributeGrayscale = (colors: BufferAttribute) => {
+	const userGeneratedPointColor = new Color(themeColor('--color-cyberpunk-bright'))
+
 	for (let i = 0; i < colors.count; i += 1) {
 		/*
 		 * Probability is currently assumed to be held in the b part of the rgb field of the PCD map, on a scale of 0 to 100.
@@ -53,9 +55,9 @@ export const mapColorAttributeGrayscale = (colors: BufferAttribute) => {
 		if (colors.getX(i) === 1) {
 			colors.setXYZ(
 				i,
-				USER_GENERATED_POINT_COLOR.r,
-				USER_GENERATED_POINT_COLOR.g,
-				USER_GENERATED_POINT_COLOR.b
+				userGeneratedPointColor.r,
+				userGeneratedPointColor.g,
+				userGeneratedPointColor.b
 			)
 			continue
 		}

@@ -28,7 +28,7 @@ import { apiWidgetsForResource, widgetForResource } from '@viamrobotics/test-wid
 
 ### maplibre-gl
 
-`maplibre-gl` is a required peer and by far the heaviest one. It reaches your bundle only if you import something that renders a map: `MovementSensorWidget`, `NavigationServiceWidget`, the `maplibre` and `navigation-map` building blocks, or `/registry`. Otherwise it is tree-shaken out.
+`maplibre-gl` is a required peer and by far the heaviest one. It reaches your bundle only if you import something that renders a map: `MovementSensorWidget`, `NavigationServiceControls`, the `maplibre` and `navigation-map` building blocks, or `/registry`. `NavigationServiceWidget` is a stack of API widgets and draws no map. Otherwise it is tree-shaken out.
 
 ## Embedding
 

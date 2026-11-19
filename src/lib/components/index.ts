@@ -89,6 +89,14 @@ export { default as MovementSensorGetCompassHeadingWidget } from './widgets/move
 export { default as MovementSensorGetAccuracyWidget } from './widgets/movement-sensor/get-accuracy-widget.svelte'
 
 export { default as NavigationServiceWidget } from './widgets/navigation/navigation.svelte'
+export { default as NavigationServiceControls } from './widgets/navigation/navigation-controls.svelte'
+export { default as NavigationGetModeWidget } from './widgets/navigation/get-mode-widget.svelte'
+export { default as NavigationSetModeWidget } from './widgets/navigation/set-mode-widget.svelte'
+export { default as NavigationGetLocationWidget } from './widgets/navigation/get-location-widget.svelte'
+export { default as NavigationGetWaypointsWidget } from './widgets/navigation/get-waypoints-widget.svelte'
+export { default as NavigationAddWaypointWidget } from './widgets/navigation/add-waypoint-widget.svelte'
+export { default as NavigationRemoveWaypointWidget } from './widgets/navigation/remove-waypoint-widget.svelte'
+export { default as NavigationGetObstaclesWidget } from './widgets/navigation/get-obstacles-widget.svelte'
 
 export { default as PowerSensorWidget } from './widgets/power-sensor/power-sensor.svelte'
 export { default as PowerSensorGetVoltageWidget } from './widgets/power-sensor/get-voltage-widget.svelte'
@@ -106,7 +114,10 @@ export { default as ServoStopWidget } from './widgets/servo/stop-widget.svelte'
 
 export { default as SlamMap2D } from './slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/slam/slam.svelte'
+export { default as SlamControls } from './widgets/slam/slam-controls.svelte'
 export { default as SlamGetPositionWidget } from './widgets/slam/get-position-widget.svelte'
+export { default as SlamGetPointCloudMapWidget } from './widgets/slam/get-point-cloud-map-widget.svelte'
+export { default as SlamGetPropertiesWidget } from './widgets/slam/get-properties-widget.svelte'
 
 export { default as StopWidget } from './stop.svelte'
 

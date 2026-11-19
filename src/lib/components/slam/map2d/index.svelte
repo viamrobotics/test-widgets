@@ -19,6 +19,7 @@
 	import type { Vector2, Vector3 } from 'three'
 
 	import { Canvas } from '@threlte/core'
+	import { Folder, Panel } from '@viamrobotics/prime-controls'
 
 	import Legend from './legend.svelte'
 	import Scene from './scene.svelte'
@@ -52,9 +53,19 @@
 		/>
 	</Canvas>
 
-	{#if helpers}
-		<p class="absolute top-3 left-3 bg-white text-xs">Grid set to 1 meter</p>
-	{/if}
-
-	<Legend />
+	<div class="absolute inset-x-0 bottom-0 z-10 flex max-h-full flex-col">
+		<Panel
+			aria-label="Map legend"
+			class="min-h-0 overflow-auto"
+		>
+			<Folder title="Legend">
+				<div class="flex flex-col gap-1">
+					<Legend />
+					{#if helpers}
+						<p class="text-subtle-1 text-xs">Grid set to 1 meter</p>
+					{/if}
+				</div>
+			</Folder>
+		</Panel>
+	</div>
 </div>

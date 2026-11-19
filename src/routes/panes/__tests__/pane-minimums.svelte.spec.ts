@@ -2,7 +2,7 @@ import type { PaneNode } from '@viamrobotics/prime-panes'
 import type { ResourceName } from '@viamrobotics/sdk'
 
 import { render } from '@testing-library/svelte'
-import { Detection, EncoderPositionType } from '@viamrobotics/sdk'
+import { Detection, EncoderPositionType, navigationApi, slamApi } from '@viamrobotics/sdk'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PaneSize } from '../layout-minimum'
@@ -203,6 +203,57 @@ const visionIdleData = () =>
 		Object.entries(visionData()).filter(([method]) => !VISION_PRESS_FETCHED_METHODS.has(method))
 	)
 
+const NAVIGATION_DATA = {
+	getMode: navigationApi.Mode.WAYPOINT,
+	getLocation: {
+		location: { latitude: 40.712_812_3, longitude: -74.006_012_3 },
+		compassHeading: 123.456,
+	},
+	getWayPoints: [
+		{ id: 'waypoint-a', location: { latitude: 40.7129, longitude: -74.0062 } },
+		{ id: 'waypoint-b', location: { latitude: 40.7133, longitude: -74.0055 } },
+	],
+	getObstacles: [
+		{
+			location: { latitude: 40.7131, longitude: -74.0058 },
+			geometries: [
+				{
+					label: '',
+					center: { x: 0, y: 0, z: 0, oX: 0, oY: 0, oZ: 1, theta: 45 },
+					geometryType: {
+						case: 'box',
+						value: { dimsMm: { x: 1000, y: 2000, z: 3000 } },
+					},
+				},
+			],
+		},
+	],
+}
+
+const SLAM_PROPERTIES = {
+	cloudSlam: false,
+	mappingMode: slamApi.MappingMode.UPDATE_EXISTING_MAP,
+	internalStateFileType: '.pbstream',
+	sensorInfo: [
+		{ name: 'lidar-1', type: slamApi.SensorType.CAMERA },
+		{ name: 'imu-1', type: slamApi.SensorType.MOVEMENT_SENSOR },
+	],
+}
+
+const SLAM_POSITION = {
+	pose: { x: 1234, y: 2345, z: 3456, oX: 0, oY: 0, oZ: 1, theta: 45 },
+	componentReference: 'base-1',
+}
+
+const slamData = () => ({
+	getProperties: SLAM_PROPERTIES,
+	getPosition: SLAM_POSITION,
+	getPointCloudMap: POINT_CLOUD,
+})
+
+// GetPointCloudMap fetches on a press, so the idle state has no map to show.
+const slamIdleData = () => ({ getProperties: SLAM_PROPERTIES, getPosition: SLAM_POSITION })
+
 interface MinimumRow {
 	id: string
 	resource: ResourceName
@@ -216,6 +267,9 @@ const encoder = resource('encoder', 'encoder-1')
 const inputController = resource('input_controller', 'input-controller-1')
 const camera = resource('camera', 'camera-1')
 const vision = resource('vision', 'vision-1', 'service')
+const navigation = resource('navigation', 'navigation-1', 'service')
+const slam = resource('slam', 'slam-1', 'service')
+const navigationData = () => NAVIGATION_DATA
 
 const ROWS: MinimumRow[] = [
 	{ id: 'sensor-1::composite', resource: sensor, data: () => SENSOR_DATA },
@@ -269,6 +323,20 @@ const ROWS: MinimumRow[] = [
 	{ id: 'vision-1::get-classifications-from-camera', resource: vision, data: visionData },
 	{ id: 'vision-1::get-detections', resource: vision, data: visionData },
 	{ id: 'vision-1::get-classifications', resource: vision, data: visionData },
+	{ id: 'navigation-1::composite', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::controls', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-mode', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::set-mode', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-location', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-waypoints', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::add-waypoint', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::remove-waypoint', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-obstacles', resource: navigation, data: navigationData },
+	{ id: 'slam-1::composite', resource: slam, data: slamIdleData },
+	{ id: 'slam-1::controls', resource: slam, data: slamData },
+	{ id: 'slam-1::get-position', resource: slam, data: slamData },
+	{ id: 'slam-1::get-point-cloud-map', resource: slam, data: slamIdleData },
+	{ id: 'slam-1::get-properties', resource: slam, data: slamData },
 ]
 
 const paneFor = (row: MinimumRow): PaneNode<ResourcePane> => {

@@ -15,6 +15,8 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
 
+	import { themeColor } from '$lib/theme-color'
+
 	import { renderOrder } from './render-order'
 
 	interface Props {
@@ -35,7 +37,7 @@
 	<T.SpriteMaterial
 		map={textureLoader.load(url)}
 		sizeAttenuation={false}
-		color="#ff0047"
+		color={themeColor('--color-power-wire-bright')}
 		{rotation}
 	/>
 </T.Sprite>
