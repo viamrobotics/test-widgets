@@ -226,6 +226,39 @@ const VISION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	'get-classifications': { width: 227, height: 235 },
 }
 
+/**
+ * The navigation service pane minimums in px, measured by the same spec, not board estimates. The
+ * composite is a stack of the API widgets, and `controls` is the map with its mode and waypoint
+ * list. Every query is resolved with two waypoints and one box obstacle. The composite's API
+ * widgets sit in `grid-cols-1` tracks, which add no min-content width, so its width is the
+ * stack's own floor rather than its widest widget's.
+ */
+const NAVIGATION_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 118, height: 1225 },
+	controls: { width: 250, height: 428 },
+	'get-mode': { width: 152, height: 111 },
+	'set-mode': { width: 250, height: 121 },
+	'get-location': { width: 152, height: 215 },
+	'get-waypoints': { width: 152, height: 135 },
+	'add-waypoint': { width: 259, height: 153 },
+	'remove-waypoint': { width: 182, height: 143 },
+	'get-obstacles': { width: 234, height: 325 },
+}
+
+/**
+ * The SLAM service pane minimums in px, measured by the same spec, not board estimates. The
+ * composite is a stack of the API widgets, and `controls` is the 2D map with the Motion form. The
+ * heights are measured idle: GetPointCloudMap fetches on a press, so the composite and its own
+ * pane are measured before it. `controls` polls the map, so it is measured with one.
+ */
+const SLAM_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 225, height: 751 },
+	controls: { width: 250, height: 589 },
+	'get-position': { width: 225, height: 351 },
+	'get-point-cloud-map': { width: 167, height: 145 },
+	'get-properties': { width: 246, height: 241 },
+}
+
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
 	[ResourceTriplets.Motor]: MOTOR_PANE_MINIMUMS,
 	[ResourceTriplets.Arm]: ARM_PANE_MINIMUMS,
@@ -244,6 +277,8 @@ const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>
 	[ResourceTriplets.InputController]: INPUT_CONTROLLER_PANE_MINIMUMS,
 	[ResourceTriplets.Camera]: CAMERA_PANE_MINIMUMS,
 	[ResourceTriplets.Vision]: VISION_PANE_MINIMUMS,
+	[ResourceTriplets.Navigation]: NAVIGATION_PANE_MINIMUMS,
+	[ResourceTriplets.Slam]: SLAM_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.

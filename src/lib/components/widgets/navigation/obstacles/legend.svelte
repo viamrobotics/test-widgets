@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { GeoGeometry, Geometry } from '@viamrobotics/sdk'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiImageFilterCenterFocus } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { LngLat, LngLatBounds, Map } from 'maplibre-gl'
 
-	import { getColor } from './color'
+	import { getCssColor } from './color'
 
 	interface Props {
 		map?: Map | undefined
@@ -16,35 +17,66 @@
 
 	const { map, obstacles, hovered, onEnter, onLeave }: Props = $props()
 
+	const MILLIMETERS_PER_METER = 1000
+	// Pads the focused bounds so the whole obstacle stays in view.
+	const BOUNDS_MARGIN = 1.1
+
+	const toMeters = (millimeters: number) => millimeters / MILLIMETERS_PER_METER
+
 	const getBoundingRadius = (geometry: Geometry) => {
 		switch (geometry.geometryType.case) {
 			case 'box': {
-				if (geometry.geometryType.value.dimsMm) {
-					const { x, y, z } = geometry.geometryType.value.dimsMm
-					return (Math.max(x, y, z) / 1000) * 1.1
-				}
-				break
+				const dimensions = geometry.geometryType.value.dimsMm
+				if (!dimensions) return 0
+				return toMeters(Math.max(dimensions.x, dimensions.y, dimensions.z)) * BOUNDS_MARGIN
 			}
 			case 'sphere': {
-				return (geometry.geometryType.value.radiusMm / 1000) * 1.1
+				return toMeters(geometry.geometryType.value.radiusMm) * BOUNDS_MARGIN
 			}
 			case 'capsule': {
-				return (geometry.geometryType.value.lengthMm / 1000) * 1.1
+				return toMeters(geometry.geometryType.value.lengthMm) * BOUNDS_MARGIN
 			}
 		}
 
-		return 0 as never
+		return 0
 	}
 
-	const panToGeometry = (obstacle: GeoGeometry, geometry: Geometry) => {
-		if (!obstacle.location) {
-			return
+	const describeShape = (geometry: Geometry) => {
+		const theta = geometry.center?.theta ?? 0
+
+		switch (geometry.geometryType.case) {
+			case 'box': {
+				const dimensions = geometry.geometryType.value.dimsMm
+				if (!dimensions) return 'Box'
+				const { x, y, z } = dimensions
+				return `Box · ${toMeters(x)} × ${toMeters(y)} × ${toMeters(z)} m · θ ${theta}°`
+			}
+			case 'sphere': {
+				return `Sphere · radius ${toMeters(geometry.geometryType.value.radiusMm)} m`
+			}
+			case 'capsule': {
+				const { radiusMm, lengthMm } = geometry.geometryType.value
+				return `Capsule · radius ${toMeters(radiusMm)} m · length ${toMeters(lengthMm)} m · θ ${theta}°`
+			}
 		}
 
-		const lngLat = new LngLat(obstacle.location.longitude, obstacle.location.latitude)
+		return ''
+	}
 
-		const radius = getBoundingRadius(geometry)
-		const bounds = LngLatBounds.fromLngLat(lngLat, radius)
+	// Matches the map's coloring in ./color, so the text and the swatch always agree.
+	const describeKind = (label: string) => (label.includes('transient') ? 'Transient' : 'Static')
+
+	const rows = $derived(
+		obstacles.flatMap((obstacle) => {
+			const { location } = obstacle
+			if (!location) return []
+			return obstacle.geometries.map((geometry) => ({ location, geometry }))
+		})
+	)
+
+	const panToGeometry = (location: { latitude: number; longitude: number }, geometry: Geometry) => {
+		const lngLat = new LngLat(location.longitude, location.latitude)
+		const bounds = LngLatBounds.fromLngLat(lngLat, getBoundingRadius(geometry))
 
 		map?.fitBounds(bounds, {
 			padding: 100,
@@ -54,64 +86,52 @@
 	}
 </script>
 
-{#each obstacles as obstacle, i (i)}
-	{#if obstacle.location}
-		{#each obstacle.geometries as geometry, j (j)}
-			{@const th = geometry.center?.theta ?? 0}
-			<li
-				class="group border-b-medium border-b py-2 pl-2 last:border-b-0"
-				class:bg-light={hovered === geometry.label}
-				onmouseenter={() => onEnter(geometry.label)}
-				onmouseleave={() => onLeave()}
-			>
-				<div class="flex items-center justify-between gap-1.5">
-					<small class="max-w-[66%] overflow-hidden text-sm text-ellipsis">
-						{geometry.label}
-					</small>
+<ul
+	aria-label="Obstacles"
+	class="flex flex-col"
+>
+	{#each rows as { location, geometry }, index (index)}
+		<li
+			class={[
+				'border-light flex items-center gap-1 border-b px-1 py-0.5 last:border-b-0',
+				hovered === geometry.label && 'bg-light',
+			]}
+			onmouseenter={() => onEnter(geometry.label)}
+			onmouseleave={() => onLeave()}
+		>
+			<span
+				aria-hidden="true"
+				class="mx-0.5 size-3 shrink-0"
+				style:background-color={getCssColor(null, geometry.label)}
+			></span>
 
-					<div class="flex gap-1">
-						<Tooltip let:tooltipID>
-							<IconButton
-								aria-describedby={tooltipID}
-								icon="image-filter-center-focus"
-								label="Focus {geometry.label}"
-								on:click={(event) => {
-									event.stopPropagation()
-									panToGeometry(obstacle, geometry)
-								}}
-							/>
-
-							<p slot="description">
-								{obstacle.location.latitude}, {obstacle.location.longitude}
-							</p>
-						</Tooltip>
-
-						<Tooltip let:tooltipID>
-							<div
-								aria-describedby={tooltipID}
-								class="m-2 h-3.5 w-3.5"
-								style:background-color={getColor(null, geometry.label)}
-							></div>
-
-							<p slot="description">
-								{geometry.label.includes('transient') ? 'transient' : 'static'}
-							</p>
-						</Tooltip>
-					</div>
+			<div class="flex min-w-0 flex-1 flex-col">
+				<div class="flex items-center gap-1">
+					<span class="min-w-0 flex-1 truncate text-xs font-semibold">{geometry.label}</span>
+					<span class="text-subtle-2 shrink-0 text-xs">{describeKind(geometry.label)}</span>
 				</div>
+				<span class="text-subtle-2 truncate text-xs">{describeShape(geometry)}</span>
+			</div>
 
-				<small class="text-subtle-2">
-					{#if geometry.geometryType.case === 'box' && geometry.geometryType.value.dimsMm}
-						{@const { x, y, z } = geometry.geometryType.value.dimsMm}
-						x: {x / 1000}m, y: {y / 1000}m, z: {z / 1000}m, θ: {th}deg
-					{:else if geometry.geometryType.case === 'sphere'}
-						r: {geometry.geometryType.value.radiusMm / 1000}m, θ: {th}deg
-					{:else if geometry.geometryType.case === 'capsule'}
-						r: {geometry.geometryType.value.radiusMm / 1000}m, l: {geometry.geometryType.value
-							.lengthMm / 1000}m, θ: {th}deg
-					{/if}
-				</small>
-			</li>
-		{/each}
-	{/if}
-{/each}
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button size-6"
+						aria-label="Focus {geometry.label}"
+						onclick={(event) => {
+							event.stopPropagation()
+							panToGeometry(location, geometry)
+						}}
+					>
+						<Icon
+							icon={mdiImageFilterCenterFocus}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>{location.latitude}, {location.longitude}</Tooltip.Content>
+			</Tooltip>
+		</li>
+	{/each}
+</ul>

@@ -2,23 +2,22 @@
 	import type { Waypoint as WaypointType } from '@viamrobotics/sdk'
 	import type { LngLat } from 'maplibre-gl'
 
-	import { theme } from '@viamrobotics/prime-core/theme'
-
 	import { MapLibreMarker, useMapLibreEvent } from '$lib/components/maplibre'
+	import { themeColor } from '$lib/theme-color'
 
 	interface Props {
 		waypoints: WaypointType[]
 		addWayPoint: (_: LngLat) => void
-		tab: 'obstacles' | 'waypoints'
 		hovered: string | null
 	}
 
-	const { waypoints, addWayPoint, tab, hovered }: Props = $props()
+	const { waypoints, addWayPoint, hovered }: Props = $props()
+
+	// MapLibre writes the marker color into an SVG fill attribute, which does not resolve var(...).
+	const hoveredMarkerColor = themeColor('--color-solar-power-bright')
 
 	useMapLibreEvent('click', (event) => {
-		if (tab === 'waypoints') {
-			addWayPoint(event.lngLat)
-		}
+		addWayPoint(event.lngLat)
 	})
 </script>
 
@@ -28,7 +27,7 @@
 			lat={waypoint.location.latitude}
 			lng={waypoint.location.longitude}
 			scale={hovered === waypoint.id ? 1.25 : 1}
-			color={hovered === waypoint.id ? theme.extend.colors['solar-power'] : ''}
+			color={hovered === waypoint.id ? hoveredMarkerColor : ''}
 		/>
 	{/if}
 {/each}

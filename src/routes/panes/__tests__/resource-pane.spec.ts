@@ -5,9 +5,11 @@ import { describe, expect, it } from 'vitest'
 import { compositePane, entryPanes, resourcePaneMethod } from '../resource-pane'
 import { resourcePaneMinimum } from '../resource-pane-minimums'
 
+const SERVICE_SUBTYPES: ReadonlySet<string> = new Set(['motion', 'vision', 'navigation', 'slam'])
+
 const resource = (subtype: string, name: string): ResourceName => ({
 	namespace: 'rdk',
-	type: subtype === 'motion' || subtype === 'vision' ? 'service' : 'component',
+	type: SERVICE_SUBTYPES.has(subtype) ? 'service' : 'component',
 	subtype,
 	name,
 })
@@ -29,6 +31,8 @@ const encoder = resource('encoder', 'encoder-1')
 const inputController = resource('input_controller', 'input-controller-1')
 const camera = resource('camera', 'camera-1')
 const vision = resource('vision', 'vision-1')
+const navigation = resource('navigation', 'navigation-1')
+const slam = resource('slam', 'slam-1')
 
 describe('Resource panes', () => {
 	it("offers an arm's composite and its six entries", () => {
@@ -74,6 +78,8 @@ describe('Resource panes', () => {
 	it.each([
 		['camera-1', camera],
 		['vision-1', vision],
+		['navigation-1', navigation],
+		['slam-1', slam],
 	])('makes controls the only control pane of %s and its other entries apis', (_name, target) => {
 		const panes = entryPanes(target)
 		expect(panes.length).toBeGreaterThan(1)
@@ -119,6 +125,35 @@ describe('Resource panes', () => {
 	it('offers motion its composite only', () => {
 		expect(compositePane(motion)?.id).toBe('motion-1::composite')
 		expect(entryPanes(motion)).toEqual([])
+	})
+
+	it.each([
+		['navigation-1::controls', navigation],
+		['slam-1::controls', slam],
+	])('makes %s a control pane', (id, target) => {
+		const pane = entryPanes(target).find((candidate) => candidate.id === id)
+		expect(pane?.data.kind).toBe('control')
+	})
+
+	it.each([
+		[
+			'navigation-1',
+			navigation,
+			[
+				'controls',
+				'get-mode',
+				'set-mode',
+				'get-location',
+				'get-waypoints',
+				'add-waypoint',
+				'remove-waypoint',
+				'get-obstacles',
+			],
+		],
+		['slam-1', slam, ['controls', 'get-position', 'get-point-cloud-map', 'get-properties']],
+	])('offers %s a composite and its entries in registry order', (name, target, ids) => {
+		expect(compositePane(target)?.id).toBe(`${name}::composite`)
+		expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
 	})
 
 	it.each([
@@ -175,6 +210,20 @@ describe('Resource panes', () => {
 		['encoder-1::composite', 213, 319],
 		['encoder-1::get-position', 164, 125],
 		['input-controller-1::composite', 213, 387],
+		['navigation-1::composite', 118, 1225],
+		['navigation-1::controls', 250, 428],
+		['navigation-1::get-mode', 152, 111],
+		['navigation-1::set-mode', 250, 121],
+		['navigation-1::get-location', 152, 215],
+		['navigation-1::get-waypoints', 152, 135],
+		['navigation-1::add-waypoint', 259, 153],
+		['navigation-1::remove-waypoint', 182, 143],
+		['navigation-1::get-obstacles', 234, 325],
+		['slam-1::composite', 225, 751],
+		['slam-1::controls', 250, 589],
+		['slam-1::get-position', 225, 351],
+		['slam-1::get-point-cloud-map', 167, 145],
+		['slam-1::get-properties', 246, 241],
 	])("snaps %s to its board's minimum", (id, width, height) => {
 		const pane = [
 			compositePane(arm),
@@ -201,6 +250,10 @@ describe('Resource panes', () => {
 			...entryPanes(movementSensor),
 			...entryPanes(powerSensor),
 			...entryPanes(encoder),
+			compositePane(navigation),
+			...entryPanes(navigation),
+			compositePane(slam),
+			...entryPanes(slam),
 		].find((candidate) => candidate?.id === id)
 		expect(pane && resourcePaneMinimum(pane.data)).toEqual({ width, height })
 	})

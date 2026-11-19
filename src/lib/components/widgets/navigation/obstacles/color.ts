@@ -1,11 +1,20 @@
-import { theme } from '@viamrobotics/prime-core/theme'
+import { themeColor } from '$lib/theme-color'
 
-export const getColor = (hoveredLabel: string | null, label: string): string => {
+// The map meshes and the legend swatches share these tokens, so each swatch matches its mesh.
+const getColorVariable = (hoveredLabel: string | null, label: string) => {
 	if (hoveredLabel === label) {
-		return theme.extend.colors['solar-power']
+		return '--color-solar-power-bright'
 	} else if (label.includes('transient')) {
-		return theme.extend.colors.hologram
+		return '--color-hologram-bright'
 	}
 
-	return theme.extend.colors.cyberpunk
+	return '--color-cyberpunk-bright'
 }
+
+/** The resolved color, for a three.js material. */
+export const getColor = (hoveredLabel: string | null, label: string): string =>
+	themeColor(getColorVariable(hoveredLabel, label))
+
+/** A `var(--color-...)` reference, for an inline CSS style. */
+export const getCssColor = (hoveredLabel: string | null, label: string): string =>
+	`var(${getColorVariable(hoveredLabel, label)})`
