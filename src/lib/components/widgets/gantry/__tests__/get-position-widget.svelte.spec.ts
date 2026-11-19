@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../get-position-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const queryState = vi.hoisted(
 	(): {
@@ -53,24 +54,65 @@ describe('Gantry GetPosition widget', () => {
 		expect(screen.getByRole('heading', { name: 'GetPosition' })).toBeInTheDocument()
 	})
 
-	it('renders the axis positions rounded to two decimals', () => {
+	it('renders one row per axis, numbered from 0, with the position rounded to two decimals and an mm suffix', () => {
 		queryState.positions = [12.3456, 67.891]
 		queryState.lengths = [100.5, 200.25]
 
 		renderSubject()
 
-		expect(screen.getByRole('row', { name: /^0 12\.35 / })).toBeInTheDocument()
-		expect(screen.getByRole('row', { name: /^1 67\.89 / })).toBeInTheDocument()
+		const axes = within(screen.getByRole('group', { name: 'Axis positions' }))
+		expect(axes.getByText('Axis 0')).toBeInTheDocument()
+		expect(axes.getByText('Axis 1')).toBeInTheDocument()
+		expect(axes.queryByText('Axis 2')).not.toBeInTheDocument()
+		expect(axes.getByText('12.35')).toBeInTheDocument()
+		expect(axes.getByText('67.89')).toBeInTheDocument()
+		expect(axes.getAllByText('mm')).toHaveLength(2)
 	})
 
-	it('renders the axis lengths rounded to two decimals', () => {
+	it('renders each axis length rounded to two decimals under its position', () => {
 		queryState.positions = [12.3456, 67.891]
 		queryState.lengths = [100.5, 200.25]
 
 		renderSubject()
 
-		expect(screen.getByRole('row', { name: / 100\.50$/ })).toBeInTheDocument()
-		expect(screen.getByRole('row', { name: / 200\.25$/ })).toBeInTheDocument()
+		expect(screen.getByText('Length 100.50 mm')).toBeInTheDocument()
+		expect(screen.getByText('Length 200.25 mm')).toBeInTheDocument()
+	})
+
+	it('draws a static track per axis with a length, with the marker at the position over the length', () => {
+		queryState.positions = [50, 300]
+		queryState.lengths = [200]
+
+		renderSubject()
+
+		const tracks = screen
+			.getByRole('group', { name: 'Axis positions' })
+			.querySelectorAll('[aria-hidden]')
+		expect(tracks).toHaveLength(1)
+		expect(tracks[0]?.firstElementChild).toHaveStyle({ left: 'calc(25% - 1px)' })
+	})
+
+	it('draws no track and no length for an axis without a length', () => {
+		queryState.positions = [50, 300]
+		queryState.lengths = [200]
+
+		renderSubject()
+
+		expect(screen.getByText('300.00')).toBeInTheDocument()
+		expect(screen.getAllByText(/^Length /u)).toHaveLength(1)
+	})
+
+	it('holds the marker inside the track when the position is past the length', () => {
+		queryState.positions = [500, -20]
+		queryState.lengths = [200, 200]
+
+		renderSubject()
+
+		const markers = screen
+			.getByRole('group', { name: 'Axis positions' })
+			.querySelectorAll('[aria-hidden] > span')
+		expect(markers[0]).toHaveStyle({ left: 'calc(100% - 1px)' })
+		expect(markers[1]).toHaveStyle({ left: 'calc(0% - 1px)' })
 	})
 
 	it('polls getPosition every 500 ms', () => {
@@ -96,5 +138,34 @@ describe('Gantry GetPosition widget', () => {
 		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/gantry position unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+describe('Gantry GetPosition widget in a 320 px pane', () => {
+	const renderInPane = () => {
+		render(PaneSubject, { props: { widget: Subject } })
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+		return { pane, root }
+	}
+
+	beforeEach(() => {
+		queryState.error = null
+	})
+
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe('320px')
+	})
+
+	it('does not scroll horizontally with four-digit positions and lengths', () => {
+		queryState.positions = [-1234.56, 8888.88, 1234.56]
+		queryState.lengths = [10000, 1500, 99999.99]
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

@@ -28,6 +28,9 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 				resourceStatus('motor-2', 'motor'),
 				resourceStatus('arm-1', 'arm'),
 				resourceStatus('motion-1', 'motion', 'service'),
+				resourceStatus('base-1', 'base'),
+				resourceStatus('gantry-1', 'gantry'),
+				resourceStatus('servo-1', 'servo'),
 			],
 		},
 	}),
@@ -173,13 +176,22 @@ describe('Pane playground', () => {
 		expect(tree.getByRole('treeitem', { name: 'motion-1' })).toBeInTheDocument()
 	})
 
+	it("lists the machine's bases, gantries, and servos beside the other resources", () => {
+		renderSubject()
+
+		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
+		for (const name of ['base-1', 'gantry-1', 'servo-1']) {
+			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
+		}
+	})
+
 	it('titles a picked arm control with the resource alone and an arm api with its method', async () => {
 		const user = userEvent.setup()
 		renderSubject()
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
 
 		await user.click(tree.getByRole('treeitem', { name: 'Manual mode' }))
-		await user.click(tree.getAllByRole('treeitem', { name: 'Stop' }).at(-1) ?? document.body)
+		await user.click(tree.getAllByRole('treeitem', { name: 'Stop' }).at(0) ?? document.body)
 
 		const control = await waitFor(() => paneHeader('arm-1::manual-mode'))
 		expect(control.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1')

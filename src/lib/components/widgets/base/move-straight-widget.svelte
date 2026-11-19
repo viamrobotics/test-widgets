@@ -3,7 +3,6 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import MoveStraight from './move-straight.svelte'
@@ -34,9 +33,6 @@
 	api={ResourceTriplets.Base}
 	mutations={[moveStraightMutation]}
 >
-	{#snippet subheading()}
-		<Section.Text>Move across a given distance at a given velocity</Section.Text>
-	{/snippet}
 	<div class="flex grow flex-wrap justify-between gap-2">
 		<MoveStraight {moveStraight} />
 	</div>

@@ -24,6 +24,9 @@ export type ResourcePane =
 const CONTROL_ENTRY_IDS: Readonly<Record<string, ReadonlySet<string>>> = {
 	[ResourceTriplets.Motor]: new Set(['quick-move']),
 	[ResourceTriplets.Arm]: new Set(['manual-mode']),
+	[ResourceTriplets.Base]: new Set(['quick-move']),
+	[ResourceTriplets.Gantry]: new Set(['quick-move']),
+	[ResourceTriplets.Servo]: new Set(['quick-move']),
 }
 
 /** The pane slot and minimum key for a resource's composite card, which has no registry id. */

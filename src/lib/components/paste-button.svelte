@@ -21,10 +21,13 @@
 		}, 750)
 	}
 
-	const icon = $derived(
-		// eslint-disable-next-line unicorn/no-nested-ternary
-		isPasteSuccessful === null ? mdiContentPaste : isPasteSuccessful ? mdiCheck : mdiClose
-	)
+	const iconForPasteResult = (result: boolean | null) => {
+		if (result === null) return mdiContentPaste
+		if (result) return mdiCheck
+		return mdiClose
+	}
+
+	const icon = $derived(iconForPasteResult(isPasteSuccessful))
 </script>
 
 <Tooltip>

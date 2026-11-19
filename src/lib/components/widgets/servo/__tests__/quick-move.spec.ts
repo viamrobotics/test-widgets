@@ -27,7 +27,7 @@ describe('Servo Quick move', () => {
 		renderSubject({ currentPosition })
 
 		const minusButton = screen.getByRole('button', {
-			name: /minus-five-degrees/iu,
+			name: /^−5°$/u,
 		})
 		await user.click(minusButton)
 
@@ -39,19 +39,26 @@ describe('Servo Quick move', () => {
 		renderSubject({ currentPosition })
 
 		const plusButton = screen.getByRole('button', {
-			name: /plus-five-degrees/iu,
+			name: /^\+5°$/u,
 		})
 		await user.click(plusButton)
 
 		expect(moveTo).toHaveBeenCalledWith(currentPosition + 5)
 	})
 
+	it('disables minus 5 at 0 and leaves plus 5 available', () => {
+		renderSubject({ currentPosition: 0 })
+
+		expect(screen.getByRole('button', { name: /^−5°$/u })).toBeDisabled()
+		expect(screen.getByRole('button', { name: /^\+5°$/u })).toBeEnabled()
+	})
+
 	it('disables minus 5 when the current position is less than 5', () => {
 		renderSubject({ currentPosition: 4 })
 
 		const minusButton = screen.getByRole('button', {
-			name: /minus-five-degrees/iu,
+			name: /^−5°$/u,
 		})
-		expect(minusButton).toHaveAttribute('aria-disabled', 'true')
+		expect(minusButton).toBeDisabled()
 	})
 })

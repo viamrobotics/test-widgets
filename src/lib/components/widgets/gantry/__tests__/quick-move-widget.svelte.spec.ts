@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../quick-move-widget.svelte'
+import InPane from './__fixtures__/in-320-pane.svelte'
 
 const state = vi.hoisted((): { moveMutate: Mock; error: Error | null } => ({
 	moveMutate: vi.fn(),
@@ -42,16 +43,17 @@ describe('Gantry QuickMove widget', () => {
 		state.error = null
 	})
 
-	it('renders a row for each axis from the current positions', () => {
+	it('renders a group for each axis from the current positions', () => {
 		renderSubject()
 
-		expect(screen.getAllByRole('button', { name: 'plus-ten-degrees' })).toHaveLength(2)
+		expect(screen.getByRole('group', { name: 'Axis 0' })).toBeInTheDocument()
+		expect(screen.getByRole('group', { name: 'Axis 1' })).toBeInTheDocument()
 	})
 
 	it('calls the moveToPosition mutation with the second axis moved up ten', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getAllByRole('button', { name: 'plus-ten-degrees' })[1]!)
+		await userEvent.click(screen.getByRole('button', { name: 'Axis 1, +10 mm' }))
 
 		expect(state.moveMutate).toHaveBeenCalledWith(
 			[
@@ -65,7 +67,7 @@ describe('Gantry QuickMove widget', () => {
 	it('calls the moveToPosition mutation with the first axis moved down ten', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getAllByRole('button', { name: 'minus-ten-degrees' })[0]!)
+		await userEvent.click(screen.getByRole('button', { name: 'Axis 0, −10 mm' }))
 
 		expect(state.moveMutate).toHaveBeenCalledWith(
 			[
@@ -88,5 +90,24 @@ describe('Gantry QuickMove widget', () => {
 		renderSubject()
 
 		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+	})
+})
+
+describe('Gantry QuickMove widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		render(InPane, { props: { widget: Subject } })
+
+		expect(getComputedStyle(screen.getByTestId('pane')).width).toBe('320px')
+	})
+
+	it('does not scroll horizontally', () => {
+		render(InPane, { props: { widget: Subject } })
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+
+		expect(screen.getAllByRole('button', { name: /^Axis \d, [−+]10 mm$/u })).toHaveLength(4)
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

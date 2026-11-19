@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
-
-	import Table from '$lib/components/table.svelte'
-
 	interface Props {
 		positions: number[]
 		moveTo: (newPos: number[], speeds: number[]) => void
@@ -12,6 +8,7 @@
 
 	// mm/s
 	const quickMoveSpeed = 50
+	const STEP_MM = 10
 
 	const quickMove = (index: number, increment: number) => {
 		const clonedPositions = positions.map((position, positionIndex) =>
@@ -22,44 +19,50 @@
 			Array.from<number>({ length: clonedPositions.length }).fill(quickMoveSpeed)
 		)
 	}
+
+	const groupId = $props.id()
 </script>
 
-<Table>
-	<thead>
-		<tr>
-			<th> Axis </th>
-			<th> Move <abbr>(mm)</abbr> </th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each positions, index (index)}
-			<tr>
-				<th> {index} </th>
-				<th>
-					<div class="flex h-full max-h-6.5 gap-1.5">
-						<Button
-							aria-label="minus-ten-degrees"
-							class="px-2.5!"
-							onclick={() => quickMove(index, -10)}
-						>
-							<span class="flex gap-1 text-xs">
-								<span class="text-subtle-2">-</span>
-								<span>10</span>
-							</span>
-						</Button>
-						<Button
-							aria-label="plus-ten-degrees"
-							class="px-2.5!"
-							onclick={() => quickMove(index, 10)}
-						>
-							<span class="flex gap-1 text-xs">
-								<span class="text-subtle-2">+</span>
-								<span>10</span>
-							</span>
-						</Button>
-					</div>
-				</th>
-			</tr>
-		{/each}
-	</tbody>
-</Table>
+<div
+	role="group"
+	aria-label="Quick move axes"
+	class="flex min-w-0 flex-col gap-1"
+>
+	{#each [...positions.keys()] as index (index)}
+		{@const labelId = `${groupId}-axis-${index}`}
+		<div
+			role="group"
+			aria-labelledby={labelId}
+			class="flex items-center gap-2"
+		>
+			<span
+				id={labelId}
+				class="text-subtle-1 text-xs"
+			>
+				Axis {index}
+			</span>
+			<div class="ml-auto flex gap-2">
+				<button
+					type="button"
+					class="button button-xs"
+					aria-label="Axis {index}, −{STEP_MM} mm"
+					onclick={() => {
+						quickMove(index, -STEP_MM)
+					}}
+				>
+					−{STEP_MM} mm
+				</button>
+				<button
+					type="button"
+					class="button button-xs"
+					aria-label="Axis {index}, +{STEP_MM} mm"
+					onclick={() => {
+						quickMove(index, STEP_MM)
+					}}
+				>
+					+{STEP_MM} mm
+				</button>
+			</div>
+		</div>
+	{/each}
+</div>

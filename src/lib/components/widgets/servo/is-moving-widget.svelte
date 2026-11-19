@@ -17,4 +17,5 @@
 	api={ResourceTriplets.Servo}
 	{partID}
 	{resourceName}
+	isCompact
 />

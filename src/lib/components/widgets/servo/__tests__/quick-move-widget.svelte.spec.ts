@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../quick-move-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const state = vi.hoisted((): { moveMutate: Mock; error: Error | null } => ({
 	moveMutate: vi.fn(),
@@ -51,7 +52,7 @@ describe('Servo Quick move widget', () => {
 	it('calls the move mutation when a quick-move button is pressed', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getByRole('button', { name: /plus-five-degrees/iu }))
+		await userEvent.click(screen.getByRole('button', { name: /^\+5°$/u }))
 
 		expect(state.moveMutate).toHaveBeenCalledWith([50], {})
 	})
@@ -62,5 +63,30 @@ describe('Servo Quick move widget', () => {
 		renderSubject()
 
 		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Servo Quick move widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

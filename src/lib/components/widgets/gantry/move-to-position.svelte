@@ -1,123 +1,211 @@
 <script lang="ts">
-	import { Button, Icon, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-	import { isEqual, zip } from 'lodash-es'
+	import { mdiBackupRestore, mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { type FieldState, Icon, Tooltip } from '@viamrobotics/prime-ui'
+	import { SvelteMap } from 'svelte/reactivity'
 
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { formatNumeric } from '$lib/format'
 
-	import { matchArrayLength } from './match-array-length'
+	import { useEditedTargets } from '../arm/use-edited-targets.svelte'
 
 	interface Props {
 		positions: number[]
 		moveTo: (newPos: number[], speeds: number[]) => void
 	}
 
+	const DEFAULT_SPEED = 50
+	// Tight enough to catch a real move, loose enough to ignore encoder noise.
+	const DRIFT_THRESHOLD_MM = 1
+
 	const { positions, moveTo }: Props = $props()
 
-	let desiredSpeeds: number[] = $state([])
+	const editedSpeeds = new SvelteMap<number, number>()
+	const desiredSpeeds = $derived(
+		positions.map((_, index) => editedSpeeds.get(index) ?? DEFAULT_SPEED)
+	)
 
-	$effect(() => {
-		const nextDesiredSpeeds = matchArrayLength(desiredSpeeds, positions, 50)
+	const targets = useEditedTargets<number>(
+		(index) => positions[index] ?? 0,
+		() => DRIFT_THRESHOLD_MM
+	)
+	const desiredPositions = $derived(positions.map((_, index) => targets.target(index)))
 
-		if (!isEqual(nextDesiredSpeeds, desiredSpeeds)) {
-			desiredSpeeds = nextDesiredSpeeds
-		}
-	})
-
-	let desiredPositions: number[] = $state([])
-
-	$effect(() => {
-		const nextDesiredPositions = matchArrayLength(desiredPositions, positions, 0)
-
-		if (!isEqual(nextDesiredPositions, desiredPositions)) {
-			desiredPositions = nextDesiredPositions
-		}
-	})
-
-	const onChangePos = (index: number, event: Event) => {
-		const value = numberValueFromEvent(event)
-		if (value !== undefined) {
-			desiredPositions[index] = value
-		}
+	const driftMessage = (index: number) => {
+		const drift = targets.drift(index)
+		return drift === undefined
+			? undefined
+			: `Gantry moved ${formatNumeric(drift)} mm since you edited axis ${index}.`
 	}
-	const onChangeSpeed = (index: number, event: Event) => {
-		const value = numberValueFromEvent(event)
-		if (value !== undefined) {
-			desiredSpeeds[index] = value
-		}
+
+	// An emptied field is held as NaN, so the field stays empty while typing and Execute waits.
+	const fromField = (value: number | undefined) =>
+		value !== undefined && Number.isFinite(value) ? value : Number.NaN
+	const toField = (value: number | undefined) =>
+		value === undefined || Number.isNaN(value) ? undefined : value
+
+	const isValid = $derived(
+		desiredPositions.every((value) => !Number.isNaN(value)) &&
+			desiredSpeeds.every((value) => !Number.isNaN(value))
+	)
+
+	const positionState = (index: number): FieldState | undefined => {
+		if (Number.isNaN(desiredPositions[index])) return 'error'
+		if (driftMessage(index) !== undefined) return 'warn'
+		return undefined
 	}
+
+	const setPosition = (index: number, value: number | undefined) => {
+		targets.edit(index, fromField(value))
+	}
+
+	const setSpeed = (index: number, value: number | undefined) => {
+		editedSpeeds.set(index, fromField(value))
+	}
+
 	const resetToZero = () => {
-		desiredSpeeds = matchArrayLength([], positions, 50)
-		desiredPositions = matchArrayLength([], positions, 0)
-	}
-	const resetToCurrent = () => {
-		desiredPositions = positions
+		editedSpeeds.clear()
+		for (const index of positions.keys()) {
+			targets.edit(index, 0)
+		}
 	}
 
-	const id = $props.id()
-	const moveToHeadingID = `${id}-move-to-heading`
-	const speedHeadingID = `${id}-speed-heading`
+	const instanceId = $props.id()
 </script>
 
-<div class="flex flex-col gap-4">
-	<Table>
-		<thead>
-			<tr>
-				<th> Axis </th>
-				<th id={moveToHeadingID}> Move to <abbr>(mm)</abbr> </th>
-				<th id={speedHeadingID}> Speed <abbr>(mm/s)</abbr> </th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each zip(desiredPositions, desiredSpeeds) as [position, speed], index (index)}
-				<tr>
-					<th> {index} </th>
-					<th>
-						<NumericInput
-							cx="max-w-[80px]"
-							step={0.01}
-							aria-labelledby={moveToHeadingID}
-							value={position}
-							on:change={(event) => onChangePos(index, event)}
-						/>
-					</th>
-					<th>
-						<NumericInput
-							cx="max-w-[80px]"
-							aria-labelledby={speedHeadingID}
-							step={0.1}
-							value={speed}
-							on:change={(event) => onChangeSpeed(index, event)}
-						/>
-					</th>
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
-	<div class="mb-2 flex flex-col gap-2">
-		<span class="flex flex-row gap-2">
-			<h4 class="text-xs font-semibold">Quick set</h4>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-				<span slot="description">
-					Will update the "Move to" input values but will not execute
+<div class="@container flex min-w-0 flex-col gap-3">
+	<div class="flex flex-col gap-3">
+		{#each [...positions.keys()] as index (index)}
+			{@const message = driftMessage(index)}
+			{@const current = `${formatNumeric(positions[index])} mm`}
+			{@const axisLabelId = `${instanceId}-axis-${index}`}
+			<div
+				role="group"
+				aria-labelledby={axisLabelId}
+				class="flex flex-col gap-1"
+			>
+				<span
+					id={axisLabelId}
+					class="text-subtle-1 text-xs"
+				>
+					Axis {index}
 				</span>
+				<div class="grid grid-cols-1 gap-2 @[317px]:grid-cols-2">
+					<div class="flex min-w-0 flex-col gap-1">
+						<Tooltip disabled={message === undefined}>
+							<Tooltip.Trigger class="block min-w-0">
+								<NumberField
+									label="Position"
+									suffix="mm"
+									step={0.01}
+									state={positionState(index)}
+									bind:value={
+										() => toField(desiredPositions[index]), (value) => setPosition(index, value)
+									}
+								/>
+							</Tooltip.Trigger>
+							<Tooltip.Content class="max-w-72">{message}</Tooltip.Content>
+						</Tooltip>
+						{#if message !== undefined}
+							<!-- The tooltip is not in the page until it opens, so screen readers get the message here. -->
+							<span class="sr-only">{message}</span>
+						{/if}
+						<div class="flex justify-end">
+							<Tooltip>
+								<Tooltip.Trigger>
+									<button
+										type="button"
+										class="button button-ghost button-xs font-roboto-mono"
+										aria-label="Reset Axis {index} position to its current value, {current}"
+										disabled={!targets.isEdited(index)}
+										onclick={() => {
+											targets.reset(index)
+										}}
+									>
+										<Icon
+											icon={mdiBackupRestore}
+											size="sm"
+										/>
+										{current}
+									</button>
+								</Tooltip.Trigger>
+								<Tooltip.Content>Reset axis {index} to its current position</Tooltip.Content>
+							</Tooltip>
+						</div>
+					</div>
+					<div class="min-w-0 self-start">
+						<NumberField
+							label="Speed"
+							suffix="mm/s"
+							step={0.1}
+							state={Number.isNaN(desiredSpeeds[index]) ? 'error' : undefined}
+							bind:value={() => toField(desiredSpeeds[index]), (value) => setSpeed(index, value)}
+						/>
+					</div>
+				</div>
+			</div>
+		{/each}
+	</div>
+
+	<div class="flex flex-col gap-1">
+		<div class="flex items-center gap-1">
+			<span
+				id={instanceId}
+				class="text-subtle-1 text-xs"
+			>
+				Quick set
+			</span>
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button size-6"
+						aria-label="About Quick set"
+					>
+						<Icon
+							icon={mdiInformationOutline}
+							size="sm"
+						/>
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Will update the Position inputs but will not execute</Tooltip.Content>
 			</Tooltip>
-		</span>
-		<div class="flex flex-wrap gap-2">
-			<Button onclick={resetToZero}>Zero</Button>
-			<Button onclick={resetToCurrent}>Current position</Button>
+		</div>
+		<div
+			role="group"
+			aria-labelledby={instanceId}
+			class="flex flex-wrap gap-2"
+		>
+			<button
+				type="button"
+				class="button button-compact"
+				onclick={resetToZero}
+			>
+				Zero
+			</button>
+			<button
+				type="button"
+				class="button button-compact"
+				onclick={() => {
+					targets.resetAll()
+				}}
+			>
+				Current position
+			</button>
 		</div>
 	</div>
-	<Button
-		class="mt-auto w-fit"
-		icon="play-circle-outline"
-		variant="dark"
-		onclick={() => moveTo(desiredPositions, desiredSpeeds)}
-	>
-		Execute
-	</Button>
+
+	<div class="flex justify-end">
+		<button
+			type="button"
+			class="button button-compact"
+			disabled={!isValid}
+			onclick={() => moveTo(desiredPositions, desiredSpeeds)}
+		>
+			<Icon
+				icon={mdiPlayCircleOutline}
+				size="sm"
+			/>
+			Execute
+		</button>
+	</div>
 </div>
