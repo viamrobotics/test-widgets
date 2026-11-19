@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Pose } from '@viamrobotics/sdk'
 
-	import { Button, Icon, Progress, Tooltip } from '@viamrobotics/prime-core'
+	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import { PersistedState } from 'runed'
 
 	import PoseEditor from '$lib/components/pose-editor.svelte'
@@ -120,8 +121,8 @@
 		</Button>
 		{#if isPending}
 			<Progress
-				size="medium"
-				variant="dark"
+				label="Executing motion"
+				class="w-24"
 			/>
 		{/if}
 	</div>

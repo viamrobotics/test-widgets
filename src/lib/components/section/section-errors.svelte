@@ -2,12 +2,18 @@
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
 
 	import { errorKey } from './error-key'
+	import { useSectionScope } from './section-scope-context.svelte'
 
 	interface Props {
-		errors: Error[]
+		/** Leave it out to read the enclosing `Section.Scope`'s errors. */
+		errors?: Error[]
 	}
 
-	const { errors }: Props = $props()
+	const { errors: ownErrors }: Props = $props()
+
+	const scope = useSectionScope()
+
+	const errors = $derived(ownErrors ?? scope?.errors ?? [])
 
 	const COPIED_MS = 750
 

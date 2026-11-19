@@ -1,81 +1,139 @@
 <script lang="ts">
-	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { mdiArrowUp } from '@mdi/js'
+	import { Slider } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		setPower: (_: number) => void
 	}
 
+	type Direction = 'forward' | 'backward'
+
+	const DEFAULT_POWER_FRACTION = 0.5
+	const POWER_STEP = 0.05
+	const HOLD_KEYS = new Set([' ', 'Enter'])
+
 	const { setPower }: Props = $props()
 
-	let powerPct = $state(0.5)
+	// Two quick moves can share a page (the composite and its own pane), so the hint id is per instance.
+	const instanceId = $props.id()
+	const holdHintId = `${instanceId}-hold-hint`
 
-	let isPressed = false
-	const move = (forward: boolean) => {
-		isPressed = true
-		setPower((forward ? 1 : -1) * powerPct)
-	}
-	const stop = () => {
-		if (isPressed) {
-			setPower(0)
+	let powerFraction = $state(DEFAULT_POWER_FRACTION)
+	let heldDirection = $state<Direction | null>(null)
+
+	const start = (direction: Direction) => {
+		if (heldDirection !== null) {
+			return
 		}
-		isPressed = false
+		heldDirection = direction
+		setPower((direction === 'forward' ? 1 : -1) * powerFraction)
+	}
+
+	const stop = () => {
+		if (heldDirection === null) {
+			return
+		}
+		heldDirection = null
+		setPower(0)
+	}
+
+	const onPointerDown = (
+		event: PointerEvent & { currentTarget: HTMLButtonElement },
+		direction: Direction
+	) => {
+		if (event.button !== 0) {
+			return
+		}
+		event.currentTarget.setPointerCapture(event.pointerId)
+		start(direction)
+	}
+
+	const onKeyDown = (event: KeyboardEvent, direction: Direction) => {
+		if (!HOLD_KEYS.has(event.key)) {
+			return
+		}
+		event.preventDefault()
+		if (!event.repeat) {
+			start(direction)
+		}
+	}
+
+	const onKeyUp = (event: KeyboardEvent) => {
+		if (HOLD_KEYS.has(event.key)) {
+			stop()
+		}
 	}
 </script>
 
-<Label cx="max-w-[282px]">
-	<span class="text-subtle-1 text-xs">Power</span>
+<svelte:document
+	onvisibilitychange={() => {
+		if (document.visibilityState === 'hidden') {
+			stop()
+		}
+	}}
+/>
 
-	<RangeInput
-		slot="input"
-		value={powerPct}
+<div class="flex flex-col gap-1">
+	<Slider
+		label="Power"
+		min={0}
 		max={1}
-		step={0.05}
-		on:input={(event) => {
-			// on:input is used instead of on:change because of the on:mousedown handlers and blur order
-			// on:change does not run in time.
-			powerPct = numberValueFromEvent(event) ?? 0
-		}}
+		step={POWER_STEP}
+		bind:value={powerFraction}
 	/>
-</Label>
 
-<div class="flex flex-col gap-4">
-	<div class="flex flex-row gap-4">
-		<!-- NOTE(zp,2024-06-04) these are not prime buttons because prime does not provide on:mousedown or on:mouseup -->
+	<div class="mt-1 flex flex-wrap items-center gap-4">
 		<button
-			onmousedown={() => {
-				move(true)
+			type="button"
+			class={['button button-xs touch-none', heldDirection === 'forward' && 'button-dark']}
+			aria-describedby={holdHintId}
+			onpointerdown={(event) => {
+				onPointerDown(event, 'forward')
 			}}
-			onmouseup={stop}
-			onmouseleave={stop}
-			class="border-light bg-light hover:border-medium hover:bg-medium active:bg-gray-2 w-20 border p-3 py-3"
+			onpointerup={stop}
+			onpointercancel={stop}
+			onlostpointercapture={stop}
+			onkeydown={(event) => {
+				onKeyDown(event, 'forward')
+			}}
+			onkeyup={onKeyUp}
+			onblur={stop}
 		>
-			<div class="flex flex-col gap-2">
-				<Icon
-					name="arrow-up"
-					cx="text-gray-6 self-center"
-				/>
-				<p class="font-roboto-mono text-xs uppercase">forward</p>
-			</div>
+			<Icon
+				icon={mdiArrowUp}
+				size="sm"
+			/>
+			Forward
 		</button>
 		<button
-			onmousedown={() => {
-				move(false)
+			type="button"
+			class={['button button-xs touch-none', heldDirection === 'backward' && 'button-dark']}
+			aria-describedby={holdHintId}
+			onpointerdown={(event) => {
+				onPointerDown(event, 'backward')
 			}}
-			onmouseup={stop}
-			onmouseleave={stop}
-			class="border-light bg-light hover:border-medium hover:bg-medium active:bg-gray-2 w-20 border p-3 py-3"
+			onpointerup={stop}
+			onpointercancel={stop}
+			onlostpointercapture={stop}
+			onkeydown={(event) => {
+				onKeyDown(event, 'backward')
+			}}
+			onkeyup={onKeyUp}
+			onblur={stop}
 		>
-			<div class="flex flex-col gap-2">
-				<Icon
-					name="arrow-up"
-					cx="text-gray-6 rotate-180 self-center"
-				/>
-				<p class="font-roboto-mono text-xs uppercase">backward</p>
-			</div>
+			<Icon
+				icon={mdiArrowUp}
+				size="sm"
+				class="rotate-180"
+			/>
+			Backward
 		</button>
+		<p
+			id={holdHintId}
+			class="text-subtle-2 ml-auto text-xs"
+		>
+			Press and hold
+		</p>
 	</div>
-
-	<p class="text-subtle-2 mt-auto ml-auto text-xs">Press and hold</p>
 </div>

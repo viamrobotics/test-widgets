@@ -40,13 +40,8 @@
 	}
 
 	let refetchState = $state<'idle' | 'success' | 'refetching'>('idle')
-	const manualIconState = $derived(
-		{
-			idle: { name: 'refresh' as const },
-			success: { name: 'check' as const },
-			refetching: { progress: 'indeterminate' as const },
-		}[refetchState]
-	)
+
+	const manualIconName = $derived(refetchState === 'success' ? 'check' : 'refresh')
 
 	let refetchingStateTimeout: number | undefined
 
@@ -103,14 +98,21 @@
 		</Select>
 	</div>
 	{#if selectedOption === RefetchRates.MANUAL}
+		<!-- No `progress`: the prime-core spinner collides with the `pill` utility in tailwind-config 1.6 and later. -->
 		<IconButton
-			icon={manualIconState.name ?? 'refresh'}
-			progress={'progress' in manualIconState ? 'indeterminate' : undefined}
+			icon={manualIconName}
 			label="refetch"
 			variant="secondary"
 			cx="border-light border"
+			aria-busy={refetchState === 'refetching'}
 			on:click={refetchQueries}
 		/>
+		<span
+			class="sr-only"
+			role="status"
+		>
+			{refetchState === 'refetching' ? 'Refetching' : ''}
+		</span>
 	{:else}
 		<IconButton
 			icon="pause"

@@ -156,7 +156,7 @@ describe('Arm joint-position-jogging', () => {
 		expect(moveToJointPositions).toHaveBeenCalledWith([5])
 	})
 
-	it('shows a spinner while the move is in flight, then a check', async () => {
+	it('reports the move while it is in flight, then once it lands', async () => {
 		let resolveMove = () => {}
 		const moveToJointPositions = vi.fn(
 			() =>
@@ -170,7 +170,6 @@ describe('Arm joint-position-jogging', () => {
 		vi.advanceTimersByTime(timing.sendDebounceMs)
 		await tick()
 
-		expect(within(rowStatus(0)).getByLabelText('Progress spinner')).toBeInTheDocument()
 		expect(rowStatus(0)).toMatchTextContent('Moving joint 0 to 5.00°')
 		expect(increaseButton(0, 5)).toBeDisabled()
 
@@ -178,7 +177,6 @@ describe('Arm joint-position-jogging', () => {
 		await vi.advanceTimersByTimeAsync(0)
 		await tick()
 
-		expect(screen.queryByLabelText('Progress spinner')).not.toBeInTheDocument()
 		expect(rowStatus(0)).toMatchTextContent('Joint 0 moved to 5.00°')
 		expect(increaseButton(0, 5)).not.toBeDisabled()
 

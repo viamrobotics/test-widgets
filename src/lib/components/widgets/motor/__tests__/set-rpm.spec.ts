@@ -40,4 +40,15 @@ describe('Motor SetRPM', () => {
 
 		expect(setRPM).toHaveBeenCalledWith(120)
 	})
+
+	it('does not send an empty RPM', async () => {
+		renderSubject({})
+
+		const numericInput = screen.getByRole('spinbutton')
+		await user.clear(numericInput)
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(numericInput).toHaveAttribute('aria-invalid', 'true')
+		expect(setRPM).not.toHaveBeenCalled()
+	})
 })

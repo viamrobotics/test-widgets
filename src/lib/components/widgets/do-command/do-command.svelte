@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Button, Progress } from '@viamrobotics/prime-core'
+	import { Button } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { PersistedState } from 'runed'
@@ -106,8 +107,8 @@
 					<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
 					{#if doCommandMutation.isPending}
 						<Progress
-							size="medium"
-							variant="dark"
+							label="Running command"
+							class="w-24"
 						/>
 					{/if}
 				</div>

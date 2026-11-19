@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { StatusDot } from '@viamrobotics/prime-ui'
 	import { MotorClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
@@ -106,7 +107,6 @@
 						api={ResourceTriplets.Motor}
 						mutations={[setPowerMutation]}
 					>
-						{#snippet subheading()}<Section.Text>Move continuously</Section.Text>{/snippet}
 						<div class="flex grow flex-wrap justify-between gap-2">
 							<SetPower {setPower} />
 						</div>
@@ -118,9 +118,6 @@
 							api={ResourceTriplets.Motor}
 							mutations={[setRPMMutation]}
 						>
-							{#snippet subheading()}<Section.Text
-									>Move indefinitely at a specified speed.</Section.Text
-								>{/snippet}
 							<div class="flex grow flex-wrap justify-between gap-2">
 								<SetRPM {setRPM} />
 							</div>
@@ -131,9 +128,6 @@
 							api={ResourceTriplets.Motor}
 							mutations={[goForMutation]}
 						>
-							{#snippet subheading()}<Section.Text
-									>Move a specified number of revolutions</Section.Text
-								>{/snippet}
 							<div class="flex grow flex-wrap justify-between gap-2">
 								<GoFor {goFor} />
 							</div>
@@ -144,8 +138,6 @@
 							api={ResourceTriplets.Motor}
 							mutations={[goToMutation]}
 						>
-							{#snippet subheading()}<Section.Text>Turn to a specified position</Section.Text
-								>{/snippet}
 							<div class="flex grow flex-wrap justify-between gap-2">
 								<GoTo {goTo} />
 							</div>
@@ -171,28 +163,32 @@
 						api={ResourceTriplets.Motor}
 						{partID}
 						{resourceName}
+						isCompact
 					>
-						<div class="flex flex-col gap-6 pt-2">
+						<div class="flex flex-col gap-4 pt-2">
 							<ApiSection
 								method="IsPowered"
 								api={ResourceTriplets.Motor}
 								queries={[isPoweredQuery]}
-								class="grow flex-col gap-3 p-0!"
+								class="grow flex-col gap-1 p-0!"
 							>
 								{#snippet tooltip()}
 									Returns whether or not the motor is running and the current portion of max power.
-									Stepper motors will report ”true” if they are being powered while holding a
+									Stepper motors will report “true” if they are being powered while holding a
 									position and while they are turning.
 								{/snippet}
 								{#if isPoweredQuery.data !== undefined}
 									{@const [isPowered, powerPct] = isPoweredQuery.data}
-									<span class="font-roboto-mono flex flex-row gap-1 text-xs">
-										<p class="text-default">{isPowered}</p>
-										<p class="text-disabled">/</p>
-										<p class="text-subtle-1">
-											{formatNumeric(powerPct * 100, 1)}%
-										</p>
-									</span>
+									<div class="flex items-center gap-2">
+										<span class="text-subtle-1 text-xs">Power</span>
+										<StatusDot
+											state={isPowered ? 'success' : 'danger'}
+											label={isPowered ? 'Powered' : 'Not powered'}
+										/>
+										<span class="readout font-roboto-mono">
+											{isPowered ? `${formatNumeric(powerPct * 100, 1)}%` : '-'}
+										</span>
+									</div>
 								{/if}
 							</ApiSection>
 							{#if propertiesQuery.data?.positionReporting === true}
@@ -200,15 +196,15 @@
 									method="GetPosition"
 									api={ResourceTriplets.Motor}
 									queries={[positionQuery]}
-									class="grow flex-col gap-3 p-0!"
+									class="grow flex-col gap-1 p-0!"
 								>
 									{#snippet tooltip()}
 										Reports the position of an encoded motor in revolutions from zero/home.
 									{/snippet}
 									{#if positionQuery.data !== undefined}
-										<p class="font-roboto-mono text-default text-xs">
+										<span class="readout font-roboto-mono">
 											{formatNumeric(positionQuery.data, 4)}
-										</p>
+										</span>
 									{/if}
 								</ApiSection>
 							{/if}
