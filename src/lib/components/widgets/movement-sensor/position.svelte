@@ -8,25 +8,67 @@
 	}
 
 	const { data }: Props = $props()
+
+	const MISSING_VALUE = '-'
+
+	const COORDINATE_DECIMALS = 6
+	const DEFAULT_DECIMALS = 2
+
+	const formatOrMissing = (value: number | undefined, decimals = DEFAULT_DECIMALS) =>
+		value === undefined ? MISSING_VALUE : formatNumeric(value, decimals)
+
+	const latitudeId = $props.id()
+	const longitudeId = `${latitudeId}-longitude`
+	const altitudeId = `${latitudeId}-altitude`
 </script>
 
-<dl class="flex flex-col gap-2 font-mono">
-	<div class="flex justify-between gap-2">
-		<dt class="text-subtle-1 uppercase">Lat</dt>
-		<dd>
-			{formatNumeric(data.coordinate?.latitude, 6)}
-		</dd>
+<div class="flex min-w-0 flex-col gap-2">
+	<div class="flex min-w-0 items-center gap-2">
+		<span
+			id={latitudeId}
+			class="text-subtle-1 w-16 shrink-0 text-xs">Latitude</span
+		>
+		<span
+			role="group"
+			aria-labelledby={latitudeId}
+			class="readout font-roboto-mono"
+		>
+			<span class="readout-value"
+				>{formatOrMissing(data.coordinate?.latitude, COORDINATE_DECIMALS)}</span
+			>
+			<span class="readout-suffix">°</span>
+		</span>
 	</div>
 
-	<div class="flex justify-between gap-2">
-		<dt class="text-subtle-1 uppercase">Lng</dt>
-		<dd>
-			{formatNumeric(data.coordinate?.longitude, 6)}
-		</dd>
+	<div class="flex min-w-0 items-center gap-2">
+		<span
+			id={longitudeId}
+			class="text-subtle-1 w-16 shrink-0 text-xs">Longitude</span
+		>
+		<span
+			role="group"
+			aria-labelledby={longitudeId}
+			class="readout font-roboto-mono"
+		>
+			<span class="readout-value"
+				>{formatOrMissing(data.coordinate?.longitude, COORDINATE_DECIMALS)}</span
+			>
+			<span class="readout-suffix">°</span>
+		</span>
 	</div>
 
-	<div class="flex justify-between gap-2">
-		<dt class="text-subtle-1 uppercase">Alt (m)</dt>
-		<dd>{formatNumeric(data.altitudeM)}</dd>
+	<div class="flex min-w-0 items-center gap-2">
+		<span
+			id={altitudeId}
+			class="text-subtle-1 w-16 shrink-0 text-xs">Altitude</span
+		>
+		<span
+			role="group"
+			aria-labelledby={altitudeId}
+			class="readout font-roboto-mono"
+		>
+			<span class="readout-value">{formatOrMissing(data.altitudeM)}</span>
+			<span class="readout-suffix">m</span>
+		</span>
 	</div>
-</dl>
+</div>

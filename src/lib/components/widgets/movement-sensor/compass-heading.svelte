@@ -6,15 +6,32 @@
 	}
 
 	const { data }: Props = $props()
+
+	const labelId = $props.id()
 </script>
 
-<div class="flex items-center gap-3">
+<div class="flex min-w-0 items-center gap-2">
+	<span
+		id={labelId}
+		class="text-subtle-1 w-14 shrink-0 text-xs"
+	>
+		Heading
+	</span>
+	<span
+		role="group"
+		aria-labelledby={labelId}
+		class="readout font-roboto-mono"
+	>
+		<span class="readout-value">{formatNumeric(data)}</span>
+		<span class="readout-suffix">°</span>
+	</span>
 	<svg
 		width="32"
 		height="32"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="transition-transform duration-1000 ease-in-out"
+		aria-hidden="true"
+		class="ml-auto shrink-0"
 		style:transform="rotate({data}deg)"
 	>
 		<circle
@@ -37,8 +54,4 @@
 			fill="#BE3536"
 		/>
 	</svg>
-
-	<div class="text-subtle-1 font-mono">
-		{formatNumeric(data)}
-	</div>
 </div>

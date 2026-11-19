@@ -54,6 +54,22 @@ describe('<ReadingsList>', () => {
 		expect(container.querySelector('pre')).toBeNull()
 	})
 
+	it('draws the placeholder dash when there are no readings', () => {
+		render(Subject, { data: {} })
+		expect(screen.getByText('-')).toBeInTheDocument()
+		expect(screen.queryByRole('term')).toBeNull()
+	})
+
+	it('draws the Copy JSON button by default', () => {
+		render(Subject, { data: { a: 1 } })
+		expect(screen.getByRole('button', { name: 'Copy JSON' })).toBeInTheDocument()
+	})
+
+	it('omits the Copy JSON button when showCopy is false', () => {
+		render(Subject, { data: { a: 1 }, showCopy: false })
+		expect(screen.queryByRole('button', { name: 'Copy JSON' })).toBeNull()
+	})
+
 	it('renders nested image', () => {
 		const data = {
 			image:

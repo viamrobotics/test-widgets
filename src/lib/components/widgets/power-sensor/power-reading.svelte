@@ -2,13 +2,34 @@
 	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: number
+		data: number | undefined
 	}
 
 	const { data }: Props = $props()
+
+	const MISSING_VALUE = '-'
+	const POWER_READING_DECIMALS = 4
+
+	const valueText = $derived(
+		data === undefined ? MISSING_VALUE : formatNumeric(data, POWER_READING_DECIMALS)
+	)
+
+	const labelId = $props.id()
 </script>
 
-<span class="font-roboto-mono flex flex-row gap-2">
-	{formatNumeric(data, 4)}
-	<abbr class="text-subtle-2">W</abbr>
-</span>
+<div class="flex min-w-0 items-center gap-2">
+	<span
+		id={labelId}
+		class="text-subtle-1 w-14 shrink-0 text-xs"
+	>
+		Power
+	</span>
+	<span
+		role="group"
+		aria-labelledby={labelId}
+		class="readout font-roboto-mono"
+	>
+		<span class="readout-value">{valueText}</span>
+		<span class="readout-suffix">W</span>
+	</span>
+</div>

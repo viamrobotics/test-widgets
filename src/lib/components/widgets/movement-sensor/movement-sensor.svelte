@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { Switch } from '@viamrobotics/prime-core'
+	import { Checkbox, Field, Label } from '@viamrobotics/prime-ui'
 	import { MovementSensorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import { prefersReducedMotion } from 'svelte/motion'
 	import { slide } from 'svelte/transition'
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import CopyButton from '$lib/components/copy-button.svelte'
 	import ReadingsList from '$lib/components/readings-list.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
@@ -32,10 +34,6 @@
 		'movement-sensor'
 	)
 	let showFullReadings = $state(false)
-
-	const onSetShowFullReadings = (event: CustomEvent<boolean>) => {
-		showFullReadings = event.detail
-	}
 
 	const client = createResourceClient(
 		MovementSensorClient,
@@ -88,29 +86,46 @@
 
 	const propertiesErrors = useSectionErrors(() => ({ queries: [propertiesQuery] }))
 	const readingsErrors = useSectionErrors(() => ({ queries: [readingsQuery] }))
+
+	const readingsJson = $derived(JSON.stringify(readingsQuery.data, null, 2))
+
+	const READINGS_SLIDE_MS = 150
+	const readingsSlideMs = $derived(prefersReducedMotion.current ? 0 : READINGS_SLIDE_MS)
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<div class="flex items-center gap-2 p-4">
-			<RefetchController
-				{refetchInterval}
-				queries={[propertiesQuery, positionQuery]}
-			/>
-			<Section.Errors errors={propertiesErrors.errors} />
-		</div>
+		<!-- 224 steps of 4 px is the board's 896 px maximum, where the 4:3 map is 671 px tall. -->
+		<div class="@container mx-auto max-w-224">
+			<div class="flex flex-col">
+				<div
+					role="group"
+					aria-label="Refresh"
+					class="flex items-center gap-2 border-b p-2"
+				>
+					<RefetchController
+						{refetchInterval}
+						queries={[propertiesQuery, positionQuery]}
+					/>
+					<Section.Errors errors={propertiesErrors.errors} />
+				</div>
 
-		<Section.Body isLoading={propertiesErrors.isLoading}>
-			{#if propertiesQuery.data !== undefined}
-				<div class="@container">
-					<div class="flex flex-wrap text-xs @4xl:flex-nowrap">
-						<div class="flex w-full flex-col @4xl:w-1/4">
+				<Section.Body isLoading={propertiesErrors.isLoading}>
+					{#if propertiesQuery.data !== undefined}
+						{#if propertiesQuery.data.positionSupported}
+							<Map
+								coordinate={positionQuery.data?.coordinate}
+								rotation={orientationQuery.data?.oZ}
+							/>
+						{/if}
+
+						<div class="grid grid-cols-1 @2xl:grid-cols-2">
 							{#if propertiesQuery.data.positionSupported}
 								<ApiSection
 									method="GetPosition"
 									api={ResourceTriplets.MovementSensor}
 									queries={[positionQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
 									{#if positionQuery.data !== undefined}
 										<Position data={positionQuery.data} />
@@ -123,11 +138,8 @@
 									method="GetOrientation"
 									api={ResourceTriplets.MovementSensor}
 									queries={[orientationQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
-									{#snippet subheading()}
-										<span class="text-subtle-2 text-xs font-normal">(º)</span>
-									{/snippet}
 									{#if orientationQuery.data !== undefined}
 										<Orientation data={orientationQuery.data} />
 									{/if}
@@ -139,31 +151,26 @@
 									method="GetCompassHeading"
 									api={ResourceTriplets.MovementSensor}
 									queries={[compassHeadingQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
-									{#snippet subheading()}
-										<span class="text-subtle-2 text-xs font-normal">(º)</span>
-									{/snippet}
 									{#if compassHeadingQuery.data !== undefined}
 										<CompassHeading data={compassHeadingQuery.data} />
 									{/if}
 								</ApiSection>
 							{/if}
-						</div>
 
-						<div class="flex w-full flex-col @4xl:w-1/4">
 							{#if propertiesQuery.data.angularVelocitySupported}
 								<ApiSection
 									method="GetAngularVelocity"
 									api={ResourceTriplets.MovementSensor}
 									queries={[angularVelocityQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
-									{#snippet subheading()}
-										<span class="text-subtle-2 text-xs font-normal">(º/s)</span>
-									{/snippet}
 									{#if angularVelocityQuery.data !== undefined}
-										<Vector3 data={angularVelocityQuery.data} />
+										<Vector3
+											data={angularVelocityQuery.data}
+											unit="°/s"
+										/>
 									{/if}
 								</ApiSection>
 							{/if}
@@ -173,13 +180,13 @@
 									method="GetLinearVelocity"
 									api={ResourceTriplets.MovementSensor}
 									queries={[linearVelocityQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
-									{#snippet subheading()}
-										<span class="text-subtle-2 text-xs font-normal">(m/s)</span>
-									{/snippet}
 									{#if linearVelocityQuery.data !== undefined}
-										<Vector3 data={linearVelocityQuery.data} />
+										<Vector3
+											data={linearVelocityQuery.data}
+											unit="m/s"
+										/>
 									{/if}
 								</ApiSection>
 							{/if}
@@ -189,13 +196,13 @@
 									method="GetLinearAcceleration"
 									api={ResourceTriplets.MovementSensor}
 									queries={[linearAccelerationQuery]}
-									class="flex-col gap-2"
+									class="min-w-0 flex-col gap-2 border-b"
 								>
-									{#snippet subheading()}
-										<span class="text-subtle-2 text-xs font-normal">(m/s<sup>2</sup>)</span>
-									{/snippet}
 									{#if linearAccelerationQuery.data !== undefined}
-										<Vector3 data={linearAccelerationQuery.data} />
+										<Vector3
+											data={linearAccelerationQuery.data}
+											unit="m/s²"
+										/>
 									{/if}
 								</ApiSection>
 							{/if}
@@ -204,56 +211,57 @@
 								method="GetAccuracy"
 								api={ResourceTriplets.MovementSensor}
 								queries={[accuracyQuery]}
-								class="flex-col gap-2"
+								class="min-w-0 flex-col gap-2 border-b"
 							>
 								{#if accuracyQuery.data !== undefined}
 									<Accuracy data={accuracyQuery.data} />
 								{/if}
 							</ApiSection>
 						</div>
+					{/if}
+				</Section.Body>
 
-						{#if propertiesQuery.data.positionSupported}
-							<Map
-								coordinate={positionQuery.data?.coordinate}
-								rotation={orientationQuery.data?.oZ}
-							/>
-						{/if}
-					</div>
-				</div>
-			{/if}
-		</Section.Body>
+				<Section
+					errorReporter={readingsErrors}
+					class="flex-col gap-2"
+				>
+					<Section.Heading>
+						<Section.Method
+							method="GetReadings"
+							api={ResourceTriplets.MovementSensor}
+						/>
+						{#snippet aside()}
+							<Section.Errors errors={readingsErrors.errors} />
+							{#if readingsQuery.data !== undefined}
+								<span class="ml-auto">
+									<CopyButton
+										data={readingsJson}
+										ariaLabel="Copy JSON"
+									/>
+								</span>
+							{/if}
+						{/snippet}
+					</Section.Heading>
 
-		<Section
-			errorReporter={readingsErrors}
-			class="flex-col gap-4"
-		>
-			<div class="flex flex-col gap-0.5">
-				<Section.Heading>
-					<Section.Method
-						method="GetReadings"
-						api={ResourceTriplets.MovementSensor}
-					/>
-					{#snippet aside()}
-						<Section.Errors errors={readingsErrors.errors} />
-					{/snippet}
-				</Section.Heading>
-				<p class="text-subtle-2 text-xs">Get all the measurements and data from the sensor</p>
+					<Field class="flex items-center gap-2">
+						<Checkbox bind:checked={showFullReadings} />
+						<Label>Show readings</Label>
+					</Field>
+
+					{#if showFullReadings}
+						<div transition:slide={{ duration: readingsSlideMs }}>
+							<Section.Body isLoading={readingsErrors.isLoading}>
+								{#if readingsQuery.data !== undefined}
+									<ReadingsList
+										data={readingsQuery.data}
+										showCopy={false}
+									/>
+								{/if}
+							</Section.Body>
+						</div>
+					{/if}
+				</Section>
 			</div>
-
-			<Switch
-				annotated
-				on:change={onSetShowFullReadings}
-			/>
-
-			{#if showFullReadings}
-				<div transition:slide={{ duration: 150 }}>
-					<Section.Body isLoading={readingsErrors.isLoading}>
-						{#if readingsQuery.data !== undefined}
-							<ReadingsList data={readingsQuery.data} />
-						{/if}
-					</Section.Body>
-				</div>
-			{/if}
-		</Section>
+		</div>
 	{/snippet}
 </ConnectionStatus>

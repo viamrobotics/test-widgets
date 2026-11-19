@@ -2,7 +2,9 @@
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { PersistedState } from 'runed'
 
-	import { IconButton, Select } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiPause, mdiRefresh } from '@mdi/js'
+	import { Select } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
 
 	import {
 		type RefetchInterval,
@@ -31,17 +33,23 @@
 			RefetchRates.ONE_SEC
 	)
 
-	const selectOption = (selected: string) => {
-		selectedOption = selected as RefetchRate
+	const selectOption = (selected: RefetchRate) => {
+		selectedOption = selected
 		const interval =
-			RefetchRateToInterval.find(([rate]) => rate === selectedOption)?.[1] ??
-			RefetchIntervals.ONE_SEC
+			RefetchRateToInterval.find(([rate]) => rate === selected)?.[1] ?? RefetchIntervals.ONE_SEC
 		refetchInterval.current = interval
+	}
+
+	const getSelectedOption = () => selectedOption
+	const pickOption = (next: string | undefined) => {
+		const rate = RefetchRateToInterval.find(([candidate]) => candidate === next)?.[0]
+		if (rate === undefined || rate === selectedOption) return
+		selectOption(rate)
 	}
 
 	let refetchState = $state<'idle' | 'success' | 'refetching'>('idle')
 
-	const manualIconName = $derived(refetchState === 'success' ? 'check' : 'refresh')
+	const manualIcon = $derived(refetchState === 'success' ? mdiCheck : mdiRefresh)
 
 	let refetchingStateTimeout: number | undefined
 
@@ -69,14 +77,10 @@
 		}, refetchNotifyDurationMs)
 	}
 
-	const onChange = (event: Event) => {
-		selectOption((event.target as HTMLSelectElement).value)
-	}
-
-	const refetchOptions = $derived(
-		allowLive
-			? Object.values(RefetchRates)
-			: Object.values(RefetchRates).filter((value) => value !== RefetchRates.LIVE)
+	const refetchItems = $derived(
+		Object.values(RefetchRates)
+			.filter((value) => allowLive || value !== RefetchRates.LIVE)
+			.map((value) => ({ value, label: value }))
 	)
 
 	$effect(() => {
@@ -86,27 +90,27 @@
 	})
 </script>
 
-<div class="text-default flex text-xs">
-	<div class="w-50 max-w-full">
+<div class="text-default flex items-center gap-2 text-xs">
+	<div class="max-w-50 min-w-0 flex-1">
 		<Select
-			on:change={onChange}
-			cx="border-r-0"
-		>
-			{#each refetchOptions as option (option)}
-				<option selected={selectedOption === option}>{option}</option>
-			{/each}
-		</Select>
+			items={refetchItems}
+			bind:value={getSelectedOption, pickOption}
+			aria-label="Refresh rate"
+		/>
 	</div>
 	{#if selectedOption === RefetchRates.MANUAL}
-		<!-- No `progress`: the prime-core spinner collides with the `pill` utility in tailwind-config 1.6 and later. -->
-		<IconButton
-			icon={manualIconName}
-			label="refetch"
-			variant="secondary"
-			cx="border-light border"
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label="Refresh"
 			aria-busy={refetchState === 'refetching'}
-			on:click={refetchQueries}
-		/>
+			onclick={refetchQueries}
+		>
+			<Icon
+				icon={manualIcon}
+				size="sm"
+			/>
+		</button>
 		<span
 			class="sr-only"
 			role="status"
@@ -114,14 +118,18 @@
 			{refetchState === 'refetching' ? 'Refetching' : ''}
 		</span>
 	{:else}
-		<IconButton
-			icon="pause"
-			label="pause"
-			variant="secondary"
-			cx="border-light border"
-			on:click={() => {
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label="Pause"
+			onclick={() => {
 				selectOption(RefetchRates.MANUAL)
 			}}
-		/>
+		>
+			<Icon
+				icon={mdiPause}
+				size="sm"
+			/>
+		</button>
 	{/if}
 </div>

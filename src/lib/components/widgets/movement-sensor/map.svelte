@@ -7,7 +7,6 @@
 		MapLibre,
 		MapLibreMarker,
 		MapProviders,
-		NavigationControls,
 		SatelliteControls,
 	} from '$lib/components/maplibre'
 
@@ -24,16 +23,24 @@
 	const lng = $derived(safeReadCoordinate(coordinate?.longitude))
 </script>
 
-<div class="relative h-[300px] w-full @4xl:h-auto @4xl:w-1/2">
+<div class="relative aspect-4/3 w-full">
 	<MapLibre
 		zoom={15}
 		options={{ attributionControl: { compact: false } }}
 		mapProvider={MapProviders.googleMaps}
 		mapProviderKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
 	>
-		<div class="absolute top-2.5 right-12 z-10 flex items-center gap-2">
+		<div
+			role="group"
+			aria-label="Map view"
+			class="bg-extralight border-light absolute top-2 right-2 z-10 flex flex-col gap-2 rounded-sm border p-2 text-xs"
+		>
+			<FollowControls
+				following
+				{lat}
+				{lng}
+			/>
 			<SatelliteControls />
-			<NavigationControls />
 		</div>
 
 		{#if lat !== undefined && lng !== undefined && rotation !== undefined}
@@ -48,14 +55,5 @@
 				{lng}
 			/>
 		{/if}
-		<div class="absolute right-3 bottom-7 z-10">
-			{#if lat !== undefined && lng !== undefined}
-				<FollowControls
-					following
-					{lat}
-					{lng}
-				/>
-			{/if}
-		</div>
 	</MapLibre>
 </div>

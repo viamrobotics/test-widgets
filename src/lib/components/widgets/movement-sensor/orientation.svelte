@@ -8,36 +8,39 @@
 	}
 
 	const { data }: Props = $props()
+
+	const MISSING_VALUE = '-'
+
+	const formatOrMissing = (value: number | undefined) =>
+		value === undefined ? MISSING_VALUE : formatNumeric(value)
+
+	const id = $props.id()
+
+	const cells = $derived([
+		{ tag: 'OX', value: formatOrMissing(data.oX), suffix: '' },
+		{ tag: 'OY', value: formatOrMissing(data.oY), suffix: '' },
+		{ tag: 'OZ', value: formatOrMissing(data.oZ), suffix: '' },
+		{ tag: 'θ', value: formatOrMissing(data.theta), suffix: '°' },
+	])
 </script>
 
-<dl class="flex flex-col gap-2">
-	<div class="flex flex-wrap gap-x-4 gap-y-2 font-mono">
-		<div>
-			<dt class="text-subtle-2 inline-block uppercase">x</dt>
-			<dd class="inline-block">
-				{formatNumeric(data.oX)}
-			</dd>
+<div class="grid min-w-0 grid-cols-[1fr_1fr_1fr_1.25fr] gap-2">
+	{#each cells as cell (cell.tag)}
+		<div class="flex min-w-0 flex-col gap-1">
+			<span
+				id="{id}-{cell.tag}"
+				class="text-subtle-1 text-xs">{cell.tag}</span
+			>
+			<span
+				role="group"
+				aria-labelledby="{id}-{cell.tag}"
+				class="readout font-roboto-mono"
+			>
+				<span class="readout-value">{cell.value}</span>
+				{#if cell.suffix}
+					<span class="readout-suffix">{cell.suffix}</span>
+				{/if}
+			</span>
 		</div>
-
-		<div>
-			<dt class="text-subtle-2 inline-block uppercase">y</dt>
-			<dd class="inline-block">
-				{formatNumeric(data.oY)}
-			</dd>
-		</div>
-
-		<div>
-			<dt class="text-subtle-2 inline-block uppercase">z</dt>
-			<dd class="inline-block">
-				{formatNumeric(data.oZ)}
-			</dd>
-		</div>
-
-		<div>
-			<dt class="text-subtle-2 inline-block italic">θ</dt>
-			<dd class="inline-block">
-				{formatNumeric(data.theta)}
-			</dd>
-		</div>
-	</div>
-</dl>
+	{/each}
+</div>

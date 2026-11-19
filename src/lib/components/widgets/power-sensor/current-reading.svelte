@@ -2,17 +2,42 @@
 	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: readonly [number, boolean]
+		data: readonly [number, boolean] | undefined
 	}
 
 	const { data }: Props = $props()
 
-	const current = $derived(data[0])
-	const isAC = $derived(data[1])
+	const MISSING_VALUE = '-'
+	const POWER_READING_DECIMALS = 4
+
+	const valueText = $derived(
+		data === undefined ? MISSING_VALUE : formatNumeric(data[0], POWER_READING_DECIMALS)
+	)
+
+	const labelId = $props.id()
+
+	const acDcLabel = $derived.by(() => {
+		if (data === undefined) return undefined
+		return data[1] ? 'AC' : 'DC'
+	})
 </script>
 
-<span class="font-roboto-mono flex flex-row gap-2">
-	{formatNumeric(current, 4)}
-	<abbr class="text-subtle-2">A</abbr>
-	<abbr class="text-subtle-2">({isAC ? 'AC' : 'DC'})</abbr>
-</span>
+<div class="flex min-w-0 items-center gap-2">
+	<span
+		id={labelId}
+		class="text-subtle-1 w-14 shrink-0 text-xs"
+	>
+		Current
+	</span>
+	<span
+		role="group"
+		aria-labelledby={labelId}
+		class="readout font-roboto-mono"
+	>
+		<span class="readout-value">{valueText}</span>
+		<span class="readout-suffix">A</span>
+		{#if acDcLabel !== undefined}
+			<span class="readout-suffix">{acDcLabel}</span>
+		{/if}
+	</span>
+</div>

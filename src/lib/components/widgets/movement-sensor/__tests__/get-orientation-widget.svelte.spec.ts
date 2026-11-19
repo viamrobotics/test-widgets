@@ -3,6 +3,7 @@ import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../get-orientation-widget.svelte'
+import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const { queryState } = vi.hoisted(() => {
 	const state: { data: unknown; error: Error | null } = {
@@ -76,6 +77,15 @@ describe('MovementSensor GetOrientation widget', () => {
 		expect(screen.getByText('45.68')).toBeInTheDocument()
 	})
 
+	it('puts degrees on theta alone', () => {
+		queryState.data = { oX: 1, oY: 2, oZ: 3, theta: 4 }
+
+		renderSubject()
+
+		expect(screen.getByRole('group', { name: 'θ' })).toHaveTextContent('4.00 °')
+		expect(screen.getByRole('group', { name: 'OX' })).not.toHaveTextContent('°')
+	})
+
 	it('polls getOrientation every 500 ms', () => {
 		renderSubject()
 
@@ -91,5 +101,31 @@ describe('MovementSensor GetOrientation widget', () => {
 		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/orientation unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('MovementSensor GetOrientation widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		queryState.data = { oX: -1.111, oY: 2.222, oZ: -3.333, theta: 359.678 }
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

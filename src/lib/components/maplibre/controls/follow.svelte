@@ -3,7 +3,7 @@
   Adds controls for following a lat, lng point on a map.
 -->
 <script lang="ts">
-	import { Button, Icon } from '@viamrobotics/prime-core'
+	import { Checkbox, Field, Label } from '@viamrobotics/prime-ui'
 	import { fromStore } from 'svelte/store'
 
 	import { useMapLibre } from '../hooks.svelte'
@@ -52,16 +52,16 @@
 		}
 	})
 
-	const handleClick = (event: MouseEvent) => {
-		event.stopPropagation()
-		following = !following
+	const setFollowing = (checked: boolean) => {
+		following = checked
 		onChange?.(following)
 	}
 </script>
 
-<Button
+<Field
+	class="flex items-center gap-2"
 	disabled={lng === undefined || lat === undefined}
-	onclick={handleClick}
 >
-	<Icon name={following ? 'navigation-variant' : 'navigation-variant-outline'} />
-</Button>
+	<Checkbox bind:checked={() => following, setFollowing} />
+	<Label>Follow</Label>
+</Field>

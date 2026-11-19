@@ -22,6 +22,11 @@ const gripper = resource('gripper', 'gripper-1')
 const board = resource('board', 'board-1')
 const switchResource = resource('switch', 'switch-1')
 const button = resource('button', 'button-1')
+const sensor = resource('sensor', 'sensor-1')
+const movementSensor = resource('movement_sensor', 'movement-sensor-1')
+const powerSensor = resource('power_sensor', 'power-sensor-1')
+const encoder = resource('encoder', 'encoder-1')
+const inputController = resource('input_controller', 'input-controller-1')
 
 describe('Resource panes', () => {
 	it("offers an arm's composite and its six entries", () => {
@@ -68,9 +73,25 @@ describe('Resource panes', () => {
 		['board-1', board],
 		['switch-1', switchResource],
 		['button-1', button],
+		['sensor-1', sensor],
+		['input-controller-1', inputController],
 	])('offers %s a composite and no entries', (name, target) => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		expect(entryPanes(target)).toEqual([])
+	})
+
+	it.each([
+		[
+			'movement-sensor-1',
+			movementSensor,
+			['get-position', 'get-orientation', 'get-compass-heading', 'get-accuracy'],
+		],
+		['power-sensor-1', powerSensor, ['get-voltage', 'get-current', 'get-power']],
+		['encoder-1', encoder, ['get-position']],
+	])('offers %s a composite and its api entries, with no control', (name, target, ids) => {
+		expect(compositePane(target)?.id).toBe(`${name}::composite`)
+		expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
+		expect(entryPanes(target).filter(({ data }) => data.kind === 'control')).toEqual([])
 	})
 
 	it('titles manual-mode with the resource alone and an api pane with its method', () => {
@@ -127,6 +148,19 @@ describe('Resource panes', () => {
 		['board-1::composite', 210, 236],
 		['switch-1::composite', 147, 105],
 		['button-1::composite', 162, 92],
+		['sensor-1::composite', 162, 131],
+		['movement-sensor-1::composite', 269, 1485],
+		['movement-sensor-1::get-position', 194, 157],
+		['movement-sensor-1::get-orientation', 282, 115],
+		['movement-sensor-1::get-compass-heading', 170, 97],
+		['movement-sensor-1::get-accuracy', 218, 191],
+		['power-sensor-1::composite', 181, 359],
+		['power-sensor-1::get-voltage', 162, 97],
+		['power-sensor-1::get-current', 162, 97],
+		['power-sensor-1::get-power', 162, 97],
+		['encoder-1::composite', 224, 396],
+		['encoder-1::get-position', 162, 97],
+		['input-controller-1::composite', 190, 960],
 	])("snaps %s to its board's minimum", (id, width, height) => {
 		const pane = [
 			compositePane(arm),
@@ -139,12 +173,20 @@ describe('Resource panes', () => {
 			compositePane(board),
 			compositePane(switchResource),
 			compositePane(button),
+			compositePane(sensor),
+			compositePane(movementSensor),
+			compositePane(powerSensor),
+			compositePane(encoder),
+			compositePane(inputController),
 			...entryPanes(arm),
 			...entryPanes(motor),
 			...entryPanes(base),
 			...entryPanes(gantry),
 			...entryPanes(servo),
 			...entryPanes(gripper),
+			...entryPanes(movementSensor),
+			...entryPanes(powerSensor),
+			...entryPanes(encoder),
 		].find((candidate) => candidate?.id === id)
 		expect(pane && resourcePaneMinimum(pane.data)).toEqual({ width, height })
 	})

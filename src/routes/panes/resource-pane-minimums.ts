@@ -142,6 +142,57 @@ const BUTTON_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
 	[COMPOSITE_SLOT]: { width: 162, height: 92 },
 }
 
+/**
+ * The sensor pane minimum in px, from "Batch 5.1 measured sizes" in
+ * `.claude/plans/prime-controls-migration/phase-5-rollout-sensing-media-service-widgets.md`, the
+ * sensor row, 162 x 131. GetReadings is the composite and the control interface. An estimate.
+ * Sensor has no API entries.
+ */
+const SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 162, height: 131 },
+}
+
+/**
+ * The movement sensor pane minimums in px, from the same table. The composite takes its 320 px
+ * height, 1485, not the 1446 at its minimum width, because a pane opened at 320 px would
+ * otherwise scroll. GetAccuracy's height is its base, before 30 per accuracy key.
+ */
+const MOVEMENT_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 269, height: 1485 },
+	'get-position': { width: 194, height: 157 },
+	'get-orientation': { width: 282, height: 115 },
+	'get-compass-heading': { width: 170, height: 97 },
+	'get-accuracy': { width: 218, height: 191 },
+}
+
+/**
+ * The power sensor pane minimums in px, from the same table. The composite's 181 x 359 is with
+ * its readings hidden.
+ */
+const POWER_SENSOR_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 181, height: 359 },
+	'get-voltage': { width: 162, height: 97 },
+	'get-current': { width: 162, height: 97 },
+	'get-power': { width: 162, height: 97 },
+}
+
+/**
+ * The encoder pane minimums in px, from the same table. The composite's "about 396" at its
+ * 224 px minimum width is 396.
+ */
+const ENCODER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 224, height: 396 },
+	'get-position': { width: 162, height: 97 },
+}
+
+/**
+ * The input controller pane minimum in px, from the same table's composite row, 190 x "about 960"
+ * with 4 controls, so 960. Input controller has no API entries.
+ */
+const INPUT_CONTROLLER_PANE_MINIMUMS: Readonly<Record<string, PaneSize>> = {
+	[COMPOSITE_SLOT]: { width: 190, height: 960 },
+}
+
 const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>> = {
 	[ResourceTriplets.Motor]: MOTOR_PANE_MINIMUMS,
 	[ResourceTriplets.Arm]: ARM_PANE_MINIMUMS,
@@ -153,6 +204,11 @@ const PANE_MINIMUMS: Readonly<Record<string, Readonly<Record<string, PaneSize>>>
 	[ResourceTriplets.Board]: BOARD_PANE_MINIMUMS,
 	[ResourceTriplets.Switch]: SWITCH_PANE_MINIMUMS,
 	[ResourceTriplets.Button]: BUTTON_PANE_MINIMUMS,
+	[ResourceTriplets.Sensor]: SENSOR_PANE_MINIMUMS,
+	[ResourceTriplets.MovementSensor]: MOVEMENT_SENSOR_PANE_MINIMUMS,
+	[ResourceTriplets.PowerSensor]: POWER_SENSOR_PANE_MINIMUMS,
+	[ResourceTriplets.Encoder]: ENCODER_PANE_MINIMUMS,
+	[ResourceTriplets.InputController]: INPUT_CONTROLLER_PANE_MINIMUMS,
 }
 
 // The motor table's floor: the header's icon and three buttons with 40 px of title.
