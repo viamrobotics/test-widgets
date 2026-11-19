@@ -114,6 +114,28 @@ describe('PoseEditor', () => {
 		expect(xField()).toHaveValue(1)
 	})
 
+	it('takes a negative number typed into an emptied theta', async () => {
+		const { onPoseChange } = renderHoldingEdits()
+		const thetaInput = screen.getByRole('spinbutton', { name: 'θ' })
+
+		await user.clear(thetaInput)
+		await user.type(thetaInput, '-45')
+
+		expect(onPoseChange).toHaveBeenLastCalledWith({ ...defaultPose, theta: -45 })
+		expect(thetaInput).toHaveValue(-45)
+	})
+
+	it('shows theta again when its emptied field loses focus', async () => {
+		renderHoldingEdits()
+		const thetaInput = screen.getByRole('spinbutton', { name: 'θ' })
+
+		await user.clear(thetaInput)
+		expect(thetaInput, 'the field stays empty while focused').toHaveValue(null)
+
+		await user.tab()
+		expect(thetaInput, 'a blur shows the pose angle again').toHaveValue(90)
+	})
+
 	it('emits theta in degrees even when editing in radians', async () => {
 		const { onPoseChange } = renderHoldingEdits()
 
