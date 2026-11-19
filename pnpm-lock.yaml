@@ -47,32 +47,32 @@ importers:
         specifier: ^5.2.10
         version: 5.2.10
       '@houserules/cli':
-        specifier: ^0.12.1
-        version: 0.12.1
+        specifier: ^0.14.0
+        version: 0.14.0
       '@houserules/plugin-accessibility':
-        specifier: ^0.2.1
-        version: 0.2.1(@houserules/api@0.7.1)
-      '@houserules/plugin-changesets':
-        specifier: ^0.3.2
-        version: 0.3.2(@houserules/api@0.7.1)
-      '@houserules/plugin-design':
-        specifier: ^0.4.2
-        version: 0.4.2(@houserules/api@0.7.1)
-      '@houserules/plugin-prose':
         specifier: ^0.2.2
-        version: 0.2.2(@houserules/api@0.7.1)
+        version: 0.2.2(@houserules/api@0.7.3)
+      '@houserules/plugin-changesets':
+        specifier: ^0.4.0
+        version: 0.4.0(@houserules/api@0.7.3)
+      '@houserules/plugin-design':
+        specifier: ^0.4.3
+        version: 0.4.3(@houserules/api@0.7.3)
+      '@houserules/plugin-prose':
+        specifier: ^0.2.3
+        version: 0.2.3(@houserules/api@0.7.3)
       '@houserules/plugin-svelte':
-        specifier: ^0.2.0
-        version: 0.2.0(@houserules/api@0.7.1)
+        specifier: ^0.2.1
+        version: 0.2.1(@houserules/api@0.7.3)
       '@houserules/plugin-testing':
-        specifier: ^0.3.3
-        version: 0.3.3(@houserules/api@0.7.1)
+        specifier: ^0.3.4
+        version: 0.3.4(@houserules/api@0.7.3)
       '@houserules/plugin-three':
         specifier: ^0.2.2
-        version: 0.2.2(@houserules/api@0.7.1)
+        version: 0.2.2(@houserules/api@0.7.3)
       '@houserules/plugin-typescript':
         specifier: ^0.1.3
-        version: 0.1.3(@houserules/api@0.7.1)
+        version: 0.1.3(@houserules/api@0.7.3)
       '@playwright/test':
         specifier: ^1.65.1
         version: 1.65.1
@@ -715,51 +715,51 @@ packages:
   '@fontsource-variable/space-grotesk@5.2.10':
     resolution: {integrity: sha512-yJQO/o35/hAP3CFnpdFTwQku2yzJOae2HIpBmqkOVoxhhXJaQP3g+b6Jrz7u+eI7A5ZdCIf88uMWpBJdFiGr5w==}
 
-  '@houserules/api@0.7.1':
-    resolution: {integrity: sha512-MVJ8BRtIUOEPJCyeUBGLlY1jTl/IqRAiPnDyeMA2wjM4t7lNQnG7JdFWQeNhHiX/PEAlK/fLAUCPs6NOrj4Gnw==}
+  '@houserules/api@0.7.3':
+    resolution: {integrity: sha512-m+epQ73Jkgi8jHQ4pKS0eYRGDjhemLBxSjmJOjDDLDK0PDeKIKvM+Q9A9/1rEnNIx9fvETy97kGRcseQwsuZ5Q==}
     engines: {node: '>=22'}
 
-  '@houserules/cli@0.12.1':
-    resolution: {integrity: sha512-9674sKGf39Bxh98qyP3afrSJrku/YiGCxbmzDYapKTKT/uydf0V5FIux+v1lImG1Kstplo/JfevnuGVJV3degQ==}
+  '@houserules/cli@0.14.0':
+    resolution: {integrity: sha512-RtPG5+RQdt0xGO5w0So+e+b8qolsZpChiZONBHoB3dVOcjHgV5nENsLv/HGHSv+vVdyA1P8OjHXI3HIeSamzTQ==}
     engines: {node: '>=22'}
     hasBin: true
 
-  '@houserules/payload@0.4.2':
-    resolution: {integrity: sha512-cM1CswJ7STpXpMNZ6+G22DlSTHk679vd5QnKR1ARVchN80eQiisJ/4HWFhVJ0VSK/miwknsul2uLRvEHvG+AhQ==}
+  '@houserules/payload@0.5.0':
+    resolution: {integrity: sha512-z5ZFwdPELnHRnCYnIYm8ma8e2e5ObS4ccxgmJaRcPwlWr90pAxrcYi9GloogbnxP7irgQjVkf2edYapXEozxnQ==}
     engines: {node: '>=22'}
 
-  '@houserules/plugin-accessibility@0.2.1':
-    resolution: {integrity: sha512-gsJHtTlOivihgZ6m3oRZCFCuSCnBgOARCMjNesx7ILElu2i+Vdi8y4z1Ekh+BSyr9TUU6eKA5JJgZc1lcBW6/g==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      '@houserules/api': '>=0.0.0 <1.0.0'
-
-  '@houserules/plugin-changesets@0.3.2':
-    resolution: {integrity: sha512-vhX8lyQij7QDPO5KWRprjMScVrjFGqVx0331CdXePaEQg4ZhAH2cbZzjNJl1wSJwvnIW5csrj28U8KqOSSUg0A==}
+  '@houserules/plugin-accessibility@0.2.2':
+    resolution: {integrity: sha512-VwMBEpwBhdm6RQXMQaAmLTL7ar+doXgFAaHyp1ssUqR4gKuIiFIyrPeAq/5Sqr96aPbFjmk6QBC5J0eravOY4A==}
     engines: {node: '>=22'}
     peerDependencies:
       '@houserules/api': '>=0.0.0 <1.0.0'
 
-  '@houserules/plugin-design@0.4.2':
-    resolution: {integrity: sha512-R80ipE+eKFdr2K6T2OqE3MfZ0nDsof0VdrCRCVcH84zx4sZDI32GFZv7BSa2V8UoIIAeQIqHB0N94jh0mSfe5w==}
+  '@houserules/plugin-changesets@0.4.0':
+    resolution: {integrity: sha512-0xoOWOy7ap5eui9TfUp6cv0W4d+kMXNNpR6LiurNF3o2RbwUviasGnhiQK2HN74I+ZUygLoFBBqLvIsIkWz5aw==}
     engines: {node: '>=22'}
     peerDependencies:
       '@houserules/api': '>=0.0.0 <1.0.0'
 
-  '@houserules/plugin-prose@0.2.2':
-    resolution: {integrity: sha512-mkw8L8v29q12+3KdNlNTRJYtkBD9gRgdp7+Cq8tH8EWESEM9lhihqDXuUSZMYMJibIedE8CyccNtBB7aJScz6w==}
+  '@houserules/plugin-design@0.4.3':
+    resolution: {integrity: sha512-Kvhgl8Zaaz4nLqgOOfGMM/XOlhBw8wFETMI6Cc9WI66AfqB5Ioicz+pqzapm7G68IA0e/geSKQZ/9Q0zG/4Iow==}
     engines: {node: '>=22'}
     peerDependencies:
       '@houserules/api': '>=0.0.0 <1.0.0'
 
-  '@houserules/plugin-svelte@0.2.0':
-    resolution: {integrity: sha512-WstbQiOAxyhQPg3v8oePIMYTkzXTRzUFVRzXywA0QskzrZe+z6TELdM8nUE3eJzP/HoFVf4zvxx1f1zg7i2gDg==}
+  '@houserules/plugin-prose@0.2.3':
+    resolution: {integrity: sha512-Hi2xw4kwTcNI1JXHA8peSzMaYlrHFbAp61mYjtoYMEjRZMhyMMz5Cn5Id/a1qEE3XJbbkt0mZwF/EXHZouWHug==}
     engines: {node: '>=22'}
     peerDependencies:
       '@houserules/api': '>=0.0.0 <1.0.0'
 
-  '@houserules/plugin-testing@0.3.3':
-    resolution: {integrity: sha512-zG1BBinsv8uvIDPpSg9OnU8zwrsJ7yMc86ebNTrfdgx13V0InSqaqGXAUhY1Dmg+C9i6jdX1yGXa6hPFIWKfFw==}
+  '@houserules/plugin-svelte@0.2.1':
+    resolution: {integrity: sha512-cOs2A9WGmJ8ZVFChsgiHXyf8Be7X6rWNnut7kFgMDSvR1Vqp5BY56BDM8wUci+WXf6ZwRHMlKSfo0S5kxvg8LA==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@houserules/api': '>=0.0.0 <1.0.0'
+
+  '@houserules/plugin-testing@0.3.4':
+    resolution: {integrity: sha512-MgQ7juW4sIZUBTGj1SpopEdkLU6qyITeBsV2S66oAaRYNnPJ54SJFT5DBM+lXN8PlLarDTZL3gDmcbJw01QzXw==}
     engines: {node: '>=22'}
     peerDependencies:
       '@houserules/api': '>=0.0.0 <1.0.0'
@@ -3181,13 +3181,13 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@5.10.0:
-    resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==}
-    engines: {node: '>=20'}
-
   type-fest@5.6.0:
     resolution: {integrity: sha512-8ZiHFm91orbSAe2PSAiSVBVko18pbhbiB3U9GglSzF/zCGkR+rxpHx6sEMCUm4kxY4LjDIUGgCfUMtwfZfjfUA==}
     engines: {node: '>=20'}
+
+  type-fest@6.0.2:
+    resolution: {integrity: sha512-eVBdZcUsT0GbeVcuMHJG4qiZeHF7ANdJtzMtAD+r94rw7PQZ4zAK43ik+jZZ6woURQA6QIz6Kz5uv0HbMs0AQQ==}
+    engines: {node: '>=22'}
 
   typescript-eslint@8.59.1:
     resolution: {integrity: sha512-xqDcFVBmlrltH64lklOVp1wYxgJr6LVdg3NamBgH2OOQDLFdTKfIZXF5PfghrnXQKXZGTQs8tr1vL7fJvq8CTQ==}
@@ -3456,7 +3456,7 @@ snapshots:
       outdent: 0.5.0
       prettier: 2.8.8
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.6
 
   '@changesets/assemble-release-plan@6.0.10':
     dependencies:
@@ -3465,7 +3465,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
-      semver: 7.7.4
+      semver: 7.8.6
 
   '@changesets/changelog-git@0.2.1':
     dependencies:
@@ -3522,7 +3522,7 @@ snapshots:
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
       picocolors: 1.1.1
-      semver: 7.7.4
+      semver: 7.8.6
 
   '@changesets/get-release-plan@4.0.16':
     dependencies:
@@ -3925,56 +3925,56 @@ snapshots:
 
   '@fontsource-variable/space-grotesk@5.2.10': {}
 
-  '@houserules/api@0.7.1':
+  '@houserules/api@0.7.3':
     dependencies:
-      '@houserules/payload': 0.4.2
-      type-fest: 5.10.0
+      '@houserules/payload': 0.5.0
+      type-fest: 6.0.2
       zod: 4.6.7
 
-  '@houserules/cli@0.12.1':
+  '@houserules/cli@0.14.0':
     dependencies:
       '@clack/prompts': 1.9.0
-      '@houserules/api': 0.7.1
-      '@houserules/payload': 0.4.2
+      '@houserules/api': 0.7.3
+      '@houserules/payload': 0.5.0
       commander: 15.1.0
       dequal: 2.0.3
       diff: 9.0.0
       picocolors: 1.1.1
       semver: 7.8.6
 
-  '@houserules/payload@0.4.2': {}
+  '@houserules/payload@0.5.0': {}
 
-  '@houserules/plugin-accessibility@0.2.1(@houserules/api@0.7.1)':
+  '@houserules/plugin-accessibility@0.2.2(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-changesets@0.3.2(@houserules/api@0.7.1)':
+  '@houserules/plugin-changesets@0.4.0(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-design@0.4.2(@houserules/api@0.7.1)':
+  '@houserules/plugin-design@0.4.3(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-prose@0.2.2(@houserules/api@0.7.1)':
+  '@houserules/plugin-prose@0.2.3(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-svelte@0.2.0(@houserules/api@0.7.1)':
+  '@houserules/plugin-svelte@0.2.1(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-testing@0.3.3(@houserules/api@0.7.1)':
+  '@houserules/plugin-testing@0.3.4(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-three@0.2.2(@houserules/api@0.7.1)':
+  '@houserules/plugin-three@0.2.2(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
-  '@houserules/plugin-typescript@0.1.3(@houserules/api@0.7.1)':
+  '@houserules/plugin-typescript@0.1.3(@houserules/api@0.7.3)':
     dependencies:
-      '@houserules/api': 0.7.1
+      '@houserules/api': 0.7.3
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -6282,7 +6282,7 @@ snapshots:
       postcss: 8.5.31
       postcss-scss: 4.0.9(postcss@8.5.31)
       postcss-selector-parser: 7.1.1
-      semver: 7.7.4
+      semver: 7.8.6
     optionalDependencies:
       svelte: 5.56.3(@typescript-eslint/types@8.59.1)
 
@@ -6418,11 +6418,11 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@5.10.0:
+  type-fest@5.6.0:
     dependencies:
       tagged-tag: 1.0.0
 
-  type-fest@5.6.0:
+  type-fest@6.0.2:
     dependencies:
       tagged-tag: 1.0.0
 
