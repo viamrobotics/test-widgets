@@ -19,6 +19,7 @@
 	import Map from './map.svelte'
 	import Orientation from './orientation.svelte'
 	import Position from './position.svelte'
+	import PropertiesReadout from './properties-readout.svelte'
 	import Vector3 from './vector3.svelte'
 
 	interface Props {
@@ -41,9 +42,8 @@
 		() => resourceName
 	)
 
-	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
-		refetchInterval: refetchInterval.current,
-	}))
+	// The properties do not change while the sensor runs, so they are read once.
+	const propertiesQuery = createResourceQuery(client, 'getProperties', { refetchInterval: false })
 
 	const positionQuery = createResourceQuery(client, 'getPosition', () => ({
 		enabled: propertiesQuery.data?.positionSupported === true,
@@ -84,6 +84,19 @@
 		refetchInterval: refetchInterval.current,
 	}))
 
+	const properties = $derived(propertiesQuery.data)
+
+	const polledQueries = $derived([
+		...(properties?.positionSupported === true ? [positionQuery] : []),
+		...(properties?.orientationSupported === true ? [orientationQuery] : []),
+		...(properties?.compassHeadingSupported === true ? [compassHeadingQuery] : []),
+		...(properties?.angularVelocitySupported === true ? [angularVelocityQuery] : []),
+		...(properties?.linearVelocitySupported === true ? [linearVelocityQuery] : []),
+		...(properties?.linearAccelerationSupported === true ? [linearAccelerationQuery] : []),
+		accuracyQuery,
+		...(showFullReadings ? [readingsQuery] : []),
+	])
+
 	const propertiesErrors = useSectionErrors(() => ({ queries: [propertiesQuery] }))
 	const readingsErrors = useSectionErrors(() => ({ queries: [readingsQuery] }))
 
@@ -95,8 +108,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<!-- 224 steps of 4 px is the board's 896 px maximum, where the 4:3 map is 671 px tall. -->
-		<div class="@container mx-auto max-w-224">
+		<div class="@container mx-auto max-w-4xl">
 			<div class="flex flex-col">
 				<div
 					role="group"
@@ -105,162 +117,171 @@
 				>
 					<RefetchController
 						{refetchInterval}
-						queries={[propertiesQuery, positionQuery]}
+						queries={polledQueries}
 					/>
 					<Section.Errors errors={propertiesErrors.errors} />
 				</div>
 
 				<Section.Body isLoading={propertiesErrors.isLoading}>
-					{#if propertiesQuery.data !== undefined}
-						{#if propertiesQuery.data.positionSupported}
-							<Map
-								coordinate={positionQuery.data?.coordinate}
-								rotation={orientationQuery.data?.oZ}
-							/>
-						{/if}
-
-						<div class="grid grid-cols-1 @2xl:grid-cols-2">
-							{#if propertiesQuery.data.positionSupported}
-								<ApiSection
-									method="GetPosition"
-									api={ResourceTriplets.MovementSensor}
-									queries={[positionQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if positionQuery.data !== undefined}
-										<Position data={positionQuery.data} />
-									{/if}
-								</ApiSection>
-							{/if}
-
-							{#if propertiesQuery.data.orientationSupported}
-								<ApiSection
-									method="GetOrientation"
-									api={ResourceTriplets.MovementSensor}
-									queries={[orientationQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if orientationQuery.data !== undefined}
-										<Orientation data={orientationQuery.data} />
-									{/if}
-								</ApiSection>
-							{/if}
-
-							{#if propertiesQuery.data.compassHeadingSupported}
-								<ApiSection
-									method="GetCompassHeading"
-									api={ResourceTriplets.MovementSensor}
-									queries={[compassHeadingQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if compassHeadingQuery.data !== undefined}
-										<CompassHeading data={compassHeadingQuery.data} />
-									{/if}
-								</ApiSection>
-							{/if}
-
-							{#if propertiesQuery.data.angularVelocitySupported}
-								<ApiSection
-									method="GetAngularVelocity"
-									api={ResourceTriplets.MovementSensor}
-									queries={[angularVelocityQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if angularVelocityQuery.data !== undefined}
-										<Vector3
-											data={angularVelocityQuery.data}
-											unit="°/s"
-										/>
-									{/if}
-								</ApiSection>
-							{/if}
-
-							{#if propertiesQuery.data.linearVelocitySupported}
-								<ApiSection
-									method="GetLinearVelocity"
-									api={ResourceTriplets.MovementSensor}
-									queries={[linearVelocityQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if linearVelocityQuery.data !== undefined}
-										<Vector3
-											data={linearVelocityQuery.data}
-											unit="m/s"
-										/>
-									{/if}
-								</ApiSection>
-							{/if}
-
-							{#if propertiesQuery.data.linearAccelerationSupported}
-								<ApiSection
-									method="GetLinearAcceleration"
-									api={ResourceTriplets.MovementSensor}
-									queries={[linearAccelerationQuery]}
-									class="min-w-0 flex-col gap-2 border-b"
-								>
-									{#if linearAccelerationQuery.data !== undefined}
-										<Vector3
-											data={linearAccelerationQuery.data}
-											unit="m/s²"
-										/>
-									{/if}
-								</ApiSection>
-							{/if}
-
-							<ApiSection
-								method="GetAccuracy"
-								api={ResourceTriplets.MovementSensor}
-								queries={[accuracyQuery]}
-								class="min-w-0 flex-col gap-2 border-b"
-							>
-								{#if accuracyQuery.data !== undefined}
-									<Accuracy data={accuracyQuery.data} />
-								{/if}
-							</ApiSection>
-						</div>
+					{#if propertiesQuery.data?.positionSupported}
+						<Map
+							coordinate={positionQuery.data?.coordinate}
+							rotation={orientationQuery.data?.oZ}
+						/>
 					{/if}
 				</Section.Body>
 
-				<Section
-					errorReporter={readingsErrors}
-					class="flex-col gap-2"
-				>
-					<Section.Heading>
-						<Section.Method
-							method="GetReadings"
+				<div class="grid grid-cols-1 @2xl:grid-cols-2">
+					{#if propertiesQuery.data?.positionSupported}
+						<ApiSection
+							method="GetPosition"
 							api={ResourceTriplets.MovementSensor}
-						/>
-						{#snippet aside()}
-							<Section.Errors errors={readingsErrors.errors} />
-							{#if readingsQuery.data !== undefined}
-								<span class="ml-auto">
-									<CopyButton
-										data={readingsJson}
-										ariaLabel="Copy JSON"
-									/>
-								</span>
+							queries={[positionQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if positionQuery.data !== undefined}
+								<Position data={positionQuery.data} />
 							{/if}
-						{/snippet}
-					</Section.Heading>
-
-					<Field class="flex items-center gap-2">
-						<Checkbox bind:checked={showFullReadings} />
-						<Label>Show readings</Label>
-					</Field>
-
-					{#if showFullReadings}
-						<div transition:slide={{ duration: readingsSlideMs }}>
-							<Section.Body isLoading={readingsErrors.isLoading}>
-								{#if readingsQuery.data !== undefined}
-									<ReadingsList
-										data={readingsQuery.data}
-										showCopy={false}
-									/>
-								{/if}
-							</Section.Body>
-						</div>
+						</ApiSection>
 					{/if}
-				</Section>
+
+					{#if propertiesQuery.data?.orientationSupported}
+						<ApiSection
+							method="GetOrientation"
+							api={ResourceTriplets.MovementSensor}
+							queries={[orientationQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if orientationQuery.data !== undefined}
+								<Orientation data={orientationQuery.data} />
+							{/if}
+						</ApiSection>
+					{/if}
+
+					{#if propertiesQuery.data?.compassHeadingSupported}
+						<ApiSection
+							method="GetCompassHeading"
+							api={ResourceTriplets.MovementSensor}
+							queries={[compassHeadingQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if compassHeadingQuery.data !== undefined}
+								<CompassHeading data={compassHeadingQuery.data} />
+							{/if}
+						</ApiSection>
+					{/if}
+
+					{#if propertiesQuery.data?.angularVelocitySupported}
+						<ApiSection
+							method="GetAngularVelocity"
+							api={ResourceTriplets.MovementSensor}
+							queries={[angularVelocityQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if angularVelocityQuery.data !== undefined}
+								<Vector3
+									data={angularVelocityQuery.data}
+									unit="°/s"
+								/>
+							{/if}
+						</ApiSection>
+					{/if}
+
+					{#if propertiesQuery.data?.linearVelocitySupported}
+						<ApiSection
+							method="GetLinearVelocity"
+							api={ResourceTriplets.MovementSensor}
+							queries={[linearVelocityQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if linearVelocityQuery.data !== undefined}
+								<Vector3
+									data={linearVelocityQuery.data}
+									unit="m/s"
+								/>
+							{/if}
+						</ApiSection>
+					{/if}
+
+					{#if propertiesQuery.data?.linearAccelerationSupported}
+						<ApiSection
+							method="GetLinearAcceleration"
+							api={ResourceTriplets.MovementSensor}
+							queries={[linearAccelerationQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if linearAccelerationQuery.data !== undefined}
+								<Vector3
+									data={linearAccelerationQuery.data}
+									unit="m/s²"
+								/>
+							{/if}
+						</ApiSection>
+					{/if}
+
+					{#if propertiesQuery.data !== undefined}
+						<ApiSection
+							method="GetAccuracy"
+							api={ResourceTriplets.MovementSensor}
+							queries={[accuracyQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							{#if accuracyQuery.data !== undefined}
+								<Accuracy data={accuracyQuery.data} />
+							{/if}
+						</ApiSection>
+					{/if}
+					<Section
+						errorReporter={readingsErrors}
+						class="min-w-0 flex-col gap-2 border-b"
+					>
+						<Section.Heading>
+							<Section.Method
+								method="GetReadings"
+								api={ResourceTriplets.MovementSensor}
+							/>
+							{#snippet aside()}
+								<Section.Errors errors={readingsErrors.errors} />
+								{#if showFullReadings && readingsQuery.data !== undefined}
+									<span class="ml-auto">
+										<CopyButton
+											data={readingsJson}
+											ariaLabel="Copy JSON"
+										/>
+									</span>
+								{/if}
+							{/snippet}
+						</Section.Heading>
+
+						<Field class="flex items-center gap-2">
+							<Checkbox bind:checked={showFullReadings} />
+							<Label>Show readings</Label>
+						</Field>
+
+						{#if showFullReadings}
+							<div transition:slide={{ duration: readingsSlideMs }}>
+								<Section.Body isLoading={readingsErrors.isLoading}>
+									{#if readingsQuery.data !== undefined}
+										<ReadingsList
+											data={readingsQuery.data}
+											showCopy={false}
+										/>
+									{/if}
+								</Section.Body>
+							</div>
+						{/if}
+					</Section>
+					{#if propertiesQuery.data !== undefined}
+						<ApiSection
+							method="GetProperties"
+							api={ResourceTriplets.MovementSensor}
+							queries={[propertiesQuery]}
+							class="min-w-0 flex-col gap-2 border-b"
+						>
+							<PropertiesReadout properties={propertiesQuery.data} />
+						</ApiSection>
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/snippet}

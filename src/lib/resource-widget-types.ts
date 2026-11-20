@@ -24,12 +24,19 @@ export interface ResourceWidgetSize {
 	maxWidth: number
 }
 
+/**
+ * What a registry entry is. `api` renders one RDK method, and its label is that method's name.
+ * `control` is a bespoke control interface that is not bound to one method, such as quick move.
+ */
+export type ResourceAPIWidgetKind = 'api' | 'control'
+
 /** One of a resource's individual API widgets (e.g. a menu entry); renders one or more self-contained widgets. */
 export interface ResourceAPIWidget {
 	/** Stable identifier, safe to persist. Never rename. e.g. `'move-to-joint-positions'`. */
 	id: string
 	/** Human-readable menu label. e.g. `'MoveToJointPositions'` or `'Quick move'`. */
 	label: string
+	kind: ResourceAPIWidgetKind
 	/** The self-contained widget(s) this entry renders, each with `{ partID, resourceName }`. */
 	widgets: ResourceWidget[]
 	/** The layout sizes of the entry's widgets, rendered together as the entry renders them. */

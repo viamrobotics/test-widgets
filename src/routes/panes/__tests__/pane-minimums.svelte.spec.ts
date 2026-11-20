@@ -135,6 +135,11 @@ const ENCODER_DATA = {
 	getPosition: [123.456, EncoderPositionType.ANGLE_DEGREES],
 }
 
+const SWITCH_DATA = {
+	getPosition: 1,
+	getNumberOfPositions: [3, ['Off', 'Low', 'High']],
+}
+
 const INPUT_CONTROLLER_DATA = {
 	getEvents: [
 		{ control: 'AbsoluteX', value: 0.5 },
@@ -143,6 +148,16 @@ const INPUT_CONTROLLER_DATA = {
 		{ control: 'ButtonEast', value: 0 },
 	],
 }
+
+const NAVIGATION_PATHS = [
+	{
+		destinationWaypointId: 'waypoint-a',
+		geopoints: [
+			{ latitude: 40.7129, longitude: -74.0062 },
+			{ latitude: 40.713, longitude: -74.006 },
+		],
+	},
+]
 
 const CAMERA_PROPERTIES = {
 	supportsPcd: true,
@@ -222,6 +237,8 @@ const NAVIGATION_DATA = {
 		{ id: 'waypoint-a', location: { latitude: 40.7129, longitude: -74.0062 } },
 		{ id: 'waypoint-b', location: { latitude: 40.7133, longitude: -74.0055 } },
 	],
+	getPaths: NAVIGATION_PATHS,
+	getProperties: { mapType: navigationApi.MapType.GPS },
 	getObstacles: [
 		{
 			location: { latitude: 40.7131, longitude: -74.0058 },
@@ -326,7 +343,16 @@ const MOTOR_DATA = {
 	isMoving: true,
 }
 
-const BASE_DATA = { isMoving: true }
+const BASE_DATA = {
+	isMoving: true,
+	getProperties: { widthMeters: 0.4, turningRadiusMeters: 0.2, wheelCircumferenceMeters: 0.3 },
+}
+
+const GRIPPER_DATA = {
+	getCurrentInputs: [0.25, 0.5],
+	isHoldingSomething: { isHoldingSomething: false },
+	isMoving: true,
+}
 
 const GANTRY_DATA = {
 	getPosition: [123.456, 234.567, 345.678],
@@ -355,16 +381,21 @@ const motion = resource('motion', 'motion-1', 'service')
 const base = resource('base', 'base-1')
 const gantry = resource('gantry', 'gantry-1')
 const servo = resource('servo', 'servo-1')
+const gripper = resource('gripper', 'gripper-1')
+const board = resource('board', 'board-1')
+const boardData = () => ({})
 const armData = () => ARM_DATA
 const motorData = () => MOTOR_DATA
 const motionData = () => MOTION_DATA
 const baseData = () => BASE_DATA
 const gantryData = () => GANTRY_DATA
 const servoData = () => SERVO_DATA
+const gripperData = () => GRIPPER_DATA
 const sensor = resource('sensor', 'sensor-1')
 const movementSensor = resource('movement_sensor', 'movement-sensor-1')
 const powerSensor = resource('power_sensor', 'power-sensor-1')
 const encoder = resource('encoder', 'encoder-1')
+const switchResource = resource('switch', 'switch-1')
 const inputController = resource('input_controller', 'input-controller-1')
 const camera = resource('camera', 'camera-1')
 const vision = resource('vision', 'vision-1', 'service')
@@ -386,8 +417,12 @@ const ROWS: MinimumRow[] = [
 	{ id: 'arm-1::move-to-joint-positions', resource: arm, data: armData },
 	{ id: 'arm-1::move-to-position', resource: arm, data: armData },
 	{ id: 'arm-1::get-joint-positions', resource: arm, data: armData },
+	{ id: 'arm-1::get-end-position', resource: arm, data: armData },
 	{ id: 'arm-1::is-moving', resource: arm, data: armData },
 	{ id: 'arm-1::manual-mode', resource: arm, data: armData },
+	{ id: 'arm-1::set-manual-mode', resource: arm, data: armData },
+	{ id: 'arm-1::get-manual-mode', resource: arm, data: armData },
+	{ id: 'arm-1::get-properties', resource: arm, data: armData },
 	{ id: 'arm-1::stop', resource: arm, data: armData },
 	{ id: 'motor-1::composite', resource: motor, data: motorData },
 	{ id: 'motor-1::quick-move', resource: motor, data: motorData },
@@ -396,6 +431,11 @@ const ROWS: MinimumRow[] = [
 	{ id: 'motor-1::go-for', resource: motor, data: motorData },
 	{ id: 'motor-1::go-to', resource: motor, data: motorData },
 	{ id: 'motor-1::is-moving', resource: motor, data: motorData },
+	{ id: 'motor-1::reset-zero-position', resource: motor, data: motorData },
+	{ id: 'motor-1::get-position', resource: motor, data: motorData },
+	{ id: 'motor-1::get-properties', resource: motor, data: motorData },
+	{ id: 'motor-1::stop', resource: motor, data: motorData },
+	{ id: 'motor-1::is-powered', resource: motor, data: motorData },
 	{ id: 'motion-1::composite', resource: motion, data: motionData },
 	{ id: 'base-1::composite', resource: base, data: baseData },
 	{ id: 'base-1::quick-move', resource: base, data: baseData },
@@ -405,18 +445,37 @@ const ROWS: MinimumRow[] = [
 	{ id: 'base-1::set-velocity', resource: base, data: baseData },
 	{ id: 'base-1::is-moving', resource: base, data: baseData },
 	{ id: 'base-1::stop', resource: base, data: baseData },
+	{ id: 'base-1::get-properties', resource: base, data: baseData },
 	{ id: 'gantry-1::composite', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::home', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::move-to-position', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::quick-move', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::get-position', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::is-moving', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::get-lengths', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::stop', resource: gantry, data: gantryData },
 	{ id: 'servo-1::composite', resource: servo, data: servoData },
 	{ id: 'servo-1::move', resource: servo, data: servoData },
 	{ id: 'servo-1::quick-move', resource: servo, data: servoData },
 	{ id: 'servo-1::is-moving', resource: servo, data: servoData },
 	{ id: 'servo-1::get-position', resource: servo, data: servoData },
 	{ id: 'servo-1::stop', resource: servo, data: servoData },
+	{ id: 'board-1::composite', resource: board, data: boardData },
+	{ id: 'board-1::controls', resource: board, data: boardData },
+	{ id: 'gripper-1::composite', resource: gripper, data: gripperData },
+	{ id: 'gripper-1::get-current-inputs', resource: gripper, data: gripperData },
+	{ id: 'gripper-1::go-to-inputs', resource: gripper, data: gripperData },
+	{ id: 'board-1::set-gpio', resource: board, data: boardData },
+	{ id: 'board-1::get-gpio', resource: board, data: boardData },
+	{ id: 'board-1::pwm', resource: board, data: boardData },
+	{ id: 'board-1::set-pwm', resource: board, data: boardData },
+	{ id: 'board-1::pwm-frequency', resource: board, data: boardData },
+	{ id: 'board-1::set-pwm-frequency', resource: board, data: boardData },
+	{ id: 'board-1::read-analog-reader', resource: board, data: boardData },
+	{ id: 'board-1::write-analog', resource: board, data: boardData },
+	{ id: 'board-1::get-digital-interrupt-value', resource: board, data: boardData },
+	{ id: 'board-1::stream-ticks', resource: board, data: boardData },
+	{ id: 'board-1::set-power-mode', resource: board, data: boardData },
 	{ id: 'sensor-1::composite', resource: sensor, data: () => SENSOR_DATA },
 	{
 		id: 'movement-sensor-1::composite',
@@ -443,14 +502,56 @@ const ROWS: MinimumRow[] = [
 		resource: movementSensor,
 		data: () => MOVEMENT_SENSOR_DATA,
 	},
+	{
+		id: 'movement-sensor-1::get-linear-velocity',
+		resource: movementSensor,
+		data: () => MOVEMENT_SENSOR_DATA,
+	},
+	{
+		id: 'movement-sensor-1::get-angular-velocity',
+		resource: movementSensor,
+		data: () => MOVEMENT_SENSOR_DATA,
+	},
+	{
+		id: 'movement-sensor-1::get-linear-acceleration',
+		resource: movementSensor,
+		data: () => MOVEMENT_SENSOR_DATA,
+	},
+	{
+		id: 'movement-sensor-1::get-properties',
+		resource: movementSensor,
+		data: () => MOVEMENT_SENSOR_DATA,
+	},
+	{
+		id: 'movement-sensor-1::get-readings',
+		resource: movementSensor,
+		data: () => MOVEMENT_SENSOR_DATA,
+	},
 	{ id: 'power-sensor-1::composite', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-voltage', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-current', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-power', resource: powerSensor, data: () => POWER_SENSOR_DATA },
+	{ id: 'power-sensor-1::get-readings', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'encoder-1::composite', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'encoder-1::get-position', resource: encoder, data: () => ENCODER_DATA },
+	{ id: 'encoder-1::reset-position', resource: encoder, data: () => ENCODER_DATA },
+	{ id: 'encoder-1::get-properties', resource: encoder, data: () => ENCODER_DATA },
+	{ id: 'switch-1::composite', resource: switchResource, data: () => SWITCH_DATA },
+	{ id: 'switch-1::set-position', resource: switchResource, data: () => SWITCH_DATA },
+	{ id: 'switch-1::get-position', resource: switchResource, data: () => SWITCH_DATA },
+	{ id: 'switch-1::get-number-of-positions', resource: switchResource, data: () => SWITCH_DATA },
 	{
 		id: 'input-controller-1::composite',
+		resource: inputController,
+		data: () => INPUT_CONTROLLER_DATA,
+	},
+	{
+		id: 'input-controller-1::get-events',
+		resource: inputController,
+		data: () => INPUT_CONTROLLER_DATA,
+	},
+	{
+		id: 'input-controller-1::trigger-event',
 		resource: inputController,
 		data: () => INPUT_CONTROLLER_DATA,
 	},
@@ -477,22 +578,27 @@ const ROWS: MinimumRow[] = [
 	{ id: 'navigation-1::add-waypoint', resource: navigation, data: navigationData },
 	{ id: 'navigation-1::remove-waypoint', resource: navigation, data: navigationData },
 	{ id: 'navigation-1::get-obstacles', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-paths', resource: navigation, data: navigationData },
+	{ id: 'navigation-1::get-properties', resource: navigation, data: navigationData },
 	{ id: 'slam-1::composite', resource: slam, data: slamIdleData },
 	{ id: 'slam-1::controls', resource: slam, data: slamData },
 	{ id: 'slam-1::get-position', resource: slam, data: slamData },
 	{ id: 'slam-1::get-point-cloud-map', resource: slam, data: slamIdleData },
 	{ id: 'slam-1::get-properties', resource: slam, data: slamData },
+	{ id: 'slam-1::get-internal-state', resource: slam, data: slamIdleData },
 	{ id: 'audio-input-1::controls', resource: audioInput, data: audioInputData },
 	{ id: 'audio-input-1::get-audio', resource: audioInput, data: audioInputData },
 	{ id: 'audio-input-1::get-properties', resource: audioInput, data: audioInputData },
 	{ id: 'audio-output-1::controls', resource: audioOutput, data: audioOutputData },
 	{ id: 'audio-output-1::play', resource: audioOutput, data: audioOutputData },
+	{ id: 'audio-output-1::play-stream', resource: audioOutput, data: audioOutputData },
 	{ id: 'audio-output-1::get-properties', resource: audioOutput, data: audioOutputData },
 	{ id: 'discovery-1::composite', resource: discovery, data: discoveryIdleData },
 	{ id: 'discovery-1::controls', resource: discovery, data: discoveryResolvedData },
 	{ id: 'discovery-1::discover-resources', resource: discovery, data: discoveryIdleData },
 	{ id: 'ml-model-1::composite', resource: mlModel, data: mlModelData },
 	{ id: 'ml-model-1::metadata', resource: mlModel, data: mlModelData },
+	{ id: 'ml-model-1::infer', resource: mlModel, data: mlModelData },
 ]
 
 // Their bodies have no min-content width, so the registry gives each its narrowest entry's width.

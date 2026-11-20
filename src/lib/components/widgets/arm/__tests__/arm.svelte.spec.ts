@@ -50,7 +50,13 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 })
 
 const MUTATOR_HEADINGS = ['SetManualMode', 'MoveToJointPositions', 'MoveToPosition']
-const SECTION_HEADINGS = ['IsMoving', 'Stop', ...MUTATOR_HEADINGS, 'GetJointPositions']
+const SECTION_HEADINGS = [
+	'IsMoving',
+	'Stop',
+	...MUTATOR_HEADINGS,
+	'GetJointPositions',
+	'GetEndPosition',
+]
 
 const isBefore = (first: Element, second: Element) =>
 	(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
@@ -83,6 +89,7 @@ describe('Arm composite', () => {
 			MoveToJointPositions: 1,
 			MoveToPosition: 1,
 			GetJointPositions: 1,
+			GetEndPosition: 1,
 		})
 	})
 
@@ -110,6 +117,7 @@ describe('Arm composite', () => {
 			['glance row', screen.getByRole('group', { name: 'At a glance' })],
 			...MUTATOR_HEADINGS.map((name): [string, Element] => [name, heading(name)]),
 			['GetJointPositions', heading('GetJointPositions')],
+			['GetEndPosition', heading('GetEndPosition')],
 		]
 		const inDocumentOrder = layers.toSorted(([, first], [, second]) =>
 			isBefore(first, second) ? -1 : 1
@@ -120,6 +128,7 @@ describe('Arm composite', () => {
 			'MoveToJointPositions',
 			'MoveToPosition',
 			'GetJointPositions',
+			'GetEndPosition',
 		])
 	})
 
@@ -157,6 +166,22 @@ describe('Arm composite', () => {
 		const pose = heading('MoveToPosition').closest('section')
 		expect(joints?.getBoundingClientRect().width).toBeCloseTo(664, 0)
 		expect(pose?.getBoundingClientRect().width).toBeCloseTo(664, 0)
+	})
+})
+
+describe('Arm composite GetEndPosition section', () => {
+	it('draws position and orientation as tagged cells with their units', () => {
+		renderAtWidth(320)
+
+		const sectionElement = heading('GetEndPosition').closest('section')
+		if (!sectionElement) throw new Error('GetEndPosition drew no section')
+		const section = within(sectionElement)
+		const position = within(section.getByRole('group', { name: 'Position' }))
+		const orientation = within(section.getByRole('group', { name: 'Orientation' }))
+		expect(position.getAllByText(/^(X|Y|Z)$/u)).toHaveLength(3)
+		expect(position.getByText('1.00').parentElement?.textContent).toMatch(/1\.00\s*mm/u)
+		expect(orientation.getAllByText(/^(OX|OY|OZ|Theta)$/u)).toHaveLength(4)
+		expect(orientation.getAllByText('°')).toHaveLength(4)
 	})
 })
 

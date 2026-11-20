@@ -2,8 +2,8 @@
 	import { MotorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { Section } from '$lib/components/section'
+	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 
 	import QuickMove from './quick-move.svelte'
 
@@ -21,19 +21,29 @@
 	)
 
 	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+
+	const quickMoveErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
 </script>
 
-<ApiSection
+<Section
+	errorReporter={quickMoveErrors}
 	class="flex-row flex-wrap gap-2"
-	method="SetPower"
-	api={ResourceTriplets.Motor}
-	mutations={[quickSetPowerMutation]}
 >
-	<div class="flex grow flex-wrap justify-between gap-2">
-		<QuickMove
-			setPower={(val) => {
-				quickSetPowerMutation.mutate([val], {})
-			}}
-		/>
+	<div class="flex flex-col gap-0.5">
+		<Section.Heading>
+			Quick move
+			{#snippet aside()}
+				<Section.Errors errors={quickMoveErrors.errors} />
+			{/snippet}
+		</Section.Heading>
 	</div>
-</ApiSection>
+	<Section.Body>
+		<div class="flex grow flex-wrap justify-between gap-2">
+			<QuickMove
+				setPower={(val) => {
+					quickSetPowerMutation.mutate([val], {})
+				}}
+			/>
+		</div>
+	</Section.Body>
+</Section>

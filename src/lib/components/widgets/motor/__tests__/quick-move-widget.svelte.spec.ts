@@ -35,10 +35,10 @@ describe('Motor QuickMove widget', () => {
 		state.error = null
 	})
 
-	it('renders the SetPower section heading', () => {
+	it('renders the Quick move heading', () => {
 		renderSubject()
 
-		expect(screen.getByRole('heading', { name: 'SetPower' })).toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: 'Quick move' })).toBeInTheDocument()
 	})
 
 	it('calls the setPower mutation with forward power when the forward button is pressed', async () => {
@@ -76,8 +76,6 @@ describe('Motor QuickMove widget', () => {
 
 		renderSubject()
 
-		expect(
-			screen.getByRole('button', { name: 'SetPower: 1 error, copy to clipboard' })
-		).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
 	})
 })

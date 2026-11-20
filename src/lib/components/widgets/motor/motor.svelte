@@ -13,12 +13,13 @@
 	import { Section } from '$lib/components/section'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import StopButton from '$lib/components/stop-button.svelte'
-	import { formatNumeric } from '$lib/format'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import GoFor from './go-for.svelte'
 	import GoTo from './go-to.svelte'
+	import { formatPositionReadout, formatPowerReadout } from './motor-readout-format'
 	import QuickMove from './quick-move.svelte'
+	import ResetZeroPositionWidget from './reset-zero-position-widget.svelte'
 	import SetPower from './set-power.svelte'
 	import SetRPM from './set-rpm.svelte'
 
@@ -28,6 +29,9 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
+
+	const idPrefix = $props.id()
+	const powerLabelId = `${idPrefix}-power`
 
 	const client = createResourceClient(
 		MotorClient,
@@ -43,8 +47,10 @@
 		refetchInterval: 500,
 	})
 
+	const reportsPosition = $derived(propertiesQuery.data?.positionReporting === true)
+
 	const positionQuery = createResourceQuery(client, 'getPosition', () => ({
-		enabled: propertiesQuery.data?.positionReporting === true,
+		enabled: reportsPosition,
 		refetchInterval: 500,
 	}))
 
@@ -111,7 +117,7 @@
 							<SetPower {setPower} />
 						</div>
 					</ApiSection>
-					{#if propertiesQuery.data?.positionReporting}
+					{#if reportsPosition}
 						<ApiSection
 							class="flex-row flex-wrap gap-2"
 							method="SetRPM"
@@ -142,10 +148,18 @@
 								<GoTo {goTo} />
 							</div>
 						</ApiSection>
+						<ResetZeroPositionWidget
+							{partID}
+							{resourceName}
+						/>
 					{/if}
 				</div>
 
-				<div class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3">
+				<div
+					role="group"
+					aria-label="At a glance"
+					class="flex w-full flex-col divide-y @2xl:ml-auto @2xl:max-w-1/2 @4xl:max-w-1/3"
+				>
 					<ApiSection
 						class="grow flex-col gap-4"
 						method="Stop"
@@ -169,7 +183,7 @@
 							<ApiSection
 								method="IsPowered"
 								api={ResourceTriplets.Motor}
-								queries={[isPoweredQuery]}
+								queries={[propertiesQuery, isPoweredQuery]}
 								class="grow flex-col gap-1 p-0!"
 							>
 								{#snippet tooltip()}
@@ -178,20 +192,29 @@
 									position and while they are turning.
 								{/snippet}
 								{#if isPoweredQuery.data !== undefined}
-									{@const [isPowered, powerPct] = isPoweredQuery.data}
-									<div class="flex items-center gap-2">
-										<span class="text-subtle-1 text-xs">Power</span>
+									{@const [isPowered, powerFraction] = isPoweredQuery.data}
+									<div
+										role="group"
+										aria-labelledby={powerLabelId}
+										class="flex items-center gap-2"
+									>
+										<span
+											id={powerLabelId}
+											class="text-subtle-1 text-xs">Power</span
+										>
 										<StatusDot
 											state={isPowered ? 'success' : 'danger'}
 											label={isPowered ? 'Powered' : 'Not powered'}
 										/>
 										<span class="readout font-roboto-mono">
-											{isPowered ? `${formatNumeric(powerPct * 100, 1)}%` : '-'}
+											<span class="readout-value"
+												>{formatPowerReadout(isPowered, powerFraction)}</span
+											>
 										</span>
 									</div>
 								{/if}
 							</ApiSection>
-							{#if propertiesQuery.data?.positionReporting === true}
+							{#if reportsPosition}
 								<ApiSection
 									method="GetPosition"
 									api={ResourceTriplets.Motor}
@@ -202,9 +225,16 @@
 										Reports the position of an encoded motor in revolutions from zero/home.
 									{/snippet}
 									{#if positionQuery.data !== undefined}
-										<span class="readout font-roboto-mono">
-											{formatNumeric(positionQuery.data, 4)}
-										</span>
+										<div
+											role="group"
+											aria-label="Position"
+										>
+											<span class="readout font-roboto-mono">
+												<span class="readout-value"
+													>{formatPositionReadout(positionQuery.data)}</span
+												>
+											</span>
+										</div>
 									{/if}
 								</ApiSection>
 							{/if}

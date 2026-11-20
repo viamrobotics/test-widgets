@@ -15,12 +15,14 @@
 	const formatOrMissing = (value: number | undefined) =>
 		value === undefined ? MISSING_VALUE : formatNumeric(value)
 
+	const showsUnit = (value: number | undefined) => unit !== '' && value !== undefined
+
 	const id = $props.id()
 
 	const cells = $derived([
-		{ tag: 'X', value: formatOrMissing(data.x) },
-		{ tag: 'Y', value: formatOrMissing(data.y) },
-		{ tag: 'Z', value: formatOrMissing(data.z) },
+		{ tag: 'X', value: formatOrMissing(data.x), hasUnit: showsUnit(data.x) },
+		{ tag: 'Y', value: formatOrMissing(data.y), hasUnit: showsUnit(data.y) },
+		{ tag: 'Z', value: formatOrMissing(data.z), hasUnit: showsUnit(data.z) },
 	])
 </script>
 
@@ -37,7 +39,7 @@
 				class="readout font-roboto-mono"
 			>
 				<span class="readout-value">{cell.value}</span>
-				{#if unit}
+				{#if cell.hasUnit}
 					<span class="readout-suffix">{unit}</span>
 				{/if}
 			</span>

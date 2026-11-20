@@ -32,6 +32,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 })
 
 const MUTATOR_HEADINGS = ['Spin', 'MoveStraight', 'Quick move', 'SetPower', 'SetVelocity']
+const QUERY_HEADINGS = ['GetProperties']
 
 const isBefore = (first: Element, second: Element) =>
 	(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
@@ -50,11 +51,11 @@ afterEach(() => {
 })
 
 describe('Base composite', () => {
-	it('draws a heading for each mutator, and none for IsMoving or Stop', () => {
+	it('draws a heading for each mutator and query, and none for IsMoving or Stop', () => {
 		renderAtWidth(320)
 
 		const counts = Object.fromEntries(
-			['IsMoving', 'Stop', ...MUTATOR_HEADINGS].map((name) => [
+			['IsMoving', 'Stop', ...MUTATOR_HEADINGS, ...QUERY_HEADINGS].map((name) => [
 				name,
 				screen.queryAllByRole('heading', { name }).length,
 			])
@@ -67,13 +68,14 @@ describe('Base composite', () => {
 			'Quick move': 1,
 			SetPower: 1,
 			SetVelocity: 1,
+			GetProperties: 1,
 		})
 	})
 
 	it('draws the glance row as the IsMoving badge and the Stop button', () => {
 		renderAtWidth(320)
 
-		const glanceRow = within(screen.getByRole('group', { name: 'Status and stop' }))
+		const glanceRow = within(screen.getByRole('group', { name: 'At a glance' }))
 		expect(glanceRow.getByText('IsMoving')).toBeVisible()
 		expect(glanceRow.getByText('Idle')).toBeVisible()
 		expect(glanceRow.getByRole('button', { name: 'Stop' })).toBeVisible()
@@ -82,16 +84,20 @@ describe('Base composite', () => {
 	it('gives each glance item its own error indicator', () => {
 		renderAtWidth(320)
 
-		const glanceRow = within(screen.getByRole('group', { name: 'Status and stop' }))
+		const glanceRow = within(screen.getByRole('group', { name: 'At a glance' }))
 		expect(glanceRow.getAllByRole('button', { name: /: No errors$/u })).toHaveLength(2)
 	})
 
-	it('puts the glance row first, then the mutators with Quick move in the third slot', () => {
+	it('puts the glance row first, then the mutators with Quick move in the third slot, then the query', () => {
 		renderAtWidth(320)
 
 		const layers: [name: string, element: Element][] = [
-			['glance row', screen.getByRole('group', { name: 'Status and stop' })],
+			['glance row', screen.getByRole('group', { name: 'At a glance' })],
 			...MUTATOR_HEADINGS.map((name): [string, Element] => [
+				name,
+				screen.getByRole('heading', { name }),
+			]),
+			...QUERY_HEADINGS.map((name): [string, Element] => [
 				name,
 				screen.getByRole('heading', { name }),
 			]),
@@ -106,7 +112,16 @@ describe('Base composite', () => {
 			'Quick move',
 			'SetPower',
 			'SetVelocity',
+			'GetProperties',
 		])
+	})
+
+	it('holds GetProperties alone in the Queries group, under the mutators', () => {
+		renderAtWidth(320)
+
+		const queries = within(screen.getByRole('group', { name: 'Queries' }))
+		expect(queries.getByRole('heading', { name: 'GetProperties' })).toBeVisible()
+		expect(headingBox('GetProperties').top).toBeGreaterThan(headingBox('SetVelocity').bottom)
 	})
 
 	it('holds every mutator in the Mutators group', () => {
@@ -121,11 +136,17 @@ describe('Base composite', () => {
 	it('keeps the glance row on one row at 320 px', () => {
 		renderAtWidth(320)
 
-		const glanceRow = within(screen.getByRole('group', { name: 'Status and stop' }))
+		const glanceRow = within(screen.getByRole('group', { name: 'At a glance' }))
 		const badge = glanceRow.getByText('Idle').getBoundingClientRect()
 		const stop = glanceRow.getByRole('button', { name: 'Stop' }).getBoundingClientRect()
 		expect(stop.top, 'Stop starts above the badge bottom').toBeLessThan(badge.bottom)
 		expect(badge.top, 'the badge starts above the Stop bottom').toBeLessThan(stop.bottom)
+	})
+
+	it('names the glance row At a glance, not Status and stop', () => {
+		renderAtWidth(320)
+
+		expect(screen.queryByRole('group', { name: 'Status and stop' })).not.toBeInTheDocument()
 	})
 
 	it('stacks the mutators in one column below 672 px', () => {
@@ -159,6 +180,45 @@ describe('Base composite', () => {
 		expect(quickMove.top, 'Quick move shares the first row').toBe(spin.top)
 		expect(setPower.top, 'SetPower starts the second row').toBeGreaterThan(spin.bottom)
 		expect(setPower.left, 'SetPower is in the first column').toBe(spin.left)
+	})
+})
+
+describe('Base composite dividers at 700 px', () => {
+	const cellOf = (name: string) => {
+		const cell = [...screen.getByRole('group', { name: 'Mutators' }).children].find(
+			(child) =>
+				child instanceof HTMLElement && within(child).queryByRole('heading', { name }) !== null
+		)
+		if (cell === undefined) throw new Error(`${name} has no cell`)
+		return cell
+	}
+
+	it('draws a left divider on the second column and a top divider on the second row', () => {
+		renderAtWidth(700)
+
+		expect(getComputedStyle(cellOf('Spin')).borderLeftWidth).toBe('0px')
+		expect(getComputedStyle(cellOf('MoveStraight')).borderLeftWidth).toBe('1px')
+		expect(getComputedStyle(cellOf('Spin')).borderTopWidth).toBe('0px')
+		expect(getComputedStyle(cellOf('MoveStraight')).borderTopWidth).toBe('0px')
+		expect(getComputedStyle(cellOf('Quick move')).borderTopWidth).toBe('1px')
+		expect(getComputedStyle(cellOf('Quick move')).borderLeftWidth).toBe('0px')
+		expect(getComputedStyle(cellOf('SetPower')).borderLeftWidth).toBe('1px')
+		expect(getComputedStyle(cellOf('SetPower')).borderTopWidth).toBe('1px')
+		expect(getComputedStyle(cellOf('SetVelocity')).borderTopWidth).toBe('1px')
+		expect(getComputedStyle(cellOf('SetVelocity')).borderLeftWidth).toBe('0px')
+	})
+
+	it('colors the dividers with the border-light token', () => {
+		renderAtWidth(700)
+
+		const probe = document.createElement('div')
+		probe.className = 'border border-light'
+		document.body.append(probe)
+		const expected = getComputedStyle(probe).borderTopColor
+		probe.remove()
+
+		expect(getComputedStyle(cellOf('MoveStraight')).borderLeftColor).toBe(expected)
+		expect(getComputedStyle(cellOf('Quick move')).borderTopColor).toBe(expected)
 	})
 })
 

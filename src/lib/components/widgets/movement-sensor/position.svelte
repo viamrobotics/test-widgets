@@ -17,6 +17,8 @@
 	const formatOrMissing = (value: number | undefined, decimals = DEFAULT_DECIMALS) =>
 		value === undefined ? MISSING_VALUE : formatNumeric(value, decimals)
 
+	const showsUnit = (value: number | undefined) => value !== undefined
+
 	const latitudeId = $props.id()
 	const longitudeId = `${latitudeId}-longitude`
 	const altitudeId = `${latitudeId}-altitude`
@@ -36,7 +38,9 @@
 			<span class="readout-value"
 				>{formatOrMissing(data.coordinate?.latitude, COORDINATE_DECIMALS)}</span
 			>
-			<span class="readout-suffix">°</span>
+			{#if showsUnit(data.coordinate?.latitude)}
+				<span class="readout-suffix">°</span>
+			{/if}
 		</span>
 	</div>
 
@@ -53,7 +57,9 @@
 			<span class="readout-value"
 				>{formatOrMissing(data.coordinate?.longitude, COORDINATE_DECIMALS)}</span
 			>
-			<span class="readout-suffix">°</span>
+			{#if showsUnit(data.coordinate?.longitude)}
+				<span class="readout-suffix">°</span>
+			{/if}
 		</span>
 	</div>
 
@@ -68,7 +74,9 @@
 			class="readout font-roboto-mono"
 		>
 			<span class="readout-value">{formatOrMissing(data.altitudeM)}</span>
-			<span class="readout-suffix">m</span>
+			{#if showsUnit(data.altitudeM)}
+				<span class="readout-suffix">m</span>
+			{/if}
 		</span>
 	</div>
 </div>

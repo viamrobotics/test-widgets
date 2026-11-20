@@ -13,6 +13,7 @@
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
+	import GetEndPosition from './get-end-position.svelte'
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import ManualModeWidget from './manual-mode-widget.svelte'
@@ -44,6 +45,7 @@
 	const jointPositionsQuery = createResourceQuery(client, 'getJointPositions', () => ({
 		refetchInterval: motionTracking.refetchInterval,
 	}))
+	const endPositionQuery = createResourceQuery(client, 'getEndPosition', { refetchInterval: 500 })
 	const kinematicsQuery = createResourceQuery(client, 'getKinematics', { refetchInterval: 500 })
 
 	const moveToJointPositions = async (jointPositionsList: number[]) => {
@@ -130,7 +132,7 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 @2xl:grid-cols-2">
+				<div class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0">
 					<ApiSection
 						class="min-w-0 grow flex-col gap-4"
 						method="GetJointPositions"
@@ -140,6 +142,15 @@
 						{#if jointPositionsQuery.data}
 							<GetJointPositions positions={jointPositionsQuery.data.values} />
 						{/if}
+						<Section.Text class="mt-auto">Updates automatically</Section.Text>
+					</ApiSection>
+					<ApiSection
+						class="min-w-0 grow flex-col gap-4"
+						method="GetEndPosition"
+						api={ResourceTriplets.Arm}
+						queries={[endPositionQuery]}
+					>
+						<GetEndPosition pose={endPositionQuery.data} />
 						<Section.Text class="mt-auto">Updates automatically</Section.Text>
 					</ApiSection>
 				</div>

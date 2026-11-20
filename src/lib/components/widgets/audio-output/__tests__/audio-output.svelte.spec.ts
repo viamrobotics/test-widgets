@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import { MachineConnectionEvent } from '@viamrobotics/sdk'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -21,12 +21,22 @@ const renderSubject = () =>
 	render(Subject, { props: { partID: 'test-part', resourceName: 'test-audio' } })
 
 describe('Audio output composite', () => {
-	it('stacks Play then GetProperties', () => {
+	it('stacks Play, PlayStream, then GetProperties', () => {
 		renderSubject()
 
 		const names = screen.getAllByRole('heading').map((heading) => heading.textContent?.trim())
 		expect(names.indexOf('Play')).toBeGreaterThanOrEqual(0)
-		expect(names.indexOf('GetProperties')).toBe(names.indexOf('Play') + 1)
+		expect(names.indexOf('PlayStream')).toBe(names.indexOf('Play') + 1)
+		expect(names.indexOf('GetProperties')).toBe(names.indexOf('PlayStream') + 1)
+	})
+
+	it('groups the mutators above the queries', () => {
+		renderSubject()
+
+		const mutators = screen.getByRole('group', { name: 'Mutators' })
+		const queries = screen.getByRole('group', { name: 'Queries' })
+		expect(within(mutators).getByRole('heading', { name: 'PlayStream' })).toBeInTheDocument()
+		expect(within(queries).getByRole('heading', { name: 'GetProperties' })).toBeInTheDocument()
 	})
 
 	it('draws no refresh row', () => {

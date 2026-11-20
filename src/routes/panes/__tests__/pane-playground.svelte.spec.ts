@@ -204,22 +204,20 @@ describe('Pane playground', () => {
 		renderSubject()
 
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		expect(tree.getByRole('button', { name: /gripper-1/u })).toBeInTheDocument()
-		for (const name of ['board-1', 'switch-1', 'button-1']) {
-			expect(tree.getByRole('treeitem', { name })).toBeInTheDocument()
+		for (const name of [/gripper-1/u, /board-1/u, /switch-1/u]) {
+			expect(tree.getByRole('button', { name })).toBeInTheDocument()
 		}
+		expect(tree.getByRole('treeitem', { name: 'button-1' })).toBeInTheDocument()
 	})
 
 	it("lists the machine's sensors, power sensors, encoders, and input controllers", () => {
 		renderSubject()
 
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		for (const name of ['movement-sensor-1', 'power-sensor-1', 'encoder-1']) {
+		for (const name of ['movement-sensor-1', 'power-sensor-1', 'encoder-1', 'input-controller-1']) {
 			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
 		}
-		for (const name of ['sensor-1', 'input-controller-1']) {
-			expect(tree.getByRole('treeitem', { name })).toBeInTheDocument()
-		}
+		expect(tree.getByRole('treeitem', { name: 'sensor-1' })).toBeInTheDocument()
 	})
 
 	it("lists the machine's audio inputs, audio outputs, discovery services, and ML model services", () => {
@@ -237,11 +235,13 @@ describe('Pane playground', () => {
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
 
 		await user.click(tree.getByRole('treeitem', { name: 'Manual mode' }))
-		await user.click(tree.getAllByRole('treeitem', { name: 'Stop' }).at(0) ?? document.body)
+		await user.click(tree.getByRole('treeitem', { name: 'GetEndPosition' }))
 
 		const control = await waitFor(() => paneHeader('arm-1::manual-mode'))
 		expect(control.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1')
-		const api = paneHeader('arm-1::stop')
-		expect(api.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1 Stop')
+		const api = paneHeader('arm-1::get-end-position')
+		expect(api.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe(
+			'arm-1 GetEndPosition'
+		)
 	})
 })

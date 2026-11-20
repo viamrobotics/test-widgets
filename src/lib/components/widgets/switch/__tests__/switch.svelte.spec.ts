@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../switch.svelte'
 import PaneSubject from './__fixtures__/in-320-pane.svelte'
@@ -78,7 +78,22 @@ const renderSubject = () =>
 		props: { partID: 'test-part', resourceName: 'test-switch' },
 	})
 
+const renderAtWidth = (width: number) => {
+	const target = document.createElement('div')
+	target.style.width = `${width}px`
+	document.body.append(target)
+	render(Subject, { props: { partID: 'test-part', resourceName: 'test-switch' }, target })
+	return target
+}
+
+const headingTop = (target: HTMLElement, name: string) =>
+	within(target).getByRole('heading', { name }).getBoundingClientRect().top
+
 describe('Switch widget', () => {
+	afterEach(() => {
+		document.body.replaceChildren()
+	})
+
 	beforeEach(() => {
 		state.mutate = vi.fn(settleOnSuccess)
 		state.refetch = vi.fn()
@@ -93,6 +108,49 @@ describe('Switch widget', () => {
 		renderSubject()
 
 		expect(screen.getByRole('heading', { name: 'SetPosition' })).toBeInTheDocument()
+	})
+
+	it('draws the three layers, each widget in its own', () => {
+		renderSubject()
+
+		const mutators = screen.getByRole('group', { name: 'Mutators' })
+		const queries = screen.getByRole('group', { name: 'Queries' })
+		expect(
+			within(screen.getByRole('group', { name: 'At a glance' })).getByRole('group', {
+				name: 'Position',
+			})
+		).toBeInTheDocument()
+		expect(within(mutators).getByRole('heading', { name: 'SetPosition' })).toBeInTheDocument()
+		expect(
+			within(queries).getByRole('heading', { name: 'GetNumberOfPositions' })
+		).toBeInTheDocument()
+	})
+
+	it('reads the position and its label in the glance row, without a GetPosition heading', () => {
+		renderSubject()
+
+		const glance = screen.getByRole('group', { name: 'At a glance' })
+		expect(within(glance).getByRole('group', { name: 'Position' })).toHaveTextContent('On 1')
+		expect(screen.queryByRole('heading', { name: 'GetPosition' })).not.toBeInTheDocument()
+	})
+
+	it('draws SetPosition beside GetNumberOfPositions from 672 px, and stacked under it', () => {
+		const wide = renderAtWidth(700)
+		expect(headingTop(wide, 'SetPosition')).toBe(headingTop(wide, 'GetNumberOfPositions'))
+		document.body.replaceChildren()
+
+		const narrow = renderAtWidth(320)
+		expect(headingTop(narrow, 'SetPosition')).toBeLessThan(
+			headingTop(narrow, 'GetNumberOfPositions')
+		)
+	})
+
+	it('stops growing at 672 px', () => {
+		const target = renderAtWidth(900)
+
+		expect(
+			target.querySelector('[data-testid="switch-composite"]')?.getBoundingClientRect().width
+		).toBe(672)
 	})
 
 	it('polls the position every 500 ms and reads the count once', () => {
@@ -164,7 +222,7 @@ describe('Switch widget in a 320 px pane', () => {
 		renderInPane()
 		await settleLayout()
 
-		expect(screen.getByRole('group', { name: 'Position' })).toBeInTheDocument()
+		expect(screen.getAllByRole('group', { name: 'Position' })).toHaveLength(2)
 		expect(screen.getAllByRole('radio')).toHaveLength(3)
 		expect(screen.queryByRole('combobox', { name: 'Position' })).not.toBeInTheDocument()
 	})

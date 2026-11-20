@@ -1,16 +1,11 @@
 <script lang="ts">
-	import { SwitchClient } from '@viamrobotics/sdk'
-	import {
-		createResourceClient,
-		createResourceMutation,
-		createResourceQuery,
-	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
-	import Position from './position.svelte'
+	import GetNumberOfPositionsWidget from './get-number-of-positions-widget.svelte'
+	import GetPositionWidget from './get-position-widget.svelte'
+	import PositionView from './position-view.svelte'
 
 	interface Props {
 		partID: string
@@ -18,48 +13,62 @@
 	}
 
 	const { partID, resourceName }: Props = $props()
-
-	const client = createResourceClient(
-		SwitchClient,
-		() => partID,
-		() => resourceName
-	)
-
-	const positionQuery = createResourceQuery(client, 'getPosition', {
-		refetchInterval: 500,
-	})
-
-	const numberOfPositionsQuery = createResourceQuery(client, 'getNumberOfPositions')
-
-	const setPositionMutation = createResourceMutation(client, 'setPosition')
-
-	// No optimistic write: the selection follows GetPosition, re-read once SetPosition settles.
-	const onSelect = (position: number) => {
-		setPositionMutation.mutate([position], {
-			onSettled: () => {
-				void positionQuery.refetch()
-			},
-		})
-	}
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<ApiSection
-			class="flex-col gap-4"
-			method="SetPosition"
-			api={ResourceTriplets.Switch}
-			queries={[positionQuery, numberOfPositionsQuery]}
-			mutations={[setPositionMutation]}
+		<!-- 168 steps of 4 px is the board's 672 px maximum, two columns of 336 px. -->
+		<div
+			class="@container mx-auto max-w-2xl"
+			data-testid="switch-composite"
 		>
-			{#if positionQuery.data !== undefined && numberOfPositionsQuery.data !== undefined}
-				<Position
-					numPositions={numberOfPositionsQuery.data[0]}
-					labels={numberOfPositionsQuery.data[1]}
-					currentPosition={positionQuery.data}
-					{onSelect}
-				/>
-			{/if}
-		</ApiSection>
+			<div class="flex flex-col divide-y">
+				<div
+					role="group"
+					aria-label="At a glance"
+					class="flex flex-wrap items-center gap-x-3 gap-y-2 p-2"
+				>
+					<!-- Under a host scope, the section draws no heading row and its errors reach this indicator. -->
+					<Section.Scope
+						method="GetPosition"
+						api={ResourceTriplets.Switch}
+					>
+						<div class="flex items-center gap-1.5">
+							<GetPositionWidget
+								{partID}
+								{resourceName}
+							/>
+							<Section.Errors />
+						</div>
+					</Section.Scope>
+				</div>
+
+				<div
+					class="grid min-w-0 grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0"
+				>
+					<div
+						role="group"
+						aria-label="Mutators"
+						class="flex min-w-0 flex-col"
+					>
+						<PositionView
+							{partID}
+							{resourceName}
+						/>
+					</div>
+
+					<div
+						role="group"
+						aria-label="Queries"
+						class="flex min-w-0 flex-col"
+					>
+						<GetNumberOfPositionsWidget
+							{partID}
+							{resourceName}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
 	{/snippet}
 </ConnectionStatus>

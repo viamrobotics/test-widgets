@@ -21,6 +21,7 @@ export { ResourceTriplets } from './resource-triplet'
 export type { ResourceTriplet } from './resource-triplet'
 export type {
 	ResourceAPIWidget,
+	ResourceAPIWidgetKind,
 	ResourceWidget,
 	ResourceWidgetProps,
 	ResourceWidgetSize,

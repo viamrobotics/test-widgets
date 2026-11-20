@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	ArmWidget,
+	GripperGetCurrentInputsWidget,
+	GripperGoToInputsWidget,
 	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
-	GripperOpenGrabWidget,
+	GripperOpenGrabControl,
 	GripperOpenWidget,
 	GripperStopWidget,
 	MotionServiceWidget,
@@ -30,38 +32,58 @@ describe('availableAPIWidgets', () => {
 			{
 				id: 'open-grab',
 				label: 'Open / Grab',
-				widgets: [GripperOpenGrabWidget],
+				kind: 'control',
+				widgets: [GripperOpenGrabControl],
 				size: { minWidth: 188, minHeight: 92, recommendedWidths: [203], maxWidth: 203 },
 			},
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
+				kind: 'api',
 				widgets: [GripperIsHoldingSomethingWidget],
 				size: { minWidth: 194, minHeight: 97, recommendedWidths: [320], maxWidth: 320 },
 			},
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [GripperIsMovingWidget],
 				size: { minWidth: 96, minHeight: 97, recommendedWidths: [253], maxWidth: 253 },
 			},
 			{
 				id: 'open',
 				label: 'Open',
+				kind: 'api',
 				widgets: [GripperOpenWidget],
 				size: { minWidth: 81, minHeight: 94, recommendedWidths: [227], maxWidth: 227 },
 			},
 			{
 				id: 'grab',
 				label: 'Grab',
+				kind: 'api',
 				widgets: [GripperGrabWidget],
 				size: { minWidth: 115, minHeight: 140, recommendedWidths: [227], maxWidth: 227 },
 			},
 			{
 				id: 'stop',
 				label: 'Stop',
+				kind: 'api',
 				widgets: [GripperStopWidget],
 				size: { minWidth: 92, minHeight: 102, recommendedWidths: [227], maxWidth: 227 },
+			},
+			{
+				id: 'get-current-inputs',
+				label: 'GetCurrentInputs',
+				kind: 'api',
+				widgets: [GripperGetCurrentInputsWidget],
+				size: { minWidth: 150, minHeight: 172, recommendedWidths: [306], maxWidth: 306 },
+			},
+			{
+				id: 'go-to-inputs',
+				label: 'GoToInputs',
+				kind: 'api',
+				widgets: [GripperGoToInputsWidget],
+				size: { minWidth: 219, minHeight: 190, recommendedWidths: [219], maxWidth: 336 },
 			},
 		])
 	})
@@ -72,22 +94,50 @@ describe('availableAPIWidgets', () => {
 		expect(armIds).toContain('get-joint-positions')
 	})
 
+	it('registers the switch api widgets in method order', () => {
+		const switchIds = availableAPIWidgets()['rdk:component:switch']?.map((widget) => widget.id)
+		expect(switchIds).toEqual(['set-position', 'get-position', 'get-number-of-positions'])
+	})
+
 	it('maps a resource with a card but no API widgets to an empty list', () => {
-		expect(availableAPIWidgets()['rdk:component:board']).toEqual([])
+		expect(availableAPIWidgets()['rdk:component:button']).toEqual([])
 	})
 
 	it('registers the motion service as widget-only (no standalone API widgets)', () => {
 		expect(availableAPIWidgets()['rdk:service:motion']).toEqual([])
 	})
 
-	it('lists Metadata as the one ML model service API widget', () => {
+	it('lists Metadata then Infer as the ML model service API widgets', () => {
 		const mlModelIds = availableAPIWidgets()['rdk:service:mlmodel']?.map((widget) => widget.id)
 
-		expect(mlModelIds).toEqual(['metadata'])
+		expect(mlModelIds).toEqual(['metadata', 'infer'])
 	})
 
 	it('excludes resources that have no test card', () => {
 		expect(availableAPIWidgets()).not.toHaveProperty('rdk:service:shell')
+	})
+
+	it('marks the control interfaces and the control-style entries as controls', () => {
+		const controls = Object.entries(availableAPIWidgets()).flatMap(([api, entries]) =>
+			entries.filter((entry) => entry.kind === 'control').map((entry) => `${api}::${entry.id}`)
+		)
+
+		expect(controls.toSorted()).toEqual([
+			'rdk:component:arm::manual-mode',
+			'rdk:component:audio_in::controls',
+			'rdk:component:audio_out::controls',
+			'rdk:component:base::quick-move',
+			'rdk:component:board::controls',
+			'rdk:component:camera::controls',
+			'rdk:component:gantry::quick-move',
+			'rdk:component:gripper::open-grab',
+			'rdk:component:motor::quick-move',
+			'rdk:component:servo::quick-move',
+			'rdk:service:discovery::controls',
+			'rdk:service:navigation::controls',
+			'rdk:service:slam::controls',
+			'rdk:service:vision::controls',
+		])
 	})
 })
 
@@ -95,10 +145,27 @@ describe('apiWidgetsForResource', () => {
 	it("returns the targeted resource's API widgets", () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'gripper')).map((widget) => widget.id)
-		).toEqual(['open-grab', 'is-holding-something', 'is-moving', 'open', 'grab', 'stop'])
+		).toEqual([
+			'open-grab',
+			'is-holding-something',
+			'is-moving',
+			'open',
+			'grab',
+			'stop',
+			'get-current-inputs',
+			'go-to-inputs',
+		])
 	})
 
-	it('keeps the base ids the app persists, with stop added last', () => {
+	it("lists the input controller's API widgets in order", () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'input_controller')).map(
+				(widget) => widget.id
+			)
+		).toEqual(['get-events', 'trigger-event'])
+	})
+
+	it('keeps the base ids the app persists, with stop and get-properties added last', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'base')).map((widget) => widget.id)
 		).toEqual([
@@ -109,11 +176,31 @@ describe('apiWidgetsForResource', () => {
 			'set-velocity',
 			'is-moving',
 			'stop',
+			'get-properties',
 		])
 	})
 
 	it('returns an empty list for a recognized resource with no API widgets', () => {
-		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'board'))).toEqual([])
+		expect(apiWidgetsForResource(resourceName('rdk', 'component', 'button'))).toEqual([])
+	})
+
+	it('lists the board API widgets in the Board-Frames order', () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'board')).map((widget) => widget.id)
+		).toEqual([
+			'controls',
+			'set-gpio',
+			'get-gpio',
+			'pwm',
+			'set-pwm',
+			'pwm-frequency',
+			'set-pwm-frequency',
+			'read-analog-reader',
+			'write-analog',
+			'get-digital-interrupt-value',
+			'stream-ticks',
+			'set-power-mode',
+		])
 	})
 
 	it('keeps the servo ids the app persists, with get-position and stop added last', () => {
@@ -133,9 +220,31 @@ describe('apiWidgetsForResource', () => {
 			'move-to-joint-positions',
 			'move-to-position',
 			'get-joint-positions',
+			'get-end-position',
 			'is-moving',
 			'manual-mode',
+			'set-manual-mode',
+			'get-manual-mode',
+			'get-properties',
 			'stop',
+		])
+	})
+
+	it('keeps the motor ids the app persists, with the method widgets after is-moving', () => {
+		expect(
+			apiWidgetsForResource(resourceName('rdk', 'component', 'motor')).map((widget) => widget.id)
+		).toEqual([
+			'quick-move',
+			'set-power',
+			'set-rpm',
+			'go-for',
+			'go-to',
+			'is-moving',
+			'reset-zero-position',
+			'get-position',
+			'get-properties',
+			'stop',
+			'is-powered',
 		])
 	})
 

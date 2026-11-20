@@ -21,24 +21,6 @@ export type ResourcePane =
 	| { kind: 'composite'; resource: ResourceName; widget: ResourceWidget; size: ResourceWidgetSize }
 	| { kind: 'api' | 'control'; resource: ResourceName; entry: ResourceAPIWidget }
 
-// design-decisions.md: "Motor quick move stays a control interface". The registry has no `kind`
-// yet. Keyed per resource API, so a future entry that reuses an id is not a control by accident.
-const CONTROL_ENTRY_IDS: Readonly<Record<string, ReadonlySet<string>>> = {
-	[ResourceTriplets.Motor]: new Set(['quick-move']),
-	[ResourceTriplets.Arm]: new Set(['manual-mode']),
-	[ResourceTriplets.Base]: new Set(['quick-move']),
-	[ResourceTriplets.Gantry]: new Set(['quick-move']),
-	[ResourceTriplets.Servo]: new Set(['quick-move']),
-	[ResourceTriplets.Gripper]: new Set(['open-grab']),
-	[ResourceTriplets.Camera]: new Set(['controls']),
-	[ResourceTriplets.Vision]: new Set(['controls']),
-	[ResourceTriplets.Navigation]: new Set(['controls']),
-	[ResourceTriplets.Slam]: new Set(['controls']),
-	[ResourceTriplets.AudioInput]: new Set(['controls']),
-	[ResourceTriplets.Discovery]: new Set(['controls']),
-	[ResourceTriplets.AudioOutput]: new Set(['controls']),
-}
-
 /** The pane slot for a resource's composite card, which has no registry id. */
 const COMPOSITE_SLOT = 'composite'
 
@@ -62,11 +44,7 @@ export const entryPanes = (resource: ResourceName): PaneNode<ResourcePane>[] =>
 	apiWidgetsForResource(resource).map((entry) => ({
 		type: 'pane',
 		id: resourcePaneId(resource, entry.id),
-		data: {
-			kind: CONTROL_ENTRY_IDS[getResourceAPI(resource)]?.has(entry.id) ? 'control' : 'api',
-			resource,
-			entry,
-		},
+		data: { kind: entry.kind, resource, entry },
 	}))
 
 /** The method an `api` pane's breadcrumb title ends with, or undefined for other panes. */

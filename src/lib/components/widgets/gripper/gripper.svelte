@@ -8,6 +8,8 @@
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
+	import GetCurrentInputsWidget from './get-current-inputs-widget.svelte'
+	import GoToInputsWidget from './go-to-inputs-widget.svelte'
 	import IsHoldingSomethingWidget from './is-holding-something-widget.svelte'
 	import OpenGrabControl from './open-grab-control.svelte'
 
@@ -88,9 +90,24 @@
 				<div
 					role="group"
 					aria-label="Mutators"
-					class="flex min-w-0 flex-col"
+					class="grid min-w-0 grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0"
 				>
 					<OpenGrabControl
+						{partID}
+						{resourceName}
+					/>
+					<GoToInputsWidget
+						{partID}
+						{resourceName}
+					/>
+				</div>
+
+				<div
+					role="group"
+					aria-label="Queries"
+					class="flex min-w-0 flex-col"
+				>
+					<GetCurrentInputsWidget
 						{partID}
 						{resourceName}
 					/>

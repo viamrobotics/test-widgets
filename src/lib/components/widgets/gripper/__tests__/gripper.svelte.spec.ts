@@ -9,6 +9,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	const dataByMethod: Record<string, unknown> = {
 		isMoving: false,
 		isHoldingSomething: false,
+		getCurrentInputs: [0.62, 0.38],
 	}
 	return {
 		createResourceClient: vi.fn(() => ({ current: {} })),
@@ -40,17 +41,23 @@ afterEach(() => {
 })
 
 describe('Gripper composite', () => {
-	it('draws a heading for Open / Grab only, none for IsMoving, IsHoldingSomething, or Stop', () => {
+	it('draws a heading for each mutator and query, none for IsMoving, IsHoldingSomething, or Stop', () => {
 		renderAtWidth(320)
 
 		const counts = Object.fromEntries(
-			['Open / Grab', 'IsMoving', 'IsHoldingSomething', 'Stop'].map((name) => [
-				name,
-				screen.queryAllByRole('heading', { name }).length,
-			])
+			[
+				'Open / Grab',
+				'GoToInputs',
+				'GetCurrentInputs',
+				'IsMoving',
+				'IsHoldingSomething',
+				'Stop',
+			].map((name) => [name, screen.queryAllByRole('heading', { name }).length])
 		)
 		expect(counts).toEqual({
 			'Open / Grab': 1,
+			GoToInputs: 1,
+			GetCurrentInputs: 1,
 			IsMoving: 0,
 			IsHoldingSomething: 0,
 			Stop: 0,
@@ -76,6 +83,31 @@ describe('Gripper composite', () => {
 		const mutators = screen.getByRole('group', { name: 'Mutators' })
 		expect(isBefore(glanceRow, mutators)).toBe(true)
 		expect(within(mutators).getByRole('heading', { name: 'Open / Grab' })).toBeVisible()
+	})
+
+	it('puts GoToInputs among the mutators and GetCurrentInputs in the queries after them', () => {
+		renderAtWidth(320)
+
+		const mutators = screen.getByRole('group', { name: 'Mutators' })
+		const queries = screen.getByRole('group', { name: 'Queries' })
+		expect(within(mutators).getByRole('heading', { name: 'GoToInputs' })).toBeVisible()
+		expect(within(queries).getByRole('heading', { name: 'GetCurrentInputs' })).toBeVisible()
+		expect(isBefore(mutators, queries)).toBe(true)
+	})
+
+	it('draws Open / Grab beside GoToInputs from 672 px, and stacked under it', () => {
+		const wide = renderAtWidth(700)
+		const wideTops = ['Open / Grab', 'GoToInputs'].map(
+			(name) => within(wide).getByRole('heading', { name }).getBoundingClientRect().top
+		)
+		expect(wideTops[0]).toBe(wideTops[1])
+		document.body.replaceChildren()
+
+		const narrow = renderAtWidth(320)
+		const narrowTops = ['Open / Grab', 'GoToInputs'].map(
+			(name) => within(narrow).getByRole('heading', { name }).getBoundingClientRect().top
+		)
+		expect(narrowTops[0]).toBeLessThan(narrowTops[1] ?? 0)
 	})
 
 	it('stops growing at 688 px', () => {
