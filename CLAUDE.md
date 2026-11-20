@@ -29,8 +29,7 @@ pnpm exec houserules update   # refresh kit files after a @houserules/* bump
 
 ## Generated code — never hand-edit
 
-- Any files included in `.gitignore` should not be edited
-- `.claude/scripts/` is build output written by houserules and gitignored. If a hook reports a missing script, run `pnpm exec houserules update`.
+- Gitignored files, including `.claude/scripts/` (houserules build output). If a hook reports a missing script, run `pnpm exec houserules update`.
 
 ## Code organization
 
@@ -90,7 +89,8 @@ Fuller templates live in `.claude/templates/`.
   `run_in_background: true`, ends its turn without reporting, and reports when the completion
   notification re-invokes it, reading the output file it names. A foreground call blocks the
   subagent until Claude Code moves it to the background anyway, so starting it there saves the
-  blocked minutes and lets the subagent end its turn.
+  blocked minutes and lets the subagent end its turn. A command expected to finish inside the
+  default Bash timeout, such as a scoped test or typecheck, runs in the foreground.
 - On AskUserQuestion timeout, stop and re-ask later. Never carry tentative selections forward.
 - Read the repo's own docs + targeted greps before fanning out Explore/Plan agents.
 
