@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { LngLat } from 'maplibre-gl'
 
-	import { IconButton } from '@viamrobotics/prime-core'
+	import { mdiImageFilterCenterFocus, mdiTrashCanOutline } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { fromStore } from 'svelte/store'
 
 	import { useMapLibre, useMapLibreEvent, Waypoint } from '../../../maplibre'
@@ -43,22 +44,28 @@
 			({waypoint.lat.toFixed(4)}, {waypoint.lng.toFixed(4)})
 		</small>
 		<div class="flex items-center gap-1.5">
-			<IconButton
-				label="Remove waypoint {index}"
-				icon="trash-can-outline"
-				on:click={() => handleDeleteWaypoint(waypoint.id)}
-			/>
-			<IconButton
-				icon="image-filter-center-focus"
-				label="Focus waypoint {index}"
-				on:click={() =>
+			<button
+				type="button"
+				class="icon-button"
+				aria-label="Remove waypoint {index}"
+				onclick={() => handleDeleteWaypoint(waypoint.id)}
+			>
+				<Icon icon={mdiTrashCanOutline} />
+			</button>
+			<button
+				type="button"
+				class="icon-button"
+				aria-label="Focus waypoint {index}"
+				onclick={() =>
 					map.current.flyTo({
 						zoom: 15,
 						duration: 800,
 						curve: 0.1,
 						center: [waypoint.lng, waypoint.lat],
 					})}
-			/>
+			>
+				<Icon icon={mdiImageFilterCenterFocus} />
+			</button>
 		</div>
 	</li>
 {/each}

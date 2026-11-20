@@ -2,8 +2,7 @@
 	import type { Snippet } from 'svelte'
 
 	import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
-	import { Button, Switch } from '@viamrobotics/prime-core'
-	import { Icon } from '@viamrobotics/prime-ui'
+	import { Checkbox, Field, Icon, Label } from '@viamrobotics/prime-ui'
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk'
 	import { PersistedState, useResizeObserver } from 'runed'
@@ -95,7 +94,6 @@
 	)
 
 	const instanceId = $props.id()
-	const singleCardLabelId = `single-card-label-${instanceId}`
 	const drawerBodyId = `${instanceId}-ops-sessions-drawer`
 
 	const minSidebarPct = 17
@@ -124,17 +122,10 @@
 				<nav class="border-light bg-extralight flex h-full flex-col divide-y border-b sm:border-r">
 					{@render children()}
 
-					<div class="flex items-center gap-2 px-4 py-2">
-						<Switch
-							on={singleCardMode}
-							aria-labelledby={singleCardLabelId}
-							on:change={() => (singleCardMode = !singleCardMode)}
-						/>
-						<span
-							id={singleCardLabelId}
-							class="text-xs">Single card mode</span
-						>
-					</div>
+					<Field class="flex items-center gap-2 px-4 py-2">
+						<Checkbox bind:checked={singleCardMode} />
+						<Label class="text-xs">Single card mode</Label>
+					</Field>
 
 					<ResourceList
 						{isLoading}
@@ -156,8 +147,20 @@
 			>
 				{#if displayedResources.length > 0}
 					<div class="mx-6 mt-6 flex flex-row items-start justify-start gap-3">
-						<Button onclick={collapseAll}>Collapse all</Button>
-						<Button onclick={expandAll}>Expand all</Button>
+						<button
+							type="button"
+							class="button"
+							onclick={collapseAll}
+						>
+							Collapse all
+						</button>
+						<button
+							type="button"
+							class="button"
+							onclick={expandAll}
+						>
+							Expand all
+						</button>
 					</div>
 				{/if}
 				<CardList

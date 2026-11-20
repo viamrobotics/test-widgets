@@ -1,3 +1,4 @@
+import { mdiCheck, mdiContentCopy } from '@mdi/js'
 import { render, screen, waitFor } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -21,7 +22,7 @@ describe('<Section.Error>', () => {
 	it("adds an inner form's error to the section's indicator instead of rendering it inline", () => {
 		render(Subject, { error: notPowered() })
 
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('Open: 1 error, copy to clipboard')).toBeInTheDocument()
 		expect(inlineLine()).not.toBeInTheDocument()
 	})
 
@@ -30,7 +31,7 @@ describe('<Section.Error>', () => {
 
 		await rerender({ error: null })
 
-		expect(indicator('No errors')).toBeInTheDocument()
+		expect(indicator('Open: No errors')).toBeInTheDocument()
 	})
 
 	it('clears from the indicator when the form unmounts', async () => {
@@ -38,13 +39,13 @@ describe('<Section.Error>', () => {
 
 		await rerender({ error: notPowered(), showForm: false })
 
-		expect(indicator('No errors')).toBeInTheDocument()
+		expect(indicator('Open: No errors')).toBeInTheDocument()
 	})
 
 	it("counts once when the section's own mutation fails the same way", () => {
 		render(Subject, { error: notPowered(), mutationError: notPowered() })
 
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('Open: 1 error, copy to clipboard')).toBeInTheDocument()
 	})
 
 	it('renders the error inline outside a section', () => {
@@ -91,9 +92,11 @@ describe('<Section.Error>', () => {
 
 		await timerUser.click(screen.getByRole('button', { name: 'Copy error' }))
 
-		await waitFor(() => expect(screen.getByTestId('icon-check')).toBeInTheDocument())
+		const iconPath = () =>
+			screen.getByRole('button', { name: 'Copy error' }).querySelector('path')?.getAttribute('d')
+		await waitFor(() => expect(iconPath()).toBe(mdiCheck))
 		vi.runAllTimers()
-		await waitFor(() => expect(screen.getByTestId('icon-content-copy')).toBeInTheDocument())
+		await waitFor(() => expect(iconPath()).toBe(mdiContentCopy))
 		vi.useRealTimers()
 	})
 })

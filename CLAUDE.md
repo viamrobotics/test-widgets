@@ -4,12 +4,12 @@ A library of Svelte components for interacting with Viam-powered machines. Each 
 
 ## Tech stack
 
-| Layer           | Technology                                                           |
-| --------------- | -------------------------------------------------------------------- |
-| Frontend        | Svelte 5 (runes), Threlte/Three.js for 3D widgets                    |
-| Styling         | TailwindCSS 4 with `@viamrobotics/tailwind-config`, PRIME components |
-| Package manager | pnpm                                                                 |
-| Testing         | Vitest (browser mode) + Playwright                                   |
+| Layer           | Technology                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| Frontend        | Svelte 5 (runes), Threlte/Three.js for 3D widgets                                                            |
+| Styling         | TailwindCSS 4 with `@viamrobotics/tailwind-config`, `@viamrobotics/prime-controls`, `@viamrobotics/prime-ui` |
+| Package manager | pnpm                                                                                                         |
+| Testing         | Vitest (browser mode) + Playwright                                                                           |
 
 ## Commands
 

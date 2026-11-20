@@ -65,7 +65,9 @@ describe('Servo Move widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Move: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 })
 

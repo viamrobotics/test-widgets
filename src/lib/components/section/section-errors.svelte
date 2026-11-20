@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiAlertCircle, mdiAlertCircleOutline, mdiCheck } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import { errorKey } from './error-key'
 	import { useSectionScope } from './section-scope-context.svelte'
@@ -26,13 +27,14 @@
 	let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
 	const label = $derived.by(() => {
-		if (copied) return `Copied ${summary}`
-		return hasErrors ? `${summary}, copy to clipboard` : summary
+		const prefix = scope?.method ? `${scope.method}: ` : ''
+		if (copied) return `${prefix}Copied ${summary}`
+		return `${prefix}${hasErrors ? `${summary}, copy to clipboard` : summary}`
 	})
 
-	const iconName = $derived.by(() => {
-		if (copied) return 'check'
-		return hasErrors ? 'alert-circle' : 'alert-circle-outline'
+	const iconPath = $derived.by(() => {
+		if (copied) return mdiCheck
+		return hasErrors ? mdiAlertCircle : mdiAlertCircleOutline
 	})
 
 	// The cue replays and the live region re-announces only when the held set changes to a non-empty
@@ -74,35 +76,33 @@
 		{#if hasErrors}{summary}{/if}
 	{/key}
 </span>
-<Tooltip let:tooltipID>
-	<button
-		type="button"
-		aria-label={label}
-		aria-describedby={tooltipID}
-		onclick={copy}
-		class={[
-			// The pseudo-element pads the hit area to 24px (WCAG 2.5.8) without growing the heading row.
-			'relative inline-flex items-center gap-0.5 p-0.5 after:absolute after:-inset-0.5',
-			{
-				'text-gray-6': !hasErrors && !copied,
-				'text-danger-dark hover:bg-medium': hasErrors && !copied,
-				'text-success-dark': copied,
-			},
-		]}
-	>
-		{#key arrival}
-			<span class={['inline-flex rounded-full', arrival > 0 && 'arrival']}>
-				<Icon name={iconName} />
-			</span>
-		{/key}
-		{#if hasErrors}
-			<span class="font-roboto-mono text-xs leading-none">{count}</span>
-		{/if}
-	</button>
-	<div
-		slot="description"
-		class="flex min-w-0 flex-col gap-1"
-	>
+<Tooltip>
+	<Tooltip.Trigger>
+		<button
+			type="button"
+			aria-label={label}
+			onclick={copy}
+			class={[
+				// The pseudo-element pads the hit area to 24px (WCAG 2.5.8) without growing the heading row.
+				'relative inline-flex items-center gap-0.5 p-0.5 after:absolute after:-inset-0.5',
+				{
+					'text-gray-6': !hasErrors && !copied,
+					'text-danger-dark hover:bg-medium': hasErrors && !copied,
+					'text-success-dark': copied,
+				},
+			]}
+		>
+			{#key arrival}
+				<span class={['inline-flex rounded-full', arrival > 0 && 'arrival']}>
+					<Icon icon={iconPath} />
+				</span>
+			{/key}
+			{#if hasErrors}
+				<span class="font-roboto-mono text-xs leading-none">{count}</span>
+			{/if}
+		</button>
+	</Tooltip.Trigger>
+	<Tooltip.Content class="flex min-w-0 flex-col gap-1">
 		<div class="text-gray-5 flex justify-between gap-3">
 			<span>{summary}</span>
 			{#if hasErrors}
@@ -112,7 +112,7 @@
 		{#each errors as error (errorKey(error))}
 			<p class="font-roboto-mono wrap-anywhere">{error.name}: {error.message}</p>
 		{/each}
-	</div>
+	</Tooltip.Content>
 </Tooltip>
 
 <style>

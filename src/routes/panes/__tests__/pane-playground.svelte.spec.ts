@@ -116,7 +116,7 @@ describe('Pane playground', () => {
 			'href',
 			`https://docs.viam.com/reference/apis/components/motor/#${method.toLowerCase()}`
 		)
-		expect(header.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		expect(header.getByRole('button', { name: `${method}: No errors` })).toBeInTheDocument()
 	})
 
 	it.each([
@@ -144,10 +144,12 @@ describe('Pane playground', () => {
 		renderSubject()
 
 		expect(
-			paneHeader('motor-1::set-rpm').getByRole('button', { name: '1 error, copy to clipboard' })
+			paneHeader('motor-1::set-rpm').getByRole('button', {
+				name: 'SetRPM: 1 error, copy to clipboard',
+			})
 		).toBeInTheDocument()
 		expect(
-			paneHeader('motor-1::set-power').getByRole('button', { name: 'No errors' })
+			paneHeader('motor-1::set-power').getByRole('button', { name: 'SetPower: No errors' })
 		).toBeInTheDocument()
 	})
 

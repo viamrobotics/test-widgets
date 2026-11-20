@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MachineConnectionEvent } from '@viamrobotics/sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -343,10 +343,11 @@ describe('CameraControls', () => {
 
 		await userEvent.click(screen.getByRole('button', { name: /picture-in-picture/iu }))
 
-		expect(
-			await sectionFor('GetImages').findByRole('button', { name: '1 error, copy to clipboard' })
-		).toBeInTheDocument()
-		expect(sectionFor('GetImages').getByText('Error: pip denied')).toBeInTheDocument()
+		const indicator = await sectionFor('GetImages').findByRole('button', {
+			name: '1 error, copy to clipboard',
+		})
+		await fireEvent.focusIn(indicator)
+		expect(screen.getByText('Error: pip denied')).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Copy error' })).not.toBeInTheDocument()
 	})
 

@@ -2,7 +2,7 @@
 	import type { LngLat } from 'maplibre-gl'
 
 	import { T, useThrelte } from '@threlte/core'
-	import { theme } from '@viamrobotics/prime-core/theme'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import { Camera, Plane, Vector3 } from 'three'
 
 	import type { Obstacle } from '../types'
@@ -89,7 +89,7 @@
 {#each nav.paths as path, i (i)}
 	<Path
 		{path}
-		color={theme.extend.colors.hyperlink}
+		color={themeColor('--color-hyperlink-bright') ?? ''}
 	/>
 {/each}
 

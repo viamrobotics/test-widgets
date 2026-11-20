@@ -12,7 +12,13 @@ import {
 	MotionServiceWidget,
 } from '../components'
 import { isKnownResource } from '../is-known-resource'
-import { apiWidgetsForResource, availableAPIWidgets, widgetForResource } from '../registry'
+import {
+	apiWidgetsForResource,
+	availableAPIWidgets,
+	type ResourceWidgetSize,
+	widgetForResource,
+	widgetSizeForResource,
+} from '../registry'
 import { showResourceWidget } from '../show-resource-widget'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
@@ -21,16 +27,42 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 describe('availableAPIWidgets', () => {
 	it('maps each resource with a card to its API widgets', () => {
 		expect(availableAPIWidgets()['rdk:component:gripper']).toEqual([
-			{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget] },
+			{
+				id: 'open-grab',
+				label: 'Open / Grab',
+				widgets: [GripperOpenGrabWidget],
+				size: { minWidth: 188, minHeight: 92, recommendedWidths: [203], maxWidth: 203 },
+			},
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
 				widgets: [GripperIsHoldingSomethingWidget],
+				size: { minWidth: 194, minHeight: 97, recommendedWidths: [320], maxWidth: 320 },
 			},
-			{ id: 'is-moving', label: 'IsMoving', widgets: [GripperIsMovingWidget] },
-			{ id: 'open', label: 'Open', widgets: [GripperOpenWidget] },
-			{ id: 'grab', label: 'Grab', widgets: [GripperGrabWidget] },
-			{ id: 'stop', label: 'Stop', widgets: [GripperStopWidget] },
+			{
+				id: 'is-moving',
+				label: 'IsMoving',
+				widgets: [GripperIsMovingWidget],
+				size: { minWidth: 96, minHeight: 97, recommendedWidths: [253], maxWidth: 253 },
+			},
+			{
+				id: 'open',
+				label: 'Open',
+				widgets: [GripperOpenWidget],
+				size: { minWidth: 81, minHeight: 94, recommendedWidths: [227], maxWidth: 227 },
+			},
+			{
+				id: 'grab',
+				label: 'Grab',
+				widgets: [GripperGrabWidget],
+				size: { minWidth: 115, minHeight: 140, recommendedWidths: [227], maxWidth: 227 },
+			},
+			{
+				id: 'stop',
+				label: 'Stop',
+				widgets: [GripperStopWidget],
+				size: { minWidth: 92, minHeight: 102, recommendedWidths: [227], maxWidth: 227 },
+			},
 		])
 	})
 
@@ -123,6 +155,125 @@ describe('widgetForResource', () => {
 
 	it('returns undefined for a recognized resource without a widget', () => {
 		expect(widgetForResource(resourceName('rdk', 'service', 'shell'))).toBeUndefined()
+	})
+})
+
+const resourceNameForTriplet = (triplet: string): ResourceName => {
+	const [namespace = '', type = '', subtype = ''] = triplet.split(':')
+	return resourceName(namespace, type, subtype)
+}
+
+const sizeProblems = (name: string, size: ResourceWidgetSize | undefined): string[] => {
+	if (!size) return [`${name} has no size`]
+	const { minWidth, minHeight, recommendedWidths, maxWidth } = size
+	const lastRecommended = recommendedWidths.at(-1)
+	const problems: string[] = []
+	const numbers: [string, number][] = [
+		['minWidth', minWidth],
+		['minHeight', minHeight],
+		['maxWidth', maxWidth],
+		...recommendedWidths.map((width, index): [string, number] => [
+			`recommendedWidths[${String(index)}]`,
+			width,
+		]),
+	]
+	for (const [field, value] of numbers) {
+		if (value <= 0) problems.push(`${name} ${field} is ${String(value)}`)
+	}
+	if (lastRecommended === undefined) return [...problems, `${name} recommends no width`]
+	if (
+		recommendedWidths.some(
+			(width, index) => index > 0 && width <= (recommendedWidths[index - 1] ?? 0)
+		)
+	) {
+		problems.push(`${name} recommends ${recommendedWidths.join(', ')}, not strictly ascending`)
+	}
+	if ((recommendedWidths[0] ?? 0) < minWidth) {
+		problems.push(
+			`${name} recommends ${String(recommendedWidths[0])}, under its minWidth ${String(minWidth)}`
+		)
+	}
+	if (maxWidth < lastRecommended) {
+		problems.push(
+			`${name} caps at ${String(maxWidth)}, under its widest recommended ${String(lastRecommended)}`
+		)
+	}
+	return problems
+}
+
+const VALID_SIZE: ResourceWidgetSize = {
+	minWidth: 100,
+	minHeight: 50,
+	recommendedWidths: [100, 200],
+	maxWidth: 300,
+}
+
+describe('widget sizes', () => {
+	it('gives every composite and API entry a size that holds the size invariants', () => {
+		const problems = Object.entries(availableAPIWidgets()).flatMap(([triplet, apis]) => [
+			...sizeProblems(
+				`${triplet} composite`,
+				widgetSizeForResource(resourceNameForTriplet(triplet))
+			),
+			...(apis ?? []).flatMap((api) => sizeProblems(`${triplet} ${api.id}`, api.size)),
+		])
+
+		expect(problems).toEqual([])
+	})
+
+	it.each([
+		{ problem: 'a missing size', size: undefined, expected: ['x has no size'] },
+		{
+			problem: 'a zero minHeight',
+			size: { ...VALID_SIZE, minHeight: 0 },
+			expected: ['x minHeight is 0'],
+		},
+		{
+			problem: 'a negative recommended width',
+			size: { ...VALID_SIZE, minWidth: -10, recommendedWidths: [-10, 200] },
+			expected: ['x minWidth is -10', 'x recommendedWidths[0] is -10'],
+		},
+		{
+			problem: 'an empty recommended list',
+			size: { ...VALID_SIZE, recommendedWidths: [] },
+			expected: ['x recommends no width'],
+		},
+		{
+			problem: 'an unsorted recommended list',
+			size: { ...VALID_SIZE, recommendedWidths: [200, 100] },
+			expected: ['x recommends 200, 100, not strictly ascending'],
+		},
+		{
+			problem: 'a recommended width under minWidth',
+			size: { ...VALID_SIZE, minWidth: 150 },
+			expected: ['x recommends 100, under its minWidth 150'],
+		},
+		{
+			problem: 'a maxWidth under the widest recommended width',
+			size: { ...VALID_SIZE, maxWidth: 150 },
+			expected: ['x caps at 150, under its widest recommended 200'],
+		},
+	])('flags $problem', ({ size, expected }) => {
+		expect(sizeProblems('x', size)).toEqual(expected)
+	})
+
+	it('passes a size that holds every invariant', () => {
+		expect(sizeProblems('x', VALID_SIZE)).toEqual([])
+	})
+})
+
+describe('widgetSizeForResource', () => {
+	it("returns the composite card's size", () => {
+		expect(widgetSizeForResource(resourceName('rdk', 'component', 'servo'))).toEqual({
+			minWidth: 169,
+			minHeight: 511,
+			recommendedWidths: [320, 672],
+			maxWidth: 688,
+		})
+	})
+
+	it('returns undefined for a recognized resource without a widget', () => {
+		expect(widgetSizeForResource(resourceName('rdk', 'service', 'shell'))).toBeUndefined()
 	})
 })
 

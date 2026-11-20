@@ -43,9 +43,30 @@ The widgets are styled with Tailwind 4 utility classes, so your Tailwind build h
 @import '@viamrobotics/test-widgets/styles.css';
 ```
 
-Each one imports `@viamrobotics/tailwind-config` and points Tailwind at its own compiled components. Widgets not yet migrated off `@viamrobotics/prime-core` also need `@source` pointed at `@viamrobotics/prime-core/src/lib` in the same stylesheet.
+Each one imports `@viamrobotics/tailwind-config` and points Tailwind at its own compiled components.
 
 Tailwind 4 draws an unset `border` in `currentcolor`. Some widgets rely on the Tailwind 3 default instead, so copy the compatibility block from this repo's `src/app.css` into your base layer. The package stylesheet leaves it out, because it would change every border on your page.
+
+### Peers
+
+Install these in your app. The ranges come from this package's `peerDependencies`:
+
+- `@sentry/svelte` `>=8`
+- `@tanstack/svelte-query` `>=6`
+- `@threlte/core` `>=8`
+- `@threlte/extras` `>=9`
+- `@viamrobotics/prime-controls` `>=0.5`
+- `@viamrobotics/prime-editor` `>=0.1`
+- `@viamrobotics/prime-ui` `>=0.6`
+- `@viamrobotics/sdk` `>=0.76.0`
+- `@viamrobotics/svelte-sdk` `>=1.5`
+- `@viamrobotics/tailwind-config` `>=1.10`
+- `lodash-es` `>=4`
+- `maplibre-gl` `>=6`
+- `runed` `>=0.28`
+- `svelte` `>=5`
+- `three` `>=0.178`
+- `threlte-uikit` `>=2`
 
 ### Providers
 
@@ -55,6 +76,38 @@ Mount these once, above any widget:
 - `providePip()` from `@viamrobotics/test-widgets`, before rendering a camera widget.
 
 Each widget takes the `partID` and `resourceName` of the resource it controls.
+
+### Sizes
+
+Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`.
+
+The table lists each resource's composite `minWidth` and each API entry's `minWidth`, keyed by entry id, all in px. Resources with no API entries have none listed.
+
+| Resource        | Composite | API entries                                                                                                                                                                                                                  |
+| --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arm             | 221       | move-to-joint-positions `196`, move-to-position `213`, get-joint-positions `186`, is-moving `96`, manual-mode `193`, stop `92`                                                                                               |
+| AudioInput      | 108       | controls `108`, get-audio `282`, get-properties `237`                                                                                                                                                                        |
+| AudioOutput     | 114       | controls `114`, play `252`, get-properties `237`                                                                                                                                                                             |
+| Base            | 169       | quick-move `289`, move-straight `297`, spin `286`, set-power `115`, set-velocity `150`, is-moving `96`, stop `92`                                                                                                            |
+| Board           | 208       |                                                                                                                                                                                                                              |
+| Button          | 160       |                                                                                                                                                                                                                              |
+| Camera          | 276       | controls `227`, get-images `182`, get-point-cloud `137`, get-properties `276`                                                                                                                                                |
+| Encoder         | 211       | get-position `162`                                                                                                                                                                                                           |
+| Gantry          | 169       | home `150`, move-to-position `142`, quick-move `190`, get-position `176`, is-moving `96`                                                                                                                                     |
+| Gripper         | 238       | open-grab `188`, is-holding-something `194`, is-moving `96`, open `81`, grab `115`, stop `92`                                                                                                                                |
+| InputController | 211       |                                                                                                                                                                                                                              |
+| Motor           | 288       | quick-move `276`, set-power `192`, set-rpm `248`, go-for `288`, go-to `268`, is-moving `96`                                                                                                                                  |
+| MovementSensor  | 239       | get-position `206`, get-orientation `108`, get-compass-heading `209`, get-accuracy `183`                                                                                                                                     |
+| PowerSensor     | 211       | get-voltage `195`, get-current `187`, get-power `176`                                                                                                                                                                        |
+| Sensor          | 259       |                                                                                                                                                                                                                              |
+| Servo           | 169       | move `276`, quick-move `95`, is-moving `96`, get-position `140`, stop `92`                                                                                                                                                   |
+| Switch          | 145       |                                                                                                                                                                                                                              |
+| Discovery       | 189       | controls `217`, discover-resources `170`                                                                                                                                                                                     |
+| MLModel         | 286       | metadata `286`                                                                                                                                                                                                               |
+| Motion          | 240       |                                                                                                                                                                                                                              |
+| Navigation      | 116       | controls `248`, get-mode `108`, set-mode `248`, get-location `141`, get-waypoints `137`, add-waypoint `257`, remove-waypoint `180`, get-obstacles `232`                                                                      |
+| Slam            | 223       | controls `248`, get-position `223`, get-point-cloud-map `165`, get-properties `244`                                                                                                                                          |
+| Vision          | 293       | controls `264`, capture-all-from-camera `272`, get-properties `263`, get-object-point-clouds `200`, get-detections-from-camera `230`, get-classifications-from-camera `230`, get-detections `269`, get-classifications `269` |
 
 ### In a pane
 

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconButton, Label, TextInput, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiImageFilterCenterFocus, mdiTrashCanOutline } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { LngLat, LngLatBounds } from 'maplibre-gl'
 	import { fromStore } from 'svelte/store'
 
@@ -107,49 +108,15 @@
 		onmouseenter={() => (nav.hovered = name)}
 	>
 		<button
-			class="w-full text-left"
+			class="min-w-0 flex-1 text-left"
 			onclick={() => {
 				nav.selected = nav.selected === name ? undefined : name
 			}}
 		>
-			<div class="flex items-center justify-between gap-1.5">
-				<small>{name}</small>
-				<div class="flex items-center gap-1.5">
-					{#if debugMode}
-						<small class="text-subtle-2 opacity-60 group-hover:opacity-100">
-							({location.lat.toFixed(4)}, {location.lng.toFixed(4)})
-						</small>
-					{:else}
-						<IconButton
-							label="Delete {name}"
-							icon="trash-can-outline"
-							on:click={handleDeleteObstacle(name)}
-						/>
-					{/if}
-					<IconButton
-						icon="image-filter-center-focus"
-						label="Focus {name}"
-						on:click={(event) => {
-							event.stopPropagation()
-							handleSelect({ name, location })
-						}}
-					/>
-					<Tooltip
-						let:tooltipID
-						location="right"
-					>
-						<div
-							aria-describedby={tooltipID}
-							class="m-2 h-3.5 w-3.5"
-							style:background-color={color}
-						></div>
-						<p slot="description">{label}</p>
-					</Tooltip>
-				</div>
-			</div>
+			<small>{name}</small>
 			{#if debugMode}
 				{#each geometries as geometry, i (i)}
-					<small class="text-subtle-2">
+					<small class="text-subtle-2 block">
 						{#if geometry.type === 'box'}
 							Length: {geometry.length}m, Width: {geometry.width}m, Height: {geometry.height}m
 						{:else if geometry.type === 'sphere'}
@@ -167,6 +134,47 @@
 				{/each}
 			{/if}
 		</button>
+		<div class="flex items-center gap-1.5">
+			{#if debugMode}
+				<small class="text-subtle-2 opacity-60 group-hover:opacity-100">
+					({location.lat.toFixed(4)}, {location.lng.toFixed(4)})
+				</small>
+			{:else}
+				<button
+					type="button"
+					class="icon-button"
+					aria-label="Delete {name}"
+					onclick={handleDeleteObstacle(name)}
+				>
+					<Icon icon={mdiTrashCanOutline} />
+				</button>
+			{/if}
+			<button
+				type="button"
+				class="icon-button"
+				aria-label="Focus {name}"
+				onclick={(event) => {
+					event.stopPropagation()
+					handleSelect({ name, location })
+				}}
+			>
+				<Icon icon={mdiImageFilterCenterFocus} />
+			</button>
+			<Tooltip>
+				<Tooltip.Trigger>
+					<!-- Keyboard focus is the only way to open the tooltip without a pointer. -->
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+					<span
+						class="m-2 block h-3.5 w-3.5"
+						role="img"
+						aria-label={label}
+						tabindex="0"
+						style:background-color={color}
+					></span>
+				</Tooltip.Trigger>
+				<Tooltip.Content placement="right">{label}</Tooltip.Content>
+			</Tooltip>
+		</div>
 	</li>
 {/each}
 
@@ -179,14 +187,10 @@
 	>
 		<div class="flex items-end gap-1.5 pb-2">
 			<!-- @todo(mp) obstacle API doesn't yet allow custom names. -->
-			<Label>
-				Name
-				<TextInput
-					slot="input"
-					readonly
-					value={selectedObstacle.name}
-				/>
-			</Label>
+			<div class="flex min-w-0 flex-1 flex-col gap-1">
+				<span class="text-subtle-1 text-xs">Name</span>
+				<span class="readout">{selectedObstacle.name}</span>
+			</div>
 		</div>
 		<LngLatInput
 			lng={selectedObstacle.location.lng}

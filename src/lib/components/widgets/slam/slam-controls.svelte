@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Field, Input, Label, Progress } from '@viamrobotics/prime-ui'
+	import { TextField } from '@viamrobotics/prime-controls'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import {
 		motionApi,
 		MotionClient,
@@ -235,21 +236,15 @@
 							<Section.Errors errors={sectionErrors.errors} />
 						{/snippet}
 					</Section.Heading>
-					<Field class="flex items-center gap-2">
-						<Label class="text-subtle-1 w-18 shrink-0 text-xs">Base name</Label>
-						<Input
-							class="input-compact min-w-0 flex-1"
-							bind:value={baseName}
-						/>
-					</Field>
-					<Field class="flex items-center gap-2">
-						<Label class="text-subtle-1 w-18 shrink-0 text-xs">Motion name</Label>
-						<Input
-							class="input-compact min-w-0 flex-1"
-							placeholder={DEFAULT_MOTION_NAME}
-							bind:value={motionName}
-						/>
-					</Field>
+					<TextField
+						label="Base name"
+						bind:value={baseName}
+					/>
+					<TextField
+						label="Motion name"
+						placeholder={DEFAULT_MOTION_NAME}
+						bind:value={motionName}
+					/>
 					<MoveOnMap
 						bind:x={destinationX}
 						bind:y={destinationY}

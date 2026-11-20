@@ -16,7 +16,11 @@ The package needs these peer dependencies installed in your app:
 - `@sentry/svelte`
 - `@threlte/core`
 - `@threlte/extras`
-- `@viamrobotics/prime-core`
+- `@tanstack/svelte-query`
+- `@viamrobotics/prime-controls`
+- `@viamrobotics/prime-editor`
+- `@viamrobotics/prime-ui`
+- `@viamrobotics/tailwind-config`
 - `@viamrobotics/sdk`
 - `@viamrobotics/svelte-sdk`
 - `lodash-es`

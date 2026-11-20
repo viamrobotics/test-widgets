@@ -96,7 +96,9 @@ describe('PowerSensor GetVoltage widget', () => {
 		queryState.error = new Error('voltage unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetVoltage: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/voltage unavailable/iu)).toBeInTheDocument()
 	})

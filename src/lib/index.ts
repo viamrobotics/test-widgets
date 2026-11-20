@@ -23,5 +23,6 @@ export type {
 	ResourceAPIWidget,
 	ResourceWidget,
 	ResourceWidgetProps,
+	ResourceWidgetSize,
 } from './resource-widget-types'
 export { showResourceWidget } from './show-resource-widget'

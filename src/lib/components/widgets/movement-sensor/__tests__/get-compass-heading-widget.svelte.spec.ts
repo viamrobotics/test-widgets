@@ -73,7 +73,9 @@ describe('MovementSensor GetCompassHeading widget', () => {
 		queryState.error = new Error('compass heading unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetCompassHeading: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/compass heading unavailable/iu)).toBeInTheDocument()
 	})

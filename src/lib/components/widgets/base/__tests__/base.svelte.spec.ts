@@ -83,7 +83,7 @@ describe('Base composite', () => {
 		renderAtWidth(320)
 
 		const glanceRow = within(screen.getByRole('group', { name: 'Status and stop' }))
-		expect(glanceRow.getAllByRole('button', { name: 'No errors' })).toHaveLength(2)
+		expect(glanceRow.getAllByRole('button', { name: /: No errors$/u })).toHaveLength(2)
 	})
 
 	it('puts the glance row first, then the mutators with Quick move in the third slot', () => {

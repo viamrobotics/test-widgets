@@ -9,7 +9,6 @@
 
 	import ApiSection from './api-section.svelte'
 	import { Section } from './section'
-	import StatusPill from './status-pill.svelte'
 
 	type Client =
 		| typeof SDK.ArmClient
@@ -74,7 +73,10 @@
 		</Tooltip>
 		{@render children?.()}
 	{:else}
-		<StatusPill isActive={query.data ?? false} />
+		{@const isMoving = query.data ?? false}
+		<span class={['badge w-fit', isMoving ? 'badge-success' : 'badge-neutral']}>
+			{isMoving ? 'Moving...' : 'Idle'}
+		</span>
 		{@render children?.()}
 		<Section.Text class="mt-auto">Updates automatically</Section.Text>
 	{/if}

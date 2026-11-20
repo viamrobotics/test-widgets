@@ -6,7 +6,8 @@ A group of sections in a card. For example, "test" or "do command"
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon } from '@viamrobotics/prime-core'
+	import { mdiUnfoldLessHorizontal, mdiUnfoldMoreHorizontal } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { slide } from 'svelte/transition'
 
 	interface Props {
@@ -40,8 +41,9 @@ A group of sections in a card. For example, "test" or "do command"
 			onclick={toggleIsCollapsed}
 		>
 			<Icon
-				name={isCollapsed ? 'unfold-more-horizontal' : 'unfold-less-horizontal'}
-				cx="group-hover:text-gray-7 text-[#AEAEB5]"
+				icon={isCollapsed ? mdiUnfoldMoreHorizontal : mdiUnfoldLessHorizontal}
+				aria-hidden="true"
+				class="group-hover:text-gray-7 text-gray-6"
 			/>
 
 			<span

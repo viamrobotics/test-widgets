@@ -96,7 +96,9 @@ describe('PowerSensor GetCurrent widget', () => {
 		queryState.error = new Error('current unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetCurrent: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/current unavailable/iu)).toBeInTheDocument()
 	})

@@ -47,7 +47,7 @@ describe('DoCommand', () => {
 		await expect.poll(() => indicator().getAttribute('aria-label')).toMatch(/1 error/u)
 		await userEvent.click(screen.getByRole('button', { name: 'Execute' }))
 
-		await expect.poll(() => indicator().getAttribute('aria-label')).toBe('No errors')
+		await expect.poll(() => indicator().getAttribute('aria-label')).toBe('DoCommand: No errors')
 	})
 
 	it('keeps the last output when a later command fails', async () => {

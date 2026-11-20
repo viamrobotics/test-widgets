@@ -6,7 +6,7 @@
 	import type * as THREE from 'three'
 
 	import { T } from '@threlte/core'
-	import { theme } from '@viamrobotics/prime-core/theme'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import {
 		LngLat,
 		type MapLayerMouseEvent,
@@ -141,6 +141,6 @@
 				oncreate={handleGeometryCreate}
 			/>
 		{/if}
-		<T.MeshPhongMaterial color={theme.extend.colors.cyberpunk} />
+		<T.MeshPhongMaterial color={themeColor('--color-cyberpunk-bright')} />
 	</T.Mesh>
 </T.Group>

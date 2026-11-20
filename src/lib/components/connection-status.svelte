@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon } from '@viamrobotics/prime-core'
-	import { Progress } from '@viamrobotics/prime-ui'
+	import { mdiAlert } from '@mdi/js'
+	import { Icon, Progress } from '@viamrobotics/prime-ui'
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus } from '@viamrobotics/svelte-sdk'
 
@@ -62,8 +62,8 @@
 		class="bg-extralight text-subtle-2 flex h-full min-h-40 w-full flex-wrap items-center justify-center gap-2 px-4 text-center"
 	>
 		<Icon
-			name="alert"
-			cx="text-danger-dark"
+			icon={mdiAlert}
+			class="text-danger-dark"
 			aria-hidden="true"
 		/>
 

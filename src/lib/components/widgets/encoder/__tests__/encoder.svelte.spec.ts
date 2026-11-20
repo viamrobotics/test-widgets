@@ -122,7 +122,9 @@ describe('Encoder composite', () => {
 	it('shows a reset error in the section indicator', async () => {
 		state.resetError = new Error('reset failed')
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'ResetPosition: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/reset failed/iu)).toBeInTheDocument()
 	})

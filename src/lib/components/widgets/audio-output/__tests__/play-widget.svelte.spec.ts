@@ -146,8 +146,10 @@ describe('Audio output Play widget', () => {
 		await chooseFile(wavFile())
 		await userEvent.click(screen.getByRole('button', { name: 'Play' }))
 
-		const indicator = await screen.findByRole('button', { name: '1 error, copy to clipboard' })
-		await fireEvent.focus(indicator)
+		const indicator = await screen.findByRole('button', {
+			name: 'Play: 1 error, copy to clipboard',
+		})
+		await fireEvent.focusIn(indicator)
 		expect(screen.getByText(/speaker unavailable/iu)).toBeInTheDocument()
 		expect(screen.getAllByText(/speaker unavailable/iu)).toHaveLength(1)
 	})

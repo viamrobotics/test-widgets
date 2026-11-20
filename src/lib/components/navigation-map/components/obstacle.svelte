@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
-	import { theme } from '@viamrobotics/prime-core/theme'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import {
 		LngLat,
 		type MapLayerMouseEvent,
@@ -266,7 +266,9 @@
 				/>
 			{/if}
 
-			<T.MeshPhongMaterial color={active ? theme.extend.colors['solar-power'] : obstacle.color} />
+			<T.MeshPhongMaterial
+				color={active ? themeColor('--color-solar-power-bright') : obstacle.color}
+			/>
 		</T.Mesh>
 	{/each}
 {/if}

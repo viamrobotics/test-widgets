@@ -52,7 +52,9 @@ describe('Arm Stop widget', () => {
 		mutationState.error = new Error('arm refused to stop')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'Stop: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/arm refused to stop/iu)).toBeInTheDocument()
 	})

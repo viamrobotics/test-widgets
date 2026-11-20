@@ -1,4 +1,4 @@
-import { theme } from '@viamrobotics/prime-core/theme'
+import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 import { LngLat } from 'maplibre-gl'
 
 import type { Obstacle, Shapes } from '../types'
@@ -11,6 +11,6 @@ export const createObstacle = (name: string, lngLat: LngLat, type: Shapes = 'box
 		location: new LngLat(lngLat.lng, lngLat.lat),
 		geometries: [createGeometry(type)],
 		label: 'static',
-		color: theme.extend.colors.cyberpunk,
+		color: themeColor('--color-cyberpunk-bright') ?? '',
 	}
 }

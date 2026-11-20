@@ -6,7 +6,9 @@ import {
 	apiWidgetsForResource,
 	type ResourceAPIWidget,
 	type ResourceWidget,
+	type ResourceWidgetSize,
 	widgetForResource,
+	widgetSizeForResource,
 } from '$lib/registry'
 import { type ResourceTriplet, ResourceTriplets } from '$lib/resource-triplet'
 
@@ -16,7 +18,7 @@ import { type ResourceTriplet, ResourceTriplets } from '$lib/resource-triplet'
  * with the resource name alone.
  */
 export type ResourcePane =
-	| { kind: 'composite'; resource: ResourceName; widget: ResourceWidget }
+	| { kind: 'composite'; resource: ResourceName; widget: ResourceWidget; size: ResourceWidgetSize }
 	| { kind: 'api' | 'control'; resource: ResourceName; entry: ResourceAPIWidget }
 
 // design-decisions.md: "Motor quick move stays a control interface". The registry has no `kind`
@@ -37,8 +39,8 @@ const CONTROL_ENTRY_IDS: Readonly<Record<string, ReadonlySet<string>>> = {
 	[ResourceTriplets.AudioOutput]: new Set(['controls']),
 }
 
-/** The pane slot and minimum key for a resource's composite card, which has no registry id. */
-export const COMPOSITE_SLOT = 'composite'
+/** The pane slot for a resource's composite card, which has no registry id. */
+const COMPOSITE_SLOT = 'composite'
 
 /** One pane id per resource and slot, so a pick finds the pane it already added. */
 const resourcePaneId = (resource: ResourceName, slot: string) => `${resource.name}::${slot}`
@@ -46,11 +48,12 @@ const resourcePaneId = (resource: ResourceName, slot: string) => `${resource.nam
 /** The resource's composite card as a pane, or undefined when the registry has none. */
 export const compositePane = (resource: ResourceName): PaneNode<ResourcePane> | undefined => {
 	const widget = widgetForResource(resource)
-	if (!widget) return undefined
+	const size = widgetSizeForResource(resource)
+	if (!widget || !size) return undefined
 	return {
 		type: 'pane',
 		id: resourcePaneId(resource, COMPOSITE_SLOT),
-		data: { kind: 'composite', resource, widget },
+		data: { kind: 'composite', resource, widget, size },
 	}
 }
 
