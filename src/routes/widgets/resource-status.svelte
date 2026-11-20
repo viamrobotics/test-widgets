@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Badge } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
 
 	import type { NamedResourceStatus } from '$lib/resource'
@@ -12,27 +11,27 @@
 
 	const STATUS_MAP: Record<
 		number,
-		{ label: string; variant: 'danger' | 'warning' | 'inactive' | 'success' }
+		{ label: string; variant: 'badge-danger' | 'badge-warning' | 'badge-neutral' | 'badge-success' }
 	> = {
 		[robotApi.ResourceStatus_State.UNHEALTHY]: {
 			label: 'Failed',
-			variant: 'danger',
+			variant: 'badge-danger',
 		},
 		[robotApi.ResourceStatus_State.UNCONFIGURED]: {
 			label: 'Unconfigured',
-			variant: 'danger',
+			variant: 'badge-danger',
 		},
 		[robotApi.ResourceStatus_State.REMOVING]: {
 			label: 'Removing...',
-			variant: 'warning',
+			variant: 'badge-warning',
 		},
 		[robotApi.ResourceStatus_State.CONFIGURING]: {
 			label: 'Configuring...',
-			variant: 'inactive',
+			variant: 'badge-neutral',
 		},
 		[robotApi.ResourceStatus_State.READY]: {
 			label: 'Ready',
-			variant: 'success',
+			variant: 'badge-success',
 		},
 	}
 
@@ -40,8 +39,5 @@
 </script>
 
 {#if badgeProps}
-	<Badge
-		label={badgeProps.label}
-		variant={badgeProps.variant}
-	/>
+	<span class={['badge', badgeProps.variant]}>{badgeProps.label}</span>
 {/if}

@@ -218,7 +218,7 @@ describe('Board ReadWritePins widget', () => {
 
 		await user.click(setButton(STATE_SET))
 		const indicator = await screen.findByRole('button', { name: '1 error, copy to clipboard' })
-		await fireEvent.focus(indicator)
+		await fireEvent.focusIn(indicator)
 
 		expect(screen.getByText('Error: board unreachable')).toBeInTheDocument()
 	})

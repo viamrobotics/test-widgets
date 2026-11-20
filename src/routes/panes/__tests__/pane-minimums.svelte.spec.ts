@@ -19,6 +19,19 @@ import InPaneFrame from './__fixtures__/in-pane-frame.svelte'
 
 const state = vi.hoisted((): { data: Record<string, unknown> } => ({ data: {} }))
 
+const servedQuery = vi.hoisted(() => (method: string) => ({
+	get data() {
+		return state.data[method]
+	},
+	error: null,
+	isLoading: false,
+	isSuccess: true,
+	isError: false,
+	isFetching: false,
+	fetchStatus: 'idle',
+	refetch: () => Promise.resolve({ data: state.data[method], error: null }),
+}))
+
 vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => {
 	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')
 	return {
@@ -28,18 +41,8 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => {
 		useResourceStatuses: () => ({ current: [{ name: { name: 'camera-1' } }] }),
 		createResourceClient: () => ({ current: {} }),
 		createStreamClient: () => ({ mediaStream: undefined }),
-		createResourceQuery: (_client: unknown, method: string) => ({
-			get data() {
-				return state.data[method]
-			},
-			error: null,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			isFetching: false,
-			fetchStatus: 'idle',
-			refetch: () => Promise.resolve({ data: state.data[method], error: null }),
-		}),
+		createResourceQuery: (_client: unknown, method: string) => servedQuery(method),
+		createRobotQuery: (_client: unknown, method: string) => servedQuery(method),
 		createResourceMutation: () => ({
 			mutate: () => {},
 			mutateAsync: () => Promise.resolve(),
@@ -304,12 +307,60 @@ const ML_MODEL_DATA = {
 	},
 }
 
+const POSE = { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 0 }
+
+const ARM_DATA = {
+	getProperties: { supportManualMode: true, supportCartesianCommands: true },
+	getManualMode: false,
+	getJointPositions: { values: [0, 10, 20, 30, 40, 50] },
+	getEndPosition: POSE,
+	isMoving: true,
+	frameSystemConfig: [],
+	getPose: { pose: POSE, referenceFrame: 'world' },
+}
+
+const MOTOR_DATA = {
+	getProperties: { positionReporting: true },
+	getPosition: 12.3456,
+	isPowered: [true, 0.5],
+	isMoving: true,
+}
+
+const BASE_DATA = { isMoving: true }
+
+const GANTRY_DATA = {
+	getPosition: [123.456, 234.567, 345.678],
+	getLengths: [1000, 1000, 1000],
+	isMoving: true,
+}
+
+const SERVO_DATA = { getPosition: 90, isMoving: true }
+
+const MOTION_DATA = {
+	frameSystemConfig: [
+		{ frame: { referenceFrame: 'arm-1', poseInObserverFrame: { referenceFrame: 'world' } } },
+	],
+	getPose: { pose: POSE, referenceFrame: 'world' },
+}
+
 interface MinimumRow {
 	id: string
 	resource: ResourceName
 	data: () => Record<string, unknown>
 }
 
+const arm = resource('arm', 'arm-1')
+const motor = resource('motor', 'motor-1')
+const motion = resource('motion', 'motion-1', 'service')
+const base = resource('base', 'base-1')
+const gantry = resource('gantry', 'gantry-1')
+const servo = resource('servo', 'servo-1')
+const armData = () => ARM_DATA
+const motorData = () => MOTOR_DATA
+const motionData = () => MOTION_DATA
+const baseData = () => BASE_DATA
+const gantryData = () => GANTRY_DATA
+const servoData = () => SERVO_DATA
 const sensor = resource('sensor', 'sensor-1')
 const movementSensor = resource('movement_sensor', 'movement-sensor-1')
 const powerSensor = resource('power_sensor', 'power-sensor-1')
@@ -331,6 +382,41 @@ const mlModelData = () => ML_MODEL_DATA
 const navigationData = () => NAVIGATION_DATA
 
 const ROWS: MinimumRow[] = [
+	{ id: 'arm-1::composite', resource: arm, data: armData },
+	{ id: 'arm-1::move-to-joint-positions', resource: arm, data: armData },
+	{ id: 'arm-1::move-to-position', resource: arm, data: armData },
+	{ id: 'arm-1::get-joint-positions', resource: arm, data: armData },
+	{ id: 'arm-1::is-moving', resource: arm, data: armData },
+	{ id: 'arm-1::manual-mode', resource: arm, data: armData },
+	{ id: 'arm-1::stop', resource: arm, data: armData },
+	{ id: 'motor-1::composite', resource: motor, data: motorData },
+	{ id: 'motor-1::quick-move', resource: motor, data: motorData },
+	{ id: 'motor-1::set-power', resource: motor, data: motorData },
+	{ id: 'motor-1::set-rpm', resource: motor, data: motorData },
+	{ id: 'motor-1::go-for', resource: motor, data: motorData },
+	{ id: 'motor-1::go-to', resource: motor, data: motorData },
+	{ id: 'motor-1::is-moving', resource: motor, data: motorData },
+	{ id: 'motion-1::composite', resource: motion, data: motionData },
+	{ id: 'base-1::composite', resource: base, data: baseData },
+	{ id: 'base-1::quick-move', resource: base, data: baseData },
+	{ id: 'base-1::move-straight', resource: base, data: baseData },
+	{ id: 'base-1::spin', resource: base, data: baseData },
+	{ id: 'base-1::set-power', resource: base, data: baseData },
+	{ id: 'base-1::set-velocity', resource: base, data: baseData },
+	{ id: 'base-1::is-moving', resource: base, data: baseData },
+	{ id: 'base-1::stop', resource: base, data: baseData },
+	{ id: 'gantry-1::composite', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::home', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::move-to-position', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::quick-move', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::get-position', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::is-moving', resource: gantry, data: gantryData },
+	{ id: 'servo-1::composite', resource: servo, data: servoData },
+	{ id: 'servo-1::move', resource: servo, data: servoData },
+	{ id: 'servo-1::quick-move', resource: servo, data: servoData },
+	{ id: 'servo-1::is-moving', resource: servo, data: servoData },
+	{ id: 'servo-1::get-position', resource: servo, data: servoData },
+	{ id: 'servo-1::stop', resource: servo, data: servoData },
 	{ id: 'sensor-1::composite', resource: sensor, data: () => SENSOR_DATA },
 	{
 		id: 'movement-sensor-1::composite',
@@ -396,11 +482,9 @@ const ROWS: MinimumRow[] = [
 	{ id: 'slam-1::get-position', resource: slam, data: slamData },
 	{ id: 'slam-1::get-point-cloud-map', resource: slam, data: slamIdleData },
 	{ id: 'slam-1::get-properties', resource: slam, data: slamData },
-	{ id: 'audio-input-1::composite', resource: audioInput, data: audioInputData },
 	{ id: 'audio-input-1::controls', resource: audioInput, data: audioInputData },
 	{ id: 'audio-input-1::get-audio', resource: audioInput, data: audioInputData },
 	{ id: 'audio-input-1::get-properties', resource: audioInput, data: audioInputData },
-	{ id: 'audio-output-1::composite', resource: audioOutput, data: audioOutputData },
 	{ id: 'audio-output-1::controls', resource: audioOutput, data: audioOutputData },
 	{ id: 'audio-output-1::play', resource: audioOutput, data: audioOutputData },
 	{ id: 'audio-output-1::get-properties', resource: audioOutput, data: audioOutputData },
@@ -409,6 +493,12 @@ const ROWS: MinimumRow[] = [
 	{ id: 'discovery-1::discover-resources', resource: discovery, data: discoveryIdleData },
 	{ id: 'ml-model-1::composite', resource: mlModel, data: mlModelData },
 	{ id: 'ml-model-1::metadata', resource: mlModel, data: mlModelData },
+]
+
+// Their bodies have no min-content width, so the registry gives each its narrowest entry's width.
+const NO_MIN_CONTENT_ROWS: MinimumRow[] = [
+	{ id: 'audio-input-1::composite', resource: audioInput, data: audioInputData },
+	{ id: 'audio-output-1::composite', resource: audioOutput, data: audioOutputData },
 ]
 
 const paneFor = (row: MinimumRow): PaneNode<ResourcePane> => {
@@ -489,7 +579,7 @@ const measureRenderedMinimum = async (pane: PaneNode<ResourcePane>): Promise<Pan
 	return { width, height: height + PANE_BORDERS_PX }
 }
 
-describe('PANE_MINIMUMS', () => {
+describe('resourcePaneMinimum', () => {
 	beforeAll(async () => {
 		frames.jpeg = await encodeFrame('image/jpeg')
 		frames.png = await encodeFrame('image/png')
@@ -512,9 +602,30 @@ describe('PANE_MINIMUMS', () => {
 		)
 		expect(
 			drift,
-			`${row.id} renders at ${String(measured.width)} x ${String(measured.height)}, PANE_MINIMUMS lists ${String(listed.width)} x ${String(listed.height)}`
+			`${row.id} renders at ${String(measured.width)} x ${String(measured.height)}, resourcePaneMinimum lists ${String(listed.width)} x ${String(listed.height)}`
 		).toBeLessThanOrEqual(TOLERANCE_PX)
 	})
+})
+
+describe('resourcePaneMinimum, for a body with no min-content width', () => {
+	beforeEach(() => {
+		localStorage.clear()
+	})
+
+	it.each(NO_MIN_CONTENT_ROWS)(
+		'holds $id at its rendered height and no narrower than it renders',
+		async (row) => {
+			state.data = row.data()
+			const pane = paneFor(row)
+
+			const measured = await measureRenderedMinimum(pane)
+
+			const listed = resourcePaneMinimum(pane.data)
+			const drift = `${row.id} renders at ${String(measured.width)} x ${String(measured.height)}, resourcePaneMinimum lists ${String(listed.width)} x ${String(listed.height)}`
+			expect(Math.abs(measured.height - listed.height), drift).toBeLessThanOrEqual(TOLERANCE_PX)
+			expect(listed.width, drift).toBeGreaterThanOrEqual(measured.width)
+		}
+	)
 })
 
 describe('pane header at 320 px', () => {

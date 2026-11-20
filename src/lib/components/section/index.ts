@@ -5,13 +5,11 @@ import SectionErrors from './section-errors.svelte'
 import SectionHeading from './section-heading.svelte'
 import SectionLoading from './section-loading-bar.svelte'
 import SectionMethod from './section-method.svelte'
-import SectionPlaceholder from './section-placeholder.svelte'
 import SectionScope from './section-scope.svelte'
 import SectionText from './section-text.svelte'
 import SectionTooltip from './section-tooltip.svelte'
 import Root from './section.svelte'
 
-export { useSectionLoading } from './section-loading'
 export {
 	useSectionScope,
 	type SectionDescription,
@@ -34,7 +32,6 @@ export const Section: typeof Root & {
 	Heading: typeof SectionHeading
 	Loading: typeof SectionLoading
 	Method: typeof SectionMethod
-	Placeholder: typeof SectionPlaceholder
 	Scope: typeof SectionScope
 	Text: typeof SectionText
 	Tooltip: typeof SectionTooltip
@@ -46,7 +43,6 @@ export const Section: typeof Root & {
 	Heading: SectionHeading,
 	Loading: SectionLoading,
 	Method: SectionMethod,
-	Placeholder: SectionPlaceholder,
 	Scope: SectionScope,
 	Text: SectionText,
 	Tooltip: SectionTooltip,

@@ -81,7 +81,9 @@ describe('Gantry MoveToPosition widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'MoveToPosition: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 })
 

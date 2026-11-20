@@ -61,12 +61,12 @@ describe('<ApiSection> inside a host <Section.Scope>', () => {
 
 	it("raises its mutation error on the host's indicator", async () => {
 		const { rerender } = render(Hosted)
-		expect(header().getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		expect(header().getByRole('button', { name: 'SetPower: No errors' })).toBeInTheDocument()
 
 		await rerender({ mutationError: notPowered() })
 
-		const indicator = header().getByRole('button', { name: '1 error, copy to clipboard' })
-		await fireEvent.focus(indicator)
+		const indicator = header().getByRole('button', { name: 'SetPower: 1 error, copy to clipboard' })
+		await fireEvent.focusIn(indicator)
 		expect(screen.getByText('RpcError: motor is not powered')).toBeInTheDocument()
 	})
 
@@ -103,7 +103,9 @@ describe('<Section.Loading>', () => {
 		await rerender({ queries: [loadingQuery()] })
 
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-		expect(header().getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			header().getByRole('button', { name: 'SetPower: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 })
 
@@ -138,7 +140,7 @@ describe('<ApiSection> with no host scope', () => {
 			'href',
 			'https://docs.viam.com/reference/apis/components/servo/#getposition'
 		)
-		expect(screen.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'GetPosition: No errors' })).toBeInTheDocument()
 		expect(screen.queryByRole('link', { name: 'GetPosition docs' })).not.toBeInTheDocument()
 	})
 })
@@ -154,8 +156,8 @@ describe('<ApiSection> nested in another <ApiSection>', () => {
 		render(Nested)
 
 		expect(inner().getByRole('heading', { name: 'IsPowered' })).toBeInTheDocument()
-		expect(inner().getByRole('button', { name: 'No errors' })).toBeInTheDocument()
-		expect(indicatorNames()).toEqual(['No errors', 'No errors'])
+		expect(inner().getByRole('button', { name: 'IsPowered: No errors' })).toBeInTheDocument()
+		expect(indicatorNames()).toEqual(['IsMoving: No errors', 'IsPowered: No errors'])
 	})
 
 	it('raises its mutation error on its own indicator, not the outer one', async () => {
@@ -163,7 +165,12 @@ describe('<ApiSection> nested in another <ApiSection>', () => {
 
 		await rerender({ innerError: notPowered() })
 
-		expect(inner().getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
-		expect(indicatorNames()).toEqual(['No errors', '1 error, copy to clipboard'])
+		expect(
+			inner().getByRole('button', { name: 'IsPowered: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
+		expect(indicatorNames()).toEqual([
+			'IsMoving: No errors',
+			'IsPowered: 1 error, copy to clipboard',
+		])
 	})
 })

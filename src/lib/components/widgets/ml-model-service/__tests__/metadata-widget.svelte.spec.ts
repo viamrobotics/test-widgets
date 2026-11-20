@@ -187,7 +187,9 @@ describe('ML model Metadata widget', () => {
 		queryState.error = new Error('model metadata unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'Metadata: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/model metadata unavailable/iu)).toBeInTheDocument()
 	})

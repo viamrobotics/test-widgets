@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TooltipContainer, TooltipTarget, TooltipText } from '@viamrobotics/prime-core'
+	import { Tooltip } from '@viamrobotics/prime-ui'
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 	import { Section } from '$lib/components/section'
@@ -68,24 +68,19 @@
 						onclick={(event) => handleClick(event, resource)}
 					>
 						<ResourceIcon {type} />
-						<TooltipContainer hoverDelayMS={250}>
-							<TooltipTarget class="min-w-0">
+						<Tooltip openDelay={250}>
+							<Tooltip.Trigger class="min-w-0">
 								<div
 									use:observeTruncation={name}
 									class="w-full truncate text-sm"
 								>
 									{name}
 								</div>
-							</TooltipTarget>
+							</Tooltip.Trigger>
 							{#if truncatedStates[name]}
-								<TooltipText
-									location="top-start"
-									cx="!max-w-min"
-								>
-									{name}
-								</TooltipText>
+								<Tooltip.Content class="max-w-min">{name}</Tooltip.Content>
 							{/if}
-						</TooltipContainer>
+						</Tooltip>
 					</a>
 				</li>
 			{/each}

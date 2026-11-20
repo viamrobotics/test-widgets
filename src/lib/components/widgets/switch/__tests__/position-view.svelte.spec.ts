@@ -119,7 +119,9 @@ describe('Switch position widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'SetPosition: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 
 	it("shows the set position error in the section's error indicator", () => {
@@ -127,7 +129,9 @@ describe('Switch position widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'SetPosition: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 })
 

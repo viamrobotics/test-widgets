@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
 	import { ViamProvider } from '@viamrobotics/svelte-sdk'
 
 	import { page } from '$app/state'
@@ -55,7 +54,13 @@
 				class="border-medium text-default font-roboto-mono h-48 w-full rounded border bg-white p-2 text-xs"
 			></textarea>
 			<div>
-				<Button onclick={() => (applied = draft)}>Apply</Button>
+				<button
+					type="button"
+					class="button"
+					onclick={() => (applied = draft)}
+				>
+					Apply
+				</button>
 			</div>
 		</div>
 

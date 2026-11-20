@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon } from '@viamrobotics/prime-core'
+	import { mdiOpenInNew } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
+
 	interface Props {
 		children?: Snippet
 	}
@@ -62,7 +64,10 @@
 			class="text-link flex items-center gap-2"
 		>
 			<span>Build a simple smart machine</span>
-			<Icon name="open-in-new" />
+			<Icon
+				icon={mdiOpenInNew}
+				aria-hidden="true"
+			/>
 		</a>
 	</div>
 

@@ -2,7 +2,9 @@
 	import type { LngLat, Map } from 'maplibre-gl'
 	import type { Snippet } from 'svelte'
 
-	import { Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiHelpCircleOutline } from '@mdi/js'
+	import { ToggleButtons } from '@viamrobotics/prime-controls'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import type { Obstacle } from '../types'
 
@@ -53,13 +55,25 @@
 
 	const nav = useNavigationMap()
 
-	const handleViewSelect = ({ detail }: CustomEvent<string>) => {
-		nav.view = detail as '2D' | '3D'
+	const VIEW_ITEMS = [
+		{ value: '2D', label: '2D' },
+		{ value: '3D', label: '3D' },
+	]
+
+	const handleViewSelect = (value: string) => {
+		if (value === '2D' || value === '3D') {
+			nav.view = value
+		}
 	}
 
 	let didHoverTooltip = $state(
 		Boolean(localStorage.getItem('navigation-service-card-tooltip-hovered'))
 	)
+
+	const markTooltipSeen = () => {
+		didHoverTooltip = true
+		localStorage.setItem('navigation-service-card-tooltip-hovered', 'true')
+	}
 
 	const currentTab = $derived(tab)
 </script>
@@ -93,40 +107,40 @@
 		<div class="absolute top-2.5 right-12 z-10 flex items-center gap-2 lg:flex">
 			{#if nav.environment === 'configure'}
 				<Tooltip>
-					<div
-						class="relative"
-						role="tooltip"
-						onpointerenter={() => {
-							didHoverTooltip = true
-							localStorage.setItem('navigation-service-card-tooltip-hovered', 'true')
-						}}
-					>
-						{#if !didHoverTooltip}
-							<div class="bg-success-dark absolute -m-1 h-7 w-7 animate-ping rounded-full"></div>
-						{/if}
-						<div class="relative z-10 rounded-full bg-white">
-							<Icon
-								size="lg"
-								name="help-circle-outline"
-							/>
+					<Tooltip.Trigger>
+						<button
+							type="button"
+							class="relative"
+							aria-label="Obstacle legend"
+							onpointerenter={markTooltipSeen}
+							onfocus={markTooltipSeen}
+						>
+							{#if !didHoverTooltip}
+								<div class="bg-success-dark absolute -m-1 h-7 w-7 animate-ping rounded-full"></div>
+							{/if}
+							<div class="relative z-10 rounded-full bg-white">
+								<Icon
+									icon={mdiHelpCircleOutline}
+									size="lg"
+									aria-hidden="true"
+								/>
+							</div>
+						</button>
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<div class="flex flex-col p-2">
+							<ObstaclesLegend />
 						</div>
-					</div>
-
-					<div
-						class="flex flex-col p-2"
-						slot="description"
-					>
-						<ObstaclesLegend />
-					</div>
+					</Tooltip.Content>
 				</Tooltip>
 			{/if}
 
 			<SatelliteControls />
 
 			<ToggleButtons
-				options={['2D', '3D']}
-				selected={nav.view}
-				on:input={handleViewSelect}
+				aria-label="Map view"
+				items={VIEW_ITEMS}
+				bind:value={() => nav.view, handleViewSelect}
 			/>
 
 			<div class="flex w-60 flex-wrap items-end justify-between gap-y-2">

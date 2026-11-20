@@ -114,7 +114,9 @@ describe('Button Push widget', () => {
 		state.mutationError = new Error('button unreachable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'Push: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/button unreachable/iu)).toBeInTheDocument()
 	})

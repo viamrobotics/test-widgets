@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { ToggleButtons, VectorInput } from '@viamrobotics/prime-core'
+	import { NumberField, Point, type PointValue, ToggleButtons } from '@viamrobotics/prime-controls'
 
-	import type { Geometry, Shapes } from '../../types'
+	import type { BoxGeometry, CapsuleGeometry, Geometry, Shapes, SphereGeometry } from '../../types'
 
 	import { createGeometry } from '../../lib/create-geometry'
 
@@ -27,97 +27,78 @@
 		}
 	}
 
-	const handleShapeSelect = ({ detail }: CustomEvent<string>) => {
+	const DIMENSION_STEP_METERS = 0.1
+
+	const SHAPE_ITEMS = [
+		{ value: 'box', label: 'Box' },
+		{ value: 'sphere', label: 'Sphere' },
+		{ value: 'capsule', label: 'Capsule' },
+	]
+
+	const isShape = (value: string): value is Shapes =>
+		value === 'box' || value === 'sphere' || value === 'capsule'
+
+	const handleShapeSelect = (value: string) => {
+		if (!isShape(value) || value === geometry.type) {
+			return
+		}
 		const currentSize = getNormalizedSize()
 		const currentRotation = geometry.pose.orientationVector.th
-		const nextType = detail.toLowerCase() as Shapes
-		oninput(createGeometry(nextType, currentSize, currentRotation))
+		oninput(createGeometry(value, currentSize, currentRotation))
 	}
 
-	const handleDimensionsInput = (event: CustomEvent<Record<string, number>>) => {
-		const nextGeometry = { ...geometry }
+	const handleBoxInput = (box: BoxGeometry, size: PointValue) => {
+		oninput({ ...box, length: size.x, width: size.y, height: size.z ?? box.height })
+	}
 
-		switch (nextGeometry.type) {
-			case 'box': {
-				const length = event.detail['Length (m)']
-				const width = event.detail['Width (m)']
-				const height = event.detail['Height (m)']
+	const handleCapsuleInput = (capsule: CapsuleGeometry, size: PointValue) => {
+		oninput({ ...capsule, radius: size.x, length: size.y })
+	}
 
-				if (length !== undefined) {
-					nextGeometry.length = length
-				}
-				if (width !== undefined) {
-					nextGeometry.width = width
-				}
-				if (height !== undefined) {
-					nextGeometry.height = height
-				}
-				break
-			}
-			case 'sphere': {
-				const radius = event.detail['Radius (m)']
-
-				if (radius !== undefined) {
-					nextGeometry.radius = radius
-				}
-				break
-			}
-			case 'capsule': {
-				const radius = event.detail['Radius (m)']
-				const length = event.detail['Length (m)']
-
-				if (radius !== undefined) {
-					nextGeometry.radius = radius
-				}
-				if (length !== undefined) {
-					nextGeometry.length = length
-				}
-				break
-			}
+	const handleRadiusInput = (sphere: SphereGeometry, radius: number | undefined) => {
+		if (radius !== undefined) {
+			oninput({ ...sphere, radius })
 		}
-
-		oninput(nextGeometry)
-	}
-
-	const shapeMap = {
-		box: 'Box',
-		sphere: 'Sphere',
-		capsule: 'Capsule',
 	}
 </script>
 
 <div class="my-2 flex flex-col gap-2">
 	<ToggleButtons
-		options={['Box', 'Sphere', 'Capsule']}
-		selected={shapeMap[geometry.type]}
-		on:input={handleShapeSelect}
-	>
-		{#snippet legend()}
-			Shape
-		{/snippet}
-	</ToggleButtons>
+		label="Shape"
+		items={SHAPE_ITEMS}
+		bind:value={() => geometry.type, handleShapeSelect}
+	/>
 
 	{#if geometry.type === 'box'}
-		<VectorInput
-			labels={['Length (m)', 'Width (m)', 'Height (m)']}
-			values={{
-				'Length (m)': geometry.length,
-				'Width (m)': geometry.width,
-				'Height (m)': geometry.height,
-			}}
-			on:input={handleDimensionsInput}
+		{@const box = geometry}
+		<Point
+			label="Length, width, height (m)"
+			labels={{ x: 'L', y: 'W', z: 'H' }}
+			suffix="m"
+			step={DIMENSION_STEP_METERS}
+			bind:value={
+				() => ({ x: box.length, y: box.width, z: box.height }), (size) => handleBoxInput(box, size)
+			}
 		/>
 	{:else if geometry.type === 'capsule'}
-		<VectorInput
-			labels={['Radius (m)', 'Length (m)']}
-			values={{ 'Radius (m)': geometry.radius, 'Length (m)': geometry.length }}
-			on:input={handleDimensionsInput}
+		{@const capsule = geometry}
+		<Point
+			label="Radius, length (m)"
+			labels={{ x: 'R', y: 'L' }}
+			suffix="m"
+			step={DIMENSION_STEP_METERS}
+			bind:value={
+				() => ({ x: capsule.radius, y: capsule.length }),
+				(size) => handleCapsuleInput(capsule, size)
+			}
 		/>
 	{:else if geometry.type === 'sphere'}
-		<VectorInput
-			labels={['Radius (m)']}
-			values={{ 'Radius (m)': geometry.radius }}
-			on:input={handleDimensionsInput}
+		{@const sphere = geometry}
+		<NumberField
+			label="Radius (m)"
+			suffix="m"
+			step={DIMENSION_STEP_METERS}
+			bind:value={() => sphere.radius, (radius) => handleRadiusInput(sphere, radius)}
 		/>
 	{/if}
 </div>

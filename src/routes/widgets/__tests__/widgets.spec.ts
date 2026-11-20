@@ -42,16 +42,16 @@ vi.mock('../card-list-item.svelte', () => ({
 const children = createRawSnippet(() => ({ render: () => '<div></div>' }))
 
 describe('Widgets', () => {
-	it('names the single card switch after its label', () => {
+	it('names the single card checkbox after its label', () => {
 		render(Subject, { partID: 'part-a', urlHash: '', children })
 
-		expect(screen.getByRole('switch', { name: /single card mode/iu })).toBeInTheDocument()
+		expect(screen.getByRole('checkbox', { name: /single card mode/iu })).toBeInTheDocument()
 	})
 
 	it('shows the full resource list again after switching machines in single card mode', async () => {
 		const user = userEvent.setup()
 		const { rerender } = render(Subject, { partID: 'part-a', urlHash: '', children })
-		await user.click(screen.getByRole('switch', { name: /single card mode/iu }))
+		await user.click(screen.getByRole('checkbox', { name: /single card mode/iu }))
 		await user.click(screen.getByRole('link', { name: /cam-a1/iu }))
 
 		await rerender({ partID: 'part-b' })

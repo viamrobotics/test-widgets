@@ -100,7 +100,7 @@ describe('Arm composite', () => {
 		renderAtWidth(320)
 
 		const glanceRow = within(screen.getByRole('group', { name: 'At a glance' }))
-		expect(glanceRow.getAllByRole('button', { name: 'No errors' })).toHaveLength(2)
+		expect(glanceRow.getAllByRole('button', { name: /: No errors$/u })).toHaveLength(2)
 	})
 
 	it('puts the glance row first, then the mutators, then the queries', () => {

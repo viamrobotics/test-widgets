@@ -149,7 +149,9 @@ describe('GetClassifications widget', () => {
 		state.error = new Error('model failed to load')
 
 		render(Subject, { props: PROPS })
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetClassifications: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/model failed to load/iu)).toBeInTheDocument()
 	})

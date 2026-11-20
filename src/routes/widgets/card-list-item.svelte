@@ -31,7 +31,7 @@
 </script>
 
 <script lang="ts">
-	import { Breadcrumbs } from '@viamrobotics/prime-core'
+	import { Breadcrumbs } from '@viamrobotics/prime-ui'
 	import { robotApi } from '@viamrobotics/sdk'
 	import { PersistedState } from 'runed'
 	import { onDestroy } from 'svelte'
@@ -139,10 +139,13 @@
 			<ResourceIcon {type} />
 			<div class="flex min-w-0 grow flex-wrap items-center gap-x-3 gap-y-1.5">
 				<span class="min-w-0 text-sm font-semibold wrap-break-word">{resourceName}</span>
-				<Breadcrumbs
-					crumbs={[namespace, type, subtype]}
-					cx="max-w-full shrink-0"
-				/>
+				<Breadcrumbs class="max-w-full shrink-0">
+					<Breadcrumbs.Item class="text-subtle-1">{namespace}</Breadcrumbs.Item>
+					<Breadcrumbs.Separator />
+					<Breadcrumbs.Item class="text-subtle-1">{type}</Breadcrumbs.Item>
+					<Breadcrumbs.Separator />
+					<Breadcrumbs.Item><Breadcrumbs.Page>{subtype}</Breadcrumbs.Page></Breadcrumbs.Item>
+				</Breadcrumbs>
 			</div>
 			<div class="shrink-0">
 				<ResourceStatus {resource} />

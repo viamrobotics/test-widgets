@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import '@viamrobotics/tailwind-config';
-@source '../node_modules/@viamrobotics/prime-core/src/lib';
 @import '@viamrobotics/prime-ui/styles.css';
 @import '@viamrobotics/prime-controls/styles.css';
 @import '@viamrobotics/prime-panes/styles.css';

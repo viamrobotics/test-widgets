@@ -57,6 +57,8 @@ describe('Motor SetRPM widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'SetRPM: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 })

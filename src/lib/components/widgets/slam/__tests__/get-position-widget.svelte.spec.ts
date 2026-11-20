@@ -82,7 +82,9 @@ describe('SLAM GetPosition widget', () => {
 		queryState.error = new Error('slam position unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetPosition: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/slam position unavailable/iu)).toBeInTheDocument()
 	})

@@ -99,4 +99,21 @@ describe('SlamControls', () => {
 			'',
 		])
 	})
+
+	it('passes the typed base name to the move call', async () => {
+		state.cloudSlam = true
+		const user = userEvent.setup()
+		renderAtWidth(320)
+
+		await user.type(screen.getByRole('textbox', { name: 'Base name' }), 'my-base')
+		await user.type(screen.getByRole('spinbutton', { name: 'X' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'Y' }), '2')
+		await user.click(screen.getByRole('button', { name: 'Execute' }))
+
+		expect(state.moveOnMap).toHaveBeenCalledExactlyOnceWith([
+			expect.objectContaining({ x: 1000, y: 2000 }),
+			'my-base',
+			'',
+		])
+	})
 })
