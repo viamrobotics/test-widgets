@@ -11,7 +11,19 @@ interface QueryState {
 	error: Error | null
 }
 
-const { queryStates } = vi.hoisted(() => ({ queryStates: new Map<string, QueryState>() }))
+const { queryStates, refetches, queryOptions } = vi.hoisted(() => ({
+	queryStates: new Map<string, QueryState>(),
+	refetches: new Map<string, ReturnType<typeof vi.fn>>(),
+	queryOptions: new Map<string, unknown>(),
+}))
+
+const refetchFor = (method: string) => {
+	const existing = refetches.get(method)
+	if (existing !== undefined) return existing
+	const created = vi.fn()
+	refetches.set(method, created)
+	return created
+}
 
 vi.mock('../map.svelte', () => ({ default: () => {} }))
 
@@ -19,21 +31,24 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')
 	return {
 		createResourceClient: vi.fn(() => ({ current: {} })),
-		createResourceQuery: vi.fn((_client: unknown, method: string) => ({
-			get data() {
-				return queryStates.get(method)?.data
-			},
-			get error() {
-				return queryStates.get(method)?.error ?? null
-			},
-			get isLoading() {
-				const state = queryStates.get(method)
-				return state === undefined || (state.data === undefined && state.error === null)
-			},
-			isSuccess: false,
-			isError: false,
-			refetch: vi.fn(),
-		})),
+		createResourceQuery: vi.fn((_client: unknown, method: string, options: unknown) => {
+			queryOptions.set(method, options)
+			return {
+				get data() {
+					return queryStates.get(method)?.data
+				},
+				get error() {
+					return queryStates.get(method)?.error ?? null
+				},
+				get isLoading() {
+					const state = queryStates.get(method)
+					return state === undefined || (state.data === undefined && state.error === null)
+				},
+				isSuccess: false,
+				isError: false,
+				refetch: refetchFor(method),
+			}
+		}),
 		useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
 	}
 })
@@ -55,7 +70,15 @@ const renderSubject = () =>
 describe('MovementSensor widget', () => {
 	beforeEach(() => {
 		queryStates.clear()
+		refetches.clear()
+		queryOptions.clear()
 		localStorage.clear()
+	})
+
+	it('reads getProperties once', () => {
+		renderSubject()
+
+		expect(queryOptions.get('getProperties')).toEqual({ refetchInterval: false })
 	})
 
 	it('shows no sensor sections until properties arrive', () => {
@@ -171,12 +194,40 @@ describe('MovementSensor composite layout', () => {
 				'GetLinearAcceleration',
 				'GetAccuracy',
 				'GetReadings',
+				'GetProperties',
 			].map((name) => heading(name)),
 		]
 		for (const [index, element] of order.entries()) {
 			const next = order[index + 1]
 			if (next !== undefined) expect(isBefore(element, next)).toBe(true)
 		}
+	})
+
+	it('refetches every polled query from the manual refresh, and not the static properties', async () => {
+		renderAtWidth(672)
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Pause' }))
+		await fireEvent.click(screen.getByRole('button', { name: 'Refresh' }))
+
+		const refetched = [...refetches.entries()]
+			.filter(([, refetch]) => refetch.mock.calls.length > 0)
+			.map(([method]) => method)
+		expect(refetched.toSorted()).toEqual(
+			[
+				'getAccuracy',
+				'getAngularVelocity',
+				'getCompassHeading',
+				'getLinearAcceleration',
+				'getLinearVelocity',
+				'getOrientation',
+				'getPosition',
+			].toSorted()
+		)
+
+		await fireEvent.click(screen.getByRole('checkbox', { name: 'Show readings' }))
+		await fireEvent.click(screen.getByRole('button', { name: 'Refresh' }))
+
+		expect(refetchFor('getReadings')).toHaveBeenCalledTimes(1)
 	})
 
 	it('stacks the sections below 672 px', () => {
@@ -205,6 +256,58 @@ describe('MovementSensor composite layout', () => {
 
 		expect(screen.getByText('speed')).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Copy JSON' })).toBeInTheDocument()
+	})
+
+	it('hides Copy JSON when readings are hidden again, though the query keeps its data', async () => {
+		queryStates.set('getReadings', { data: { speed: 2 }, error: null })
+		renderAtWidth(672)
+		await fireEvent.click(screen.getByRole('checkbox', { name: 'Show readings' }))
+		expect(screen.getByRole('button', { name: 'Copy JSON' })).toBeInTheDocument()
+
+		await fireEvent.click(screen.getByRole('checkbox', { name: 'Show readings' }))
+
+		expect(screen.queryByRole('button', { name: 'Copy JSON' })).not.toBeInTheDocument()
+	})
+})
+
+describe('MovementSensor composite GetProperties section', () => {
+	beforeEach(() => {
+		queryStates.clear()
+		localStorage.clear()
+	})
+
+	it('draws the supported and unsupported methods from the properties', () => {
+		queryStates.set('getProperties', { data: POSITION_SUPPORTED, error: null })
+
+		renderSubject()
+
+		expect(screen.getByRole('heading', { name: 'GetProperties' })).toBeInTheDocument()
+		expect(screen.getByRole('img', { name: 'Position' })).toBeInTheDocument()
+		expect(screen.getByRole('img', { name: 'Orientation' })).toBeInTheDocument()
+	})
+
+	it('draws GetReadings while GetProperties has no data', () => {
+		renderSubject()
+
+		expect(screen.getByRole('heading', { name: 'GetReadings' })).toBeInTheDocument()
+	})
+
+	it('draws GetReadings while GetProperties errors', () => {
+		queryStates.set('getProperties', {
+			data: undefined,
+			error: new Error('properties unavailable'),
+		})
+
+		renderSubject()
+
+		expect(screen.getByRole('heading', { name: 'GetReadings' })).toBeInTheDocument()
+		expect(screen.queryByRole('heading', { name: 'GetProperties' })).not.toBeInTheDocument()
+	})
+
+	it('draws no GetProperties section until the properties arrive', () => {
+		renderSubject()
+
+		expect(screen.queryByRole('heading', { name: 'GetProperties' })).not.toBeInTheDocument()
 	})
 })
 

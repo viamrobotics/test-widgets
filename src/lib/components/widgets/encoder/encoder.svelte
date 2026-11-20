@@ -10,7 +10,8 @@
 
 	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'
-	import ResetPosition from './reset-position.svelte'
+	import PropertiesReadout from './properties-readout.svelte'
+	import ResetPositionWidget from './reset-position-widget.svelte'
 
 	interface Props {
 		partID: string
@@ -31,9 +32,9 @@
 		'encoder-view'
 	)
 
-	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
-		refetchInterval: refetchInterval.current,
-	}))
+	const propertiesQuery = createResourceQuery(client, 'getProperties', {
+		refetchInterval: false,
+	})
 
 	const positionQuery = createResourceQuery(
 		client,
@@ -50,23 +51,33 @@
 	{#snippet connected()}
 		<div class="@container">
 			<div class="flex flex-col divide-y">
-				<div class="p-2">
+				<div
+					role="group"
+					aria-label="Refresh"
+					class="p-2"
+				>
 					<RefetchController
 						{refetchInterval}
-						queries={[propertiesQuery, positionQuery]}
+						queries={[positionQuery]}
 					/>
 				</div>
 
 				<div
+					role="group"
+					aria-label="Mutators"
+					class="flex min-w-0 flex-col"
+				>
+					<ResetPositionWidget
+						{partID}
+						{resourceName}
+					/>
+				</div>
+
+				<div
+					role="group"
+					aria-label="Queries"
 					class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0"
 				>
-					<div class="flex min-w-0 flex-col">
-						<ResetPosition
-							{partID}
-							{resourceName}
-						/>
-					</div>
-
 					<div class="flex min-w-0 flex-col">
 						<ApiSection
 							method="GetPosition"
@@ -78,6 +89,21 @@
 								Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
 							{/snippet}
 							<Position data={positionQuery.data} />
+						</ApiSection>
+					</div>
+
+					<div class="flex min-w-0 flex-col">
+						<ApiSection
+							method="GetProperties"
+							api={ResourceTriplets.Encoder}
+							queries={[propertiesQuery]}
+							class="grow flex-col gap-1"
+						>
+							{#snippet tooltip()}
+								Returns which position types the encoder supports: ticks count, angle degrees, or
+								both.
+							{/snippet}
+							<PropertiesReadout properties={propertiesQuery.data} />
 						</ApiSection>
 					</div>
 				</div>

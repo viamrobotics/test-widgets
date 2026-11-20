@@ -46,14 +46,18 @@ const discovery = resource('discovery', 'discovery-1')
 const mlModel = resource('mlmodel', 'ml-model-1')
 
 describe('Resource panes', () => {
-	it("offers an arm's composite and its six entries", () => {
+	it("offers an arm's composite and its ten entries", () => {
 		expect(compositePane(arm)?.id).toBe('arm-1::composite')
 		expect(entryPanes(arm).map(({ id }) => id)).toEqual([
 			'arm-1::move-to-joint-positions',
 			'arm-1::move-to-position',
 			'arm-1::get-joint-positions',
+			'arm-1::get-end-position',
 			'arm-1::is-moving',
 			'arm-1::manual-mode',
+			'arm-1::set-manual-mode',
+			'arm-1::get-manual-mode',
+			'arm-1::get-properties',
 			'arm-1::stop',
 		])
 	})
@@ -101,24 +105,33 @@ describe('Resource panes', () => {
 	})
 
 	it.each([
-		['board-1', board],
-		['switch-1', switchResource],
 		['button-1', button],
 		['sensor-1', sensor],
-		['input-controller-1', inputController],
 	])('offers %s a composite and no entries', (name, target) => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		expect(entryPanes(target)).toEqual([])
 	})
 
 	it.each([
+		['input-controller-1', inputController, ['get-events', 'trigger-event']],
 		[
 			'movement-sensor-1',
 			movementSensor,
-			['get-position', 'get-orientation', 'get-compass-heading', 'get-accuracy'],
+			[
+				'get-position',
+				'get-orientation',
+				'get-compass-heading',
+				'get-accuracy',
+				'get-linear-velocity',
+				'get-angular-velocity',
+				'get-linear-acceleration',
+				'get-properties',
+				'get-readings',
+			],
 		],
-		['power-sensor-1', powerSensor, ['get-voltage', 'get-current', 'get-power']],
-		['encoder-1', encoder, ['get-position']],
+		['power-sensor-1', powerSensor, ['get-voltage', 'get-current', 'get-power', 'get-readings']],
+		['encoder-1', encoder, ['get-position', 'reset-position', 'get-properties']],
+		['switch-1', switchResource, ['set-position', 'get-position', 'get-number-of-positions']],
 	])('offers %s a composite and its api entries, with no control', (name, target, ids) => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
@@ -133,15 +146,16 @@ describe('Resource panes', () => {
 		expect(moveToPosition && resourcePaneMethod(moveToPosition.data)).toBe('MoveToPosition')
 	})
 
-	it('makes metadata an api pane and no pane of ml-model-1 a control', () => {
-		expect(entryPanes(mlModel).map(({ data }) => data.kind)).toEqual(['api'])
+	it('makes metadata and infer api panes and no pane of ml-model-1 a control', () => {
+		expect(entryPanes(mlModel).map(({ data }) => data.kind)).toEqual(['api', 'api'])
 	})
 
-	it('makes play and get-properties api panes of audio-output-1', () => {
+	it('makes play, play-stream, and get-properties api panes of audio-output-1', () => {
 		const kinds = Object.fromEntries(
 			entryPanes(audioOutput).map((pane) => [pane.id, pane.data.kind])
 		)
 		expect(kinds['audio-output-1::play']).toBe('api')
+		expect(kinds['audio-output-1::play-stream']).toBe('api')
 		expect(kinds['audio-output-1::get-properties']).toBe('api')
 	})
 
@@ -174,16 +188,40 @@ describe('Resource panes', () => {
 				'add-waypoint',
 				'remove-waypoint',
 				'get-obstacles',
+				'get-paths',
+				'get-properties',
 			],
 		],
-		['slam-1', slam, ['controls', 'get-position', 'get-point-cloud-map', 'get-properties']],
+		[
+			'slam-1',
+			slam,
+			['controls', 'get-position', 'get-point-cloud-map', 'get-properties', 'get-internal-state'],
+		],
+		[
+			'board-1',
+			board,
+			[
+				'controls',
+				'set-gpio',
+				'get-gpio',
+				'pwm',
+				'set-pwm',
+				'pwm-frequency',
+				'set-pwm-frequency',
+				'read-analog-reader',
+				'write-analog',
+				'get-digital-interrupt-value',
+				'stream-ticks',
+				'set-power-mode',
+			],
+		],
 	])('offers %s a composite and its entries in registry order', (name, target, ids) => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
 	})
 
 	it.each([
-		['arm-1::composite', 223, 1782],
+		['arm-1::composite', 223, 2057],
 		['arm-1::move-to-joint-positions', 198, 582],
 		['arm-1::move-to-position', 215, 617],
 		['arm-1::get-joint-positions', 188, 311],
@@ -191,9 +229,10 @@ describe('Resource panes', () => {
 		['arm-1::manual-mode', 195, 233],
 		['arm-1::stop', 152, 101],
 		['motion-1::composite', 242, 703],
-		['motor-1::composite', 290, 1005],
+		['motor-1::composite', 290, 1090],
 		['motor-1::go-to', 270, 153],
-		['base-1::composite', 171, 1044],
+		['base-1::composite', 245, 1189],
+		['base-1::get-properties', 245, 153],
 		['base-1::quick-move', 291, 239],
 		['base-1::move-straight', 299, 153],
 		['base-1::spin', 288, 153],
@@ -201,11 +240,12 @@ describe('Resource panes', () => {
 		['base-1::set-velocity', 152, 217],
 		['base-1::is-moving', 152, 89],
 		['base-1::stop', 152, 101],
-		['gantry-1::composite', 171, 1383],
+		['gantry-1::composite', 171, 1527],
 		['gantry-1::get-position', 178, 297],
 		['gantry-1::move-to-position', 152, 553],
 		['gantry-1::home', 152, 183],
 		['gantry-1::is-moving', 152, 89],
+		['gantry-1::get-lengths', 185, 153],
 		['gantry-1::quick-move', 192, 241],
 		['servo-1::composite', 171, 546],
 		['servo-1::move', 278, 155],
@@ -213,30 +253,46 @@ describe('Resource panes', () => {
 		['servo-1::is-moving', 152, 89],
 		['servo-1::stop', 152, 101],
 		['servo-1::quick-move', 97, 243],
-		['gripper-1::composite', 240, 240],
+		['gripper-1::composite', 246, 660],
 		['gripper-1::open-grab', 190, 127],
 		['gripper-1::is-holding-something', 196, 132],
 		['gripper-1::is-moving', 152, 132],
 		['gripper-1::open', 152, 129],
 		['gripper-1::grab', 152, 175],
 		['gripper-1::stop', 152, 137],
-		['board-1::composite', 210, 266],
-		['switch-1::composite', 147, 105],
+		['gripper-1::get-current-inputs', 152, 207],
+		['gripper-1::go-to-inputs', 221, 225],
+		['board-1::composite', 178, 1938],
+		['board-1::controls', 255, 264],
+		['switch-1::composite', 181, 443],
+		['switch-1::set-position', 152, 115],
+		['switch-1::get-position', 152, 133],
+		['switch-1::get-number-of-positions', 152, 183],
 		['button-1::composite', 162, 125],
 		['sensor-1::composite', 261, 399],
-		['movement-sensor-1::composite', 241, 1220],
+		['movement-sensor-1::composite', 241, 1460],
 		['movement-sensor-1::get-position', 208, 193],
 		['movement-sensor-1::get-orientation', 152, 161],
 		['movement-sensor-1::get-compass-heading', 211, 131],
 		['movement-sensor-1::get-accuracy', 185, 227],
+		['movement-sensor-1::get-linear-velocity', 152, 181],
+		['movement-sensor-1::get-angular-velocity', 152, 181],
+		['movement-sensor-1::get-linear-acceleration', 152, 181],
+		['movement-sensor-1::get-properties', 261, 243],
+		['movement-sensor-1::get-readings', 152, 395],
 		['power-sensor-1::composite', 213, 453],
 		['power-sensor-1::get-voltage', 197, 125],
 		['power-sensor-1::get-current', 189, 125],
 		['power-sensor-1::get-power', 178, 125],
-		['encoder-1::composite', 213, 319],
+		['power-sensor-1::get-readings', 152, 395],
+		['encoder-1::composite', 213, 434],
 		['encoder-1::get-position', 164, 125],
-		['input-controller-1::composite', 213, 387],
-		['navigation-1::composite', 118, 1225],
+		['encoder-1::reset-position', 152, 157],
+		['encoder-1::get-properties', 253, 123],
+		['input-controller-1::composite', 213, 585],
+		['input-controller-1::get-events', 242, 299],
+		['input-controller-1::trigger-event', 234, 239],
+		['navigation-1::composite', 118, 1443],
 		['navigation-1::controls', 250, 428],
 		['navigation-1::get-mode', 152, 111],
 		['navigation-1::set-mode', 250, 121],
@@ -245,11 +301,14 @@ describe('Resource panes', () => {
 		['navigation-1::add-waypoint', 259, 153],
 		['navigation-1::remove-waypoint', 182, 143],
 		['navigation-1::get-obstacles', 234, 325],
-		['slam-1::composite', 225, 751],
+		['navigation-1::get-paths', 179, 117],
+		['navigation-1::get-properties', 152, 93],
+		['slam-1::composite', 225, 874],
 		['slam-1::controls', 250, 583],
 		['slam-1::get-position', 225, 351],
 		['slam-1::get-point-cloud-map', 167, 145],
 		['slam-1::get-properties', 246, 241],
+		['slam-1::get-internal-state', 186, 127],
 		['audio-input-1::composite', 110, 404],
 		['audio-input-1::controls', 110, 267],
 		['audio-input-1::get-audio', 284, 183],
@@ -257,11 +316,13 @@ describe('Resource panes', () => {
 		['discovery-1::composite', 191, 123],
 		['discovery-1::controls', 219, 467],
 		['discovery-1::discover-resources', 172, 127],
-		['ml-model-1::composite', 288, 491],
+		['ml-model-1::composite', 288, 891],
 		['ml-model-1::metadata', 288, 461],
-		['audio-output-1::composite', 116, 450],
+		['ml-model-1::infer', 237, 405],
+		['audio-output-1::composite', 116, 811],
 		['audio-output-1::controls', 116, 200],
 		['audio-output-1::play', 254, 229],
+		['audio-output-1::play-stream', 254, 267],
 		['audio-output-1::get-properties', 239, 147],
 	])('snaps %s to its registry size plus the frame, at least its header', (id, width, height) => {
 		const pane = [
@@ -280,15 +341,18 @@ describe('Resource panes', () => {
 			compositePane(powerSensor),
 			compositePane(encoder),
 			compositePane(inputController),
+			...entryPanes(inputController),
 			...entryPanes(arm),
 			...entryPanes(motor),
 			...entryPanes(base),
 			...entryPanes(gantry),
 			...entryPanes(servo),
 			...entryPanes(gripper),
+			...entryPanes(board),
 			...entryPanes(movementSensor),
 			...entryPanes(powerSensor),
 			...entryPanes(encoder),
+			...entryPanes(switchResource),
 			compositePane(navigation),
 			...entryPanes(navigation),
 			compositePane(slam),

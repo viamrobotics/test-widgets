@@ -93,7 +93,7 @@ describe('MovementSensor GetPosition widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('group', { name: 'Latitude' })).toHaveTextContent('- °')
+		expect(screen.getByRole('group', { name: 'Latitude' }).textContent?.trim()).toBe('-')
 	})
 
 	it('polls getPosition every 500 ms', () => {

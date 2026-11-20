@@ -8,6 +8,7 @@
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
+	import GetPropertiesWidget from './get-properties-widget.svelte'
 	import MoveStraightWidget from './move-straight-widget.svelte'
 	import QuickMoveWidget from './quick-move-widget.svelte'
 	import SetPowerWidget from './set-power-widget.svelte'
@@ -36,7 +37,7 @@
 			<div class="flex flex-col divide-y">
 				<div
 					role="group"
-					aria-label="Status and stop"
+					aria-label="At a glance"
 					class="flex flex-wrap items-center gap-x-3 gap-y-2 p-2"
 				>
 					<!-- Under a host scope, IsMoving's section draws no heading row and its errors reach this indicator. -->
@@ -77,7 +78,13 @@
 				<div
 					role="group"
 					aria-label="Mutators"
-					class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-y-0 @4xl:grid-cols-3"
+					class={[
+						'grid grid-cols-1 @2xl:grid-cols-2 @4xl:grid-cols-3',
+						'[&>*]:border-light [&>*:not(:first-child)]:border-t',
+						'@2xl:[&>:nth-child(2)]:border-t-0 @2xl:[&>:nth-child(2n)]:border-l',
+						'@4xl:[&>:nth-child(3)]:border-t-0 @4xl:[&>:nth-child(3)]:border-l',
+						'@4xl:[&>:nth-child(4)]:border-l-0 @4xl:[&>:nth-child(5)]:border-l',
+					]}
 				>
 					<SpinWidget
 						{partID}
@@ -96,6 +103,17 @@
 						{resourceName}
 					/>
 					<SetVelocityWidget
+						{partID}
+						{resourceName}
+					/>
+				</div>
+
+				<div
+					role="group"
+					aria-label="Queries"
+					class="flex flex-col"
+				>
+					<GetPropertiesWidget
 						{partID}
 						{resourceName}
 					/>

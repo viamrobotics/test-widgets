@@ -8,6 +8,7 @@
 	import StopButton from '$lib/components/stop-button.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
+	import GetLengthsWidget from './get-lengths-widget.svelte'
 	import GetPositionWidget from './get-position-widget.svelte'
 	import Home from './home.svelte'
 	import MoveToPositionWidget from './move-to-position-widget.svelte'
@@ -73,7 +74,11 @@
 				</div>
 
 				<!-- From 672 px, Quick move sits over Home on the left, and MoveToPosition, the taller, takes the right. -->
-				<div class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0">
+				<div
+					role="group"
+					aria-label="Mutators"
+					class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0"
+				>
 					<div class="flex min-w-0 flex-col divide-y">
 						<QuickMoveWidget
 							{partID}
@@ -92,9 +97,19 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 @2xl:grid-cols-2">
+				<div
+					role="group"
+					aria-label="Queries"
+					class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-x @2xl:divide-y-0"
+				>
 					<div class="flex min-w-0 flex-col">
 						<GetPositionWidget
+							{partID}
+							{resourceName}
+						/>
+					</div>
+					<div class="flex min-w-0 flex-col">
+						<GetLengthsWidget
 							{partID}
 							{resourceName}
 						/>

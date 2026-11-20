@@ -1,6 +1,6 @@
 import '../../../../../app.css'
 
-import { fireEvent, render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import { EncoderPositionType } from '@viamrobotics/sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -15,11 +15,13 @@ const { state } = vi.hoisted(() => {
 	const ANGLE_DEGREES_POSITION_TYPE = 2
 	const hoisted: {
 		position: [number, number] | undefined
+		queries: { method: string; options: unknown }[]
 		isPending: boolean
 		resetError: Error | null
 		onSuccess: (() => void) | undefined
 	} = {
 		position: [128.4, ANGLE_DEGREES_POSITION_TYPE],
+		queries: [],
 		isPending: false,
 		resetError: null,
 		onSuccess: undefined,
@@ -32,17 +34,20 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	return {
 		useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
 		createResourceClient: vi.fn(() => ({ current: {} })),
-		createResourceQuery: vi.fn((_client: unknown, method: string) => ({
-			data:
-				method === 'getProperties'
-					? { ticksCountSupported: true, angleDegreesSupported: true }
-					: state.position,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-			refetch: vi.fn(),
-		})),
+		createResourceQuery: vi.fn((_client: unknown, method: string, options: unknown) => {
+			state.queries.push({ method, options })
+			return {
+				data:
+					method === 'getProperties'
+						? { ticksCountSupported: true, angleDegreesSupported: true }
+						: state.position,
+				isLoading: false,
+				isSuccess: true,
+				isError: false,
+				error: null,
+				refetch: vi.fn(),
+			}
+		}),
 		createResourceMutation: vi.fn(() => ({
 			get isPending() {
 				return state.isPending
@@ -65,6 +70,7 @@ describe('Encoder composite', () => {
 		state.isPending = false
 		state.resetError = null
 		state.onSuccess = undefined
+		state.queries = []
 		vi.useRealTimers()
 	})
 
@@ -76,6 +82,40 @@ describe('Encoder composite', () => {
 		const position = screen.getByRole('heading', { name: 'GetPosition' })
 		expect(refresh.compareDocumentPosition(reset) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
 		expect(reset.compareDocumentPosition(position) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+	})
+
+	it('draws GetProperties after GetPosition, among the queries', () => {
+		renderSubject()
+
+		const position = screen.getByRole('heading', { name: 'GetPosition' })
+		const properties = screen.getByRole('heading', { name: 'GetProperties' })
+		expect(
+			position.compareDocumentPosition(properties) & Node.DOCUMENT_POSITION_FOLLOWING
+		).toBeTruthy()
+		expect(screen.getByText('Ticks count')).toBeInTheDocument()
+		expect(screen.getByText('Angle degrees')).toBeInTheDocument()
+		expect(screen.getAllByText('Supported')).toHaveLength(2)
+	})
+
+	it('reads the properties once, and polls only the position', () => {
+		renderSubject()
+
+		const properties = state.queries.find(({ method }) => String(method) === 'getProperties')
+		expect(properties?.options).toEqual({ refetchInterval: false })
+		expect(typeof state.queries.find(({ method }) => String(method) === 'getPosition')).toBe(
+			'object'
+		)
+	})
+
+	it('groups ResetPosition under Mutators and the two reads under Queries, with no glance row', () => {
+		renderSubject()
+
+		const mutators = within(screen.getByRole('group', { name: 'Mutators' }))
+		const queries = within(screen.getByRole('group', { name: 'Queries' }))
+		expect(mutators.getByRole('heading', { name: 'ResetPosition' })).toBeInTheDocument()
+		expect(queries.getByRole('heading', { name: 'GetPosition' })).toBeInTheDocument()
+		expect(queries.getByRole('heading', { name: 'GetProperties' })).toBeInTheDocument()
+		expect(screen.queryByRole('group', { name: 'At a glance' })).not.toBeInTheDocument()
 	})
 
 	it('reads the position with a degrees suffix', () => {

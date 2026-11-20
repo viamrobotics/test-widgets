@@ -3,6 +3,8 @@
 	import GetLocationWidget from './get-location-widget.svelte'
 	import GetModeWidget from './get-mode-widget.svelte'
 	import GetObstaclesWidget from './get-obstacles-widget.svelte'
+	import GetPathsWidget from './get-paths-widget.svelte'
+	import GetPropertiesWidget from './get-properties-widget.svelte'
 	import GetWaypointsWidget from './get-waypoints-widget.svelte'
 	import RemoveWaypointWidget from './remove-waypoint-widget.svelte'
 	import SetModeWidget from './set-mode-widget.svelte'
@@ -53,6 +55,14 @@
 				{resourceName}
 			/>
 			<GetObstaclesWidget
+				{partID}
+				{resourceName}
+			/>
+			<GetPathsWidget
+				{partID}
+				{resourceName}
+			/>
+			<GetPropertiesWidget
 				{partID}
 				{resourceName}
 			/>

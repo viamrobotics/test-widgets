@@ -210,7 +210,7 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<!-- 224 steps of 4 px is the board's 896 px maximum. -->
-		<div class="mx-auto flex w-full max-w-224 min-w-0 flex-col">
+		<div class="mx-auto flex w-full max-w-4xl min-w-0 flex-col">
 			<Section
 				errorReporter={sectionErrors}
 				class="min-w-0 flex-col gap-2 px-0 py-2"

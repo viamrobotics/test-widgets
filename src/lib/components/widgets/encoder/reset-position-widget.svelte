@@ -65,6 +65,7 @@
 			type="button"
 			class="button button-compact"
 			aria-busy={resetMutation.isPending}
+			disabled={resetMutation.isPending}
 			onclick={reset}
 		>
 			{#if resetMutation.isPending}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 
+	import InferWidget from './infer-widget.svelte'
 	import MetadataWidget from './metadata-widget.svelte'
 
 	interface Props {
@@ -14,6 +15,10 @@
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<MetadataWidget
+			{partID}
+			{resourceName}
+		/>
+		<InferWidget
 			{partID}
 			{resourceName}
 		/>

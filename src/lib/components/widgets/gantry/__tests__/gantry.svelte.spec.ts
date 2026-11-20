@@ -34,7 +34,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 })
 
 const MUTATOR_HEADINGS = ['Quick move', 'MoveToPosition', 'Home']
-const SECTION_HEADINGS = ['IsMoving', 'Stop', ...MUTATOR_HEADINGS, 'GetPosition']
+const SECTION_HEADINGS = ['IsMoving', 'Stop', ...MUTATOR_HEADINGS, 'GetPosition', 'GetLengths']
 
 const isBefore = (first: Element, second: Element) =>
 	(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
@@ -67,6 +67,7 @@ describe('Gantry composite', () => {
 			MoveToPosition: 1,
 			Home: 1,
 			GetPosition: 1,
+			GetLengths: 1,
 		})
 	})
 
@@ -87,6 +88,7 @@ describe('Gantry composite', () => {
 			['glance row', screen.getByRole('group', { name: 'At a glance' })],
 			...MUTATOR_HEADINGS.map((name): [string, Element] => [name, heading(name)]),
 			['GetPosition', heading('GetPosition')],
+			['GetLengths', heading('GetLengths')],
 		]
 		const inDocumentOrder = layers.toSorted(([, first], [, second]) =>
 			isBefore(first, second) ? -1 : 1
@@ -97,6 +99,7 @@ describe('Gantry composite', () => {
 			'Home',
 			'MoveToPosition',
 			'GetPosition',
+			'GetLengths',
 		])
 	})
 
@@ -110,11 +113,43 @@ describe('Gantry composite', () => {
 		expect(badge.top, 'the badge starts above the Stop bottom').toBeLessThan(stop.bottom)
 	})
 
-	it('draws no sidebar and no Stop or GetLengths section', () => {
+	it('draws no sidebar and no Stop section', () => {
 		renderAtWidth(320)
 
 		expect(screen.queryByRole('heading', { name: 'Stop' })).not.toBeInTheDocument()
-		expect(screen.queryByRole('heading', { name: 'GetLengths' })).not.toBeInTheDocument()
+	})
+
+	it('puts GetLengths beside GetPosition from 672 px', () => {
+		renderAtWidth(672)
+
+		const position = heading('GetPosition').getBoundingClientRect()
+		const lengths = heading('GetLengths').getBoundingClientRect()
+		expect(lengths.top).toBe(position.top)
+		expect(lengths.left).toBeGreaterThan(position.right)
+	})
+
+	it('names the mutator and query layers as groups', () => {
+		renderAtWidth(320)
+
+		const mutators = within(screen.getByRole('group', { name: 'Mutators' }))
+		const queries = within(screen.getByRole('group', { name: 'Queries' }))
+		expect(mutators.getByRole('heading', { name: 'MoveToPosition' })).toBeVisible()
+		expect(queries.getByRole('heading', { name: 'GetPosition' })).toBeVisible()
+		expect(queries.getByRole('heading', { name: 'GetLengths' })).toBeVisible()
+	})
+
+	it('draws a divider between GetPosition and GetLengths, right edge of GetPosition at 700 px', () => {
+		renderAtWidth(700)
+		const [position, lengths] = [...screen.getByRole('group', { name: 'Queries' }).children]
+		expect(getComputedStyle(position).borderRightWidth).toBe('1px')
+		expect(getComputedStyle(lengths).borderRightWidth).toBe('0px')
+	})
+
+	it('draws a divider under GetPosition, above GetLengths, when stacked', () => {
+		renderAtWidth(320)
+		const [position, lengths] = [...screen.getByRole('group', { name: 'Queries' }).children]
+		expect(getComputedStyle(position).borderBottomWidth).toBe('1px')
+		expect(getComputedStyle(lengths).borderBottomWidth).toBe('0px')
 	})
 
 	it('stacks the mutators below 672 px', () => {

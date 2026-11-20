@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -71,16 +71,25 @@ describe('SLAM composite', () => {
 		resetPointCloudMapQueryState()
 	})
 
-	it('stacks GetPosition, GetPointCloudMap, then GetProperties', () => {
+	it('stacks GetPosition and GetPointCloudMap, then GetInternalState and GetProperties', () => {
 		renderSubject()
 
-		const names = headingNames()
-		const position = names.indexOf('GetPosition')
-		const map = names.indexOf('GetPointCloudMap')
-		const properties = names.indexOf('GetProperties')
-		expect(position).toBeGreaterThanOrEqual(0)
-		expect(map).toBeGreaterThan(position)
-		expect(properties).toBeGreaterThan(map)
+		expect(headingNames()).toEqual([
+			'GetPosition',
+			'GetPointCloudMap',
+			'GetInternalState',
+			'GetProperties',
+		])
+	})
+
+	it('holds GetInternalState and GetProperties in the Queries group', () => {
+		renderSubject()
+
+		const group = screen.getByRole('group', { name: 'Queries' })
+		const names = within(group)
+			.getAllByRole('heading')
+			.map((heading) => heading.textContent?.trim())
+		expect(names).toEqual(['GetInternalState', 'GetProperties'])
 	})
 
 	it('shows the Cloud SLAM notice when cloudSlam is true', () => {

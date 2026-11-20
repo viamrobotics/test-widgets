@@ -29,6 +29,8 @@ const METHODS_IN_ORDER = [
 	'GetLocation',
 	'GetWaypoints',
 	'GetObstacles',
+	'GetPaths',
+	'GetProperties',
 ]
 
 const renderSubject = () =>
@@ -38,12 +40,12 @@ const headingNames = () =>
 	screen.getAllByRole('heading').map((heading) => heading.textContent?.trim())
 
 describe('Navigation composite', () => {
-	it('renders the seven method sections in layer order', () => {
+	it('renders the nine method sections in layer order', () => {
 		renderSubject()
 
 		const names = headingNames()
 		const positions = METHODS_IN_ORDER.map((method) => names.indexOf(method))
-		expect(positions).toEqual([0, 1, 2, 3, 4, 5, 6])
+		expect(positions).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8])
 	})
 
 	it('holds SetMode, AddWaypoint and RemoveWaypoint in the Mutators group', () => {
@@ -56,14 +58,20 @@ describe('Navigation composite', () => {
 		expect(names).toEqual(['SetMode', 'AddWaypoint', 'RemoveWaypoint'])
 	})
 
-	it('holds GetLocation, GetWaypoints and GetObstacles in the Queries group', () => {
+	it('holds the five query sections in the Queries group', () => {
 		renderSubject()
 
 		const group = screen.getByRole('group', { name: 'Queries' })
 		const names = within(group)
 			.getAllByRole('heading')
 			.map((heading) => heading.textContent?.trim())
-		expect(names).toEqual(['GetLocation', 'GetWaypoints', 'GetObstacles'])
+		expect(names).toEqual([
+			'GetLocation',
+			'GetWaypoints',
+			'GetObstacles',
+			'GetPaths',
+			'GetProperties',
+		])
 	})
 
 	it('leaves the map and its tabs to the control', () => {

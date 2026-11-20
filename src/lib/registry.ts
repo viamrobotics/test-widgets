@@ -8,11 +8,15 @@ import type {
 } from './resource-widget-types.ts'
 
 import {
+	ArmGetEndPositionWidget,
 	ArmGetJointPositionsWidget,
+	ArmGetManualModeWidget,
+	ArmGetPropertiesWidget,
 	ArmIsMovingWidget,
-	ArmManualModeWidget,
+	ArmManualModeControl,
 	ArmMoveToJointPositionsWidget,
 	ArmMoveToPositionWidget,
+	ArmSetManualModeWidget,
 	ArmStopWidget,
 	ArmWidget,
 	AudioInputControls,
@@ -21,17 +25,31 @@ import {
 	AudioInputWidget,
 	AudioOutputControls,
 	AudioOutputGetPropertiesWidget,
+	AudioOutputPlayStreamWidget,
 	AudioOutputPlayWidget,
 	AudioOutputWidget,
+	BaseGetPropertiesWidget,
 	BaseIsMovingWidget,
 	BaseMoveStraightWidget,
-	BaseQuickMoveWidget,
+	BaseQuickMoveControl,
 	BaseSetPowerWidget,
 	BaseSetVelocityWidget,
 	BaseSpinWidget,
 	BaseStopWidget,
 	BaseWidget,
+	BoardControls,
+	BoardGetDigitalInterruptValueWidget,
+	BoardGetGPIOWidget,
+	BoardPWMFrequencyWidget,
+	BoardPWMWidget,
+	BoardReadAnalogReaderWidget,
+	BoardSetGPIOWidget,
+	BoardSetPowerModeWidget,
+	BoardSetPWMFrequencyWidget,
+	BoardSetPWMWidget,
+	BoardStreamTicksWidget,
 	BoardWidget,
+	BoardWriteAnalogWidget,
 	ButtonWidget,
 	CameraControls,
 	CameraGetImagesWidget,
@@ -42,40 +60,61 @@ import {
 	DiscoveryDiscoverResourcesWidget,
 	DiscoveryWidget,
 	EncoderGetPositionWidget,
+	EncoderGetPropertiesWidget,
+	EncoderResetPositionWidget,
 	EncoderWidget,
+	GantryGetLengthsWidget,
 	GantryGetPositionWidget,
 	GantryHomeWidget,
 	GantryIsMovingWidget,
 	GantryMoveToPositionWidget,
-	GantryQuickMoveWidget,
+	GantryQuickMoveControl,
+	GantryStopWidget,
 	GantryWidget,
+	GripperGetCurrentInputsWidget,
+	GripperGoToInputsWidget,
 	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
-	GripperOpenGrabWidget,
+	GripperOpenGrabControl,
 	GripperOpenWidget,
 	GripperStopWidget,
 	GripperWidget,
+	InputControllerGetEventsWidget,
+	InputControllerTriggerEventWidget,
 	InputControllerWidget,
+	MLModelServiceInferWidget,
 	MLModelServiceMetadataWidget,
 	MLModelServiceWidget,
 	MotionServiceWidget,
+	MotorGetPositionWidget,
+	MotorGetPropertiesWidget,
 	MotorGoForWidget,
 	MotorGoToWidget,
 	MotorIsMovingWidget,
-	MotorQuickMoveWidget,
+	MotorIsPoweredWidget,
+	MotorQuickMoveControl,
+	MotorResetZeroPositionWidget,
 	MotorSetPowerWidget,
 	MotorSetRPMWidget,
+	MotorStopWidget,
 	MotorWidget,
 	MovementSensorGetAccuracyWidget,
+	MovementSensorGetAngularVelocityWidget,
 	MovementSensorGetCompassHeadingWidget,
+	MovementSensorGetLinearAccelerationWidget,
+	MovementSensorGetLinearVelocityWidget,
 	MovementSensorGetOrientationWidget,
 	MovementSensorGetPositionWidget,
+	MovementSensorGetPropertiesWidget,
+	MovementSensorGetReadingsWidget,
 	MovementSensorWidget,
 	NavigationAddWaypointWidget,
 	NavigationGetLocationWidget,
 	NavigationGetModeWidget,
 	NavigationGetObstaclesWidget,
+	NavigationGetPathsWidget,
+	NavigationGetPropertiesWidget,
 	NavigationGetWaypointsWidget,
 	NavigationRemoveWaypointWidget,
 	NavigationServiceControls,
@@ -83,20 +122,25 @@ import {
 	NavigationSetModeWidget,
 	PowerSensorGetCurrentWidget,
 	PowerSensorGetPowerWidget,
+	PowerSensorGetReadingsWidget,
 	PowerSensorGetVoltageWidget,
 	PowerSensorWidget,
 	SensorWidget,
 	ServoGetPositionWidget,
 	ServoIsMovingWidget,
 	ServoMoveWidget,
-	ServoQuickMoveWidget,
+	ServoQuickMoveControl,
 	ServoStopWidget,
 	ServoWidget,
 	SlamControls,
+	SlamGetInternalStateWidget,
 	SlamGetPointCloudMapWidget,
 	SlamGetPositionWidget,
 	SlamGetPropertiesWidget,
 	SlamWidget,
+	SwitchGetNumberOfPositionsWidget,
+	SwitchGetPositionWidget,
+	SwitchPositionWidget,
 	SwitchWidget,
 	VisionServiceCaptureAllFromCameraWidget,
 	VisionServiceControls,
@@ -128,6 +172,8 @@ const CAPPED_COMPOSITE_MAX_WIDTH = 688
 const THREE_FIELD_COLUMNS_MAX_WIDTH = 1024
 /** Two 640 px columns, a 16 px gap, and 16 px padding each side, from the Arm-Frames board. */
 const ARM_TWO_COLUMNS_MAX_WIDTH = 1328
+/** The readings list's two columns, from the PowerSensor-Frames and MovementSensor-Frames boards. */
+const READINGS_TWO_COLUMNS_WIDTH = 530
 
 /**
  * Maps a resource's API triplet to its composite test card and individual API widgets.
@@ -145,7 +191,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: ArmWidget,
 		size: {
 			minWidth: 221,
-			minHeight: 1747,
+			minHeight: 2022,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, ARM_TWO_COLUMNS_MAX_WIDTH],
 			maxWidth: ARM_TWO_COLUMNS_MAX_WIDTH,
 		},
@@ -153,6 +199,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'move-to-joint-positions',
 				label: 'MoveToJointPositions',
+				kind: 'api',
 				widgets: [ArmMoveToJointPositionsWidget],
 				size: {
 					minWidth: 196,
@@ -164,6 +211,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'move-to-position',
 				label: 'MoveToPosition',
+				kind: 'api',
 				widgets: [ArmMoveToPositionWidget],
 				size: {
 					minWidth: 213,
@@ -175,6 +223,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-joint-positions',
 				label: 'GetJointPositions',
+				kind: 'api',
 				widgets: [ArmGetJointPositionsWidget],
 				size: {
 					minWidth: 186,
@@ -184,15 +233,29 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				},
 			},
 			{
+				id: 'get-end-position',
+				label: 'GetEndPosition',
+				kind: 'api',
+				widgets: [ArmGetEndPositionWidget],
+				size: {
+					minWidth: 162,
+					minHeight: 306,
+					recommendedWidths: [180, 283],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [ArmIsMovingWidget],
 				size: { minWidth: 96, minHeight: 54, recommendedWidths: [240], maxWidth: 240 },
 			},
 			{
 				id: 'manual-mode',
 				label: 'Manual mode',
-				widgets: [ArmManualModeWidget],
+				kind: 'control',
+				widgets: [ArmManualModeControl],
 				size: {
 					minWidth: 193,
 					minHeight: 198,
@@ -201,8 +264,45 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				},
 			},
 			{
+				id: 'set-manual-mode',
+				label: 'SetManualMode',
+				kind: 'api',
+				widgets: [ArmSetManualModeWidget],
+				size: {
+					minWidth: 246,
+					minHeight: 136,
+					recommendedWidths: [246, 287],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-manual-mode',
+				label: 'GetManualMode',
+				kind: 'api',
+				widgets: [ArmGetManualModeWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 58,
+					recommendedWidths: [274],
+					maxWidth: 274,
+				},
+			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [ArmGetPropertiesWidget],
+				size: {
+					minWidth: 224,
+					minHeight: 88,
+					recommendedWidths: [274],
+					maxWidth: 274,
+				},
+			},
+			{
 				id: 'stop',
 				label: 'Stop',
+				kind: 'api',
 				widgets: [ArmStopWidget],
 				size: { minWidth: 92, minHeight: 66, recommendedWidths: [214], maxWidth: 214 },
 			},
@@ -218,12 +318,14 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [AudioInputControls],
 				size: { minWidth: 108, minHeight: 232, recommendedWidths: [108], maxWidth: CONTAINER_2XL },
 			},
 			{
 				id: 'get-audio',
 				label: 'GetAudio',
+				kind: 'api',
 				widgets: [AudioInputGetAudioWidget],
 				size: {
 					minWidth: 282,
@@ -235,6 +337,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
+				kind: 'api',
 				widgets: [AudioInputGetPropertiesWidget],
 				size: {
 					minWidth: 237,
@@ -252,7 +355,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: AudioOutputWidget,
 		size: {
 			minWidth: 114,
-			minHeight: 415,
+			minHeight: 776,
 			recommendedWidths: [114],
 			maxWidth: FIELD_COLUMN_MAX_WIDTH,
 		},
@@ -260,12 +363,14 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [AudioOutputControls],
 				size: { minWidth: 114, minHeight: 165, recommendedWidths: [114], maxWidth: CONTAINER_2XL },
 			},
 			{
 				id: 'play',
 				label: 'Play',
+				kind: 'api',
 				widgets: [AudioOutputPlayWidget],
 				size: {
 					minWidth: 252,
@@ -275,8 +380,21 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				},
 			},
 			{
+				id: 'play-stream',
+				label: 'PlayStream',
+				kind: 'api',
+				widgets: [AudioOutputPlayStreamWidget],
+				size: {
+					minWidth: 252,
+					minHeight: 232,
+					recommendedWidths: [252],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
 				id: 'get-properties',
 				label: 'GetProperties',
+				kind: 'api',
 				widgets: [AudioOutputGetPropertiesWidget],
 				size: {
 					minWidth: 237,
@@ -292,8 +410,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Base]: {
 		widget: BaseWidget,
 		size: {
-			minWidth: 169,
-			minHeight: 1009,
+			minWidth: 243,
+			minHeight: 1154,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: THREE_FIELD_COLUMNS_MAX_WIDTH,
 		},
@@ -301,7 +419,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'quick-move',
 				label: 'Quick move',
-				widgets: [BaseQuickMoveWidget],
+				kind: 'control',
+				widgets: [BaseQuickMoveControl],
 				size: {
 					minWidth: 289,
 					minHeight: 204,
@@ -312,6 +431,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'move-straight',
 				label: 'MoveStraight',
+				kind: 'api',
 				widgets: [BaseMoveStraightWidget],
 				size: {
 					minWidth: 297,
@@ -323,6 +443,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'spin',
 				label: 'Spin',
+				kind: 'api',
 				widgets: [BaseSpinWidget],
 				size: {
 					minWidth: 286,
@@ -334,6 +455,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'set-power',
 				label: 'SetPower',
+				kind: 'api',
 				widgets: [BaseSetPowerWidget],
 				size: {
 					minWidth: 115,
@@ -345,6 +467,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'set-velocity',
 				label: 'SetVelocity',
+				kind: 'api',
 				widgets: [BaseSetVelocityWidget],
 				// The api header's floor less its borders. Narrower, its rows wrap 16 px taller.
 				size: {
@@ -357,22 +480,183 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [BaseIsMovingWidget],
 				size: { minWidth: 96, minHeight: 54, recommendedWidths: [235], maxWidth: 235 },
 			},
 			{
 				id: 'stop',
 				label: 'Stop',
+				kind: 'api',
 				widgets: [BaseStopWidget],
 				size: { minWidth: 92, minHeight: 66, recommendedWidths: [210], maxWidth: 210 },
 			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [BaseGetPropertiesWidget],
+				size: { minWidth: 243, minHeight: 118, recommendedWidths: [269], maxWidth: 269 },
+			},
 		],
 	},
-	// "Batch 4.3 measured sizes", the pins surface row. Its height is the rendered body.
+	// The composite is "Batch 4.3 measured sizes", the pins surface row. The API entries are measured in
+	// the playground, with the Board-Frames board for the widths. Recommended widths under a measured
+	// minimum are raised to it.
 	[ResourceTriplets.Board]: {
 		widget: BoardWidget,
-		size: { minWidth: 208, minHeight: 231, recommendedWidths: [208, 528], maxWidth: 528 },
-		apis: [],
+		size: {
+			minWidth: 176,
+			minHeight: 1903,
+			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
+			maxWidth: CONTAINER_4XL,
+		},
+		apis: [
+			{
+				id: 'controls',
+				label: 'Controls',
+				kind: 'control',
+				widgets: [BoardControls],
+				size: {
+					minWidth: 253,
+					minHeight: 229,
+					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
+					maxWidth: CONTAINER_2XL,
+				},
+			},
+			{
+				id: 'set-gpio',
+				label: 'SetGPIO',
+				kind: 'api',
+				widgets: [BoardSetGPIOWidget],
+				size: {
+					minWidth: 192,
+					minHeight: 124,
+					recommendedWidths: [192],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-gpio',
+				label: 'GetGPIO',
+				kind: 'api',
+				widgets: [BoardGetGPIOWidget],
+				size: {
+					minWidth: 214,
+					minHeight: 126,
+					recommendedWidths: [214, 224],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'pwm',
+				label: 'PWM',
+				kind: 'api',
+				widgets: [BoardPWMWidget],
+				size: {
+					minWidth: 214,
+					minHeight: 146,
+					recommendedWidths: [214, 224],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'set-pwm',
+				label: 'SetPWM',
+				kind: 'api',
+				widgets: [BoardSetPWMWidget],
+				size: {
+					minWidth: 214,
+					minHeight: 126,
+					recommendedWidths: [214],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'pwm-frequency',
+				label: 'PWMFrequency',
+				kind: 'api',
+				widgets: [BoardPWMFrequencyWidget],
+				size: {
+					minWidth: 214,
+					minHeight: 146,
+					recommendedWidths: [214, 224],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'set-pwm-frequency',
+				label: 'SetPWMFrequency',
+				kind: 'api',
+				widgets: [BoardSetPWMFrequencyWidget],
+				size: {
+					minWidth: 269,
+					minHeight: 126,
+					recommendedWidths: [269],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'read-analog-reader',
+				label: 'ReadAnalogReader',
+				kind: 'api',
+				widgets: [BoardReadAnalogReaderWidget],
+				size: {
+					minWidth: 230,
+					minHeight: 160,
+					recommendedWidths: [230],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'write-analog',
+				label: 'WriteAnalog',
+				kind: 'api',
+				widgets: [BoardWriteAnalogWidget],
+				size: {
+					minWidth: 222,
+					minHeight: 126,
+					recommendedWidths: [222],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-digital-interrupt-value',
+				label: 'GetDigitalInterruptValue',
+				kind: 'api',
+				widgets: [BoardGetDigitalInterruptValueWidget],
+				size: {
+					minWidth: 240,
+					minHeight: 92,
+					recommendedWidths: [240],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'stream-ticks',
+				label: 'StreamTicks',
+				kind: 'api',
+				widgets: [BoardStreamTicksWidget],
+				size: {
+					minWidth: 278,
+					minHeight: 92,
+					recommendedWidths: [278],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'set-power-mode',
+				label: 'SetPowerMode',
+				kind: 'api',
+				widgets: [BoardSetPowerModeWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 112,
+					recommendedWidths: [210],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+		],
 	},
 	// "Batch 4.3 measured sizes", the Push row. Its height is the rendered body.
 	[ResourceTriplets.Button]: {
@@ -393,6 +677,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [CameraControls],
 				size: {
 					minWidth: 227,
@@ -404,6 +689,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-images',
 				label: 'GetImages',
+				kind: 'api',
 				widgets: [CameraGetImagesWidget],
 				size: {
 					minWidth: 182,
@@ -415,6 +701,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-point-cloud',
 				label: 'GetPointCloud',
+				kind: 'api',
 				widgets: [CameraGetPointCloudWidget],
 				size: {
 					minWidth: 137,
@@ -426,6 +713,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
+				kind: 'api',
 				widgets: [CameraGetPropertiesWidget],
 				size: {
 					minWidth: 276,
@@ -441,7 +729,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: EncoderWidget,
 		size: {
 			minWidth: 211,
-			minHeight: 284,
+			minHeight: 399,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: CONTAINER_4XL,
 		},
@@ -449,8 +737,28 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-position',
 				label: 'GetPosition',
+				kind: 'api',
 				widgets: [EncoderGetPositionWidget],
 				size: { minWidth: 162, minHeight: 90, recommendedWidths: [272], maxWidth: 272 },
+			},
+			{
+				id: 'reset-position',
+				label: 'ResetPosition',
+				kind: 'api',
+				widgets: [EncoderResetPositionWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 122,
+					recommendedWidths: [287],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [EncoderGetPropertiesWidget],
+				size: { minWidth: 251, minHeight: 88, recommendedWidths: [287], maxWidth: 287 },
 			},
 		],
 	},
@@ -460,7 +768,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: GantryWidget,
 		size: {
 			minWidth: 169,
-			minHeight: 1348,
+			minHeight: 1492,
 			recommendedWidths: [198, CONTAINER_2XL],
 			maxWidth: CONTAINER_2XL,
 		},
@@ -468,6 +776,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'home',
 				label: 'Home',
+				kind: 'api',
 				widgets: [GantryHomeWidget],
 				// The api header's floor less its borders. Narrower, its rows wrap 16 px taller.
 				size: { minWidth: 150, minHeight: 148, recommendedWidths: [234], maxWidth: 234 },
@@ -475,6 +784,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'move-to-position',
 				label: 'MoveToPosition',
+				kind: 'api',
 				widgets: [GantryMoveToPositionWidget],
 				// 317 is the widget's `@[317px]` container query, where each axis takes two cells.
 				size: {
@@ -487,7 +797,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'quick-move',
 				label: 'Quick move',
-				widgets: [GantryQuickMoveWidget],
+				kind: 'control',
+				widgets: [GantryQuickMoveControl],
 				size: {
 					minWidth: 190,
 					minHeight: 206,
@@ -498,6 +809,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-position',
 				label: 'GetPosition',
+				kind: 'api',
 				widgets: [GantryGetPositionWidget],
 				size: {
 					minWidth: 176,
@@ -509,8 +821,28 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [GantryIsMovingWidget],
 				size: { minWidth: 96, minHeight: 54, recommendedWidths: [260], maxWidth: 260 },
+			},
+			{
+				id: 'get-lengths',
+				label: 'GetLengths',
+				kind: 'api',
+				widgets: [GantryGetLengthsWidget],
+				size: {
+					minWidth: 183,
+					minHeight: 118,
+					recommendedWidths: [275],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'stop',
+				label: 'Stop',
+				kind: 'api',
+				widgets: [GantryStopWidget],
+				size: { minWidth: 92, minHeight: 66, recommendedWidths: [236], maxWidth: 236 },
 			},
 		],
 	},
@@ -518,8 +850,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Gripper]: {
 		widget: GripperWidget,
 		size: {
-			minWidth: 238,
-			minHeight: 205,
+			minWidth: 244,
+			minHeight: 625,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 			maxWidth: CAPPED_COMPOSITE_MAX_WIDTH,
 		},
@@ -527,12 +859,14 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'open-grab',
 				label: 'Open / Grab',
-				widgets: [GripperOpenGrabWidget],
+				kind: 'control',
+				widgets: [GripperOpenGrabControl],
 				size: { minWidth: 188, minHeight: 92, recommendedWidths: [203], maxWidth: 203 },
 			},
 			{
 				id: 'is-holding-something',
 				label: 'IsHoldingSomething',
+				kind: 'api',
 				widgets: [GripperIsHoldingSomethingWidget],
 				size: {
 					minWidth: 194,
@@ -544,26 +878,49 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [GripperIsMovingWidget],
 				size: { minWidth: 96, minHeight: 97, recommendedWidths: [253], maxWidth: 253 },
 			},
 			{
 				id: 'open',
 				label: 'Open',
+				kind: 'api',
 				widgets: [GripperOpenWidget],
 				size: { minWidth: 81, minHeight: 94, recommendedWidths: [227], maxWidth: 227 },
 			},
 			{
 				id: 'grab',
 				label: 'Grab',
+				kind: 'api',
 				widgets: [GripperGrabWidget],
 				size: { minWidth: 115, minHeight: 140, recommendedWidths: [227], maxWidth: 227 },
 			},
 			{
 				id: 'stop',
 				label: 'Stop',
+				kind: 'api',
 				widgets: [GripperStopWidget],
 				size: { minWidth: 92, minHeight: 102, recommendedWidths: [227], maxWidth: 227 },
+			},
+			{
+				id: 'get-current-inputs',
+				label: 'GetCurrentInputs',
+				kind: 'api',
+				widgets: [GripperGetCurrentInputsWidget],
+				size: { minWidth: 150, minHeight: 172, recommendedWidths: [306], maxWidth: 306 },
+			},
+			{
+				id: 'go-to-inputs',
+				label: 'GoToInputs',
+				kind: 'api',
+				widgets: [GripperGoToInputsWidget],
+				size: {
+					minWidth: 219,
+					minHeight: 190,
+					recommendedWidths: [219],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
 			},
 		],
 	},
@@ -572,11 +929,36 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: InputControllerWidget,
 		size: {
 			minWidth: 211,
-			minHeight: 352,
+			minHeight: 550,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: CONTAINER_4XL,
 		},
-		apis: [],
+		apis: [
+			{
+				id: 'get-events',
+				label: 'GetEvents',
+				kind: 'api',
+				widgets: [InputControllerGetEventsWidget],
+				size: {
+					minWidth: 240,
+					minHeight: 264,
+					recommendedWidths: [268],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'trigger-event',
+				label: 'TriggerEvent',
+				kind: 'api',
+				widgets: [InputControllerTriggerEventWidget],
+				size: {
+					minWidth: 232,
+					minHeight: 204,
+					recommendedWidths: [287],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+		],
 	},
 	// Measured in the playground, with the Motor-Frames board for the widths above. Recommended widths
 	// under a measured minimum are raised to it.
@@ -584,7 +966,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: MotorWidget,
 		size: {
 			minWidth: 288,
-			minHeight: 970,
+			minHeight: 1055,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: THREE_FIELD_COLUMNS_MAX_WIDTH,
 		},
@@ -592,7 +974,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'quick-move',
 				label: 'Quick move',
-				widgets: [MotorQuickMoveWidget],
+				kind: 'control',
+				widgets: [MotorQuickMoveControl],
 				size: {
 					minWidth: 276,
 					minHeight: 152,
@@ -603,6 +986,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'set-power',
 				label: 'SetPower',
+				kind: 'api',
 				widgets: [MotorSetPowerWidget],
 				size: {
 					minWidth: 192,
@@ -614,6 +998,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'set-rpm',
 				label: 'SetRPM',
+				kind: 'api',
 				widgets: [MotorSetRPMWidget],
 				size: {
 					minWidth: 248,
@@ -625,6 +1010,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'go-for',
 				label: 'GoFor',
+				kind: 'api',
 				widgets: [MotorGoForWidget],
 				size: {
 					minWidth: 288,
@@ -636,6 +1022,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'go-to',
 				label: 'GoTo',
+				kind: 'api',
 				widgets: [MotorGoToWidget],
 				size: {
 					minWidth: 268,
@@ -647,8 +1034,69 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [MotorIsMovingWidget],
 				size: { minWidth: 96, minHeight: 54, recommendedWidths: [240], maxWidth: 240 },
+			},
+			{
+				id: 'reset-zero-position',
+				label: 'ResetZeroPosition',
+				kind: 'api',
+				widgets: [MotorResetZeroPositionWidget],
+				size: {
+					minWidth: 279,
+					minHeight: 92,
+					recommendedWidths: [279],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-position',
+				label: 'GetPosition',
+				kind: 'api',
+				widgets: [MotorGetPositionWidget],
+				size: {
+					minWidth: 180,
+					minHeight: 58,
+					recommendedWidths: [261],
+					maxWidth: 261,
+				},
+			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [MotorGetPropertiesWidget],
+				size: {
+					minWidth: 224,
+					minHeight: 58,
+					recommendedWidths: [274],
+					maxWidth: 274,
+				},
+			},
+			{
+				id: 'stop',
+				label: 'Stop',
+				kind: 'api',
+				widgets: [MotorStopWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 66,
+					recommendedWidths: [216],
+					maxWidth: 216,
+				},
+			},
+			{
+				id: 'is-powered',
+				label: 'IsPowered',
+				kind: 'api',
+				widgets: [MotorIsPoweredWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 59,
+					recommendedWidths: [248],
+					maxWidth: 248,
+				},
 			},
 		],
 	},
@@ -658,7 +1106,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: MovementSensorWidget,
 		size: {
 			minWidth: 239,
-			minHeight: 1185,
+			minHeight: 1425,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 			maxWidth: CONTAINER_4XL,
 		},
@@ -666,6 +1114,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-position',
 				label: 'GetPosition',
+				kind: 'api',
 				widgets: [MovementSensorGetPositionWidget],
 				size: {
 					minWidth: 206,
@@ -677,6 +1126,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-orientation',
 				label: 'GetOrientation',
+				kind: 'api',
 				widgets: [MovementSensorGetOrientationWidget],
 				size: {
 					minWidth: 108,
@@ -688,6 +1138,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-compass-heading',
 				label: 'GetCompassHeading',
+				kind: 'api',
 				widgets: [MovementSensorGetCompassHeadingWidget],
 				size: {
 					minWidth: 209,
@@ -699,12 +1150,73 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-accuracy',
 				label: 'GetAccuracy',
+				kind: 'api',
 				widgets: [MovementSensorGetAccuracyWidget],
 				size: {
 					minWidth: 183,
 					minHeight: 192,
 					recommendedWidths: [216],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-linear-velocity',
+				label: 'GetLinearVelocity',
+				kind: 'api',
+				widgets: [MovementSensorGetLinearVelocityWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 146,
+					recommendedWidths: [288],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-angular-velocity',
+				label: 'GetAngularVelocity',
+				kind: 'api',
+				widgets: [MovementSensorGetAngularVelocityWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 146,
+					recommendedWidths: [288],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-linear-acceleration',
+				label: 'GetLinearAcceleration',
+				kind: 'api',
+				widgets: [MovementSensorGetLinearAccelerationWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 146,
+					recommendedWidths: [308],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [MovementSensorGetPropertiesWidget],
+				size: {
+					minWidth: 259,
+					minHeight: 208,
+					recommendedWidths: [266],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-readings',
+				label: 'GetReadings',
+				kind: 'api',
+				widgets: [MovementSensorGetReadingsWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 360,
+					recommendedWidths: [246, READINGS_TWO_COLUMNS_WIDTH],
+					maxWidth: READINGS_TWO_COLUMNS_WIDTH,
 				},
 			},
 		],
@@ -722,20 +1234,35 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-voltage',
 				label: 'GetVoltage',
+				kind: 'api',
 				widgets: [PowerSensorGetVoltageWidget],
 				size: { minWidth: 195, minHeight: 90, recommendedWidths: [298], maxWidth: 298 },
 			},
 			{
 				id: 'get-current',
 				label: 'GetCurrent',
+				kind: 'api',
 				widgets: [PowerSensorGetCurrentWidget],
 				size: { minWidth: 187, minHeight: 90, recommendedWidths: [298], maxWidth: 298 },
 			},
 			{
 				id: 'get-power',
 				label: 'GetPower',
+				kind: 'api',
 				widgets: [PowerSensorGetPowerWidget],
 				size: { minWidth: 176, minHeight: 90, recommendedWidths: [285], maxWidth: 285 },
+			},
+			{
+				id: 'get-readings',
+				label: 'GetReadings',
+				kind: 'api',
+				widgets: [PowerSensorGetReadingsWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 360,
+					recommendedWidths: [246, READINGS_TWO_COLUMNS_WIDTH],
+					maxWidth: READINGS_TWO_COLUMNS_WIDTH,
+				},
 			},
 		],
 	},
@@ -760,6 +1287,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'move',
 				label: 'Move',
+				kind: 'api',
 				widgets: [ServoMoveWidget],
 				size: {
 					minWidth: 276,
@@ -771,39 +1299,81 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'quick-move',
 				label: 'Quick move',
-				widgets: [ServoQuickMoveWidget],
+				kind: 'control',
+				widgets: [ServoQuickMoveControl],
 				size: { minWidth: 95, minHeight: 208, recommendedWidths: [168], maxWidth: 168 },
 			},
 			{
 				id: 'is-moving',
 				label: 'IsMoving',
+				kind: 'api',
 				widgets: [ServoIsMovingWidget],
 				size: { minWidth: 96, minHeight: 54, recommendedWidths: [240], maxWidth: 240 },
 			},
 			{
 				id: 'get-position',
 				label: 'GetPosition',
+				kind: 'api',
 				widgets: [ServoGetPositionWidget],
 				size: { minWidth: 140, minHeight: 106, recommendedWidths: [259], maxWidth: 259 },
 			},
 			{
 				id: 'stop',
 				label: 'Stop',
+				kind: 'api',
 				widgets: [ServoStopWidget],
 				size: { minWidth: 92, minHeight: 66, recommendedWidths: [214], maxWidth: 214 },
 			},
 		],
 	},
-	// "Batch 4.3 measured sizes", the SetPosition row, because the card is SetPosition only.
+	// Measured in the playground with three position labels, with the Switch-Frames board for the widths
+	// above.
 	[ResourceTriplets.Switch]: {
 		widget: SwitchWidget,
 		size: {
-			minWidth: 145,
-			minHeight: 70,
-			recommendedWidths: [205, CONTAINER_XS],
-			maxWidth: FIELD_COLUMN_MAX_WIDTH,
+			minWidth: 179,
+			minHeight: 408,
+			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
+			maxWidth: CONTAINER_2XL,
 		},
-		apis: [],
+		apis: [
+			{
+				id: 'set-position',
+				label: 'SetPosition',
+				kind: 'api',
+				widgets: [SwitchPositionWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 80,
+					recommendedWidths: [207, CONTAINER_XS],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-position',
+				label: 'GetPosition',
+				kind: 'api',
+				widgets: [SwitchGetPositionWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 98,
+					recommendedWidths: [162],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'get-number-of-positions',
+				label: 'GetNumberOfPositions',
+				kind: 'api',
+				widgets: [SwitchGetNumberOfPositionsWidget],
+				size: {
+					minWidth: 150,
+					minHeight: 148,
+					recommendedWidths: [162],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+		],
 	},
 
 	// services
@@ -821,12 +1391,14 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [DiscoveryControls],
 				size: { minWidth: 217, minHeight: 432, recommendedWidths: [217], maxWidth: CONTAINER_2XL },
 			},
 			{
 				id: 'discover-resources',
 				label: 'DiscoverResources',
+				kind: 'api',
 				widgets: [DiscoveryDiscoverResourcesWidget],
 				size: {
 					minWidth: 170,
@@ -843,7 +1415,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: MLModelServiceWidget,
 		size: {
 			minWidth: 286,
-			minHeight: 456,
+			minHeight: 856,
 			recommendedWidths: [286],
 			maxWidth: FIELD_COLUMN_MAX_WIDTH,
 		},
@@ -851,11 +1423,24 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'metadata',
 				label: 'Metadata',
+				kind: 'api',
 				widgets: [MLModelServiceMetadataWidget],
 				size: {
 					minWidth: 286,
 					minHeight: 426,
 					recommendedWidths: [286],
+					maxWidth: FIELD_COLUMN_MAX_WIDTH,
+				},
+			},
+			{
+				id: 'infer',
+				label: 'Infer',
+				kind: 'api',
+				widgets: [MLModelServiceInferWidget],
+				size: {
+					minWidth: 235,
+					minHeight: 370,
+					recommendedWidths: [235],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -877,17 +1462,19 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	// column, and the composite and control by the composite's `@4xl`.
 	[ResourceTriplets.Navigation]: {
 		widget: NavigationServiceWidget,
-		size: { minWidth: 116, minHeight: 1190, recommendedWidths: [116], maxWidth: CONTAINER_4XL },
+		size: { minWidth: 116, minHeight: 1408, recommendedWidths: [116], maxWidth: CONTAINER_4XL },
 		apis: [
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [NavigationServiceControls],
 				size: { minWidth: 248, minHeight: 393, recommendedWidths: [248], maxWidth: CONTAINER_4XL },
 			},
 			{
 				id: 'get-mode',
 				label: 'GetMode',
+				kind: 'api',
 				widgets: [NavigationGetModeWidget],
 				size: {
 					minWidth: 108,
@@ -899,6 +1486,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'set-mode',
 				label: 'SetMode',
+				kind: 'api',
 				widgets: [NavigationSetModeWidget],
 				size: {
 					minWidth: 248,
@@ -910,6 +1498,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-location',
 				label: 'GetLocation',
+				kind: 'api',
 				widgets: [NavigationGetLocationWidget],
 				size: {
 					minWidth: 141,
@@ -921,6 +1510,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-waypoints',
 				label: 'GetWaypoints',
+				kind: 'api',
 				widgets: [NavigationGetWaypointsWidget],
 				size: {
 					minWidth: 137,
@@ -932,6 +1522,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'add-waypoint',
 				label: 'AddWaypoint',
+				kind: 'api',
 				widgets: [NavigationAddWaypointWidget],
 				size: {
 					minWidth: 257,
@@ -943,6 +1534,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'remove-waypoint',
 				label: 'RemoveWaypoint',
+				kind: 'api',
 				widgets: [NavigationRemoveWaypointWidget],
 				size: {
 					minWidth: 180,
@@ -954,6 +1546,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-obstacles',
 				label: 'GetObstacles',
+				kind: 'api',
 				widgets: [NavigationGetObstaclesWidget],
 				size: {
 					minWidth: 232,
@@ -962,23 +1555,39 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
+			{
+				id: 'get-paths',
+				label: 'GetPaths',
+				kind: 'api',
+				widgets: [NavigationGetPathsWidget],
+				size: { minWidth: 177, minHeight: 82, recommendedWidths: [320], maxWidth: CONTAINER_2XL },
+			},
+			{
+				id: 'get-properties',
+				label: 'GetProperties',
+				kind: 'api',
+				widgets: [NavigationGetPropertiesWidget],
+				size: { minWidth: 150, minHeight: 58, recommendedWidths: [320], maxWidth: CONTAINER_2XL },
+			},
 		],
 	},
 	// Measured in the playground. No table covers SLAM: one width each, capped by the field column,
 	// and the composite and control by the composite's `@2xl`.
 	[ResourceTriplets.Slam]: {
 		widget: SlamWidget,
-		size: { minWidth: 223, minHeight: 716, recommendedWidths: [223], maxWidth: CONTAINER_2XL },
+		size: { minWidth: 223, minHeight: 839, recommendedWidths: [223], maxWidth: CONTAINER_2XL },
 		apis: [
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [SlamControls],
 				size: { minWidth: 248, minHeight: 548, recommendedWidths: [248], maxWidth: CONTAINER_2XL },
 			},
 			{
 				id: 'get-position',
 				label: 'GetPosition',
+				kind: 'api',
 				widgets: [SlamGetPositionWidget],
 				size: {
 					minWidth: 223,
@@ -990,6 +1599,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-point-cloud-map',
 				label: 'GetPointCloudMap',
+				kind: 'api',
 				widgets: [SlamGetPointCloudMapWidget],
 				size: {
 					minWidth: 165,
@@ -1001,6 +1611,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
+				kind: 'api',
 				widgets: [SlamGetPropertiesWidget],
 				size: {
 					minWidth: 244,
@@ -1008,6 +1619,13 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 					recommendedWidths: [244],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
+			},
+			{
+				id: 'get-internal-state',
+				label: 'GetInternalState',
+				kind: 'api',
+				widgets: [SlamGetInternalStateWidget],
+				size: { minWidth: 184, minHeight: 92, recommendedWidths: [320], maxWidth: CONTAINER_2XL },
 			},
 		],
 	},
@@ -1025,6 +1643,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'controls',
 				label: 'Controls',
+				kind: 'control',
 				widgets: [VisionServiceControls],
 				size: {
 					minWidth: 264,
@@ -1036,6 +1655,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'capture-all-from-camera',
 				label: 'CaptureAllFromCamera',
+				kind: 'api',
 				widgets: [VisionServiceCaptureAllFromCameraWidget],
 				size: {
 					minWidth: 272,
@@ -1047,6 +1667,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-properties',
 				label: 'GetProperties',
+				kind: 'api',
 				widgets: [VisionServiceGetPropertiesWidget],
 				size: {
 					minWidth: 263,
@@ -1058,6 +1679,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-object-point-clouds',
 				label: 'GetObjectPointClouds',
+				kind: 'api',
 				widgets: [VisionServiceGetObjectPointCloudsWidget],
 				size: {
 					minWidth: 200,
@@ -1069,18 +1691,21 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-detections-from-camera',
 				label: 'GetDetectionsFromCamera',
+				kind: 'api',
 				widgets: [VisionServiceGetDetectionsFromCameraWidget],
 				size: { minWidth: 230, minHeight: 142, recommendedWidths: [369], maxWidth: 369 },
 			},
 			{
 				id: 'get-classifications-from-camera',
 				label: 'GetClassificationsFromCamera',
+				kind: 'api',
 				widgets: [VisionServiceGetClassificationsFromCameraWidget],
 				size: { minWidth: 230, minHeight: 188, recommendedWidths: [414], maxWidth: 414 },
 			},
 			{
 				id: 'get-detections',
 				label: 'GetDetections',
+				kind: 'api',
 				widgets: [VisionServiceGetDetectionsWidget],
 				size: {
 					minWidth: 269,
@@ -1092,6 +1717,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 			{
 				id: 'get-classifications',
 				label: 'GetClassifications',
+				kind: 'api',
 				widgets: [VisionServiceGetClassificationsWidget],
 				size: {
 					minWidth: 269,
@@ -1117,7 +1743,7 @@ const entryForResource = (resource: ResourceName): ResourceWidgetEntry | undefin
  *
  * @example
  * apiWidgetsForResource(gripperResourceName)
- * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget], size: {...} }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', kind: 'control', widgets: [GripperOpenGrabControl], size: {...} }, ...]
  */
 export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget[] =>
 	entryForResource(resource)?.apis ?? []
@@ -1129,7 +1755,7 @@ export const apiWidgetsForResource = (resource: ResourceName): ResourceAPIWidget
  *
  * @example
  * availableAPIWidgets()[ResourceTriplets.Gripper]
- * // [{ id: 'open-grab', label: 'Open / Grab', widgets: [GripperOpenGrabWidget], size: {...} }, ...]
+ * // [{ id: 'open-grab', label: 'Open / Grab', kind: 'control', widgets: [GripperOpenGrabControl], size: {...} }, ...]
  */
 export const availableAPIWidgets = (): Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> => {
 	const result: Partial<Record<ResourceTriplet, ResourceAPIWidget[]>> = {}
@@ -1159,6 +1785,7 @@ export const widgetSizeForResource = (resource: ResourceName): ResourceWidgetSiz
 // from the root entry.
 export type {
 	ResourceAPIWidget,
+	ResourceAPIWidgetKind,
 	ResourceWidget,
 	ResourceWidgetProps,
 	ResourceWidgetSize,

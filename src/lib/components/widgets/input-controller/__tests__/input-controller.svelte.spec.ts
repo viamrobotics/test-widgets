@@ -3,13 +3,18 @@ import '../../../../../app.css'
 import { fireEvent, render, screen } from '@testing-library/svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { RefetchIntervals } from '$lib/components/refetch-interval-store.svelte'
+
 import type { StandardGamepadEvent } from '../standard-gamepad-event'
 
 import Subject from '../input-controller.svelte'
 import PaneSubject from './__fixtures__/in-320-pane.svelte'
 import { sceneHandlers } from './__fixtures__/scene-handlers'
 
-const { mutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn() }))
+const { mutateAsync, queryOptions } = vi.hoisted(() => ({
+	mutateAsync: vi.fn(),
+	queryOptions: [] as unknown[],
+}))
 
 vi.mock('../webgamepad-scene.svelte', async () => {
 	const sceneMock = await import('./__fixtures__/webgamepad-scene-mock.svelte')
@@ -21,7 +26,8 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	return {
 		useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
 		createResourceClient: vi.fn(() => ({ current: {} })),
-		createResourceQuery: vi.fn(() => ({
+		createResourceQuery: vi.fn((_client: unknown, _method: string, options: unknown) => ({
+			options: queryOptions.push(options),
 			data: [
 				{ control: 'ButtonSouth', value: 1 },
 				{ control: 'AbsoluteX', value: 0.5 },
@@ -87,6 +93,48 @@ describe('InputController composite', () => {
 
 		const terms = screen.getAllByRole('term').map((term) => term.textContent)
 		expect(terms.toSorted()).toEqual(['AbsoluteX', 'ButtonSouth'])
+	})
+
+	it('draws At a glance, Mutators, and Queries layers for a webgamepad', () => {
+		renderSubject()
+
+		expect(screen.getByRole('group', { name: 'At a glance' }).textContent).toContain('Disconnected')
+		const mutators = screen.getByRole('group', { name: 'Mutators' })
+		const queries = screen.getByRole('group', { name: 'Queries' })
+		expect(mutators).toContainElement(screen.getByRole('heading', { name: 'TriggerEvent' }))
+		expect(mutators).toContainElement(getToggle())
+		expect(queries).toContainElement(screen.getByRole('heading', { name: 'GetEvents' }))
+		expect(screen.queryByRole('heading', { name: 'GetControls' })).not.toBeInTheDocument()
+	})
+
+	it('draws the refresh row and hands its rate to GetEvents instead of the 500 ms default', () => {
+		queryOptions.length = 0
+
+		renderSubject()
+
+		expect(screen.getByRole('combobox', { name: 'Refresh rate' })).toBeInTheDocument()
+		const intervals = queryOptions.map((options) =>
+			typeof options === 'function' ? options().refetchInterval : undefined
+		)
+		expect(intervals).toContain(RefetchIntervals.ONE_SEC)
+		expect(intervals).not.toContain(500)
+		expect(screen.queryByText('Updates automatically')).not.toBeInTheDocument()
+	})
+
+	it('explains why the toggle is disabled with no gamepad', () => {
+		renderSubject()
+
+		expect(getToggle()).toHaveAccessibleDescription(
+			'No gamepad connected. Press a button on a gamepad to connect it.'
+		)
+	})
+
+	it('draws no glance row and no toggle for a resource not named webgamepad, only TriggerEvent and GetEvents', () => {
+		renderSubject('other')
+
+		expect(screen.queryByRole('group', { name: 'At a glance' })).not.toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: 'TriggerEvent' })).toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: 'GetEvents' })).toBeInTheDocument()
 	})
 
 	it('has no toggle for a resource not named webgamepad', () => {

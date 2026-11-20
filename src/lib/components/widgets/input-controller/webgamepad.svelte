@@ -12,10 +12,11 @@
 	interface Props {
 		partID: string
 		resourceName: string
-		refetch: () => void
+		/** True while the browser reports a gamepad. The host draws the connection badge from it. */
+		isConnected?: boolean
 	}
 
-	const { partID, resourceName, refetch }: Props = $props()
+	let { partID, resourceName, isConnected = $bindable(false) }: Props = $props()
 
 	const client = createResourceClient(
 		InputControllerClient,
@@ -137,19 +138,19 @@
 		}
 
 		await sendEvents(events)
-
-		refetch()
 	}
-
-	// The Threlte useGamepad hook exposes a store for this,
-	// but to display it here we need to use another store
-	// and pass down the setter.
-	let isConnected = $state(false)
 
 	let isForwarding = $state(false)
 
-	const badgeTone = $derived(isConnected ? 'badge-success' : 'badge-neutral')
-	const badgeText = $derived(isConnected ? 'Connected' : 'Disconnected')
+	const hintId = $props.id()
+	const FORWARDING_HINT = 'Forwarding. Each change is sent as one TriggerEvent.'
+	const IDLE_HINT = 'Not forwarding. Turn on to send this gamepad’s changes as TriggerEvents.'
+	const NO_GAMEPAD_HINT = 'No gamepad connected. Press a button on a gamepad to connect it.'
+
+	const forwardingHint = $derived.by(() => {
+		if (!isConnected) return NO_GAMEPAD_HINT
+		return isForwarding ? FORWARDING_HINT : IDLE_HINT
+	})
 
 	// Every release path lands here. Once forwarding is off it does nothing, so two paths firing
 	// together send the neutral events once.
@@ -210,16 +211,22 @@
 	</Canvas>
 </div>
 
-<div class="flex flex-wrap items-center gap-2">
-	<span class={['badge', badgeTone]}>{badgeText}</span>
+<div class="flex flex-col items-start gap-2">
 	<button
 		type="button"
 		class={['button button-xs', isForwarding && 'button-dark']}
 		aria-pressed={isForwarding}
+		aria-describedby={hintId}
 		disabled={!isConnected}
 		onclick={toggleForwarding}
 	>
 		Forward gamepad
 	</button>
+	<p
+		id={hintId}
+		class="text-subtle-1 text-xs"
+	>
+		{forwardingHint}
+	</p>
 </div>
 <Section.Error error={triggerEventMutation.error} />

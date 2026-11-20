@@ -3,6 +3,7 @@
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
 
 	import CloudSlamNotice from './cloud-slam-notice.svelte'
+	import SlamGetInternalStateWidget from './get-internal-state-widget.svelte'
 	import SlamGetPointCloudMapWidget from './get-point-cloud-map-widget.svelte'
 	import SlamGetPositionWidget from './get-position-widget.svelte'
 	import SlamGetPropertiesWidget from './get-properties-widget.svelte'
@@ -42,6 +43,10 @@
 			aria-label="Queries"
 			class="grid grid-cols-1 divide-y @2xl:grid-cols-2 @2xl:divide-y-0"
 		>
+			<SlamGetInternalStateWidget
+				{partID}
+				{resourceName}
+			/>
 			<SlamGetPropertiesWidget
 				{partID}
 				{resourceName}

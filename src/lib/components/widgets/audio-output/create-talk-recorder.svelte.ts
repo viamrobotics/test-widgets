@@ -43,13 +43,12 @@ const loadCaptureProcessor = async (context: AudioContext) => {
 	}
 }
 
-/**
- * Records the microphone while held, for Hold to talk. `press` creates the `AudioContext` at the
- * given sample rate and asks for the microphone, so neither happens before a press. `release`
- * ends the recording and hands what was heard to `onClip`, and hands nothing when nothing was
- * heard. Unmount is a release.
- */
-export const createTalkRecorder = (onClip: (clip: TalkClip) => void) => {
+interface CaptureHandlers {
+	onSamples: (session: TalkSession, samples: Float32Array) => void
+	onReleased: (session: TalkSession) => void
+}
+
+const createMicrophoneCapture = ({ onSamples, onReleased }: CaptureHandlers) => {
 	let isHeld = $state(false)
 	let error = $state<Error | null>(null)
 
@@ -83,9 +82,8 @@ export const createTalkRecorder = (onClip: (clip: TalkClip) => void) => {
 			numberOfOutputs: 0,
 		})
 		node.port.addEventListener('message', (event: MessageEvent<unknown>) => {
-			if (!current.isReleased && event.data instanceof Float32Array) {
-				current.chunks.push(event.data)
-			}
+			if (current.isReleased || !(event.data instanceof Float32Array)) return
+			onSamples(current, event.data)
 		})
 		node.port.start()
 		source.connect(node)
@@ -124,9 +122,7 @@ export const createTalkRecorder = (onClip: (clip: TalkClip) => void) => {
 		if (current === undefined) return
 		endSession(current)
 
-		const clip = encodePcm16(current.chunks)
-		if (clip.byteLength === 0) return
-		onClip({ audioData: clip, sampleRateHz: current.context.sampleRate })
+		onReleased(current)
 	}
 
 	$effect(() => release)
@@ -143,3 +139,32 @@ export const createTalkRecorder = (onClip: (clip: TalkClip) => void) => {
 		release,
 	}
 }
+
+/**
+ * Records the microphone while held, for Hold to talk. `press` creates the `AudioContext` at the
+ * given sample rate and asks for the microphone, so neither happens before a press. `release`
+ * ends the recording and hands what was heard to `onClip`, and hands nothing when nothing was
+ * heard. Unmount is a release.
+ */
+export const createTalkRecorder = (onClip: (clip: TalkClip) => void) =>
+	createMicrophoneCapture({
+		onSamples: (session, samples) => session.chunks.push(samples),
+		onReleased: (session) => {
+			const clip = encodePcm16(session.chunks)
+			if (clip.byteLength === 0) return
+			onClip({ audioData: clip, sampleRateHz: session.context.sampleRate })
+		},
+	})
+
+/**
+ * Streams the microphone while held. Each captured quantum goes to `onChunk` as raw little-endian
+ * `pcm16` as it arrives, and nothing is kept. `press`, `release`, and unmount behave as they do
+ * for `createTalkRecorder`.
+ */
+export const createMicrophoneStreamer = (onChunk: (chunk: Uint8Array<ArrayBuffer>) => void) =>
+	createMicrophoneCapture({
+		onSamples: (_session, samples) => {
+			onChunk(encodePcm16([samples]))
+		},
+		onReleased: () => undefined,
+	})
