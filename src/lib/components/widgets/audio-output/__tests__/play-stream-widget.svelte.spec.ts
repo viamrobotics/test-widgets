@@ -161,6 +161,28 @@ describe('AudioOutput PlayStream widget', () => {
 		expect(state.calls[1]?.received).toEqual([BYTES])
 	})
 
+	it('drops the chunks the call has not read on Stop', async () => {
+		let startReading: () => void = () => undefined
+		const reading = new Promise<void>((resolve) => {
+			startReading = resolve
+		})
+		state.playStream = vi.fn<AudioOutClient['playStream']>(async (info, chunks) => {
+			await reading
+			await collectChunks(info, chunks)
+		})
+		renderSubject()
+		await chooseFile(wavFile())
+		await userEvent.click(screen.getByRole('button', { name: 'Start stream' }))
+		await userEvent.click(screen.getByRole('button', { name: 'Stop' }))
+
+		startReading()
+
+		await waitFor(() => {
+			expect(state.calls[0]?.isEnded).toBe(true)
+		})
+		expect(state.calls[0]?.received).toEqual([])
+	})
+
 	it('leaves the status done when a stopped stream rejects afterwards', async () => {
 		holdMicrophoneOpen()
 		let rejectCall: (reason: Error) => void = () => undefined

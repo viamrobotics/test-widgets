@@ -7,6 +7,7 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import { Section } from '$lib/components/section'
+	import { errorKey } from '$lib/components/section/error-key'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 
 	import QuickMove from './quick-move.svelte'
@@ -14,9 +15,14 @@
 	interface Props {
 		partID: string
 		resourceName: string
+		/**
+		 * Draws the controls with no heading of their own, for a host that titles them, and adds
+		 * their errors to the enclosing section's indicator. @default false
+		 */
+		isEmbedded?: boolean
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, isEmbedded = false }: Props = $props()
 
 	const client = createResourceClient(
 		BaseClient,
@@ -30,9 +36,8 @@
 	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
 	const stopMutation = createResourceMutation(client, 'stop')
 
-	const quickSetPower = (linear: Vector3, angular: Vector3) => {
-		quickSetPowerMutation.mutate([linear, angular], {})
-	}
+	const quickSetPower = (linear: Vector3, angular: Vector3) =>
+		quickSetPowerMutation.mutateAsync([linear, angular])
 
 	const stop = () => {
 		stopMutation.mutate([], {})
@@ -43,17 +48,7 @@
 	}))
 </script>
 
-<Section
-	errorReporter={sectionErrors}
-	class="flex-col gap-2"
->
-	<Section.Heading>
-		Quick move
-		{#snippet aside()}
-			<Section.Errors errors={sectionErrors.errors} />
-		{/snippet}
-	</Section.Heading>
-
+{#snippet controls()}
 	<Section.Body>
 		<QuickMove
 			setPower={quickSetPower}
@@ -61,4 +56,25 @@
 			{isConnected}
 		/>
 	</Section.Body>
-</Section>
+{/snippet}
+
+{#if isEmbedded}
+	{#each sectionErrors.errors as error (errorKey(error))}
+		<Section.Error {error} />
+	{/each}
+	{@render controls()}
+{:else}
+	<Section
+		errorReporter={sectionErrors}
+		class="flex-col gap-2"
+	>
+		<Section.Heading>
+			Quick move
+			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
+			{/snippet}
+		</Section.Heading>
+
+		{@render controls()}
+	</Section>
+{/if}

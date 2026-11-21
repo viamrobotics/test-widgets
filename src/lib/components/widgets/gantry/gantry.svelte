@@ -3,6 +3,7 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { createInFlightGuard } from '$lib/components/in-flight-guard.svelte'
 	import IsMoving from '$lib/components/is-moving.svelte'
 	import { Section } from '$lib/components/section'
 	import StopButton from '$lib/components/stop-button.svelte'
@@ -11,6 +12,7 @@
 	import GetLengthsWidget from './get-lengths-widget.svelte'
 	import GetPositionWidget from './get-position-widget.svelte'
 	import Home from './home.svelte'
+	import { HOMING_STATUS } from './homing-status'
 	import MoveToPositionWidget from './move-to-position-widget.svelte'
 	import QuickMoveWidget from './quick-move-widget.svelte'
 
@@ -28,6 +30,12 @@
 	)
 
 	const stopMutation = createResourceMutation(client, 'stop')
+
+	// Every MoveToPosition carries every axis and Home moves them all, so Home and the jogs share one guard.
+	const guard = createInFlightGuard()
+
+	let quickMove = $state<ReturnType<typeof QuickMoveWidget>>()
+	let isHoming = $state(false)
 </script>
 
 <ConnectionStatus {partID}>
@@ -65,6 +73,7 @@
 						<div class="ml-auto flex items-center gap-1.5">
 							<StopButton
 								onStop={() => {
+									quickMove?.endHold()
 									stopMutation.mutate([])
 								}}
 							/>
@@ -81,12 +90,17 @@
 				>
 					<div class="flex min-w-0 flex-col divide-y">
 						<QuickMoveWidget
+							bind:this={quickMove}
 							{partID}
 							{resourceName}
+							{guard}
+							busyStatus={isHoming ? HOMING_STATUS : undefined}
 						/>
 						<Home
+							bind:isHoming
 							{partID}
 							{resourceName}
+							{guard}
 						/>
 					</div>
 					<div class="flex min-w-0 flex-col">

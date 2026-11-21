@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { Snippet } from 'svelte'
+	import type { ClassValue } from 'svelte/elements'
 
 	import * as Sentry from '@sentry/svelte'
 	import { CameraClient, type RobotClient, StreamClient } from '@viamrobotics/sdk'
@@ -17,6 +18,7 @@
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
+	import { pixelUnderCursor } from './pixel-under-cursor'
 	import SetStreamOptions from './set-stream-options.svelte'
 
 	/** One presented video frame: the measured frame rate and the frame's own size in pixels. */
@@ -42,6 +44,18 @@
 		controls?: Snippet
 		/** Called on each presented frame. When set, the host draws the fps badge, so the video omits its own. */
 		onFrame?: (frame: VideoFrameInfo) => void
+		/**
+		 * Set it to take polling errors off the overlay. The feed keeps its last frame and the next poll
+		 * retries. Each failed poll or undecodable frame arrives here, then `undefined` once one succeeds.
+		 */
+		onPollingError?: (error: Error | undefined) => void
+		/**
+		 * Set it to take Live stream errors off the overlay. The stream still stops, and each error
+		 * arrives here, so the host can offer the restart.
+		 */
+		onStreamError?: (error: Error) => void
+		/** Classes on the root element, such as `size-full` to fill a media box. */
+		class?: ClassValue
 	}
 
 	const {
@@ -58,6 +72,9 @@
 		refetch,
 		controls,
 		onFrame,
+		onPollingError,
+		onStreamError,
+		class: className,
 	}: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
@@ -180,15 +197,33 @@
 	}
 
 	const pollingError = $derived(error ?? frameError)
-	// One overlay shows the live stream's error while Live, and the polling query's or the frame decode's otherwise.
-	const lastError = $derived(isLive ? streamError : pollingError)
+	const isReportingPollingErrors = $derived(onPollingError !== undefined)
+	const overlayPollingError = $derived(isReportingPollingErrors ? undefined : pollingError)
+	// The live stream's error while Live, and the polling query's or the frame decode's otherwise, each stops the stream.
+	const stoppingError = $derived(isLive ? streamError : overlayPollingError)
+	// One overlay shows the stopping error, unless the host takes the live stream's.
+	const lastError = $derived(isLive && onStreamError ? undefined : stoppingError)
 
-	// A polling error pauses the stream until it clears. A live stream error stays until the stream's inputs change.
+	// A polling error on the overlay pauses the stream until it clears. A live stream error stays until the stream's inputs change.
+	// A reported polling error is not read here, so it never restarts the stream: the next scheduled poll is the retry.
 	$effect(() => {
-		const isPollingBlocked = !isLive && pollingError !== undefined
+		const isPollingBlocked = !isLive && overlayPollingError !== undefined
 		if (client.current && !isPollingBlocked) {
 			void startStream(client.current, resourceName, isLive)
 		}
+	})
+
+	$effect(() => {
+		const report = onPollingError
+		if (!report) return
+		report(pollingError)
+		return () => {
+			report(undefined)
+		}
+	})
+
+	$effect(() => {
+		if (isLive && streamError) onStreamError?.(streamError)
 	})
 
 	$effect(() => {
@@ -207,7 +242,7 @@
 	}
 
 	$effect(() => {
-		if (lastError) {
+		if (stoppingError) {
 			void stopStream()
 		}
 	})
@@ -282,26 +317,22 @@
 		mouseHoverClientPosition = { x: event.clientX, y: event.clientY }
 
 		const rect = videoElement.getBoundingClientRect()
-		const dx = event.pageX - (rect.x ?? 0)
-		const dy = event.pageY - (rect.y ?? 0)
-
-		let pctX = dx / (rect.width ?? 1)
-		let pctY = dy / (rect.height ?? 1)
-
-		pctX = Math.min(Math.max(pctX, 0), 1)
-		pctY = Math.min(Math.max(pctY, 0), 1)
-
-		let absX = 0
-		let absY = 0
-
-		if (isLive) {
-			absX = pctX * videoElement.videoWidth
-			absY = pctY * videoElement.videoHeight
-		} else {
-			absX = pctX * canvas.width
-			absY = pctY * canvas.height
+		// The fit draws the source inside the box at its own scale and offset, so the box fraction alone is not the source pixel.
+		const pixel = pixelUnderCursor({
+			offsetX: event.clientX - rect.left,
+			offsetY: event.clientY - rect.top,
+			boxWidth: rect.width,
+			boxHeight: rect.height,
+			sourceWidth: isLive ? videoElement.videoWidth : canvas.width,
+			sourceHeight: isLive ? videoElement.videoHeight : canvas.height,
+			objectFit: getComputedStyle(videoElement).objectFit,
+		})
+		mouseHoverImagePosition = {
+			pctX: pixel.fractionX,
+			pctY: pixel.fractionY,
+			absX: pixel.x,
+			absY: pixel.y,
 		}
-		mouseHoverImagePosition = { pctX, pctY, absX, absY }
 	}
 	const handleMouseEnterVideo = () => {
 		if (showMousePositionTooltip) {
@@ -327,7 +358,7 @@
 	})
 </script>
 
-<div class="relative">
+<div class={['relative', className]}>
 	<!-- One overlay merges the live stream error with the polling query's error. -->
 	{#if lastError}
 		<div
@@ -350,9 +381,7 @@
 		</div>
 	{/if}
 	{#if !onFrame}
-		<div
-			class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
-		>
+		<div class="badge badge-neutral pointer-events-none absolute bottom-2 left-2 z-10 font-mono">
 			{fps.current.toFixed(1)}fps
 		</div>
 	{/if}

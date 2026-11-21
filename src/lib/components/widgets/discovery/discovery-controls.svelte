@@ -5,7 +5,6 @@
 	import { SvelteMap } from 'svelte/reactivity'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
@@ -30,8 +29,6 @@
 
 	const { partID, resourceName, onAddComponent, componentPreview }: Props = $props()
 
-	const JSON_INDENT = 2
-
 	const refetchInterval = createRefetchIntervalStore(
 		() => partID,
 		() => resourceName,
@@ -49,16 +46,6 @@
 		refetchInterval: refetchInterval.current,
 	}))
 
-	const configs = $derived(
-		(discoveryQuery.data ?? []).toSorted((first, second) => first.name.localeCompare(second.name))
-	)
-	const allConfigsJson = $derived(
-		JSON.stringify(
-			configs.map((config) => config.toJson()),
-			null,
-			JSON_INDENT
-		)
-	)
 	const resources = $derived(groupDiscoveries(discoveryQuery.data ?? []))
 	const isNoneFound = $derived(discoveryQuery.data !== undefined && resources.length === 0)
 
@@ -135,12 +122,6 @@
 							queries={[discoveryQuery]}
 						/>
 					</div>
-					{#if configs.length > 0}
-						<CopyButton
-							data={allConfigsJson}
-							ariaLabel="Copy all configs"
-						/>
-					{/if}
 				</div>
 
 				{#if discoveryQuery.isFetching}

@@ -1,10 +1,19 @@
 import '../../../../../app.css'
 
 import { render, screen, within } from '@testing-library/svelte'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../gantry.svelte'
 import InPane from './__fixtures__/in-320-pane.svelte'
+
+const state = vi.hoisted(
+	(): {
+		calls: [string, unknown[]][]
+		heldMethods: Set<string>
+		heldCalls: { resolve: (value: unknown) => void }[]
+	} => ({ calls: [], heldMethods: new Set(), heldCalls: [] })
+)
 
 vi.mock('@viamrobotics/svelte-sdk', async () => {
 	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')
@@ -23,9 +32,18 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 			error: null,
 			refetch: vi.fn(),
 		})),
-		createResourceMutation: vi.fn(() => ({
-			mutate: vi.fn(),
-			mutateAsync: vi.fn(),
+		createResourceMutation: vi.fn((_client: unknown, method: string) => ({
+			mutate: (args: unknown[]) => {
+				state.calls.push([method, args])
+			},
+			mutateAsync: (args: unknown[]) => {
+				state.calls.push([method, args])
+				if (!state.heldMethods.has(method)) return Promise.resolve(true)
+				return new Promise((resolve) => {
+					state.heldCalls.push({ resolve })
+				})
+			},
+			data: undefined,
 			isPending: false,
 			error: null,
 		})),
@@ -48,6 +66,21 @@ const renderAtWidth = (width: number) => {
 	render(Subject, { props: { partID: 'test-part', resourceName: 'test-gantry' }, target })
 	return target
 }
+
+const settleCalls = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+const resolveHeldCall = async () => {
+	const call = state.heldCalls.shift()
+	if (call === undefined) throw new Error('No held call to resolve')
+	call.resolve(true)
+	await settleCalls()
+}
+
+beforeEach(() => {
+	state.calls = []
+	state.heldMethods = new Set()
+	state.heldCalls = []
+})
 
 afterEach(() => {
 	document.body.replaceChildren()
@@ -183,5 +216,48 @@ describe('Gantry composite in a 320 px pane', () => {
 		expect(getComputedStyle(pane).width).toBe('320px')
 		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
 		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
+	})
+})
+
+describe('Gantry composite conflict group', () => {
+	it('sends nothing from a jog press while Home is in flight, then or after Home returns', async () => {
+		const user = userEvent.setup()
+		state.heldMethods = new Set(['home'])
+		renderAtWidth(320)
+		await user.click(screen.getByRole('button', { name: 'Home' }))
+
+		await user.click(screen.getByRole('button', { name: '+10 mm, Axis 0' }))
+
+		expect(state.calls, 'while Home is in flight').toEqual([['home', []]])
+		expect(screen.getByTestId('status-line')).toHaveTextContent(
+			'Homing. Steps resume when it finishes'
+		)
+
+		await resolveHeldCall()
+
+		expect(state.calls, 'after Home returns').toEqual([['home', []]])
+	})
+
+	it('sends nothing from a Home press while a step is in flight, then or after the step returns', async () => {
+		const user = userEvent.setup()
+		state.heldMethods = new Set(['moveToPosition'])
+		renderAtWidth(320)
+		await user.click(screen.getByRole('button', { name: '+10 mm, Axis 0' }))
+		const step = [
+			'moveToPosition',
+			[
+				[422.5, 86, 1234.56],
+				[50, 50, 50],
+			],
+		]
+
+		await user.click(screen.getByRole('button', { name: 'Home' }))
+
+		expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute('aria-disabled', 'true')
+		expect(state.calls, 'while the step is in flight').toEqual([step])
+
+		await resolveHeldCall()
+
+		expect(state.calls, 'after the step returns').toEqual([step])
 	})
 })

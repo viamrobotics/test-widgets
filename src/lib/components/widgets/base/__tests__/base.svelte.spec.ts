@@ -23,7 +23,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 		})),
 		createResourceMutation: vi.fn(() => ({
 			mutate: vi.fn(),
-			mutateAsync: vi.fn(),
+			mutateAsync: vi.fn(async () => undefined),
 			isPending: false,
 			error: null,
 		})),

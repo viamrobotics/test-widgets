@@ -2,10 +2,12 @@
 	import type { Snippet } from 'svelte'
 
 	import { mdiCameraOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { Select } from '@viamrobotics/prime-controls'
 	import { Checkbox, Field, Icon, Label } from '@viamrobotics/prime-ui'
 
 	import { hasPip } from '$lib/pip/context.svelte'
 
+	import type { MediaFitState } from './media-fit.svelte'
 	import type {
 		MediaFrameAddToDataset,
 		MediaFrameCapture,
@@ -13,6 +15,7 @@
 	} from './media-frame-capture'
 
 	import AddToDatasetDialog from './add-to-dataset-dialog.svelte'
+	import { isMediaFit, MEDIA_FIT_LABELS, type MediaFit } from './media-fit'
 	import PictureInPictureAction from './picture-in-picture-action.svelte'
 	import { screenshotFileName } from './screenshot-file-name'
 	import { toError } from './to-error'
@@ -41,6 +44,8 @@
 		cursorPosition?: boolean
 		/** The host's own controls, after the action row. */
 		children?: Snippet
+		/** From `createMediaFit`. Shows the Fit select as the last row. */
+		fit?: MediaFitState
 	}
 
 	let {
@@ -58,7 +63,19 @@
 		addToDataset,
 		cursorPosition = $bindable(),
 		children,
+		fit,
 	}: Props = $props()
+
+	const id = $props.id()
+	const fitLabelId = `${id}-fit`
+
+	// Applied to the media box's children, so the element the host's snippet renders takes it.
+	const OBJECT_FIT_CLASSES: Record<MediaFit, string | undefined> = {
+		'keep-ratio': undefined,
+		fit: '*:object-contain',
+		stretch: '*:object-fill',
+		crop: '*:object-cover',
+	}
 
 	// Firefox plays any video in picture-in-picture natively, so it gets no button of its own.
 	const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
@@ -76,10 +93,25 @@
 		startAutomatically !== undefined ||
 			hasActions ||
 			cursorPosition !== undefined ||
-			children !== undefined
+			children !== undefined ||
+			fit !== undefined
 	)
 
+	const currentFit = $derived<MediaFit>(fit?.current ?? 'keep-ratio')
+	// Every fit but Keep ratio fills the height its host gives the frame, so nothing scrolls.
+	const isFillingFrame = $derived(currentFit !== 'keep-ratio')
+	const mediaBoxAspectRatio = $derived(isFillingFrame ? undefined : aspectRatio)
+
+	const fitItems = $derived(
+		(fit?.fits ?? []).map((value) => ({ value, label: MEDIA_FIT_LABELS[value] }))
+	)
+	const getFit = () => currentFit
+	const setFit = (next: string | undefined) => {
+		if (fit && isMediaFit(next)) fit.current = next
+	}
+
 	let screenshotError = $state<Error | null>(null)
+	let isSavingScreenshot = $state(false)
 
 	useReportedError(() => screenshotError)
 
@@ -94,14 +126,20 @@
 	}
 
 	const saveScreenshot = async () => {
-		if (!screenshot) return
+		// A press while the capture is in flight is dropped, never queued.
+		if (!screenshot || isSavingScreenshot) return
+		isSavingScreenshot = true
 		try {
 			downloadCapture(await screenshot())
 			screenshotError = null
 		} catch (error) {
 			screenshotError = toError(error)
+		} finally {
+			isSavingScreenshot = false
 		}
 	}
+
+	const screenshotStatus = $derived(isSavingScreenshot ? 'Saving screenshot' : '')
 </script>
 
 {#snippet checkboxField(
@@ -118,11 +156,15 @@
 <div
 	role="group"
 	aria-label={label}
-	class="flex w-full min-w-0 flex-col"
+	class={['flex w-full min-w-0 flex-col', isFillingFrame && 'h-full']}
 >
 	<div
-		class="relative w-full overflow-hidden"
-		style:aspect-ratio={aspectRatio}
+		class={[
+			'relative w-full overflow-hidden',
+			isFillingFrame && 'min-h-0 flex-1',
+			OBJECT_FIT_CLASSES[currentFit],
+		]}
+		style:aspect-ratio={mediaBoxAspectRatio}
 	>
 		{@render media()}
 
@@ -143,11 +185,11 @@
 		{:else}
 			{@render overlay?.()}
 			{#if fps !== undefined}
-				<div
-					class="pointer-events-none absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
+				<span
+					class="badge badge-neutral pointer-events-none absolute bottom-2 left-2 z-10 font-mono"
 				>
 					{fps.toFixed(1)}fps
-				</div>
+				</span>
 			{/if}
 		{/if}
 	</div>
@@ -171,14 +213,28 @@
 							type="button"
 							class="button button-xs"
 							disabled={isShowingSplash}
+							aria-busy={isSavingScreenshot}
 							onclick={saveScreenshot}
 						>
-							<Icon
-								icon={mdiCameraOutline}
-								size="sm"
-							/>
+							{#if isSavingScreenshot}
+								<span
+									class="progress-dots"
+									aria-hidden="true"
+								></span>
+							{:else}
+								<Icon
+									icon={mdiCameraOutline}
+									size="sm"
+								/>
+							{/if}
 							Screenshot
 						</button>
+						<span
+							class="sr-only"
+							role="status"
+						>
+							{screenshotStatus}
+						</span>
 					{/if}
 					{#if pictureInPicture && isPipAvailable}
 						<PictureInPictureAction
@@ -206,6 +262,24 @@
 			{/if}
 
 			{@render children?.()}
+
+			{#if fit}
+				<div class="flex items-center gap-2">
+					<span
+						id={fitLabelId}
+						class="text-subtle-1 shrink-0 text-xs"
+					>
+						Fit
+					</span>
+					<div class="max-w-50 min-w-0 flex-1">
+						<Select
+							items={fitItems}
+							bind:value={getFit, setFit}
+							aria-labelledby={fitLabelId}
+						/>
+					</div>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>

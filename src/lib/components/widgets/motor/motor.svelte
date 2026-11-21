@@ -103,7 +103,12 @@
 						</div>
 						<Section.Body>
 							<div class="flex grow flex-wrap justify-between gap-2">
-								<QuickMove setPower={quickSetPower} />
+								<QuickMove
+									setPower={quickSetPower}
+									onRelease={() => {
+										quickSetPower(0)
+									}}
+								/>
 							</div>
 						</Section.Body>
 					</Section>

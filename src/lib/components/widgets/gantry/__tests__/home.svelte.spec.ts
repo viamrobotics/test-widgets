@@ -5,10 +5,16 @@ import Subject from '../home.svelte'
 import PaneSubject from './__fixtures__/in-320-pane.svelte'
 
 const mutationState = vi.hoisted(
-	(): { data: boolean | undefined; error: Error | null; mutate: ReturnType<typeof vi.fn> } => ({
+	(): {
+		data: boolean | undefined
+		error: Error | null
+		isCallHeld: boolean
+		calls: unknown[][]
+	} => ({
 		data: undefined,
 		error: null,
-		mutate: vi.fn(),
+		isCallHeld: false,
+		calls: [],
 	})
 )
 
@@ -26,7 +32,10 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 			return mutationState.error
 		},
 		isPending: false,
-		mutate: mutationState.mutate,
+		mutateAsync: (args: unknown[]) => {
+			mutationState.calls.push(args)
+			return mutationState.isCallHeld ? new Promise(() => {}) : Promise.resolve(true)
+		},
 	})),
 }))
 
@@ -37,23 +46,34 @@ describe('Gantry Home widget', () => {
 	beforeEach(() => {
 		mutationState.data = undefined
 		mutationState.error = null
-		mutationState.mutate.mockClear()
+		mutationState.isCallHeld = false
+		mutationState.calls = []
 	})
 
-	it('renders the Home section heading, the one line of text, and Execute', () => {
+	it('renders the Home section heading and the Home button', () => {
 		renderSubject()
 
 		expect(screen.getByRole('heading', { name: 'Home' })).toBeInTheDocument()
-		expect(screen.getByText('Run the homing sequence')).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Execute' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument()
 	})
 
-	it('runs Home with no arguments when Execute is pressed', async () => {
+	it('runs Home with no arguments when Home is pressed', async () => {
 		renderSubject()
 
-		await fireEvent.click(screen.getByRole('button', { name: 'Execute' }))
+		await fireEvent.click(screen.getByRole('button', { name: 'Home' }))
 
-		expect(mutationState.mutate).toHaveBeenCalledWith([], {})
+		expect(mutationState.calls).toEqual([[]])
+	})
+
+	it('sends nothing from a second press while its Home is in flight', async () => {
+		mutationState.isCallHeld = true
+		renderSubject()
+		await fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+
+		expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute('aria-busy', 'true')
+		expect(mutationState.calls).toEqual([[]])
 	})
 
 	it('reads Homed as a dash with no status dot before a run', () => {
@@ -122,5 +142,15 @@ describe('Gantry Home widget in a 320 px pane', () => {
 
 		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
 		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
+	})
+
+	it('puts the Home button and its Homed result on one row', () => {
+		render(PaneSubject, { props: { widget: Subject } })
+
+		const button = screen.getByRole('button', { name: 'Home' }).getBoundingClientRect()
+		const result = screen.getByRole('group', { name: 'Homed' }).getBoundingClientRect()
+		expect(result.top, 'the result starts above the button bottom').toBeLessThan(button.bottom)
+		expect(button.top, 'the button starts above the result bottom').toBeLessThan(result.bottom)
+		expect(result.left).toBeGreaterThan(button.right)
 	})
 })

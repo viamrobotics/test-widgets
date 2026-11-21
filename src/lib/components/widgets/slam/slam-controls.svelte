@@ -16,6 +16,7 @@
 	import { Vector2, type Vector3 } from 'three'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { createInFlightGuard } from '$lib/components/in-flight-guard.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
@@ -67,6 +68,14 @@
 	const MM_PER_M = 1000
 	const DEFAULT_MOTION_NAME = 'builtin'
 	const CLICK_PRECISION_DIGITS = 5
+	// The registry's 2xl container width. From here up the legend starts collapsed.
+	const LEGEND_COLLAPSE_MIN_WIDTH_PX = 672
+
+	// Read once when the map mounts, so a later resize never fights the person's toggle.
+	let legendStartsOpen = $state<boolean>()
+	const measureLegendStart = (element: HTMLElement) => {
+		legendStartsOpen = element.clientWidth < LEGEND_COLLAPSE_MIN_WIDTH_PX
+	}
 
 	// Although this is the SLAM widget, the motion client is heavily
 	// used for calling MoveOnMap and for rendering plans.
@@ -82,6 +91,7 @@
 	)
 
 	const moveOnMapMutation = createResourceMutation(motionClient, 'moveOnMap')
+	const moveOnMapGuard = createInFlightGuard()
 	const stopPlanMutation = createResourceMutation(motionClient, 'stopPlan')
 
 	let baseName = $state('')
@@ -148,18 +158,20 @@
 							planDeviationM,
 						}),
 					]
-		moveOnMapMutation.mutate([
-			{
-				// The motion client expects mm
-				x: destination.x * MM_PER_M,
-				y: destination.y * MM_PER_M,
-				z: 0,
-				...currentOrientation,
-			},
-			base.name,
-			slamClient.current?.name ?? '',
-			...motionConfiguration,
-		])
+		void moveOnMapGuard.run(() =>
+			moveOnMapMutation.mutateAsync([
+				{
+					// The motion client expects mm
+					x: destination.x * MM_PER_M,
+					y: destination.y * MM_PER_M,
+					z: 0,
+					...currentOrientation,
+				},
+				base.name,
+				slamClient.current?.name ?? '',
+				...motionConfiguration,
+			])
+		)
 	}
 	const stopPlan = () => {
 		stopPlanMutation.mutate([base.name])
@@ -179,8 +191,9 @@
 		role="group"
 		aria-label="2D map"
 		class="relative aspect-square w-full"
+		{@attach measureLegendStart}
 	>
-		{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined}
+		{#if positionQuery.data?.pose !== undefined && pointCloudMapQuery.data !== undefined && legendStartsOpen !== undefined}
 			<SlamMap2D
 				pointcloud={pointCloudMapQuery.data}
 				basePose={{
@@ -193,6 +206,7 @@
 				destination={mapDestination}
 				helpers={true}
 				onClick={handleClick}
+				legendOpen={legendStartsOpen}
 			/>
 		{:else}
 			<div class="bg-light grid size-full place-content-center">
@@ -250,6 +264,7 @@
 						bind:y={destinationY}
 						{moveOnMap}
 						{stopPlan}
+						isMoving={moveOnMapGuard.isBusy}
 					/>
 				</section>
 			</div>

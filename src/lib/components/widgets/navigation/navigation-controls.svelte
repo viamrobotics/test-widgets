@@ -2,14 +2,17 @@
 	import type { LngLat, Map as MapLibreMap } from 'maplibre-gl'
 
 	import { ToggleButtons } from '@viamrobotics/prime-controls'
+	import { Banner } from '@viamrobotics/prime-ui'
 	import { GeoGeometry, navigationApi, NavigationClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
+	import { SvelteSet } from 'svelte/reactivity'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { createInFlightGuard } from '$lib/components/in-flight-guard.svelte'
 	import { MapLibre, MapProviders, NavigationControls } from '$lib/components/maplibre'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
@@ -19,6 +22,7 @@
 	import { modeFromLabel, modeLabel } from './navigation-mode'
 	import ObstaclesOverlay from './obstacles/obstacles-overlay.svelte'
 	import Obstacles from './obstacles/obstacles.svelte'
+	import PathsLayer from './paths-layer.svelte'
 	import WaypointsLegend from './waypoints/legend.svelte'
 	import Waypoints from './waypoints/waypoints.svelte'
 
@@ -59,6 +63,13 @@
 		refetchInterval: refetchInterval.current,
 	}))
 
+	const pathsQuery = createResourceQuery(client, 'getPaths', () => ({
+		refetchInterval: refetchInterval.current,
+	}))
+
+	// The properties do not change while the service runs, so they are read once.
+	const propertiesQuery = createResourceQuery(client, 'getProperties', { refetchInterval: false })
+
 	const getModeQuery = createResourceQuery(client, 'getMode', {
 		refetchInterval: MODE_REFETCH_INTERVAL_MS,
 	})
@@ -78,18 +89,28 @@
 
 	const getMode = () => modeLabel(getModeQuery.data)
 
+	// A press while a SetMode call is pending is dropped, never queued.
+	const modeGuard = createInFlightGuard()
+
+	// Each waypoint's remove is its own group, so other rows stay live. A guard per id would be
+	// created while the list renders, where Svelte does not track it, so the ids are one reactive set.
+	const removingIds = new SvelteSet<string>()
+	const isRemoving = (id: string) => removingIds.has(id)
+
 	const commitMode = async (label: string | undefined) => {
 		const nextMode = modeFromLabel(label)
 		if (nextMode === undefined) return
 
-		await setModeMutation.mutateAsync([nextMode])
-		await getModeQuery.refetch()
+		const outcome = await modeGuard.run(() => setModeMutation.mutateAsync([nextMode]))
+		if (outcome === 'succeeded') await getModeQuery.refetch()
 	}
 
 	const selectMode = (label: string | undefined) => {
 		void commitMode(label)
 	}
 
+	const hasMap = $derived(propertiesQuery.data?.mapType !== navigationApi.MapType.NONE)
+	const paths = $derived(pathsQuery.data ?? [])
 	const waypoints = $derived(waypointsQuery.data ?? [])
 	const obstacles = $derived<GeoGeometry[]>(
 		(obstaclesQuery.data ?? []).map((obstacle, index) => ({
@@ -129,87 +150,123 @@
 	}
 
 	const removeWayPoint = async (id: string) => {
-		await removeWaypointMutation.mutateAsync([id])
-		await waypointsQuery.refetch()
+		// A press while this waypoint's remove is pending is dropped, never queued.
+		if (removingIds.has(id)) return
+		removingIds.add(id)
+		try {
+			await removeWaypointMutation.mutateAsync([id])
+			await waypointsQuery.refetch()
+		} catch {
+			// The mutation's own state carries the error.
+		} finally {
+			removingIds.delete(id)
+		}
 	}
 </script>
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
 		<div class="@container flex w-full min-w-0 flex-col">
-			<div
-				class="relative aspect-4/3 w-full"
-				bind:clientWidth={mapWidth}
-			>
-				<MapLibre
-					{maxPitch}
-					mapProvider={MapProviders.googleMaps}
-					mapProviderKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-					bind:map
+			{#if hasMap}
+				<div
+					class="relative aspect-4/3 w-full"
+					bind:clientWidth={mapWidth}
 				>
-					<NavigationControls
-						showZoom={false}
-						position={compassPosition}
-					/>
-
-					<MapViewPanel
-						bind:view
-						location={locationQuery.data?.location}
-					/>
-
-					{#if locationQuery.data}
-						<DirectionalMarker position={locationQuery.data} />
-					{/if}
-
-					<Waypoints
-						{waypoints}
-						{addWayPoint}
-						{hovered}
-					/>
-
-					{#snippet layer()}
-						<Obstacles
-							{obstacles}
-							{hovered}
-							{setHovered}
-							{view}
+					<MapLibre
+						{maxPitch}
+						mapProvider={MapProviders.googleMaps}
+						mapProviderKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+						bind:map
+					>
+						<NavigationControls
+							showZoom={false}
+							position={compassPosition}
 						/>
-					{/snippet}
-				</MapLibre>
 
-				<ObstaclesOverlay
-					{map}
-					{hovered}
-					{obstacles}
-					onEnter={setHovered}
-					onLeave={setHovered}
-				/>
-			</div>
+						<MapViewPanel
+							bind:view
+							location={locationQuery.data?.location}
+						/>
+
+						{#if locationQuery.data}
+							<DirectionalMarker position={locationQuery.data} />
+						{/if}
+
+						<PathsLayer {paths} />
+
+						<Waypoints
+							{waypoints}
+							{addWayPoint}
+							{hovered}
+						/>
+
+						{#snippet layer()}
+							<Obstacles
+								{obstacles}
+								{hovered}
+								{setHovered}
+								{view}
+							/>
+						{/snippet}
+					</MapLibre>
+
+					<ObstaclesOverlay
+						{map}
+						{hovered}
+						{obstacles}
+						{hasMap}
+						onEnter={setHovered}
+						onLeave={setHovered}
+					/>
+				</div>
+			{:else}
+				<div class="p-2">
+					<Banner>
+						<Banner.Description>Map type is None, so there is no map.</Banner.Description>
+					</Banner>
+				</div>
+			{/if}
 
 			<div class="flex flex-col gap-2 p-2">
-				<ToggleButtons
-					label="Mode"
-					items={MODE_ITEMS}
-					bind:value={getMode, selectMode}
-				/>
+				<div
+					class="flex items-end gap-2"
+					aria-busy={modeGuard.isBusy}
+				>
+					<ToggleButtons
+						label="Mode"
+						items={MODE_ITEMS}
+						disabled={modeGuard.isBusy}
+						bind:value={getMode, selectMode}
+					/>
+					{#if modeGuard.isBusy}
+						<span
+							class="progress-dots mb-2"
+							aria-hidden="true"
+						></span>
+					{/if}
+				</div>
 
 				<div class="flex flex-col gap-1">
 					<h4 class="text-xs font-semibold">Waypoints</h4>
 					<WaypointsLegend
 						{map}
+						{hasMap}
 						{hovered}
 						{waypoints}
 						onEnter={setHovered}
 						onLeave={setHovered}
 						onRemove={removeWayPoint}
+						{isRemoving}
 					/>
-					<p class="text-subtle-2 px-1 py-1.5 text-xs">Click on the map to add a waypoint.</p>
+					{#if hasMap}
+						<p class="text-subtle-2 px-1 py-1.5 text-xs">Click on the map to add a waypoint.</p>
+					{/if}
 				</div>
 
 				<div class="w-58 max-w-full">
 					<RefetchController
 						{refetchInterval}
-						queries={[locationQuery, obstaclesQuery, waypointsQuery]}
+						queries={[locationQuery, obstaclesQuery, waypointsQuery, pathsQuery]}
 					/>
 				</div>
 			</div>

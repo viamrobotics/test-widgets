@@ -46,9 +46,12 @@ const discovery = resource('discovery', 'discovery-1')
 const mlModel = resource('mlmodel', 'ml-model-1')
 
 describe('Resource panes', () => {
-	it("offers an arm's composite and its ten entries", () => {
+	it("offers an arm's composite and its thirteen entries", () => {
 		expect(compositePane(arm)?.id).toBe('arm-1::composite')
 		expect(entryPanes(arm).map(({ id }) => id)).toEqual([
+			'arm-1::controls',
+			'arm-1::jog',
+			'arm-1::joints',
 			'arm-1::move-to-joint-positions',
 			'arm-1::move-to-position',
 			'arm-1::get-joint-positions',
@@ -62,32 +65,47 @@ describe('Resource panes', () => {
 		])
 	})
 
-	it('makes manual-mode the arm control and every other arm entry an api', () => {
+	it('makes controls, jog, joints, and manual-mode the arm controls and every other arm entry an api', () => {
 		const kinds = Object.fromEntries(entryPanes(arm).map(({ id, data }) => [id, data.kind]))
-		expect(Object.values(kinds).filter((kind) => kind === 'control')).toHaveLength(1)
+		expect(Object.values(kinds).filter((kind) => kind === 'control')).toHaveLength(4)
+		expect(kinds['arm-1::controls']).toBe('control')
+		expect(kinds['arm-1::jog']).toBe('control')
+		expect(kinds['arm-1::joints']).toBe('control')
 		expect(kinds['arm-1::manual-mode']).toBe('control')
 	})
 
-	it('keeps quick-move the only motor control', () => {
+	it('makes controls, quick-move, and move the motor controls', () => {
 		const controls = entryPanes(motor).filter(({ data }) => data.kind === 'control')
-		expect(controls.map(({ id }) => id)).toEqual(['motor-1::quick-move'])
+		expect(controls.map(({ id }) => id)).toEqual([
+			'motor-1::controls',
+			'motor-1::quick-move',
+			'motor-1::move',
+		])
+	})
+
+	it('offers base-1 a composite and makes controls and quick-move its controls', () => {
+		expect(compositePane(base)?.id).toBe('base-1::composite')
+		const controls = entryPanes(base).filter(({ data }) => data.kind === 'control')
+		expect(controls.map(({ id }) => id)).toEqual(['base-1::controls', 'base-1::quick-move'])
 	})
 
 	it.each([
-		['base-1', base],
-		['gantry-1', gantry],
-		['servo-1', servo],
-	])('offers %s a composite and makes quick-move its only control', (name, target) => {
+		['gantry-1', gantry, ['controls', 'quick-move']],
+		['servo-1', servo, ['controls', 'quick-move', 'move-to']],
+		['gripper-1', gripper, ['controls', 'open-grab']],
+		['switch-1', switchResource, ['controls']],
+		['encoder-1', encoder, ['controls']],
+		['movement-sensor-1', movementSensor, ['controls']],
+		['power-sensor-1', powerSensor, ['controls']],
+	])('offers %s a composite and makes %j its controls', (name, target, ids) => {
 		expect(compositePane(target)?.id).toBe(`${name}::composite`)
 		const controls = entryPanes(target).filter(({ data }) => data.kind === 'control')
-		expect(controls.map(({ id }) => id)).toEqual([`${name}::quick-move`])
+		expect(controls.map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
 	})
 
-	it('makes open-grab the gripper control and open an api', () => {
+	it('makes open an api of gripper-1', () => {
 		const kinds = Object.fromEntries(entryPanes(gripper).map(({ id, data }) => [id, data.kind]))
-		expect(kinds['gripper-1::open-grab']).toBe('control')
 		expect(kinds['gripper-1::open']).toBe('api')
-		expect(Object.values(kinds).filter((kind) => kind === 'control')).toHaveLength(1)
 	})
 
 	it.each([
@@ -112,31 +130,14 @@ describe('Resource panes', () => {
 		expect(entryPanes(target)).toEqual([])
 	})
 
-	it.each([
-		['input-controller-1', inputController, ['get-events', 'trigger-event']],
-		[
-			'movement-sensor-1',
-			movementSensor,
-			[
-				'get-position',
-				'get-orientation',
-				'get-compass-heading',
-				'get-accuracy',
-				'get-linear-velocity',
-				'get-angular-velocity',
-				'get-linear-acceleration',
-				'get-properties',
-				'get-readings',
-			],
-		],
-		['power-sensor-1', powerSensor, ['get-voltage', 'get-current', 'get-power', 'get-readings']],
-		['encoder-1', encoder, ['get-position', 'reset-position', 'get-properties']],
-		['switch-1', switchResource, ['set-position', 'get-position', 'get-number-of-positions']],
-	])('offers %s a composite and its api entries, with no control', (name, target, ids) => {
-		expect(compositePane(target)?.id).toBe(`${name}::composite`)
-		expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
-		expect(entryPanes(target).filter(({ data }) => data.kind === 'control')).toEqual([])
-	})
+	it.each([['input-controller-1', inputController, ['get-events', 'trigger-event']]])(
+		'offers %s a composite and its api entries, with no control',
+		(name, target, ids) => {
+			expect(compositePane(target)?.id).toBe(`${name}::composite`)
+			expect(entryPanes(target).map(({ id }) => id)).toEqual(ids.map((id) => `${name}::${id}`))
+			expect(entryPanes(target).filter(({ data }) => data.kind === 'control')).toEqual([])
+		}
+	)
 
 	it('titles manual-mode with the resource alone and an api pane with its method', () => {
 		const panes = entryPanes(arm)
@@ -202,6 +203,7 @@ describe('Resource panes', () => {
 			board,
 			[
 				'controls',
+				'pins',
 				'set-gpio',
 				'get-gpio',
 				'pwm',
@@ -222,6 +224,9 @@ describe('Resource panes', () => {
 
 	it.each([
 		['arm-1::composite', 223, 2057],
+		['arm-1::controls', 241, 967],
+		['arm-1::jog', 241, 407],
+		['arm-1::joints', 198, 593],
 		['arm-1::move-to-joint-positions', 198, 582],
 		['arm-1::move-to-position', 215, 617],
 		['arm-1::get-joint-positions', 188, 311],
@@ -233,28 +238,33 @@ describe('Resource panes', () => {
 		['motor-1::go-to', 270, 153],
 		['base-1::composite', 245, 1189],
 		['base-1::get-properties', 245, 153],
-		['base-1::quick-move', 291, 239],
+		['base-1::controls', 278, 289],
+		['base-1::quick-move', 278, 239],
 		['base-1::move-straight', 299, 153],
 		['base-1::spin', 288, 153],
 		['base-1::set-power', 152, 217],
 		['base-1::set-velocity', 152, 217],
 		['base-1::is-moving', 152, 89],
 		['base-1::stop', 152, 101],
-		['gantry-1::composite', 171, 1527],
+		['gantry-1::composite', 171, 1606],
+		['gantry-1::controls', 168, 467],
 		['gantry-1::get-position', 178, 297],
 		['gantry-1::move-to-position', 152, 553],
-		['gantry-1::home', 152, 183],
+		['gantry-1::home', 152, 127],
 		['gantry-1::is-moving', 152, 89],
 		['gantry-1::get-lengths', 185, 153],
-		['gantry-1::quick-move', 192, 241],
-		['servo-1::composite', 171, 546],
+		['gantry-1::quick-move', 97, 409],
+		['servo-1::composite', 171, 590],
+		['servo-1::controls', 274, 337],
+		['servo-1::move-to', 274, 185],
 		['servo-1::move', 278, 155],
 		['servo-1::get-position', 152, 141],
 		['servo-1::is-moving', 152, 89],
 		['servo-1::stop', 152, 101],
-		['servo-1::quick-move', 97, 243],
-		['gripper-1::composite', 246, 660],
-		['gripper-1::open-grab', 190, 127],
+		['servo-1::quick-move', 198, 221],
+		['gripper-1::composite', 246, 680],
+		['gripper-1::controls', 232, 191],
+		['gripper-1::open-grab', 138, 145],
 		['gripper-1::is-holding-something', 196, 132],
 		['gripper-1::is-moving', 152, 132],
 		['gripper-1::open', 152, 129],
@@ -263,14 +273,17 @@ describe('Resource panes', () => {
 		['gripper-1::get-current-inputs', 152, 207],
 		['gripper-1::go-to-inputs', 221, 225],
 		['board-1::composite', 178, 1938],
-		['board-1::controls', 255, 264],
+		['board-1::controls', 242, 423],
+		['board-1::pins', 255, 264],
 		['switch-1::composite', 181, 443],
+		['switch-1::controls', 142, 147],
 		['switch-1::set-position', 152, 115],
 		['switch-1::get-position', 152, 133],
 		['switch-1::get-number-of-positions', 152, 183],
 		['button-1::composite', 162, 125],
 		['sensor-1::composite', 261, 399],
 		['movement-sensor-1::composite', 241, 1460],
+		['movement-sensor-1::controls', 290, 585],
 		['movement-sensor-1::get-position', 208, 193],
 		['movement-sensor-1::get-orientation', 152, 161],
 		['movement-sensor-1::get-compass-heading', 211, 131],
@@ -281,11 +294,13 @@ describe('Resource panes', () => {
 		['movement-sensor-1::get-properties', 261, 243],
 		['movement-sensor-1::get-readings', 152, 395],
 		['power-sensor-1::composite', 213, 453],
+		['power-sensor-1::controls', 305, 269],
 		['power-sensor-1::get-voltage', 197, 125],
 		['power-sensor-1::get-current', 189, 125],
 		['power-sensor-1::get-power', 178, 125],
 		['power-sensor-1::get-readings', 152, 395],
 		['encoder-1::composite', 213, 434],
+		['encoder-1::controls', 164, 207],
 		['encoder-1::get-position', 164, 125],
 		['encoder-1::reset-position', 152, 157],
 		['encoder-1::get-properties', 253, 123],
@@ -310,11 +325,11 @@ describe('Resource panes', () => {
 		['slam-1::get-properties', 246, 241],
 		['slam-1::get-internal-state', 186, 127],
 		['audio-input-1::composite', 110, 404],
-		['audio-input-1::controls', 110, 267],
+		['audio-input-1::controls', 100, 267],
 		['audio-input-1::get-audio', 284, 183],
 		['audio-input-1::get-properties', 239, 147],
-		['discovery-1::composite', 191, 123],
-		['discovery-1::controls', 219, 467],
+		['discovery-1::composite', 222, 157],
+		['discovery-1::controls', 191, 483],
 		['discovery-1::discover-resources', 172, 127],
 		['ml-model-1::composite', 288, 891],
 		['ml-model-1::metadata', 288, 461],

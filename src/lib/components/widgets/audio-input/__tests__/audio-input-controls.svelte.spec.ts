@@ -263,10 +263,54 @@ describe('AudioInputControls', () => {
 		expect(recordButton()).toBeDisabled()
 	})
 
-	it('enables Record while listening', async () => {
+	it('keeps Record disabled while listening until a chunk is heard', async () => {
 		await startListening()
 
-		expect(recordButton()).toBeEnabled()
+		expect(recordButton()).toBeDisabled()
+	})
+
+	it('enables Record once a chunk is heard', async () => {
+		await startListening()
+
+		feed.push(halfSecondOfMonoSilence())
+
+		await vi.waitFor(() => expect(recordButton()).toBeEnabled())
+	})
+
+	it('disables Record again when Listen stops', async () => {
+		await startListening()
+		feed.push(halfSecondOfMonoSilence())
+		await vi.waitFor(() => expect(recordButton()).toBeEnabled())
+
+		await user.click(listenButton())
+
+		expect(recordButton()).toBeDisabled()
+	})
+
+	it('heads the section Controls and not GetAudio', () => {
+		renderSubject()
+
+		expect(screen.getByText('Controls')).toBeInTheDocument()
+		expect(screen.queryByText('GetAudio')).not.toBeInTheDocument()
+	})
+
+	it('keeps Record disabled after a chunk that does not decode', async () => {
+		await startListening()
+
+		feed.push(pcm16Chunk([0x00, 0x40, 0x00], 1))
+
+		await vi.waitFor(() => expect(listenButton()).toHaveAttribute('aria-pressed', 'false'))
+		expect(recordButton()).toBeDisabled()
+	})
+
+	it('stops Listen on a second press before the first chunk is heard, after one GetAudio call', async () => {
+		renderSubject()
+
+		await user.click(listenButton())
+		await user.click(listenButton())
+
+		await vi.waitFor(() => expect(feed.requests).toHaveLength(1))
+		expect(listenButton()).toHaveAttribute('aria-pressed', 'false')
 	})
 
 	it('counts only what is heard while Record is pressed, in KB and seconds', async () => {

@@ -8,6 +8,7 @@
 
 	import ApiSection from '$lib/components/api-section.svelte'
 	import { Section } from '$lib/components/section'
+	import { errorKey } from '$lib/components/section/error-key'
 	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -18,9 +19,11 @@
 		resourceName: string
 		/** Render as a one-line band with an inline title instead of a titled ApiSection. */
 		band?: boolean
+		/** Body only, inside the host's folder: no heading, errors reported to the host's section. */
+		isEmbedded?: boolean
 	}
 
-	const { partID, resourceName, band = false }: Props = $props()
+	const { partID, resourceName, band = false, isEmbedded = false }: Props = $props()
 
 	const client = createResourceClient(
 		ArmClient,
@@ -38,7 +41,7 @@
 
 	const setManualModeMutation = createResourceMutation(client, 'setManualMode')
 
-	// The band renders no ApiSection, so it reads the same sources through the errors indicator.
+	// The band and the embedded body render no ApiSection, so they read the same sources here.
 	const bandErrors = useSectionErrors(() => ({
 		queries: [propertiesQuery, manualModeQuery],
 		mutations: [setManualModeMutation],
@@ -63,6 +66,15 @@
 			/>
 			<Section.Errors errors={bandErrors.errors} />
 		</section>
+	{:else if isEmbedded}
+		{#each bandErrors.errors as error (errorKey(error))}
+			<Section.Error {error} />
+		{/each}
+		<ManualMode
+			isManualMode={manualModeQuery.data ?? false}
+			isPending={setManualModeMutation.isPending}
+			{setManualMode}
+		/>
 	{:else}
 		<ApiSection
 			method="SetManualMode"

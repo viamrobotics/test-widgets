@@ -11,7 +11,7 @@
 
 	import { acceptForCodecs, codecFromFile } from './codec.ts'
 	import { createAudioPlayer } from './create-audio-player.svelte.ts'
-	import { createTalkRecorder, type TalkClip } from './create-talk-recorder.svelte.ts'
+	import { createHoldToTalk } from './create-hold-to-talk.svelte.ts'
 
 	interface Props {
 		partID: string
@@ -23,8 +23,6 @@
 	const DEFAULT_CODEC = 'pcm16'
 	const DEFAULT_SAMPLE_RATE_HZ = 48_000
 	const DEFAULT_CHANNELS = 1
-	const TALK_CODEC = 'pcm16'
-	const TALK_CHANNELS = 1
 	const PRIMARY_POINTER_BUTTON = 0
 	const TALK_KEYS = new Set([' ', 'Enter'])
 
@@ -38,12 +36,7 @@
 	const propertiesQuery = createResourceQuery(client, 'getProperties', { refetchInterval: false })
 
 	const filePlayer = createAudioPlayer(client)
-	const talkPlayer = createAudioPlayer(client)
-
-	const sendClip = (clip: TalkClip) => {
-		void talkPlayer.play(clip.audioData, TALK_CODEC, clip.sampleRateHz, TALK_CHANNELS)
-	}
-	const recorder = createTalkRecorder(sendClip)
+	const talk = createHoldToTalk(client)
 
 	// A file that cannot be read reaches the indicator with the players' own errors.
 	let readError = $state<Error | null>(null)
@@ -55,7 +48,7 @@
 
 	const sectionErrors = useSectionErrors(() => ({
 		queries: [propertiesQuery],
-		mutations: [recorder, talkPlayer, filePlayer, reader],
+		mutations: [...talk.errorSources, filePlayer, reader],
 	}))
 
 	// A device reports 0 for a value it does not know, which is no valid rate or count.
@@ -82,8 +75,7 @@
 		files = next ?? []
 	}
 
-	const isSending = $derived(talkPlayer.status === 'playing')
-	const isTalkBusy = $derived(recorder.isHeld || isSending)
+	const isTalkBusy = $derived(talk.isHeld || talk.isSending)
 	const isFilePlaying = $derived(filePlayer.status === 'playing')
 	const isConnected = $derived(client.current !== undefined)
 
@@ -92,7 +84,7 @@
 
 	const startTalking = () => {
 		if (!canTalk || isTalkBusy) return
-		recorder.press(sampleRateHz)
+		talk.press(sampleRateHz)
 	}
 
 	const onTalkPointerDown = (event: PointerEvent) => {
@@ -109,7 +101,7 @@
 	}
 
 	const onWindowKeyUp = (event: KeyboardEvent) => {
-		if (TALK_KEYS.has(event.key)) recorder.release()
+		if (TALK_KEYS.has(event.key)) talk.release()
 	}
 
 	const playFile = async () => {
@@ -128,15 +120,15 @@
 
 <!-- The release paths Webgamepad uses. A pointer or key let go outside the button still releases. -->
 <svelte:window
-	onpointerup={recorder.release}
-	onpointercancel={recorder.release}
+	onpointerup={talk.release}
+	onpointercancel={talk.release}
 	onkeyup={onWindowKeyUp}
-	onblur={recorder.release}
+	onblur={talk.release}
 />
 
 <svelte:document
 	onvisibilitychange={() => {
-		if (document.visibilityState === 'hidden') recorder.release()
+		if (document.visibilityState === 'hidden') talk.release()
 	}}
 />
 
@@ -165,15 +157,15 @@
 							type="button"
 							class={[
 								'button button-compact w-full touch-none select-none',
-								recorder.isHeld && 'button-dark',
+								talk.isHeld && 'button-dark',
 							]}
-							aria-pressed={recorder.isHeld}
-							aria-busy={isSending}
+							aria-pressed={talk.isHeld}
+							aria-busy={talk.isSending}
 							disabled={!canTalk}
 							onpointerdown={onTalkPointerDown}
 							onkeydown={onTalkKeyDown}
 						>
-							{#if isSending}
+							{#if talk.isSending}
 								<span
 									class="progress-dots"
 									aria-hidden="true"

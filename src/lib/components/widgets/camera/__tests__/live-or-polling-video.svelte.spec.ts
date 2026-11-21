@@ -1,17 +1,23 @@
-import { render, screen } from '@testing-library/svelte'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/svelte'
+import { afterEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from './live-or-polling-video.spec.svelte'
 
 type TrackHandler = (event: { streams: MediaStream[] }) => void
 
 const stream = vi.hoisted(() => {
-	const makeTrack: (name: string) => MediaStream | undefined = () => undefined
-	return {
+	const state: {
+		getStream: Mock<(name: string) => void>
+		remove: Mock<(name: string) => void>
+		makeTrack: (name: string) => MediaStream | undefined
+		failure: Error | undefined
+	} = {
 		getStream: vi.fn<(name: string) => void>(),
 		remove: vi.fn<(name: string) => void>(),
-		makeTrack,
+		makeTrack: () => undefined,
+		failure: undefined,
 	}
+	return state
 })
 
 vi.mock('@viamrobotics/sdk', async (importOriginal) => ({
@@ -29,6 +35,7 @@ vi.mock('@viamrobotics/sdk', async (importOriginal) => ({
 
 		async getStream(name: string) {
 			stream.getStream(name)
+			if (stream.failure) throw stream.failure
 			const track = stream.makeTrack(name)
 			if (track) this.handler?.({ streams: [track] })
 			return
@@ -66,10 +73,18 @@ const streamNamed = (name: string) => {
 	return mediaStream
 }
 
+const pngOfSize = async (width: number, height: number) => {
+	const canvas = new OffscreenCanvas(width, height)
+	canvas.getContext('2d')?.fillRect(0, 0, width, height)
+	const blob = await canvas.convertToBlob({ type: 'image/png' })
+	return new Uint8Array(await blob.arrayBuffer())
+}
+
 afterEach(() => {
 	stream.getStream.mockClear()
 	stream.remove.mockClear()
 	stream.makeTrack = () => undefined
+	stream.failure = undefined
 })
 
 describe('LiveOrPollingVideo', () => {
@@ -129,5 +144,84 @@ describe('LiveOrPollingVideo', () => {
 
 		await expect.poll(() => overlay.getBoundingClientRect().height).toBe(video.height)
 		expect(overlay.getBoundingClientRect().width).toBe(video.width)
+	})
+
+	it('sends a failed poll to onPollingError instead of drawing it over the video', async () => {
+		const onPollingError = vi.fn<(error: Error | undefined) => void>()
+		const error = new Error('deadline exceeded')
+
+		render(Subject, { props: { partID, resourceName, error, onPollingError } })
+
+		await vi.waitFor(() => {
+			expect(onPollingError).toHaveBeenLastCalledWith(error)
+		})
+		expect(screen.queryByText('Error: deadline exceeded')).not.toBeInTheDocument()
+	})
+
+	it('keeps the stream on the video after a reported poll fails, so the last good frame stays', async () => {
+		render(Subject, {
+			props: {
+				partID,
+				resourceName,
+				error: new Error('deadline exceeded'),
+				onPollingError: vi.fn(),
+			},
+		})
+
+		await expect
+			.poll(() => screen.getByLabelText<HTMLVideoElement>(`${resourceName} stream`).srcObject)
+			.toBeInstanceOf(MediaStream)
+	})
+
+	it('reports the source pixel under the cursor through a cropping object-fit', async () => {
+		const image = await pngOfSize(200, 100)
+		render(Subject, {
+			props: {
+				partID,
+				resourceName,
+				images: [{ sourceName: 'color', mimeType: 'image/png', image }],
+				class: 'size-100',
+				videoClass: 'block size-full object-cover',
+				showMousePositionTooltip: true,
+			},
+		})
+		const video = screen.getByLabelText<HTMLVideoElement>(`${resourceName} stream`)
+		await expect.poll(() => video.getBoundingClientRect().width).toBe(400)
+		const box = video.getBoundingClientRect()
+
+		await expect
+			.poll(
+				async () => {
+					await fireEvent.mouseEnter(video)
+					await fireEvent.mouseMove(video, { clientX: box.left + 100, clientY: box.top + 150 })
+					return screen.queryByRole('tooltip')?.textContent?.replaceAll(/\s+/gu, ' ').trim()
+				},
+				{
+					message:
+						'a 200 x 100 frame covering a 400 x 400 box draws at 4x, 200 px cut off each side',
+				}
+			)
+			.toBe('75x38 (37.5%x37.5%)')
+	})
+
+	it('sends a dropped Live stream to onStreamError instead of drawing it over the video', async () => {
+		const onStreamError = vi.fn<(error: Error) => void>()
+		const failure = new Error('stream dropped')
+		stream.failure = failure
+
+		render(Subject, { props: { partID, resourceName, isLive: true, onStreamError } })
+
+		await vi.waitFor(() => {
+			expect(onStreamError).toHaveBeenLastCalledWith(failure)
+		})
+		expect(screen.queryByText('Error: stream dropped')).not.toBeInTheDocument()
+	})
+
+	it('draws a dropped Live stream over the video for a host that takes no stream errors', async () => {
+		stream.failure = new Error('stream dropped')
+
+		render(Subject, { props: { partID, resourceName, isLive: true } })
+
+		expect(await screen.findByText('Error: stream dropped')).toBeInTheDocument()
 	})
 })

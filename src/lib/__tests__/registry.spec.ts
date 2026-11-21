@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	ArmWidget,
+	GripperControls,
 	GripperGetCurrentInputsWidget,
 	GripperGoToInputsWidget,
 	GripperGrabWidget,
@@ -30,11 +31,18 @@ describe('availableAPIWidgets', () => {
 	it('maps each resource with a card to its API widgets', () => {
 		expect(availableAPIWidgets()['rdk:component:gripper']).toEqual([
 			{
+				id: 'controls',
+				label: 'Controls',
+				kind: 'control',
+				widgets: [GripperControls],
+				size: { minWidth: 230, minHeight: 156, recommendedWidths: [241], maxWidth: 336 },
+			},
+			{
 				id: 'open-grab',
 				label: 'Open / Grab',
 				kind: 'control',
 				widgets: [GripperOpenGrabControl],
-				size: { minWidth: 188, minHeight: 92, recommendedWidths: [203], maxWidth: 203 },
+				size: { minWidth: 136, minHeight: 110, recommendedWidths: [205], maxWidth: 205 },
 			},
 			{
 				id: 'is-holding-something',
@@ -96,7 +104,12 @@ describe('availableAPIWidgets', () => {
 
 	it('registers the switch api widgets in method order', () => {
 		const switchIds = availableAPIWidgets()['rdk:component:switch']?.map((widget) => widget.id)
-		expect(switchIds).toEqual(['set-position', 'get-position', 'get-number-of-positions'])
+		expect(switchIds).toEqual([
+			'controls',
+			'set-position',
+			'get-position',
+			'get-number-of-positions',
+		])
 	})
 
 	it('maps a resource with a card but no API widgets to an empty list', () => {
@@ -123,16 +136,31 @@ describe('availableAPIWidgets', () => {
 		)
 
 		expect(controls.toSorted()).toEqual([
+			'rdk:component:arm::controls',
+			'rdk:component:arm::jog',
+			'rdk:component:arm::joints',
 			'rdk:component:arm::manual-mode',
 			'rdk:component:audio_in::controls',
 			'rdk:component:audio_out::controls',
+			'rdk:component:base::controls',
 			'rdk:component:base::quick-move',
 			'rdk:component:board::controls',
+			'rdk:component:board::pins',
 			'rdk:component:camera::controls',
+			'rdk:component:encoder::controls',
+			'rdk:component:gantry::controls',
 			'rdk:component:gantry::quick-move',
+			'rdk:component:gripper::controls',
 			'rdk:component:gripper::open-grab',
+			'rdk:component:motor::controls',
+			'rdk:component:motor::move',
 			'rdk:component:motor::quick-move',
+			'rdk:component:movement_sensor::controls',
+			'rdk:component:power_sensor::controls',
+			'rdk:component:servo::controls',
+			'rdk:component:servo::move-to',
 			'rdk:component:servo::quick-move',
+			'rdk:component:switch::controls',
 			'rdk:service:discovery::controls',
 			'rdk:service:navigation::controls',
 			'rdk:service:slam::controls',
@@ -146,6 +174,7 @@ describe('apiWidgetsForResource', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'gripper')).map((widget) => widget.id)
 		).toEqual([
+			'controls',
 			'open-grab',
 			'is-holding-something',
 			'is-moving',
@@ -169,6 +198,7 @@ describe('apiWidgetsForResource', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'base')).map((widget) => widget.id)
 		).toEqual([
+			'controls',
 			'quick-move',
 			'move-straight',
 			'spin',
@@ -189,6 +219,7 @@ describe('apiWidgetsForResource', () => {
 			apiWidgetsForResource(resourceName('rdk', 'component', 'board')).map((widget) => widget.id)
 		).toEqual([
 			'controls',
+			'pins',
 			'set-gpio',
 			'get-gpio',
 			'pwm',
@@ -206,17 +237,20 @@ describe('apiWidgetsForResource', () => {
 	it('keeps the servo ids the app persists, with get-position and stop added last', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'servo')).map((widget) => widget.id)
-		).toEqual(['move', 'quick-move', 'is-moving', 'get-position', 'stop'])
+		).toEqual(['controls', 'move', 'quick-move', 'move-to', 'is-moving', 'get-position', 'stop'])
 	})
 
 	it('returns an empty list for the widget-only motion service', () => {
 		expect(apiWidgetsForResource(resourceName('rdk', 'service', 'motion'))).toEqual([])
 	})
 
-	it('keeps the arm ids the app persists, with quick move removed and stop last', () => {
+	it('keeps the arm ids the app persists, with the control interfaces first, quick move removed, and stop last', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'arm')).map((widget) => widget.id)
 		).toEqual([
+			'controls',
+			'jog',
+			'joints',
 			'move-to-joint-positions',
 			'move-to-position',
 			'get-joint-positions',
@@ -234,7 +268,9 @@ describe('apiWidgetsForResource', () => {
 		expect(
 			apiWidgetsForResource(resourceName('rdk', 'component', 'motor')).map((widget) => widget.id)
 		).toEqual([
+			'controls',
 			'quick-move',
+			'move',
 			'set-power',
 			'set-rpm',
 			'go-for',
@@ -375,7 +411,7 @@ describe('widgetSizeForResource', () => {
 	it("returns the composite card's size", () => {
 		expect(widgetSizeForResource(resourceName('rdk', 'component', 'servo'))).toEqual({
 			minWidth: 169,
-			minHeight: 511,
+			minHeight: 555,
 			recommendedWidths: [320, 672],
 			maxWidth: 688,
 		})

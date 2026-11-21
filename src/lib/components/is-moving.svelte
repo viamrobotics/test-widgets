@@ -75,7 +75,7 @@
 	{:else}
 		{@const isMoving = query.data ?? false}
 		<span class={['badge w-fit', isMoving ? 'badge-success' : 'badge-neutral']}>
-			{isMoving ? 'Moving...' : 'Idle'}
+			{isMoving ? 'Moving' : 'Idle'}
 		</span>
 		{@render children?.()}
 		<Section.Text class="mt-auto">Updates automatically</Section.Text>

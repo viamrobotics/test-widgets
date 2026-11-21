@@ -5,13 +5,20 @@
 	import { Slider } from '@viamrobotics/prime-controls'
 	import { clickOutside, Icon } from '@viamrobotics/prime-ui'
 
+	import { pressAndHold } from '$lib/components/press-and-hold'
+
 	import { createKeyboardCapture } from './keyboard-capture.svelte'
 
 	interface Props {
-		setPower: (linear: Vector3, angular: Vector3) => void
+		/**
+		 * Sent at once on every press, release, and key change, with no guard or queue. Every returned
+		 * promise is caught here, so its error reaches the host only through the mutation it reports to.
+		 */
+		setPower: (linear: Vector3, angular: Vector3) => Promise<unknown>
 		/**
 		 * Sent once when keyboard capture ends while a drive key is held, since that key's release
-		 * never arrives. Without it, a zero power is sent instead.
+		 * never arrives, and once when the zero sent on an emptied hold fails. Without it, a lost
+		 * capture sends a zero power instead.
 		 */
 		stop?: () => void
 		/** While false, keyboard capture is released and cannot hold. @default true */
@@ -20,6 +27,8 @@
 
 	type Direction = 'forward' | 'left' | 'backward' | 'right'
 
+	type Notice = 'stop-sent' | 'engage-refused'
+
 	interface DriveButton {
 		direction: Direction
 		label: string
@@ -27,13 +36,11 @@
 		icon: string
 		iconClass?: string
 		gridClass: string
-		linear: number
-		angular: number
 	}
 
 	const DEFAULT_POWER_FRACTION = 0.5
 	const POWER_STEP = 0.05
-	const HOLD_KEYS = new Set([' ', 'Enter'])
+	const ZERO: Vector3 = { x: 0, y: 0, z: 0 }
 
 	// When setPower commands are sent in quick succession, the RDK base model sometimes handles the
 	// responses out of order. To make sure the base truly stops, a second zero follows 50 ms later.
@@ -47,8 +54,6 @@
 			key: 'W',
 			icon: mdiArrowUp,
 			gridClass: 'col-start-2 row-start-1',
-			linear: 1,
-			angular: 0,
 		},
 		{
 			direction: 'left',
@@ -56,8 +61,6 @@
 			key: 'A',
 			icon: mdiUndo,
 			gridClass: 'col-start-1 row-start-2',
-			linear: 0,
-			angular: 1,
 		},
 		{
 			direction: 'backward',
@@ -66,8 +69,6 @@
 			icon: mdiArrowUp,
 			iconClass: 'rotate-180',
 			gridClass: 'col-start-2 row-start-2',
-			linear: -1,
-			angular: 0,
 		},
 		{
 			direction: 'right',
@@ -76,10 +77,10 @@
 			icon: mdiUndo,
 			iconClass: '-scale-x-100',
 			gridClass: 'col-start-3 row-start-2',
-			linear: 0,
-			angular: -1,
 		},
 	]
+
+	const DIRECTIONS: Direction[] = ['forward', 'left', 'backward', 'right']
 
 	const DIRECTION_BY_KEY = new Map<string, Direction>([
 		['w', 'forward'],
@@ -112,43 +113,86 @@
 	const holdHintId = `${instanceId}-hold-hint`
 
 	let powerFraction = $state(DEFAULT_POWER_FRACTION)
-	let pointerDirection = $state<Direction | null>(null)
-	const pressedKeys = $state<Record<Direction, boolean>>({
+	// One held set with two writers: a pointer or Space hold on a pad button, and a captured key.
+	const heldByPointer = $state<Record<Direction, boolean>>({
 		forward: false,
 		left: false,
 		backward: false,
 		right: false,
 	})
-	let isStopSentOnRelease = $state(false)
+	const heldByKey = $state<Record<Direction, boolean>>({
+		forward: false,
+		left: false,
+		backward: false,
+		right: false,
+	})
+	let notice = $state<Notice | null>(null)
+	let wasTextFieldFocusedAtTogglePress = false
 
 	let secondStopTimeoutId: ReturnType<typeof setTimeout> | undefined
 
-	const setPowerScalar = (linearFraction: number, angularFraction: number) => {
-		clearTimeout(secondStopTimeoutId)
-		setPower({ x: 0, y: linearFraction, z: 0 }, { x: 0, y: 0, z: angularFraction })
-		if (linearFraction === 0 && angularFraction === 0) {
-			secondStopTimeoutId = setTimeout(() => {
-				setPower({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 })
-			}, SECOND_STOP_DELAY_MS)
+	const isHeld = (direction: Direction) => heldByPointer[direction] || heldByKey[direction]
+
+	const isAnyHeld = () => DIRECTIONS.some((direction) => isHeld(direction))
+
+	const isAnyKeyHeld = () => DIRECTIONS.some((direction) => heldByKey[direction])
+
+	const heldSign = (direction: Direction) => (isHeld(direction) ? 1 : 0)
+
+	// A held button draws `button-dark`, so its keycap inherits that fill's text color for contrast.
+	const keycapColorClass = (direction: Direction) => {
+		if (isHeld(direction)) {
+			return undefined
 		}
+		if (capture.isCaptured) {
+			return 'text-default'
+		}
+		return 'text-subtle-2'
 	}
 
-	const isAnyKeyPressed = () => Object.values(pressedKeys).some(Boolean)
+	// The mutation already reports a failed call to the section, so the rejection needs no handler here.
+	const ignoreRejection = () => undefined
 
-	const releaseHeldKeys = () => {
-		if (!isAnyKeyPressed()) {
+	const sendZero = () => {
+		clearTimeout(secondStopTimeoutId)
+		let isStopSentOnFailure = false
+		const stopOnFailure = () => {
+			if (isStopSentOnFailure || isAnyHeld()) {
+				return
+			}
+			isStopSentOnFailure = true
+			stop?.()
+		}
+		setPower(ZERO, ZERO).catch(stopOnFailure)
+		secondStopTimeoutId = setTimeout(() => {
+			setPower(ZERO, ZERO).catch(stopOnFailure)
+		}, SECOND_STOP_DELAY_MS)
+	}
+
+	const driveFromHeld = () => {
+		if (!isAnyHeld()) {
+			sendZero()
 			return
 		}
-		pressedKeys.forward = false
-		pressedKeys.left = false
-		pressedKeys.backward = false
-		pressedKeys.right = false
-		isStopSentOnRelease = true
+		clearTimeout(secondStopTimeoutId)
+		const linear = (heldSign('forward') - heldSign('backward')) * powerFraction
+		const angular = (heldSign('left') - heldSign('right')) * powerFraction
+		setPower({ x: 0, y: linear, z: 0 }, { x: 0, y: 0, z: angular }).catch(ignoreRejection)
+	}
+
+	const releaseHeldKeys = () => {
+		if (!isAnyKeyHeld()) {
+			return
+		}
+		for (const direction of DIRECTIONS) {
+			heldByKey[direction] = false
+		}
+		notice = 'stop-sent'
 		if (stop) {
 			clearTimeout(secondStopTimeoutId)
 			stop()
 		} else {
-			setPowerScalar(0, 0)
+			sendZero()
 		}
 	}
 
@@ -162,12 +206,6 @@
 			return !NON_TEXT_INPUT_TYPES.has(target.type)
 		}
 		return target instanceof HTMLElement && target.isContentEditable
-	}
-
-	const driveFromKeys = () => {
-		const linear = (pressedKeys.forward ? 1 : 0) - (pressedKeys.backward ? 1 : 0)
-		const angular = (pressedKeys.left ? 1 : 0) - (pressedKeys.right ? 1 : 0)
-		setPowerScalar(linear * powerFraction, angular * powerFraction)
 	}
 
 	const driveKeyDirection = (event: KeyboardEvent) => {
@@ -196,8 +234,8 @@
 		if (event.repeat) {
 			return
 		}
-		pressedKeys[direction] = true
-		driveFromKeys()
+		heldByKey[direction] = true
+		driveFromHeld()
 	}
 
 	const onWindowKeyup = (event: KeyboardEvent) => {
@@ -207,64 +245,44 @@
 		}
 		event.stopImmediatePropagation()
 		event.preventDefault()
-		if (!pressedKeys[direction]) {
+		if (!heldByKey[direction]) {
 			return
 		}
-		pressedKeys[direction] = false
-		driveFromKeys()
+		heldByKey[direction] = false
+		driveFromHeld()
+	}
+
+	// Focus moves to the toggle on pointerdown, so the text field that held focus is read before then.
+	const onTogglePointerDown = () => {
+		wasTextFieldFocusedAtTogglePress = isTextField(document.activeElement)
 	}
 
 	const engageOrRelease = () => {
+		const isRefused = wasTextFieldFocusedAtTogglePress
+		wasTextFieldFocusedAtTogglePress = false
 		if (!isConnected) {
 			return
 		}
-		if (!capture.isCaptured) {
-			isStopSentOnRelease = false
-		}
-		capture.toggle()
-	}
-
-	const startButtonDrive = ({ direction, linear, angular }: DriveButton) => {
-		if (pointerDirection !== null) {
+		if (capture.isCaptured) {
+			capture.release()
 			return
 		}
-		pointerDirection = direction
-		setPowerScalar(linear * powerFraction, angular * powerFraction)
-	}
-
-	const endButtonDrive = () => {
-		if (pointerDirection === null) {
+		if (isRefused) {
+			notice = 'engage-refused'
 			return
 		}
-		pointerDirection = null
-		setPowerScalar(0, 0)
+		notice = null
+		capture.engage()
 	}
 
-	const onPointerDown = (
-		event: PointerEvent & { currentTarget: HTMLButtonElement },
-		button: DriveButton
-	) => {
-		if (event.button !== 0) {
-			return
-		}
-		event.currentTarget.setPointerCapture(event.pointerId)
-		startButtonDrive(button)
+	const startPointerHold = (direction: Direction) => {
+		heldByPointer[direction] = true
+		driveFromHeld()
 	}
 
-	const onButtonKeydown = (event: KeyboardEvent, button: DriveButton) => {
-		if (!HOLD_KEYS.has(event.key)) {
-			return
-		}
-		event.preventDefault()
-		if (!event.repeat) {
-			startButtonDrive(button)
-		}
-	}
-
-	const onButtonKeyup = (event: KeyboardEvent) => {
-		if (HOLD_KEYS.has(event.key)) {
-			endButtonDrive()
-		}
+	const endPointerHold = (direction: Direction) => {
+		heldByPointer[direction] = false
+		driveFromHeld()
 	}
 
 	// An effect, not $derived: a dropped connection must end capture and send one Stop, a side effect.
@@ -299,91 +317,95 @@
 	onvisibilitychange={() => {
 		if (document.visibilityState === 'hidden') {
 			capture.release()
-			endButtonDrive()
 		}
 	}}
 />
 
 <div
-	class="flex flex-col gap-1"
+	class="@container min-w-0"
 	{@attach clickOutside(() => {
 		capture.release()
 	})}
 >
-	<div class="flex flex-wrap items-center gap-2">
-		<button
-			type="button"
-			class={['button button-xs', capture.isCaptured && 'button-dark']}
-			aria-pressed={capture.isCaptured}
-			aria-disabled={!isConnected || undefined}
-			onclick={engageOrRelease}
-		>
-			Keyboard control
-		</button>
-	</div>
-
-	<!-- Always mounted so screen readers announce it. Empty, its -mt-1 cancels the gap-1 above. -->
-	<p
-		role="status"
-		class="text-subtle-2 text-xs empty:-mt-1"
+	<div
+		class="flex flex-col gap-2 @md:grid @md:grid-cols-[--spacing(49)_minmax(0,--spacing(80))] @md:items-start @md:gap-x-4"
 	>
-		{#if capture.isCaptured}
-			Keyboard captured. W A S D and arrows drive. <span class="text-link">Esc</span> to release.
-		{:else if isStopSentOnRelease}
-			Keyboard released while driving. Stop sent.
-		{/if}
-	</p>
+		<div class="@md:col-start-2 @md:row-start-1">
+			<Slider
+				label="Power"
+				min={0}
+				max={1}
+				step={POWER_STEP}
+				bind:value={powerFraction}
+			/>
+		</div>
 
-	<Slider
-		label="Power"
-		min={0}
-		max={1}
-		step={POWER_STEP}
-		bind:value={powerFraction}
-	/>
+		<div class="flex flex-col gap-2 @md:col-start-1 @md:row-span-2 @md:row-start-1">
+			<div class="grid grid-cols-[repeat(3,max-content)] gap-2">
+				{#each DRIVE_BUTTONS as button (button.direction)}
+					{@const { direction, label, key, icon, iconClass, gridClass } = button}
+					<button
+						type="button"
+						class={[
+							'button button-xs h-8.5 w-15 touch-none',
+							gridClass,
+							isHeld(direction) && 'button-dark',
+						]}
+						aria-label="{label} ({key})"
+						aria-describedby={holdHintId}
+						{@attach pressAndHold({
+							onPress: () => {
+								startPointerHold(direction)
+							},
+							onRelease: () => {
+								endPointerHold(direction)
+							},
+						})}
+					>
+						<Icon
+							{icon}
+							size="sm"
+							class={iconClass}
+						/>
+						<span class={['font-semibold', keycapColorClass(direction)]}>
+							{key}
+						</span>
+					</button>
+				{/each}
+			</div>
 
-	<div class="mt-1 flex flex-wrap items-start gap-2">
-		<div class="grid grid-cols-[repeat(3,max-content)] gap-2">
-			{#each DRIVE_BUTTONS as button (button.direction)}
-				{@const { direction, label, key, icon, iconClass, gridClass } = button}
+			<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 				<button
 					type="button"
-					class={[
-						'button button-xs w-full touch-none',
-						gridClass,
-						(pointerDirection === direction || pressedKeys[direction]) && 'button-dark',
-					]}
-					aria-label="{label} ({key})"
-					aria-describedby={holdHintId}
-					onpointerdown={(event) => {
-						onPointerDown(event, button)
-					}}
-					onpointerup={endButtonDrive}
-					onpointercancel={endButtonDrive}
-					onlostpointercapture={endButtonDrive}
-					onkeydown={(event) => {
-						onButtonKeydown(event, button)
-					}}
-					onkeyup={onButtonKeyup}
-					onblur={endButtonDrive}
+					class={['button button-xs', capture.isCaptured && 'button-dark']}
+					aria-pressed={capture.isCaptured}
+					aria-disabled={!isConnected || undefined}
+					onpointerdown={onTogglePointerDown}
+					onclick={engageOrRelease}
 				>
-					<Icon
-						{icon}
-						size="sm"
-						class={iconClass}
-					/>
-					{label}
-					<span class={['font-semibold', capture.isCaptured ? 'text-default' : 'text-subtle-2']}>
-						{key}
-					</span>
+					Keyboard control
 				</button>
-			{/each}
+				<p
+					id={holdHintId}
+					class="text-subtle-2 text-xs"
+				>
+					Press and hold
+				</p>
+			</div>
 		</div>
+
+		<!-- Always mounted so screen readers announce it. Empty, its -mt-2 cancels the gap-2 before it. -->
 		<p
-			id={holdHintId}
-			class="text-subtle-2 ml-auto text-xs"
+			role="status"
+			class="text-subtle-2 text-xs empty:-mt-2 @md:col-start-2 @md:row-start-2"
 		>
-			Press and hold
+			{#if capture.isCaptured}
+				Keyboard captured. W A S D and arrows drive. <span class="text-link">Esc</span> to release.
+			{:else if notice === 'stop-sent'}
+				Keyboard released while driving. Sent Stop.
+			{:else if notice === 'engage-refused'}
+				Keyboard not captured while a text field has focus.
+			{/if}
 		</p>
 	</div>
 </div>

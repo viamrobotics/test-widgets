@@ -3,8 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { MachineConnectionEvent } from '@viamrobotics/sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { MediaFit } from '$lib/components/media-frame/media-fit'
+
 import { RefetchRates } from '$lib/components/refetch-interval-store.svelte'
 
+import { pcd } from '../../pcd/__tests__/__fixtures__/pcd'
 import CameraControls from '../camera-controls.svelte'
 import Subject from './__fixtures__/camera-controls-host.svelte'
 import PaneSubject from './__fixtures__/in-320-pane.svelte'
@@ -38,18 +41,48 @@ const state = vi.hoisted(
 		images: MockImage[] | undefined
 		imagesError: Error | null
 		properties: MockProperties | undefined
+		pointcloud: Uint8Array | undefined
 		pointcloudError: Error | null
 		pointcloudIsLoading: boolean
 		pointcloudOptions: (() => MockQueryOptions) | undefined
+		robotClient: object | undefined
 	} => ({
 		images: undefined,
 		imagesError: null,
 		properties: undefined,
+		pointcloud: undefined,
 		pointcloudError: null,
 		pointcloudIsLoading: false,
 		pointcloudOptions: undefined,
+		robotClient: undefined,
 	})
 )
+
+const stream = vi.hoisted(() => {
+	const failures: Error[] = []
+	return { getStream: vi.fn<(name: string) => void>(), failures }
+})
+
+vi.mock('@viamrobotics/sdk', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@viamrobotics/sdk')>()),
+	StreamClient: class {
+		on() {}
+
+		off() {}
+
+		async getStream(name: string) {
+			stream.getStream(name)
+			const failure = stream.failures.shift()
+			if (failure) throw failure
+		}
+
+		async getOptions() {
+			return []
+		}
+
+		async remove() {}
+	},
+}))
 
 const createMockQuery = <TData>(
 	getError: () => Error | null,
@@ -76,7 +109,7 @@ const imagesResponse = () => (state.images ? { images: state.images } : undefine
 
 vi.mock('@viamrobotics/svelte-sdk', () => ({
 	useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
-	useRobotClient: vi.fn(() => ({ current: undefined })),
+	useRobotClient: vi.fn(() => ({ current: state.robotClient })),
 	createResourceClient: vi.fn(() => ({ current: undefined })),
 	// GetPointCloud and GetProperties take no arguments, so their third parameter is the options getter.
 	createResourceQuery: vi.fn(
@@ -100,7 +133,8 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 			state.pointcloudOptions = options
 			return createMockQuery(
 				() => state.pointcloudError,
-				() => state.pointcloudIsLoading
+				() => state.pointcloudIsLoading,
+				() => state.pointcloud
 			)
 		}
 	),
@@ -112,17 +146,37 @@ const resourceName = 'test-camera'
 const waitToStartFeedKey = `camera-wait-to-start-feed/${partID}/${resourceName}`
 const waitToStartPointCloudKey = `camera-wait-to-start-point-cloud/${partID}/${resourceName}`
 const pointCloudRateKey = `control-card-refresh/${partID}/${resourceName}/camera-point-cloud`
+const feedRateKey = `control-card-refresh/${partID}/${resourceName}/camera`
+const imageFitKey = `camera-media-fit/${partID}/${resourceName}`
+const pointCloudFitKey = `camera-point-cloud-fit/${partID}/${resourceName}`
+const LIVE_INTERVAL = '33.3333'
 
-const sectionFor = (method: string) => {
-	const section = screen.getByRole('heading', { name: method }).closest('section')
-	if (!section) throw new Error(`No section for ${method}`)
+const controlsSection = () => {
+	const section = screen.getByRole('heading', { name: 'Controls' }).closest('section')
+	if (!section) throw new Error('No section around the Controls heading')
 	return within(section)
 }
 
-const groupFor = (method: string) => within(screen.getByRole('group', { name: method }))
+const groupFor = (mode: string) => within(screen.getByRole('group', { name: mode }))
 
-const startsAutomatically = (method: string) =>
-	groupFor(method).getByRole('checkbox', { name: 'Start feed automatically' })
+const startsAutomatically = (mode: string) =>
+	groupFor(mode).getByRole('checkbox', { name: 'Start feed automatically' })
+
+const mediaBoxAspectRatio = (inside: HTMLElement) =>
+	inside.closest<HTMLElement>('[style*="aspect-ratio"]')?.style.aspectRatio
+
+const renderDroppedLiveStream = () => {
+	localStorage.setItem(feedRateKey, LIVE_INTERVAL)
+	state.robotClient = {}
+	stream.failures.push(new Error('stream dropped'))
+	render(Subject, { props: { partID, resourceName, autoplay: true } })
+}
+
+const fitOptions = async (mode: string) => {
+	await userEvent.click(groupFor(mode).getByRole('combobox', { name: 'Fit' }))
+	const options = await screen.findAllByRole('option')
+	return options.map((option) => option.textContent?.trim())
+}
 
 const pointCloudOptions = (): MockQueryOptions => {
 	if (!state.pointcloudOptions) throw new Error('GetPointCloud was never queried')
@@ -141,38 +195,44 @@ describe('CameraControls', () => {
 		state.images = undefined
 		state.imagesError = null
 		state.properties = undefined
+		state.pointcloud = undefined
 		state.pointcloudError = null
 		state.pointcloudIsLoading = false
 		state.pointcloudOptions = undefined
+		state.robotClient = undefined
+		stream.failures.length = 0
 	})
 
 	afterEach(() => {
 		localStorage.removeItem(waitToStartFeedKey)
 		localStorage.removeItem(waitToStartPointCloudKey)
 		localStorage.removeItem(pointCloudRateKey)
+		localStorage.removeItem(feedRateKey)
+		localStorage.removeItem(imageFitKey)
+		localStorage.removeItem(pointCloudFitKey)
 	})
 
 	it('waits for the user to start the feed when the saved preference is off', () => {
 		render(Subject, { props: { partID, resourceName } })
 
 		expect(screen.getByRole('button', { name: 'Start feed' })).toBeInTheDocument()
-		expect(startsAutomatically('GetImages')).not.toBeChecked()
+		expect(startsAutomatically('Image')).not.toBeChecked()
 	})
 
 	it('starts the feed on mount with autoplay while leaving the saved preference off', () => {
 		render(Subject, { props: { partID, resourceName, autoplay: true } })
 
 		expect(screen.queryByRole('button', { name: 'Start feed' })).not.toBeInTheDocument()
-		expect(startsAutomatically('GetImages')).not.toBeChecked()
+		expect(startsAutomatically('Image')).not.toBeChecked()
 		expect(localStorage.getItem(waitToStartFeedKey)).toBe('true')
 	})
 
 	it('saves a checked Start feed automatically as no longer waiting', async () => {
 		render(Subject, { props: { partID, resourceName } })
 
-		await userEvent.click(startsAutomatically('GetImages'))
+		await userEvent.click(startsAutomatically('Image'))
 
-		expect(startsAutomatically('GetImages')).toBeChecked()
+		expect(startsAutomatically('Image')).toBeChecked()
 		expect(localStorage.getItem(waitToStartFeedKey)).toBe('false')
 		expect(screen.queryByRole('button', { name: 'Start feed' })).not.toBeInTheDocument()
 	})
@@ -181,7 +241,7 @@ describe('CameraControls', () => {
 		render(Subject, { props: { partID, resourceName } })
 
 		expect(screen.queryByRole('radio', { name: 'Point cloud' })).not.toBeInTheDocument()
-		expect(screen.getByRole('group', { name: 'GetImages' })).toBeInTheDocument()
+		expect(screen.getByRole('group', { name: 'Image' })).toBeInTheDocument()
 	})
 
 	it('shows no Mode toggle when GetProperties reports no point cloud support', () => {
@@ -190,7 +250,7 @@ describe('CameraControls', () => {
 		render(Subject, { props: { partID, resourceName } })
 
 		expect(screen.queryByRole('radio', { name: 'Point cloud' })).not.toBeInTheDocument()
-		expect(screen.getByRole('group', { name: 'GetImages' })).toBeInTheDocument()
+		expect(screen.getByRole('group', { name: 'Image' })).toBeInTheDocument()
 	})
 
 	it('opens on Image mode when GetProperties reports point cloud support', () => {
@@ -199,7 +259,7 @@ describe('CameraControls', () => {
 		render(Subject, { props: { partID, resourceName } })
 
 		expect(screen.getByRole('radio', { name: 'Image' })).toBeChecked()
-		expect(screen.getByRole('group', { name: 'GetImages' })).toBeInTheDocument()
+		expect(screen.getByRole('group', { name: 'Image' })).toBeInTheDocument()
 	})
 
 	it('never queries the point cloud in Image mode', () => {
@@ -216,7 +276,7 @@ describe('CameraControls', () => {
 
 		expect(screen.getByRole('button', { name: 'Start point cloud' })).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Start feed' })).not.toBeInTheDocument()
-		expect(startsAutomatically('GetPointCloud')).not.toBeChecked()
+		expect(startsAutomatically('Point cloud')).not.toBeChecked()
 	})
 
 	it('waits for the user to start the point cloud by default', async () => {
@@ -233,13 +293,13 @@ describe('CameraControls', () => {
 		expect(pointCloudOptions().enabled).toBe(true)
 		expect(screen.queryByRole('button', { name: 'Start point cloud' })).not.toBeInTheDocument()
 		expect(localStorage.getItem(waitToStartPointCloudKey)).toBe('true')
-		expect(startsAutomatically('GetPointCloud')).not.toBeChecked()
+		expect(startsAutomatically('Point cloud')).not.toBeChecked()
 	})
 
 	it('starts the point cloud from its checkbox and saves it as no longer waiting', async () => {
 		await renderInPointCloudMode()
 
-		await userEvent.click(startsAutomatically('GetPointCloud'))
+		await userEvent.click(startsAutomatically('Point cloud'))
 
 		expect(pointCloudOptions().enabled).toBe(true)
 		expect(localStorage.getItem(waitToStartPointCloudKey)).toBe('false')
@@ -257,7 +317,7 @@ describe('CameraControls', () => {
 	it('offers Live on the feed refresh row', async () => {
 		render(Subject, { props: { partID, resourceName } })
 
-		await userEvent.click(groupFor('GetImages').getByRole('combobox', { name: 'Refresh rate' }))
+		await userEvent.click(groupFor('Image').getByRole('combobox', { name: 'Refresh rate' }))
 
 		expect(await screen.findByRole('option', { name: RefetchRates.LIVE })).toBeInTheDocument()
 	})
@@ -265,7 +325,7 @@ describe('CameraControls', () => {
 	it('offers no Live on the point cloud refresh row', async () => {
 		await renderInPointCloudMode()
 
-		await userEvent.click(groupFor('GetPointCloud').getByRole('combobox', { name: 'Refresh rate' }))
+		await userEvent.click(groupFor('Point cloud').getByRole('combobox', { name: 'Refresh rate' }))
 		await screen.findAllByRole('option')
 
 		expect(screen.queryByRole('option', { name: RefetchRates.LIVE })).not.toBeInTheDocument()
@@ -288,18 +348,18 @@ describe('CameraControls', () => {
 		render(Subject, { props: { partID, resourceName, autoplay: true } })
 
 		expect(
-			groupFor('GetImages').getByRole('checkbox', { name: 'Mouse position tooltip' })
+			groupFor('Image').getByRole('checkbox', { name: 'Mouse position tooltip' })
 		).not.toBeChecked()
 	})
 
-	it("shows the point cloud error in the GetPointCloud section's indicator", async () => {
+	it("shows the point cloud error in the section's indicator", async () => {
 		state.pointcloudError = new Error('no depth sensor')
 		await renderInPointCloudMode()
 
 		await userEvent.click(screen.getByRole('button', { name: 'Start point cloud' }))
 
 		expect(
-			sectionFor('GetPointCloud').getByRole('button', { name: '1 error, copy to clipboard' })
+			controlsSection().getByRole('button', { name: '1 error, copy to clipboard' })
 		).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Copy error' })).not.toBeInTheDocument()
 	})
@@ -310,7 +370,7 @@ describe('CameraControls', () => {
 
 		await userEvent.click(screen.getByRole('button', { name: 'Start point cloud' }))
 
-		expect(sectionFor('GetPointCloud').getByRole('progressbar')).toBeInTheDocument()
+		expect(controlsSection().getByRole('progressbar')).toBeInTheDocument()
 	})
 
 	it('disables the feed actions until the feed starts', () => {
@@ -320,19 +380,19 @@ describe('CameraControls', () => {
 		expect(screen.getByRole('button', { name: 'Picture-in-picture' })).toBeDisabled()
 	})
 
-	it("shows a failed screenshot export in the GetImages section's indicator", async () => {
+	it("shows a failed screenshot export in the section's indicator", async () => {
 		render(Subject, { props: { partID, resourceName, autoplay: true } })
 		state.imagesError = new Error('export failed')
 
 		await userEvent.click(screen.getByRole('button', { name: /screenshot/iu }))
 
 		expect(
-			await sectionFor('GetImages').findByRole('button', { name: '1 error, copy to clipboard' })
+			await controlsSection().findByRole('button', { name: '1 error, copy to clipboard' })
 		).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Copy error' })).not.toBeInTheDocument()
 	})
 
-	it("shows a refused picture-in-picture request in the GetImages section's indicator", async () => {
+	it("shows a refused picture-in-picture request in the section's indicator", async () => {
 		vi.spyOn(HTMLMediaElement.prototype, 'readyState', 'get').mockReturnValue(
 			HTMLMediaElement.HAVE_METADATA
 		)
@@ -343,7 +403,7 @@ describe('CameraControls', () => {
 
 		await userEvent.click(screen.getByRole('button', { name: /picture-in-picture/iu }))
 
-		const indicator = await sectionFor('GetImages').findByRole('button', {
+		const indicator = await controlsSection().findByRole('button', {
 			name: '1 error, copy to clipboard',
 		})
 		await fireEvent.focusIn(indicator)
@@ -351,12 +411,208 @@ describe('CameraControls', () => {
 		expect(screen.queryByRole('button', { name: 'Copy error' })).not.toBeInTheDocument()
 	})
 
-	it('keeps the feed error on the video overlay instead of the GetImages indicator', async () => {
+	it('counts a failed GetImages poll in the section indicator', async () => {
 		state.imagesError = new Error('camera offline')
+
 		render(Subject, { props: { partID, resourceName, autoplay: true } })
 
-		expect(await screen.findByText('Error: camera offline')).toBeInTheDocument()
-		expect(sectionFor('GetImages').getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		expect(
+			await controlsSection().findByRole('button', { name: '1 error, copy to clipboard' })
+		).toBeInTheDocument()
+	})
+
+	it('draws no error text over the feed for a failed GetImages poll', async () => {
+		state.imagesError = new Error('camera offline')
+
+		render(Subject, { props: { partID, resourceName, autoplay: true } })
+
+		await controlsSection().findByRole('button', { name: '1 error, copy to clipboard' })
+		expect(screen.queryByText('Error: camera offline')).not.toBeInTheDocument()
+	})
+
+	it('titles the section Controls with the errors indicator in its aside', () => {
+		render(Subject, { props: { partID, resourceName } })
+
+		expect(controlsSection().getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		expect(screen.queryByRole('heading', { name: 'GetImages' })).not.toBeInTheDocument()
+	})
+
+	it('keeps the Controls title in Point cloud mode', async () => {
+		await renderInPointCloudMode()
+
+		expect(screen.getByRole('heading', { name: 'Controls' })).toBeInTheDocument()
+		expect(screen.queryByRole('heading', { name: 'GetPointCloud' })).not.toBeInTheDocument()
+	})
+
+	it('draws Resolution while Live as a plain row with extra-small Reset and Execute', () => {
+		localStorage.setItem(feedRateKey, LIVE_INTERVAL)
+
+		render(Subject, { props: { partID, resourceName, autoplay: true } })
+
+		const feed = groupFor('Image')
+		expect(feed.getByRole('combobox', { name: 'Resolution (width x height)' })).toBeInTheDocument()
+		expect(feed.getByRole('button', { name: 'Reset' })).toHaveClass('button-xs')
+		expect(feed.getByRole('button', { name: 'Execute' })).toHaveClass('button-xs')
+		expect(screen.queryByRole('heading', { name: 'SetStreamOptions' })).not.toBeInTheDocument()
+	})
+
+	it('counts a dropped Live stream in the section indicator', async () => {
+		renderDroppedLiveStream()
+
+		expect(
+			await controlsSection().findByRole('button', { name: '1 error, copy to clipboard' })
+		).toBeInTheDocument()
+	})
+
+	it('draws no error text over the feed for a dropped Live stream', async () => {
+		renderDroppedLiveStream()
+
+		await controlsSection().findByRole('button', { name: '1 error, copy to clipboard' })
+		expect(screen.queryByText('Error: stream dropped')).not.toBeInTheDocument()
+	})
+
+	it('returns the Start feed splash after a dropped Live stream', async () => {
+		renderDroppedLiveStream()
+
+		expect(await screen.findByRole('button', { name: 'Start feed' })).toBeInTheDocument()
+	})
+
+	it('restarts the Live stream from Start feed after it drops', async () => {
+		renderDroppedLiveStream()
+		const startFeed = await screen.findByRole('button', { name: 'Start feed' })
+
+		await userEvent.click(startFeed)
+
+		await vi.waitFor(() => {
+			expect(stream.getStream).toHaveBeenCalledTimes(2)
+		})
+		expect(screen.queryByRole('button', { name: 'Start feed' })).not.toBeInTheDocument()
+	})
+
+	it('hides Resolution while the feed polls', () => {
+		render(Subject, { props: { partID, resourceName, autoplay: true } })
+
+		expect(
+			screen.queryByRole('combobox', { name: 'Resolution (width x height)' })
+		).not.toBeInTheDocument()
+	})
+
+	it('puts Start feed automatically before Screenshot once the point cloud runs', async () => {
+		localStorage.setItem(waitToStartPointCloudKey, 'false')
+		state.pointcloud = new TextEncoder().encode(pcd)
+
+		await renderInPointCloudMode()
+
+		const checkbox = startsAutomatically('Point cloud')
+		const screenshot = groupFor('Point cloud').getByRole('button', { name: 'Screenshot' })
+		expect(
+			checkbox.compareDocumentPosition(screenshot) & Node.DOCUMENT_POSITION_FOLLOWING,
+			'the checkbox precedes Screenshot'
+		).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+	})
+
+	it('stops the running point cloud from its frame checkbox', async () => {
+		localStorage.setItem(waitToStartPointCloudKey, 'false')
+		state.pointcloud = new TextEncoder().encode(pcd)
+		await renderInPointCloudMode()
+
+		await userEvent.click(startsAutomatically('Point cloud'))
+
+		expect(localStorage.getItem(waitToStartPointCloudKey)).toBe('true')
+	})
+
+	it('shows Screenshot and Picture-in-picture disabled on the point cloud splash', async () => {
+		await renderInPointCloudMode()
+
+		const splash = groupFor('Point cloud')
+		expect(splash.getByRole('button', { name: 'Screenshot' })).toBeDisabled()
+		expect(splash.getByRole('button', { name: 'Picture-in-picture' })).toBeDisabled()
+	})
+
+	it('offers every fit for the image feed', async () => {
+		render(Subject, { props: { partID, resourceName } })
+
+		expect(await fitOptions('Image')).toEqual(['Keep ratio', 'Fit', 'Stretch', 'Crop to fill'])
+	})
+
+	it('offers Keep ratio and Fit only for a point cloud view', async () => {
+		await renderInPointCloudMode()
+
+		expect(await fitOptions('Point cloud')).toEqual(['Keep ratio', 'Fit'])
+	})
+
+	it('offers Keep ratio and Fit only once the point cloud runs', async () => {
+		localStorage.setItem(waitToStartPointCloudKey, 'false')
+		state.pointcloud = new TextEncoder().encode(pcd)
+		await renderInPointCloudMode()
+
+		expect(await fitOptions('Point cloud')).toEqual(['Keep ratio', 'Fit'])
+	})
+
+	it('saves the point cloud fit apart from the image fit', async () => {
+		await renderInPointCloudMode()
+		await userEvent.click(groupFor('Point cloud').getByRole('combobox', { name: 'Fit' }))
+
+		await userEvent.click(await screen.findByRole('option', { name: 'Fit' }))
+
+		expect(localStorage.getItem(pointCloudFitKey)).toBe('"fit"')
+		expect(localStorage.getItem(imageFitKey)).toBeNull()
+	})
+
+	it.each([
+		{ fit: 'keep-ratio', objectFit: 'contain' },
+		{ fit: 'fit', objectFit: 'contain' },
+		{ fit: 'stretch', objectFit: 'fill' },
+		{ fit: 'crop', objectFit: 'cover' },
+	])(
+		'draws the video at object-fit $objectFit under the saved $fit, which the cursor tooltip reads',
+		({ fit, objectFit }) => {
+			localStorage.setItem(imageFitKey, JSON.stringify(fit))
+
+			render(Subject, { props: { partID, resourceName, autoplay: true } })
+
+			expect(getComputedStyle(screen.getByLabelText(`${resourceName} stream`)).objectFit).toBe(
+				objectFit
+			)
+		}
+	)
+
+	it.each([
+		{ name: 'both sizes given', widthPx: 640, heightPx: 480, ratio: '640 / 480' },
+		{ name: 'no sizes', widthPx: undefined, heightPx: undefined, ratio: '16 / 9' },
+		{ name: 'a width of 0', widthPx: 0, heightPx: 480, ratio: '16 / 9' },
+		{ name: 'a negative height', widthPx: 640, heightPx: -480, ratio: '16 / 9' },
+		{ name: 'a width that is not a number', widthPx: Number.NaN, heightPx: 480, ratio: '16 / 9' },
+		{ name: 'only a width', widthPx: 640, heightPx: undefined, ratio: '16 / 9' },
+	])(
+		'holds the feed at $ratio before the first frame given $name',
+		({ widthPx, heightPx, ratio }) => {
+			render(Subject, { props: { partID, resourceName, widthPx, heightPx } })
+
+			expect(mediaBoxAspectRatio(screen.getByRole('button', { name: 'Start feed' }))).toBe(ratio)
+		}
+	)
+
+	it('seeds the image fit from defaultFit', () => {
+		render(Subject, { props: { partID, resourceName, defaultFit: 'crop' } })
+
+		expect(groupFor('Image').getByRole('combobox', { name: 'Fit' })).toHaveTextContent(
+			'Crop to fill'
+		)
+	})
+
+	it('opens on Keep ratio with no defaultFit', () => {
+		render(Subject, { props: { partID, resourceName } })
+
+		expect(groupFor('Image').getByRole('combobox', { name: 'Fit' })).toHaveTextContent('Keep ratio')
+	})
+
+	it('ignores a defaultFit from config that is not a fit', () => {
+		const defaultFit: MediaFit = JSON.parse('"zoom"')
+
+		render(Subject, { props: { partID, resourceName, defaultFit } })
+
+		expect(groupFor('Image').getByRole('combobox', { name: 'Fit' })).toHaveTextContent('Keep ratio')
 	})
 
 	it('hides Add to dataset when the app provides no dataset context', () => {

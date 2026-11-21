@@ -27,6 +27,7 @@
 		pictureInPicture?: FrameProps['pictureInPicture']
 		addToDataset?: FrameProps['addToDataset']
 		cursorPosition?: boolean
+		fit?: FrameProps['fit']
 		/** Passes the fixture's dataset form in `addToDataset.form`. */
 		withForm?: boolean
 		withOverlay?: boolean
@@ -48,6 +49,7 @@
 		pictureInPicture,
 		addToDataset,
 		cursorPosition = $bindable(),
+		fit,
 		withForm = false,
 		withOverlay = false,
 		withChildren = false,
@@ -110,6 +112,7 @@
 		{pictureInPicture}
 		addToDataset={hostAddToDataset}
 		bind:cursorPosition
+		{fit}
 		children={withChildren ? hostControls : undefined}
 	/>
 </div>

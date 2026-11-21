@@ -15,6 +15,8 @@
 
 	import { useAddToDatasetAction } from '$lib/add-image-to-dataset'
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import { CANVAS_FITS, MEDIA_FITS, type MediaFit } from '$lib/components/media-frame/media-fit'
+	import { createMediaFit } from '$lib/components/media-frame/media-fit.svelte'
 	import MediaFrame from '$lib/components/media-frame/media-frame.svelte'
 	import Progress from '$lib/components/progress.svelte'
 	import RefetchController from '$lib/components/refetch-controller.svelte'
@@ -24,7 +26,6 @@
 	} from '$lib/components/refetch-interval-store.svelte'
 	import { Section, useSectionErrors } from '$lib/components/section'
 	import { usePip } from '$lib/pip/context.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
@@ -35,7 +36,7 @@
 	import LiveThreeSixtyCameraView from './live-three-sixty-camera-view.svelte'
 	import { pickImageForSource } from './pick-image-for-source'
 	import SectionErrorReporterReset from './section-error-reporter-reset.svelte'
-	import SetStreamOptions from './set-stream-options.svelte'
+	import StreamResolutionRow from './stream-resolution-row.svelte'
 	import ThreeSixtyCameraView from './three-sixty-camera-view.svelte'
 
 	interface Props {
@@ -43,14 +44,23 @@
 		resourceName: string
 		/** Start the feed on mount even when "Start feed automatically" is off, e.g. the user just expanded the card. */
 		autoplay?: boolean
+		/**
+		 * The camera's configured frame width, such as webcam `width_px`. With `heightPx`, it sets the
+		 * feed's ratio until the first frame reports its own size. Ignored unless above 0.
+		 */
+		widthPx?: number
+		/** The camera's configured frame height, such as webcam `height_px`. See `widthPx`. */
+		heightPx?: number
+		/** Seeds Image mode's Fit until the person picks one. A value that is not a fit is ignored. */
+		defaultFit?: MediaFit
 	}
 
-	const { partID, resourceName, autoplay = false }: Props = $props()
+	const { partID, resourceName, autoplay = false, widthPx, heightPx, defaultFit }: Props = $props()
 
 	// GetPointCloud returns a large payload, so it never polls faster than once a second.
 	const POINT_CLOUD_MIN_INTERVAL_MS = 1000
 
-	// The feed's ratio until its first frame reports its own size, and the 360 view's ratio always.
+	// The feed's ratio until its first frame reports its own size, when `widthPx` and `heightPx` give none, and the 360 view's ratio always.
 	const DEFAULT_ASPECT_RATIO = '16 / 9'
 
 	const refetchInterval = createRefetchIntervalStore(
@@ -90,7 +100,11 @@
 		waitToStartPointCloud.current = !checked
 	}
 
+	// A dropped Live stream, held for the indicator until the next Start feed.
+	let liveStreamError = $state<Error>()
+
 	const startFeed = () => {
+		liveStreamError = undefined
 		isPlaying = true
 	}
 
@@ -100,9 +114,11 @@
 
 	const IMAGE_MODE = 'image'
 	const POINT_CLOUD_MODE = 'point-cloud'
+	const IMAGE_MODE_LABEL = 'Image'
+	const POINT_CLOUD_MODE_LABEL = 'Point cloud'
 	const MODE_ITEMS = [
-		{ value: IMAGE_MODE, label: 'Image' },
-		{ value: POINT_CLOUD_MODE, label: 'Point cloud' },
+		{ value: IMAGE_MODE, label: IMAGE_MODE_LABEL },
+		{ value: POINT_CLOUD_MODE, label: POINT_CLOUD_MODE_LABEL },
 	]
 
 	let mode = $state(IMAGE_MODE)
@@ -117,7 +133,6 @@
 	let showMousePositionTooltip = $state(false)
 
 	const id = $props.id()
-	const headingId = `${id}-heading`
 	const sourceLabelId = `${id}-source`
 
 	const client = createResourceClient(
@@ -133,6 +148,30 @@
 
 	const supportsPointCloud = $derived(propertiesQuery.data?.supportsPcd === true)
 	const isPointCloudMode = $derived(supportsPointCloud && mode === POINT_CLOUD_MODE)
+
+	const modeLabel = $derived(isPointCloudMode ? POINT_CLOUD_MODE_LABEL : IMAGE_MODE_LABEL)
+
+	const imageFit = createMediaFit(() => `camera-media-fit/${partID}/${resourceName}`, {
+		fits: MEDIA_FITS,
+		get defaultFit() {
+			return defaultFit
+		},
+	})
+	const pointCloudFit = createMediaFit(() => `camera-point-cloud-fit/${partID}/${resourceName}`, {
+		fits: CANVAS_FITS,
+	})
+	const activeFit = $derived(isPointCloudMode ? pointCloudFit : imageFit)
+	// Every fit but Keep ratio fills the height the host gives the control, so the section passes that height down.
+	const isFillingHeight = $derived(activeFit.current !== 'keep-ratio')
+
+	// The video fills the media box, and `object-fit` places the frame in it. The box keeps the frame's ratio under Keep ratio.
+	const VIDEO_FIT_CLASSES: Record<MediaFit, string> = {
+		'keep-ratio': 'object-contain',
+		fit: 'object-contain',
+		stretch: 'object-fill',
+		crop: 'object-cover',
+	}
+	const videoClass = $derived(['block size-full', VIDEO_FIT_CLASSES[imageFit.current]].join(' '))
 
 	const isLive = $derived(refetchInterval.current === RefetchIntervals.LIVE)
 	const isFeedActive = $derived(isPlaying && !isPointCloudMode)
@@ -231,10 +270,31 @@
 	)
 
 	// The frame's Screenshot, Picture-in-picture, and Add to dataset report their own failures here.
-	// The feed's own errors stay on its overlay, so GetImages is not one of the queries.
+	// The feed reports a failed poll through `onPollingError`, so GetImages is not one of the queries.
 	const sectionErrors = useSectionErrors(() => ({ queries: modeQueries }))
 
-	const sectionMethod = $derived(isPointCloudMode ? 'GetPointCloud' : 'GetImages')
+	let feedPollingError = $state<Error>()
+	const reportFeedPollingError = (error: Error | undefined) => {
+		feedPollingError = error
+	}
+
+	// A dropped Live stream returns the splash, so a retry is one press of Start feed.
+	const stopFeedOnStreamError = (error: Error) => {
+		liveStreamError = error
+		isPlaying = false
+	}
+
+	$effect(() =>
+		// Registering writes the section's error set, so it must not subscribe this effect to it.
+		untrack(() => {
+			const removePollingError = sectionErrors.report(() => feedPollingError ?? null)
+			const removeStreamError = sectionErrors.report(() => liveStreamError ?? null)
+			return () => {
+				removePollingError()
+				removeStreamError()
+			}
+		})
+	)
 
 	const pip = usePip()
 
@@ -247,17 +307,26 @@
 		}
 	})
 
+	const isFrameSize = (value: number | undefined): value is number =>
+		typeof value === 'number' && Number.isFinite(value) && value > 0
+
+	const configuredAspectRatio = $derived.by(() => {
+		if (!isFrameSize(widthPx) || !isFrameSize(heightPx)) return DEFAULT_ASPECT_RATIO
+		return `${widthPx} / ${heightPx}`
+	})
+
 	let feedFps = $state<number>()
-	let feedAspectRatio = $state(DEFAULT_ASPECT_RATIO)
+	let reportedAspectRatio = $state<string>()
+	const feedAspectRatio = $derived(reportedAspectRatio ?? configuredAspectRatio)
 
 	const updateFeedFrame = (frame: { fps: number; width: number; height: number }) => {
 		feedFps = frame.fps
 		if (frame.width > 0 && frame.height > 0) {
-			feedAspectRatio = `${frame.width} / ${frame.height}`
+			reportedAspectRatio = `${frame.width} / ${frame.height}`
 		}
 	}
 
-	const frameAspectRatio = $derived(isShowingVideo ? feedAspectRatio : DEFAULT_ASPECT_RATIO)
+	const frameAspectRatio = $derived(displayAs360 ? DEFAULT_ASPECT_RATIO : feedAspectRatio)
 	const frameFps = $derived(isShowingVideo ? feedFps : undefined)
 
 	type GetImagesResponse = NonNullable<typeof imageQuery.data>
@@ -310,6 +379,14 @@
 		if (!action) return undefined
 		return { ...action, capture: captureSelectedImage }
 	})
+
+	// The splash draws the point cloud's actions in place and disabled, so the row does not jump when the first cloud lands.
+	const capturePointCloudBeforeStart = (): Promise<MediaFrameCapture> =>
+		Promise.reject(new Error('The point cloud has not loaded yet'))
+	const pointCloudPictureInPicture = $derived<MediaFramePictureInPicture>({
+		key: `${resourceName}-point-cloud`,
+		stream: () => undefined,
+	})
 </script>
 
 {#snippet checkboxField(
@@ -329,7 +406,8 @@
 			<LiveOrPollingVideo
 				{partID}
 				{resourceName}
-				videoClass="block h-auto w-full"
+				class="size-full"
+				{videoClass}
 				{isLive}
 				data={imageQuery.data}
 				error={imageQuery.error}
@@ -338,6 +416,8 @@
 				{showMousePositionTooltip}
 				sourceName={selectedSource}
 				onFrame={updateFeedFrame}
+				onPollingError={reportFeedPollingError}
+				onStreamError={stopFeedOnStreamError}
 			/>
 		</SectionErrorReporterReset>
 	{:else if isPlaying && isLive}
@@ -393,6 +473,7 @@
 		{pictureInPicture}
 		{addToDataset}
 		bind:cursorPosition={showMousePositionTooltip}
+		fit={imageFit}
 	>
 		<div class="min-w-0">
 			<RefetchController
@@ -431,10 +512,9 @@
 		{/if}
 
 		{#if isShowingVideo && isLive}
-			<SetStreamOptions
+			<StreamResolutionRow
 				{partID}
 				{resourceName}
-				class="-mx-4 -mb-4"
 			/>
 		{/if}
 	</MediaFrame>
@@ -445,12 +525,9 @@
 		<PCDWidget
 			data={pointcloudQuery.data}
 			label={resourceName}
+			fit={pointCloudFit}
+			bind:startAutomatically={getStartsPointCloudAutomatically, setStartsPointCloudAutomatically}
 		>
-			{@render checkboxField(
-				'Start feed automatically',
-				getStartsPointCloudAutomatically,
-				setStartsPointCloudAutomatically
-			)}
 			{@render pointCloudRefreshRow()}
 		</PCDWidget>
 	{:else}
@@ -462,6 +539,9 @@
 			onStart={startPointCloud}
 			startLabel="Start point cloud"
 			bind:startAutomatically={getStartsPointCloudAutomatically, setStartsPointCloudAutomatically}
+			screenshot={capturePointCloudBeforeStart}
+			pictureInPicture={pointCloudPictureInPicture}
+			fit={pointCloudFit}
 		>
 			{@render pointCloudRefreshRow()}
 		</MediaFrame>
@@ -472,16 +552,11 @@
 	{#snippet connected()}
 		<Section
 			errorReporter={sectionErrors}
-			class="flex-col px-0 py-0"
+			class={['flex-col px-0 py-0', isFillingHeight && 'h-full min-h-0']}
 		>
 			<div class="p-4 pb-3">
-				<Section.Heading>
-					<span id={headingId}>
-						<Section.Method
-							method={sectionMethod}
-							api={ResourceTriplets.Camera}
-						/>
-					</span>
+				<Section.Heading class="justify-between">
+					Controls
 					{#snippet aside()}
 						<Section.Errors errors={sectionErrors.errors} />
 						{#if isPointCloudMode}
@@ -505,8 +580,8 @@
 
 			<div
 				role="group"
-				aria-labelledby={headingId}
-				class="flex flex-col"
+				aria-label={modeLabel}
+				class={['flex flex-col', isFillingHeight && 'min-h-0 flex-1']}
 			>
 				{#if isPointCloudMode}
 					{@render pointCloudFrame()}

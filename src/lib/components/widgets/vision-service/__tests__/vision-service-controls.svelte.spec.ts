@@ -183,6 +183,53 @@ describe('VisionServiceControls', () => {
 		vi.useRealTimers()
 	})
 
+	it('preselects the service default camera in the Camera row', () => {
+		state.cameras = ['cam-1', 'cam-2']
+		state.data.getProperties = { ...PROPERTIES, defaultCamera: 'cam-2' }
+		renderSubject()
+
+		expect(screen.getByRole('combobox', { name: 'Camera' })).toHaveTextContent('cam-2')
+	})
+
+	it.each([
+		{
+			label: 'a minimum',
+			props: { minimumConfidence: 0.5 },
+			line: 'Showing 0.5 and above',
+		},
+		{
+			label: 'label confidences',
+			props: { labelConfidences: { person: 0.8, car: 0.6 } },
+			line: 'Showing person 0.8, car 0.6 and above',
+		},
+		{
+			label: 'both',
+			props: { minimumConfidence: 0.5, labelConfidences: { person: 0.8, car: 0.6 } },
+			line: 'Showing person 0.8, car 0.6, others 0.5 and above',
+		},
+		{
+			label: 'one invalid label confidence',
+			props: { labelConfidences: { person: 0.8, car: 1.5 } },
+			line: 'Showing person 0.8 and above',
+		},
+	])('shows the confidence line for $label', ({ props, line }) => {
+		render(Subject, { props: { ...PROPS, ...props } })
+
+		expect(screen.getByText(line)).toBeInTheDocument()
+	})
+
+	it.each([
+		{ label: 'absent', props: {} },
+		{
+			label: 'invalid',
+			props: { minimumConfidence: 1.5, labelConfidences: { person: -0.1, car: Number.NaN } },
+		},
+	])('shows no confidence line when both props are $label', ({ props }) => {
+		render(Subject, { props: { ...PROPS, ...props } })
+
+		expect(screen.queryByText(/^Showing /)).not.toBeInTheDocument()
+	})
+
 	it('renders the CaptureAllFromCamera section heading', () => {
 		renderSubject()
 

@@ -9,19 +9,23 @@
 
 	interface Props {
 		map?: Map | undefined
+		/** False when the service has no map, so Focus has nothing to pan. */
+		hasMap?: boolean
 		obstacles: GeoGeometry[]
 		hovered: string | null
 		onEnter: (id: string) => void
 		onLeave: () => void
 	}
 
-	const { map, obstacles, hovered, onEnter, onLeave }: Props = $props()
+	const { map, hasMap = true, obstacles, hovered, onEnter, onLeave }: Props = $props()
 
 	const MILLIMETERS_PER_METER = 1000
 	// Pads the focused bounds so the whole obstacle stays in view.
 	const BOUNDS_MARGIN = 1.1
 
 	const toMeters = (millimeters: number) => millimeters / MILLIMETERS_PER_METER
+	const BOX_DECIMALS = 1
+	const toBoxMeters = (millimeters: number) => toMeters(millimeters).toFixed(BOX_DECIMALS)
 
 	const getBoundingRadius = (geometry: Geometry) => {
 		switch (geometry.geometryType.case) {
@@ -49,7 +53,7 @@
 				const dimensions = geometry.geometryType.value.dimsMm
 				if (!dimensions) return 'Box'
 				const { x, y, z } = dimensions
-				return `Box · ${toMeters(x)} × ${toMeters(y)} × ${toMeters(z)} m · θ ${theta}°`
+				return `Box · ${toBoxMeters(x)} × ${toBoxMeters(y)} × ${toBoxMeters(z)} m · θ ${theta}°`
 			}
 			case 'sphere': {
 				return `Sphere · radius ${toMeters(geometry.geometryType.value.radiusMm)} m`
@@ -119,6 +123,7 @@
 						type="button"
 						class="icon-button size-6"
 						aria-label="Focus {geometry.label}"
+						disabled={!hasMap}
 						onclick={(event) => {
 							event.stopPropagation()
 							panToGeometry(location, geometry)

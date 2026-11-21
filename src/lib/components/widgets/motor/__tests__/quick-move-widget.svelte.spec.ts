@@ -1,13 +1,20 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../quick-move-widget.svelte'
 
-const state = vi.hoisted((): { mutate: Mock; error: Error | null } => ({
-	mutate: vi.fn(),
-	error: null,
-}))
+const state = vi.hoisted(
+	(): {
+		properties: { positionReporting: boolean } | undefined
+		calls: [string, unknown[]][]
+		errors: Record<string, Error | null>
+	} => ({
+		properties: undefined,
+		calls: [],
+		errors: {},
+	})
+)
 
 vi.mock('@viamrobotics/sdk', () => ({
 	MotorClient: class {},
@@ -15,24 +22,52 @@ vi.mock('@viamrobotics/sdk', () => ({
 
 vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
-	createResourceMutation: vi.fn(() => ({
-		mutate: state.mutate,
+	createResourceQuery: vi.fn(() => ({
+		get data() {
+			return state.properties
+		},
+		isLoading: false,
+		isSuccess: true,
+		fetchStatus: 'idle',
+		error: null,
+	})),
+	createResourceMutation: vi.fn((_client: unknown, method: string) => ({
+		mutate: (args: unknown[]) => {
+			state.calls.push([method, args])
+		},
 		isPending: false,
 		get error() {
-			return state.error
+			return state.errors[method] ?? null
 		},
 	})),
 }))
 
-const renderSubject = () =>
+const renderSubject = (
+	props: { isEmbedded?: boolean; maxRpm?: number; minPowerPct?: number; maxPowerPct?: number } = {}
+) =>
 	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-motor' },
+		props: { partID: 'test-part', resourceName: 'test-motor', ...props },
 	})
 
-describe('Motor QuickMove widget', () => {
+let user: ReturnType<typeof userEvent.setup>
+
+const press = async (name: RegExp) => {
+	await user.pointer({
+		target: screen.getByRole('button', { name }),
+		keys: '[MouseLeft>]',
+	})
+}
+
+const release = async () => {
+	await user.pointer({ keys: '[/MouseLeft]' })
+}
+
+describe('Motor QuickMove control', () => {
 	beforeEach(() => {
-		state.mutate = vi.fn()
-		state.error = null
+		user = userEvent.setup()
+		state.properties = { positionReporting: false }
+		state.calls = []
+		state.errors = {}
 	})
 
 	it('renders the Quick move heading', () => {
@@ -41,41 +76,170 @@ describe('Motor QuickMove widget', () => {
 		expect(screen.getByRole('heading', { name: 'Quick move' })).toBeInTheDocument()
 	})
 
-	it('calls the setPower mutation with forward power when the forward button is pressed', async () => {
-		renderSubject()
+	it('renders no heading when a host embeds it', () => {
+		renderSubject({ isEmbedded: true })
 
-		await userEvent.pointer({
-			target: screen.getByRole('button', { name: /forward/iu }),
-			keys: '[MouseLeft>]',
-		})
-
-		expect(state.mutate).toHaveBeenCalledWith([0.5], {})
+		expect(screen.queryByRole('heading', { name: 'Quick move' })).not.toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /forward/iu })).toBeInTheDocument()
 	})
 
-	it('calls the setPower mutation with backward power when the backward button is pressed', async () => {
-		renderSubject()
+	describe('on a motor that does not report its position', () => {
+		it('sends forward power while Forward is held', async () => {
+			renderSubject()
 
-		await userEvent.pointer({
-			target: screen.getByRole('button', { name: /backward/iu }),
-			keys: '[MouseLeft>]',
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setPower', [0.5]]])
 		})
 
-		expect(state.mutate).toHaveBeenCalledWith([-0.5], {})
+		it('sends backward power while Backward is held', async () => {
+			renderSubject()
+
+			await press(/backward/iu)
+
+			expect(state.calls).toEqual([['setPower', [-0.5]]])
+		})
+
+		it('sends stop on release', async () => {
+			renderSubject()
+
+			await press(/forward/iu)
+			await release()
+
+			expect(state.calls).toEqual([
+				['setPower', [0.5]],
+				['stop', []],
+			])
+		})
 	})
 
-	it('calls the setPower mutation with zero when the button is released', async () => {
-		renderSubject()
+	describe('on a motor that reports its position', () => {
+		beforeEach(() => {
+			state.properties = { positionReporting: true }
+		})
 
-		await userEvent.click(screen.getByRole('button', { name: /forward/iu }))
+		it('shows an RPM field in place of Power', () => {
+			renderSubject()
 
-		expect(state.mutate).toHaveBeenLastCalledWith([0], {})
+			expect(screen.getByRole('spinbutton', { name: /rpm/iu })).toHaveValue(10)
+			expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+		})
+
+		it('sends the RPM while Forward is held', async () => {
+			renderSubject()
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setRPM', [10]]])
+		})
+
+		it('sends the negative RPM while Backward is held', async () => {
+			renderSubject()
+
+			await press(/backward/iu)
+
+			expect(state.calls).toEqual([['setRPM', [-10]]])
+		})
+
+		it('sends stop on release', async () => {
+			renderSubject()
+
+			await press(/backward/iu)
+			await release()
+
+			expect(state.calls).toEqual([
+				['setRPM', [-10]],
+				['stop', []],
+			])
+		})
+
+		it('describes each hold button with the press and hold hint', () => {
+			renderSubject()
+
+			expect(screen.getByRole('button', { name: /forward/iu })).toHaveAccessibleDescription(
+				'Press and hold'
+			)
+			expect(screen.getByRole('button', { name: /backward/iu })).toHaveAccessibleDescription(
+				'Press and hold'
+			)
+		})
 	})
 
 	it("shows the mutation error in the section's error indicator", () => {
-		state.error = new Error('motor refused to move')
+		state.errors.setPower = new Error('motor refused to move')
 
 		renderSubject()
 
 		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+	})
+
+	describe('host config props', () => {
+		it('spans the power slider over the given range and clamps the start for a motor without position', async () => {
+			renderSubject({ minPowerPct: 0.6, maxPowerPct: 0.9 })
+
+			const slider = screen.getByRole('slider', { name: /power/iu })
+			expect(slider).toHaveAttribute('min', '0.6')
+			expect(slider).toHaveAttribute('max', '0.9')
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setPower', [0.6]]])
+		})
+
+		it('keeps the full power range with the props absent or invalid', async () => {
+			renderSubject({ minPowerPct: 0.9, maxPowerPct: 0.2 })
+
+			const slider = screen.getByRole('slider', { name: /power/iu })
+			expect(slider).toHaveAttribute('min', '0')
+			expect(slider).toHaveAttribute('max', '1')
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setPower', [0.5]]])
+		})
+
+		it('caps the RPM field at maxRpm and sends nothing for a value over it', async () => {
+			state.properties = { positionReporting: true }
+			renderSubject({ maxRpm: 5 })
+
+			const rpm = screen.getByRole('spinbutton', { name: /rpm/iu })
+			expect(rpm).toHaveAttribute('max', '5')
+			expect(screen.getByRole('alert')).toHaveTextContent(
+				"RPM cannot exceed the motor's limit of 5."
+			)
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([])
+			await release()
+
+			await user.clear(rpm)
+			await user.type(rpm, '4')
+			await press(/forward/iu)
+
+			expect(state.calls.filter(([method]) => method === 'setRPM')).toEqual([['setRPM', [4]]])
+		})
+
+		it('sends the default RPM with maxRpm absent', async () => {
+			state.properties = { positionReporting: true }
+			renderSubject()
+
+			expect(screen.getByRole('spinbutton', { name: /rpm/iu })).not.toHaveAttribute('max')
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setRPM', [10]]])
+		})
+
+		it.each([0, -3, Number.NaN])('ignores an invalid maxRpm of %s', async (maxRpm) => {
+			state.properties = { positionReporting: true }
+			renderSubject({ maxRpm })
+
+			expect(screen.getByRole('spinbutton', { name: /rpm/iu })).not.toHaveAttribute('max')
+
+			await press(/forward/iu)
+
+			expect(state.calls).toEqual([['setRPM', [10]]])
+		})
 	})
 })

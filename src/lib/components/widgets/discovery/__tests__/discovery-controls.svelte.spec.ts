@@ -72,6 +72,7 @@ const block = (name: string) => screen.getByRole('group', { name })
 const blockNames = () =>
 	screen
 		.getAllByRole('group')
+		.filter((group) => !Object.hasOwn(group.dataset, 'toggleGroupRoot'))
 		.map((group) => group.getAttribute('aria-labelledby'))
 		.filter((id) => id !== null)
 		.map((id) => document.querySelector(`#${CSS.escape(id)}`)?.textContent.trim())
@@ -83,10 +84,9 @@ const readoutText = (scope: HTMLElement, label: string) =>
 		.querySelector('.readout-value')
 		?.textContent.trim()
 
-const pickOption = async (scope: HTMLElement, field: string, option: string) => {
-	await userEvent.click(within(scope).getByRole('combobox', { name: field }))
-	const listbox = await screen.findByRole('listbox')
-	await userEvent.click(within(listbox).getByRole('option', { name: option }))
+const pickToggle = async (scope: HTMLElement, field: string, option: string) => {
+	const group = within(scope).getByRole('group', { name: field })
+	await userEvent.click(within(group).getByRole('radio', { name: option }))
 }
 
 const stubClipboard = () => vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
@@ -108,38 +108,75 @@ describe('DiscoveryControls', () => {
 		expect(within(block('IntegratedCamera')).getByText('6 variants')).toBeInTheDocument()
 	})
 
-	it('draws a select per varying field and a readout per fixed field', () => {
+	it('draws ToggleButtons for two or three short values and a readout per fixed field', () => {
 		state.data = webcamModes
 
 		render(Pane)
 
 		const camera = block('IntegratedCamera')
-		expect(
-			within(camera)
-				.getAllByRole('combobox')
-				.map((combobox) => combobox.textContent.trim())
-		).toEqual(['30', '480', '640'])
+		expect(within(camera).queryAllByRole('combobox')).toHaveLength(0)
+		const selected = (field: string) =>
+			within(within(camera).getByRole('group', { name: field }))
+				.getAllByRole('radio')
+				.filter((radio) => radio.getAttribute('aria-checked') === 'true')
+				.map((radio) => radio.textContent.trim())
+		expect(selected('frame_rate')).toEqual(['30'])
+		expect(selected('height_px')).toEqual(['480'])
+		expect(selected('width_px')).toEqual(['640'])
 		expect(readoutText(camera, 'name')).toBe('IntegratedCamera-0')
 		expect(readoutText(camera, 'video_path')).toBe('video0')
 	})
 
-	it('lists every value of a field in its select', async () => {
+	it('lists every value of a toggle field as an option', () => {
 		state.data = webcamModes
 		render(Pane)
 
-		await userEvent.click(
-			within(block('IntegratedCamera')).getByRole('combobox', { name: 'width_px' })
+		const group = within(block('IntegratedCamera')).getByRole('group', { name: 'width_px' })
+
+		expect(
+			within(group)
+				.getAllByRole('radio')
+				.map((radio) => radio.textContent.trim())
+		).toEqual(['640', '1280'])
+	})
+
+	it('draws a select when a field has four values', async () => {
+		state.data = [10, 20, 30, 40].map((rate, index) =>
+			makeConfig(`cam-${index}`, CAMERA, 'viam:camera:webcam', { frame_rate: rate })
 		)
+		render(Pane)
+
+		await userEvent.click(within(block('cam')).getByRole('combobox', { name: 'frame_rate' }))
 
 		const options = await screen.findAllByRole('option')
-		expect(options.map((option) => option.textContent.trim())).toEqual(['640', '1280'])
+		expect(options.map((option) => option.textContent.trim())).toEqual(['10', '20', '30', '40'])
+	})
+
+	it('draws a select when a value is longer than 16 characters', async () => {
+		state.data = ['/dev/video-short', '/dev/video-longer-than-sixteen'].map((path, index) =>
+			makeConfig(`cam-${index}`, CAMERA, 'viam:camera:webcam', { video_path: path })
+		)
+		render(Pane)
+
+		const camera = block('cam')
+		expect(within(camera).getByRole('combobox', { name: 'video_path' })).toBeInTheDocument()
+		expect(within(camera).queryByRole('radio')).not.toBeInTheDocument()
+	})
+
+	it('keeps a toggle at exactly 16 characters', () => {
+		state.data = ['0123456789abcdef', 'fedcba9876543210'].map((path, index) =>
+			makeConfig(`cam-${index}`, CAMERA, 'viam:camera:webcam', { video_path: path })
+		)
+		render(Pane)
+
+		expect(within(block('cam')).getAllByRole('radio')).toHaveLength(2)
 	})
 
 	it('lands a pick on the variant that keeps the most other values', async () => {
 		state.data = webcamModes
 		render(Pane)
 
-		await pickOption(block('IntegratedCamera'), 'frame_rate', '60')
+		await pickToggle(block('IntegratedCamera'), 'frame_rate', '60')
 
 		expect(readoutText(block('IntegratedCamera'), 'name')).toBe('IntegratedCamera-4')
 	})
@@ -148,7 +185,7 @@ describe('DiscoveryControls', () => {
 		state.data = webcamModes
 		const onAddComponent = vi.fn()
 		render(Pane, { props: { onAddComponent } })
-		await pickOption(block('IntegratedCamera'), 'frame_rate', '60')
+		await pickToggle(block('IntegratedCamera'), 'frame_rate', '60')
 
 		await userEvent.click(
 			within(block('IntegratedCamera')).getByRole('button', { name: 'Add to config' })
@@ -166,7 +203,7 @@ describe('DiscoveryControls', () => {
 		state.data = webcamModes
 		const writeText = stubClipboard()
 		render(Pane)
-		await pickOption(block('IntegratedCamera'), 'width_px', '1280')
+		await pickToggle(block('IntegratedCamera'), 'width_px', '1280')
 
 		await userEvent.click(
 			within(block('IntegratedCamera')).getByRole('button', { name: 'Copy resource' })
@@ -184,7 +221,7 @@ describe('DiscoveryControls', () => {
 		state.data = webcamModes
 		const writeText = stubClipboard()
 		render(Pane)
-		await pickOption(block('IntegratedCamera'), 'width_px', '1280')
+		await pickToggle(block('IntegratedCamera'), 'width_px', '1280')
 
 		await userEvent.click(
 			within(block('IntegratedCamera')).getByRole('button', { name: 'Copy attributes' })
@@ -198,25 +235,18 @@ describe('DiscoveryControls', () => {
 		})
 	})
 
-	it('copies every config sorted by name from the refresh row', async () => {
+	it('has no Copy all configs button beside the refresh row', () => {
 		state.data = [...webcamModes.slice(0, 2), ...fakeServices]
-		const writeText = stubClipboard()
+
 		render(Pane)
 
-		await userEvent.click(screen.getByRole('button', { name: 'Copy all configs' }))
-
-		expect(lastCopied(writeText)).toMatchObject([
-			{ name: 'fake1' },
-			{ name: 'fake2' },
-			{ name: 'IntegratedCamera-0' },
-			{ name: 'IntegratedCamera-1' },
-		])
+		expect(screen.queryByRole('button', { name: 'Copy all configs' })).not.toBeInTheDocument()
 	})
 
 	it('resets the pick when a new result no longer holds the picked variant', async () => {
 		state.data = webcamModes
 		render(Pane)
-		await pickOption(block('IntegratedCamera'), 'frame_rate', '60')
+		await pickToggle(block('IntegratedCamera'), 'frame_rate', '60')
 
 		state.data = webcamModes.slice(0, 3)
 		await tick()
@@ -353,7 +383,7 @@ describe('DiscoveryControls', () => {
 		state.data = webcamModes
 		render(Pane, { props: { withPreview: true } })
 
-		await pickOption(block('IntegratedCamera'), 'frame_rate', '60')
+		await pickToggle(block('IntegratedCamera'), 'frame_rate', '60')
 
 		expect(previewArgs.at(-1)?.()).toEqual([
 			{

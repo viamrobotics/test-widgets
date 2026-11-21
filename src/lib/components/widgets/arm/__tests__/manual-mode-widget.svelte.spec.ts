@@ -70,6 +70,38 @@ describe('Arm SetManualMode widget', () => {
 		expect(screen.getByRole('heading', { name: 'SetManualMode' })).toBeInTheDocument()
 	})
 
+	it('renders the Enter and Exit body when embedded', () => {
+		mockQueries()
+
+		render(Subject, {
+			props: { partID: 'test-part', resourceName: 'test-arm', isEmbedded: true },
+		})
+
+		expect(screen.getByRole('button', { name: 'Enter' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Exit' })).toBeInTheDocument()
+	})
+
+	it('renders no heading and no SetManualMode title when embedded', () => {
+		mockQueries()
+
+		render(Subject, {
+			props: { partID: 'test-part', resourceName: 'test-arm', isEmbedded: true },
+		})
+
+		expect(screen.queryAllByRole('heading')).toEqual([])
+		expect(screen.queryByText('SetManualMode')).not.toBeInTheDocument()
+	})
+
+	it('renders nothing embedded when the arm does not support manual mode', () => {
+		mockQueries({ supportManualMode: false })
+
+		render(Subject, {
+			props: { partID: 'test-part', resourceName: 'test-arm', isEmbedded: true },
+		})
+
+		expect(screen.queryByRole('button', { name: 'Enter' })).not.toBeInTheDocument()
+	})
+
 	it('polls getManualMode every second while manual mode is supported', () => {
 		mockQueries()
 

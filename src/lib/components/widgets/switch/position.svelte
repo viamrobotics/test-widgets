@@ -10,13 +10,15 @@
 		labels: string[]
 		currentPosition: number
 		onSelect: (position: number) => void
+		/** True while a pick is in flight: the group is drawn busy and disabled. @default false */
+		isBusy?: boolean
 	}
 
 	const LABEL = 'Position'
 	// ToggleButtons renders its items inside one `role="group"` element, which is the row to measure.
 	const TOGGLE_GROUP_SELECTOR = '[role="group"]'
 
-	const { numPositions, labels, currentPosition, onSelect }: Props = $props()
+	const { numPositions, labels, currentPosition, onSelect, isBusy = false }: Props = $props()
 
 	// Values are indices, so two positions with the same label stay two options.
 	const items = $derived(
@@ -86,7 +88,10 @@
 	{/each}
 {/snippet}
 
-<div class="relative min-w-0">
+<div
+	class="relative min-w-0"
+	aria-busy={isBusy}
+>
 	<div
 		{@attach measureRoom}
 		class="h-0"
@@ -122,6 +127,7 @@
 					{items}
 					bind:value={getSelectedValue, selectPosition}
 					aria-labelledby={labelId}
+					disabled={isBusy}
 				/>
 			</div>
 		</div>
@@ -129,6 +135,7 @@
 		<ToggleButtons
 			label={LABEL}
 			bind:value={getSelectedValue, selectPosition}
+			disabled={isBusy}
 			class={layout === 'under' ? 'flex-wrap' : 'flex-nowrap'}
 		>
 			{@render toggleItems('min-w-6')}

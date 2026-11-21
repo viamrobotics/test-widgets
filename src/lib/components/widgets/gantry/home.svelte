@@ -1,19 +1,28 @@
 <script lang="ts">
 	import { mdiPlayCircleOutline } from '@mdi/js'
-	import { Icon, StatusDot } from '@viamrobotics/prime-ui'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { GantryClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
+	import { createInFlightGuard, type InFlightGuard } from '$lib/components/in-flight-guard.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
+
+	import HomedReadout from './homed-readout.svelte'
 
 	interface Props {
 		partID: string
 		resourceName: string
+		/**
+		 * The conflict group's guard, shared with the host's jogs, so Home and a step are never in
+		 * flight together. Without it, the widget makes its own.
+		 */
+		guard?: InFlightGuard
+		/** True while this widget's Home call is in flight. Bind it to name the call elsewhere. */
+		isHoming?: boolean
 	}
 
-	const { partID, resourceName }: Props = $props()
+	let { partID, resourceName, guard: hostGuard, isHoming = $bindable(false) }: Props = $props()
 
 	const client = createResourceClient(
 		GantryClient,
@@ -23,9 +32,17 @@
 
 	const homeMutation = createResourceMutation(client, 'home')
 
-	const isHomed = $derived(homeMutation.data)
+	const ownGuard = createInFlightGuard()
+	const guard = $derived(hostGuard ?? ownGuard)
 
-	const homedLabelId = $props.id()
+	const home = async () => {
+		const outcome = await guard.run(() => {
+			isHoming = true
+			return homeMutation.mutateAsync([])
+		})
+		if (outcome === undefined) return
+		isHoming = false
+	}
 </script>
 
 <ApiSection
@@ -34,41 +51,27 @@
 	api={ResourceTriplets.Gantry}
 	mutations={[homeMutation]}
 >
-	<Section.Text>Run the homing sequence</Section.Text>
-	<div class="flex">
+	<div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
 		<button
 			type="button"
 			class="button button-compact"
-			onclick={() => {
-				homeMutation.mutate([], {})
-			}}
+			aria-busy={isHoming}
+			aria-disabled={guard.isBusy || undefined}
+			onclick={home}
 		>
-			<Icon
-				icon={mdiPlayCircleOutline}
-				size="sm"
-			/>
-			Execute
-		</button>
-	</div>
-	<div class="flex min-w-0 items-center gap-2">
-		<span
-			id={homedLabelId}
-			class="text-subtle-1 text-xs">Homed</span
-		>
-		<span
-			role="group"
-			aria-labelledby={homedLabelId}
-			class="readout font-roboto-mono inline-flex items-center gap-2"
-		>
-			{#if isHomed === undefined}
-				-
+			{#if isHoming}
+				<span
+					class="progress-dots"
+					aria-hidden="true"
+				></span>
 			{:else}
-				<StatusDot
-					state={isHomed ? 'success' : 'disabled'}
-					label="Homed"
+				<Icon
+					icon={mdiPlayCircleOutline}
+					size="sm"
 				/>
-				{isHomed ? 'Yes' : 'No'}
 			{/if}
-		</span>
+			Home
+		</button>
+		<HomedReadout isHomed={homeMutation.data} />
 	</div>
 </ApiSection>

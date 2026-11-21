@@ -52,7 +52,7 @@ describe('NavigationService obstacle legend', () => {
 	it.each([
 		{ shape: 'sphere', text: 'Sphere · radius 2 m' },
 		{ shape: 'capsule', text: 'Capsule · radius 0.5 m · length 5 m · θ 0°' },
-		{ shape: 'box', text: 'Box · 50 × 50 × 50 m · θ 0°' },
+		{ shape: 'box', text: 'Box · 50.0 × 50.0 × 50.0 m · θ 0°' },
 	])('describes a $shape in meters', async ({ text }) => {
 		const screen = renderSubject()
 
@@ -103,5 +103,11 @@ describe('NavigationService obstacle legend', () => {
 
 		await expect.element(hoveredRow).toHaveClass('bg-light')
 		await expect.element(otherRow).not.toHaveClass('bg-light')
+	})
+
+	it('disables Focus when there is no map', () => {
+		const screen = renderSubject({ hasMap: false })
+
+		expect(screen.getByRole('button', { name: `Focus ${geometry.label}` }).element()).toBeDisabled()
 	})
 })

@@ -92,6 +92,30 @@ describe('Discovery DiscoverResources widget', () => {
 		expect(screen.getByText(/"deep": 1/u)).toBeInTheDocument()
 	})
 
+	it('copies one result whole JSON from its folder copy button', async () => {
+		discoverState.response = [
+			makeConfig('zeta', CAMERA, 'v:c:z', { width_px: 640 }),
+			makeConfig('alpha', CAMERA, 'v:c:a', { nested: { deep: 1 } }),
+		]
+		const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+		renderSubject()
+		await userEvent.click(screen.getByRole('button', { name: 'Discover resources' }))
+
+		await userEvent.click(screen.getByRole('button', { name: 'Copy alpha JSON' }))
+
+		expect(screen.getByText(/"deep": 1/u).closest('pre')?.parentElement).toContainElement(
+			screen.getByRole('button', { name: 'Copy alpha JSON' })
+		)
+		expect(JSON.parse(String(writeText.mock.lastCall?.[0]))).toEqual({
+			name: 'alpha',
+			api: CAMERA,
+			model: 'v:c:a',
+			attributes: { nested: { deep: 1 } },
+		})
+		expect(screen.queryByRole('button', { name: 'Add to config' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: 'Copy attributes' })).not.toBeInTheDocument()
+	})
+
 	it('reads No resources discovered when none are found', async () => {
 		discoverState.response = []
 		renderSubject()

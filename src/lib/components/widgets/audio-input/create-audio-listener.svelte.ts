@@ -30,6 +30,7 @@ const peakLevel = (samples: Float32Array) => {
 export const createAudioListener = (client: { current: AudioInClient | undefined }) => {
 	let isListening = $state(false)
 	let isRecording = $state(false)
+	let hasHeardChunk = $state(false)
 	let levels = $state.raw<number[]>([])
 	let error = $state<Error | null>(null)
 	let recordedBytes = $state(0)
@@ -63,6 +64,7 @@ export const createAudioListener = (client: { current: AudioInClient | undefined
 		endingSession.controller.abort()
 		void endingSession.context.close()
 		isListening = false
+		hasHeardChunk = false
 		levels = []
 		stopRecording()
 	}
@@ -79,6 +81,7 @@ export const createAudioListener = (client: { current: AudioInClient | undefined
 
 		const channels = decodePcm(chunk.audioData, info.codec, info.numChannels)
 		const frameCount = channels[0]?.length ?? 0
+		hasHeardChunk = true
 		levels = channels.map((samples) => peakLevel(samples))
 		if (isRecording) keepRecorded(chunk, frameCount, info.sampleRateHz)
 		if (frameCount === 0) return
@@ -108,6 +111,7 @@ export const createAudioListener = (client: { current: AudioInClient | undefined
 		session = current
 		recordingCodec = codec
 		isListening = true
+		hasHeardChunk = false
 		error = null
 		levels = []
 
@@ -136,7 +140,7 @@ export const createAudioListener = (client: { current: AudioInClient | undefined
 	}
 
 	const startRecording = () => {
-		if (session === undefined || isRecording) return
+		if (session === undefined || !hasHeardChunk || isRecording) return
 		revokeDownload()
 		recordedChunks = []
 		recordedBytes = 0
@@ -155,6 +159,10 @@ export const createAudioListener = (client: { current: AudioInClient | undefined
 	return {
 		get isListening() {
 			return isListening
+		},
+		/** True once Listen has decoded a chunk. Reset when Listen stops. */
+		get hasHeardChunk() {
+			return hasHeardChunk
 		},
 		get isRecording() {
 			return isRecording

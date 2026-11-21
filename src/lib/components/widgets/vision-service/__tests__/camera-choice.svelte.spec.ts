@@ -20,11 +20,14 @@ const statusesOf = (names: string[]): ResourceStatusesContext => ({
 
 let cleanup: (() => void) | undefined
 
-const choose = (names: string[]) => {
+const choose = (names: string[], defaultCamera?: string) => {
 	vi.mocked(useResourceStatuses).mockReturnValue(statusesOf(names))
 	let choice: ReturnType<typeof createCameraChoice> | undefined
 	cleanup = $effect.root(() => {
-		choice = createCameraChoice(() => 'part-1')
+		choice = createCameraChoice(
+			() => 'part-1',
+			() => defaultCamera
+		)
 	})
 	if (!choice) throw new Error('createCameraChoice did not run')
 	return choice
@@ -50,6 +53,27 @@ describe('createCameraChoice', () => {
 		flushSync()
 
 		expect(choice.cameraName).toBe(DEFAULT_CAMERA_NAME)
+	})
+
+	it('starts on the service default camera when the machine lists it', () => {
+		expect(choose(['cam-1', 'cam-2'], 'cam-2').cameraName).toBe('cam-2')
+	})
+
+	it.each([
+		{ defaultCamera: '', label: 'empty' },
+		{ defaultCamera: 'cam-9', label: 'unknown' },
+		{ defaultCamera: undefined, label: 'unanswered' },
+	])('starts on the first camera when the default is $label', ({ defaultCamera }) => {
+		expect(choose(['cam-1', 'cam-2'], defaultCamera).cameraName).toBe('cam-1')
+	})
+
+	it('holds a pick over the service default camera', () => {
+		const choice = choose(['cam-1', 'cam-2'], 'cam-2')
+
+		choice.pick('cam-1')
+		flushSync()
+
+		expect(choice.cameraName).toBe('cam-1')
 	})
 
 	it('holds a picked camera', () => {

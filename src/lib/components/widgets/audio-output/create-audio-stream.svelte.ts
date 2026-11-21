@@ -26,8 +26,8 @@ const FILE_CHUNK_BYTES = 8192
 const ELAPSED_TICK_MS = 1000
 
 /**
- * One audio stream at a time through `PlayStream`, from a file or the microphone. `stop` and
- * unmount end the running stream. Every stream has its own queue, so a stream started after a
+ * One audio stream at a time through `PlayStream`, from a file or the microphone. `stop`, `finish`,
+ * and unmount end the running stream. Every stream has its own queue, so a stream started after a
  * stopped one never receives the stopped one's chunks.
  */
 export const createAudioStream = (client: { current: AudioStreamSink | undefined }) => {
@@ -52,6 +52,13 @@ export const createAudioStream = (client: { current: AudioStreamSink | undefined
 		ending.queue.abort()
 		endRun(ending)
 		status = 'done'
+	}
+
+	const finish = () => {
+		const finishing = run
+		if (finishing === undefined) return
+		if (finishing.isMicrophone) recorder.release()
+		finishing.queue.close()
 	}
 
 	// A microphone that cannot open ends the stream it was meant to feed.
@@ -135,6 +142,12 @@ export const createAudioStream = (client: { current: AudioStreamSink | undefined
 			return elapsedSeconds
 		},
 		start,
+		/** Ends the running stream now and drops the chunks the call has not read. */
 		stop,
+		/**
+		 * Releases the microphone and ends the running stream once the call reads the chunks already
+		 * queued. The status stays `streaming` until the call settles.
+		 */
+		finish,
 	}
 }

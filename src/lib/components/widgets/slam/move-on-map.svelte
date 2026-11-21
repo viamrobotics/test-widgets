@@ -15,9 +15,11 @@
 		y?: number
 		moveOnMap: (destination: Destination, planDeviationM: number | undefined) => void
 		stopPlan: () => void
+		/** True while a MoveOnMap call is in flight. Execute shows in-progress and ignores presses. */
+		isMoving: boolean
 	}
 
-	let { x = $bindable(), y = $bindable(), moveOnMap, stopPlan }: Props = $props()
+	let { x = $bindable(), y = $bindable(), moveOnMap, stopPlan, isMoving }: Props = $props()
 
 	const endPositionID = $props.id()
 
@@ -35,7 +37,7 @@
 	})
 
 	const execute = () => {
-		if (destination) {
+		if (destination && !isMoving) {
 			moveOnMap(destination, finiteOrUndefined(planDeviationM))
 		}
 	}
@@ -63,12 +65,14 @@
 		</p>
 		<NumberField
 			label="X"
+			aria-label="End position X, meters"
 			suffix="m"
 			step={0.01}
 			bind:value={x}
 		/>
 		<NumberField
 			label="Y"
+			aria-label="End position Y, meters"
 			suffix="m"
 			step={0.01}
 			bind:value={y}
@@ -79,10 +83,18 @@
 		<button
 			type="button"
 			class="button button-compact"
-			aria-disabled={destination === undefined || undefined}
+			aria-disabled={destination === undefined || isMoving || undefined}
+			aria-busy={isMoving || undefined}
 			onclick={execute}
 		>
-			<Icon icon={mdiPlayCircleOutline} />
+			{#if isMoving}
+				<span
+					class="progress-dots"
+					aria-hidden="true"
+				></span>
+			{:else}
+				<Icon icon={mdiPlayCircleOutline} />
+			{/if}
 			Execute
 		</button>
 		<button

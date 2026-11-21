@@ -25,6 +25,7 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 	})),
 	createResourceMutation: vi.fn(() => ({
 		mutate: state.moveMutate,
+		mutateAsync: state.moveMutate,
 		isPending: false,
 		get error() {
 			return state.error
@@ -32,9 +33,9 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 	})),
 }))
 
-const renderSubject = () =>
+const renderSubject = (props: Partial<Parameters<typeof render<typeof Subject>>[1]> = {}) =>
 	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-servo' },
+		props: { partID: 'test-part', resourceName: 'test-servo', ...props },
 	})
 
 describe('Servo Quick move widget', () => {
@@ -49,12 +50,49 @@ describe('Servo Quick move widget', () => {
 		expect(screen.getByRole('heading', { name: 'Quick move' })).toBeInTheDocument()
 	})
 
-	it('calls the move mutation when a quick-move button is pressed', async () => {
+	it('sends one Move to the stepped position when a stepper is pressed', async () => {
 		renderSubject()
 
-		await userEvent.click(screen.getByRole('button', { name: /^\+5°$/u }))
+		await userEvent.click(screen.getByRole('button', { name: /^\+5°,/u }))
 
-		expect(state.moveMutate).toHaveBeenCalledWith([50], {})
+		expect(state.moveMutate).toHaveBeenCalledTimes(1)
+		expect(state.moveMutate).toHaveBeenCalledWith([50])
+	})
+
+	it('steps by the chosen Step', async () => {
+		renderSubject()
+
+		await userEvent.click(screen.getByRole('combobox', { name: 'Step' }))
+		await userEvent.click(screen.getByRole('option', { name: '10°' }))
+		await userEvent.click(screen.getByRole('button', { name: /^−10°,/u }))
+
+		expect(state.moveMutate).toHaveBeenCalledWith([35])
+	})
+
+	it('clamps a step to the configured minimum and maximum', async () => {
+		renderSubject({ minDegrees: 44, maxDegrees: 47 })
+
+		await userEvent.click(screen.getByRole('button', { name: /^\+5°,/u }))
+		await userEvent.click(screen.getByRole('button', { name: /^−5°,/u }))
+
+		expect(state.moveMutate).toHaveBeenNthCalledWith(1, [47])
+		expect(state.moveMutate).toHaveBeenNthCalledWith(2, [44])
+	})
+
+	it('steps freely between 0 and 180 with no configured range', async () => {
+		renderSubject()
+
+		await userEvent.click(screen.getByRole('button', { name: /^−5°,/u }))
+
+		expect(state.moveMutate).toHaveBeenCalledWith([40])
+	})
+
+	it('ignores an invalid pair', async () => {
+		renderSubject({ minDegrees: 100, maxDegrees: 50 })
+
+		await userEvent.click(screen.getByRole('button', { name: /^\+5°,/u }))
+
+		expect(state.moveMutate).toHaveBeenCalledWith([50])
 	})
 
 	it("shows the move error in the section's error indicator", () => {

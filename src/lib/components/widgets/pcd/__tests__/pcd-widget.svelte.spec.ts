@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { PerspectiveCamera, Points, PointsMaterial, Scene } from 'three'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { MediaFitState } from '../../../media-frame/media-fit.svelte'
+
+import { CANVAS_FITS } from '../../../media-frame/media-fit'
 import Subject from '../pcd-widget.svelte'
 import { pcd } from './__fixtures__/pcd.ts'
 
@@ -17,6 +20,11 @@ const observeThreeScenes = () => {
 	vi.stubGlobal('__THREE_DEVTOOLS__', devtools)
 	return scenes
 }
+
+const mediaBoxAspectRatio = () =>
+	screen
+		.getByRole('group', { name: 'GetPointCloud' })
+		.querySelector<HTMLElement>('[style*="aspect-ratio"]')?.style.aspectRatio
 
 const findPointCloudScene = (scenes: Scene[]) =>
 	scenes.find((scene) => scene.getObjectByProperty('isPoints', true) !== undefined)
@@ -159,5 +167,43 @@ describe('PCD widget', () => {
 		const clear = pixels.slice(0, 4)
 		const drawn = pixels.some((value, index) => value !== clear[index % 4])
 		expect(drawn).toBe(true)
+	})
+
+	it('shows the Fit select at the fit it is given', () => {
+		const fit: MediaFitState = { current: 'fit', fits: CANVAS_FITS }
+
+		render(Subject, { data, label, fit })
+
+		expect(screen.getByRole('combobox', { name: 'Fit' })).toHaveTextContent('Fit')
+	})
+
+	it('fills the frame instead of holding the square under Fit', () => {
+		const fit: MediaFitState = { current: 'fit', fits: CANVAS_FITS }
+
+		render(Subject, { data, label, fit })
+
+		expect(mediaBoxAspectRatio()).toBeUndefined()
+	})
+
+	it('shows Start feed automatically before Screenshot when given', () => {
+		render(Subject, { data, label, startAutomatically: true })
+
+		const checkbox = screen.getByRole('checkbox', { name: 'Start feed automatically' })
+		const screenshot = screen.getByRole('button', { name: /screenshot/iu })
+		expect(checkbox).toBeChecked()
+		expect(
+			checkbox.compareDocumentPosition(screenshot) & Node.DOCUMENT_POSITION_FOLLOWING,
+			'the checkbox precedes Screenshot'
+		).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+	})
+
+	it('holds the square with no Fit select and no start checkbox when neither is given', () => {
+		render(Subject, { data, label })
+
+		expect(mediaBoxAspectRatio()).toBe('1 / 1')
+		expect(screen.queryByRole('combobox', { name: 'Fit' })).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('checkbox', { name: 'Start feed automatically' })
+		).not.toBeInTheDocument()
 	})
 })

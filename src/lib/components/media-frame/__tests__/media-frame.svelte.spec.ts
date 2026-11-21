@@ -83,7 +83,7 @@ describe('MediaFrame', () => {
 		})
 
 		const frame = getFrame()
-		expect(within(frame).getByText('30.0fps')).toBeInTheDocument()
+		expect(within(frame).getByText('30.0fps')).toHaveClass('badge', 'badge-neutral')
 		expect(
 			within(frame).getByRole('checkbox', { name: 'Start feed automatically' })
 		).toBeInTheDocument()
@@ -194,6 +194,52 @@ describe('MediaFrame actions', () => {
 
 		await vi.waitFor(() => expect(downloads).toHaveLength(1))
 		expect(downloads[0]).toMatch(/^GetImages-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.\d{3}Z\.jpg$/)
+	})
+
+	it('marks Screenshot busy while its capture is in flight', async () => {
+		const user = userEvent.setup()
+		vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+		const capture = Promise.withResolvers<{ binaryData: Uint8Array; mimeType: string }>()
+		render(Host, { props: { screenshot: () => capture.promise } })
+		const button = screen.getByRole('button', { name: 'Screenshot' })
+
+		await user.click(button)
+
+		expect(button).toHaveAttribute('aria-busy', 'true')
+		expect(screen.getByRole('status')).toHaveTextContent('Saving screenshot')
+	})
+
+	it('clears the busy Screenshot once its capture settles', async () => {
+		const user = userEvent.setup()
+		vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+		render(Host, { props: { screenshot: async () => PNG_CAPTURE } })
+		const button = screen.getByRole('button', { name: 'Screenshot' })
+
+		await user.click(button)
+
+		await vi.waitFor(() => expect(button).toHaveAttribute('aria-busy', 'false'))
+	})
+
+	it('drops a Screenshot press while a capture is in flight', async () => {
+		const user = userEvent.setup()
+		const downloads: string[] = []
+		vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+			this: HTMLAnchorElement
+		) {
+			downloads.push(this.download)
+		})
+		const capture = Promise.withResolvers<{ binaryData: Uint8Array; mimeType: string }>()
+		const screenshot = vi.fn(() => capture.promise)
+		render(Host, { props: { screenshot } })
+		const button = screen.getByRole('button', { name: 'Screenshot' })
+		await user.click(button)
+
+		await user.click(button)
+		capture.resolve(PNG_CAPTURE)
+
+		await vi.waitFor(() => expect(button).toHaveAttribute('aria-busy', 'false'))
+		expect(screenshot).toHaveBeenCalledOnce()
+		expect(downloads).toHaveLength(1)
 	})
 
 	it('reports a failed screenshot to the section', async () => {

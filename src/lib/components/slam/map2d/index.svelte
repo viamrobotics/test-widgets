@@ -36,9 +36,21 @@
 		/** An optional motion path */
 		motionPath?: Float32Array | undefined
 		onClick: (value: Vector3) => void
+		/** Whether the legend starts open. Once the person toggles it, their choice wins. */
+		legendOpen?: boolean
 	}
 
-	const { pointcloud, basePose, destination, helpers = true, motionPath, onClick }: Props = $props()
+	const {
+		pointcloud,
+		basePose,
+		destination,
+		helpers = true,
+		motionPath,
+		onClick,
+		legendOpen = true,
+	}: Props = $props()
+
+	let toggledLegendOpen = $state<boolean>()
 </script>
 
 <div class="relative h-full w-full">
@@ -58,7 +70,10 @@
 			aria-label="Map legend"
 			class="min-h-0 overflow-auto"
 		>
-			<Folder title="Legend">
+			<Folder
+				title="Legend"
+				bind:open={() => toggledLegendOpen ?? legendOpen, (next) => (toggledLegendOpen = next)}
+			>
 				<div class="flex flex-col gap-1">
 					<Legend />
 					{#if helpers}

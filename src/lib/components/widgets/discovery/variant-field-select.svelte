@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { JsonValue } from '@viamrobotics/sdk'
 
-	import { Select } from '@viamrobotics/prime-controls'
+	import { Select, ToggleButtons } from '@viamrobotics/prime-controls'
 	import { isEqual } from 'lodash-es'
 
 	import type { VariantField } from './variant-fields'
@@ -16,6 +16,11 @@
 	}
 
 	const { field, value, onPick }: Props = $props()
+
+	// A field draws as ToggleButtons with 2 or 3 values that each fit in 16 characters, else a Select.
+	const TOGGLE_MIN_VALUES = 2
+	const TOGGLE_MAX_VALUES = 3
+	const TOGGLE_MAX_LABEL_LENGTH = 16
 
 	// prime-controls `Select` values are strings, so each item's value is its index in `field.values`.
 	const items = $derived(
@@ -35,6 +40,12 @@
 		onPick(picked)
 	}
 
+	const isToggle = $derived(
+		field.values.length >= TOGGLE_MIN_VALUES &&
+			field.values.length <= TOGGLE_MAX_VALUES &&
+			items.every((item) => item.label.length <= TOGGLE_MAX_LABEL_LENGTH)
+	)
+
 	const labelId = $props.id()
 </script>
 
@@ -47,11 +58,19 @@
 		{field.key}
 	</span>
 	<div class="min-w-0 flex-1">
-		<Select
-			{items}
-			bind:value={getSelected, pick}
-			aria-labelledby={labelId}
-			placeholder="-"
-		/>
+		{#if isToggle}
+			<ToggleButtons
+				{items}
+				bind:value={getSelected, pick}
+				aria-labelledby={labelId}
+			/>
+		{:else}
+			<Select
+				{items}
+				bind:value={getSelected, pick}
+				aria-labelledby={labelId}
+				placeholder="-"
+			/>
+		{/if}
 	</div>
 </div>

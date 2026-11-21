@@ -2,6 +2,9 @@ export { default as ConnectionStatus } from './connection-status.svelte'
 export { Section } from './section'
 
 export { default as ArmWidget } from './widgets/arm/arm.svelte'
+export { default as ArmControls } from './widgets/arm/arm-controls.svelte'
+export { default as ArmJogControl } from './widgets/arm/arm-jog-control.svelte'
+export { default as ArmJointsControl } from './widgets/arm/arm-joints-control.svelte'
 export { default as ArmGetJointPositionsWidget } from './widgets/arm/get-joint-positions-widget.svelte'
 export { default as ArmGetEndPositionWidget } from './widgets/arm/get-end-position-widget.svelte'
 export { default as ArmGetManualModeWidget } from './widgets/arm/get-manual-mode-widget.svelte'
@@ -29,6 +32,7 @@ export { default as AudioOutputPlayWidget } from './widgets/audio-output/play-wi
 export { default as AudioOutputGetPropertiesWidget } from './widgets/audio-output/get-properties-widget.svelte'
 
 export { default as BaseWidget } from './widgets/base/base.svelte'
+export { default as BaseControls } from './widgets/base/base-controls.svelte'
 export { default as BaseGetPropertiesWidget } from './widgets/base/get-properties-widget.svelte'
 export { default as BaseIsMovingWidget } from './widgets/base/is-moving-widget.svelte'
 export { default as BaseMoveStraightWidget } from './widgets/base/move-straight-widget.svelte'
@@ -54,9 +58,10 @@ export { default as BoardSetPWMWidget } from './widgets/board/set-pwm-widget.sve
 export { default as BoardStreamTicksWidget } from './widgets/board/stream-ticks-widget.svelte'
 export { default as BoardWriteAnalogWidget } from './widgets/board/write-analog-widget.svelte'
 export { default as BoardWidget } from './widgets/board/board.svelte'
-export { default as BoardControls } from './widgets/board/read-write-pins-widget.svelte'
+export { default as BoardControls } from './widgets/board/board-controls.svelte'
+export { default as BoardPinsControl } from './widgets/board/read-write-pins-widget.svelte'
 export {
-	/** @deprecated Use `BoardControls`. Removed in the next major. */
+	/** @deprecated Use `BoardPinsControl`. Removed in the next major. */
 	default as BoardReadWritePinsWidget,
 } from './widgets/board/read-write-pins-widget.svelte'
 
@@ -84,8 +89,10 @@ export { default as ResourceDoCommandWidget } from './widgets/do-command/resourc
 export { default as EncoderGetPropertiesWidget } from './widgets/encoder/get-properties-widget.svelte'
 export { default as EncoderResetPositionWidget } from './widgets/encoder/reset-position-widget.svelte'
 export { default as EncoderWidget } from './widgets/encoder/encoder.svelte'
+export { default as EncoderControls } from './widgets/encoder/encoder-controls.svelte'
 export { default as EncoderGetPositionWidget } from './widgets/encoder/get-position-widget.svelte'
 
+export { default as GantryControls } from './widgets/gantry/gantry-controls.svelte'
 export { default as GantryStopWidget } from './widgets/gantry/stop-widget.svelte'
 export { default as GantryWidget } from './widgets/gantry/gantry.svelte'
 export { default as GantryGetPositionWidget } from './widgets/gantry/get-position-widget.svelte'
@@ -101,6 +108,7 @@ export {
 
 export { default as GenericWidget } from './widgets/generic/generic.svelte'
 
+export { default as GripperControls } from './widgets/gripper/gripper-controls.svelte'
 export { default as GripperGetCurrentInputsWidget } from './widgets/gripper/get-current-inputs-widget.svelte'
 export { default as GripperGrabWidget } from './widgets/gripper/grab-widget.svelte'
 export { default as GripperWidget } from './widgets/gripper/gripper.svelte'
@@ -129,6 +137,8 @@ export { default as MotionMoveWidget } from './widgets/motion/move-widget.svelte
 export { default as MotorGoForWidget } from './widgets/motor/go-for-view.svelte'
 export { default as MotorGoToWidget } from './widgets/motor/go-to-view.svelte'
 export { default as MotorWidget } from './widgets/motor/motor.svelte'
+export { default as MotorControls } from './widgets/motor/motor-controls.svelte'
+export { default as MotorMoveControl } from './widgets/motor/move-control.svelte'
 export { default as MotorGetPositionWidget } from './widgets/motor/get-position-widget.svelte'
 export { default as MotorGetPropertiesWidget } from './widgets/motor/get-properties-widget.svelte'
 export { default as MotorIsPoweredWidget } from './widgets/motor/is-powered-widget.svelte'
@@ -145,6 +155,7 @@ export { default as MotorSetRPMWidget } from './widgets/motor/set-rpm-widget.sve
 
 export { default as MovementSensorGetReadingsWidget } from './widgets/movement-sensor/get-readings-widget.svelte'
 export { default as MovementSensorWidget } from './widgets/movement-sensor/movement-sensor.svelte'
+export { default as MovementSensorControls } from './widgets/movement-sensor/movement-sensor-controls.svelte'
 export { default as MovementSensorGetPropertiesWidget } from './widgets/movement-sensor/get-properties-widget.svelte'
 export { default as MovementSensorGetPositionWidget } from './widgets/movement-sensor/get-position-widget.svelte'
 export { default as MovementSensorGetLinearAccelerationWidget } from './widgets/movement-sensor/get-linear-acceleration-widget.svelte'
@@ -167,6 +178,7 @@ export { default as NavigationRemoveWaypointWidget } from './widgets/navigation/
 export { default as NavigationGetObstaclesWidget } from './widgets/navigation/get-obstacles-widget.svelte'
 
 export { default as PowerSensorWidget } from './widgets/power-sensor/power-sensor.svelte'
+export { default as PowerSensorControls } from './widgets/power-sensor/power-sensor-controls.svelte'
 export { default as PowerSensorGetReadingsWidget } from './widgets/power-sensor/get-readings-widget.svelte'
 export { default as PowerSensorGetVoltageWidget } from './widgets/power-sensor/get-voltage-widget.svelte'
 export { default as PowerSensorGetCurrentWidget } from './widgets/power-sensor/get-current-widget.svelte'
@@ -174,6 +186,8 @@ export { default as PowerSensorGetPowerWidget } from './widgets/power-sensor/get
 
 export { default as SensorWidget } from './widgets/sensor/sensor.svelte'
 
+export { default as ServoControls } from './widgets/servo/servo-controls.svelte'
+export { default as ServoMoveToControl } from './widgets/servo/move-to-control.svelte'
 export { default as ServoGetPositionWidget } from './widgets/servo/get-position-widget.svelte'
 export { default as ServoMoveWidget } from './widgets/servo/move-widget.svelte'
 export { default as ServoQuickMoveControl } from './widgets/servo/quick-move-widget.svelte'
@@ -195,6 +209,7 @@ export { default as SlamGetPropertiesWidget } from './widgets/slam/get-propertie
 
 export { default as StopWidget } from './stop.svelte'
 
+export { default as SwitchControls } from './widgets/switch/switch-controls.svelte'
 export { default as SwitchGetNumberOfPositionsWidget } from './widgets/switch/get-number-of-positions-widget.svelte'
 export { default as SwitchGetPositionWidget } from './widgets/switch/get-position-widget.svelte'
 export { default as SwitchPositionWidget } from './widgets/switch/position-view.svelte'

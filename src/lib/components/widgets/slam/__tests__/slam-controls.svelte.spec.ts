@@ -11,9 +11,11 @@ const state = vi.hoisted(
 	(): {
 		cloudSlam: boolean
 		moveOnMap: ReturnType<typeof vi.fn>
+		legendOpen: boolean | undefined
 	} => ({
 		cloudSlam: false,
 		moveOnMap: vi.fn(),
+		legendOpen: undefined,
 	})
 )
 
@@ -39,13 +41,15 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		refetch: () => Promise.resolve({ error: null, data: undefined }),
 	})),
 	createResourceMutation: vi.fn((_client: unknown, method: string) => ({
-		mutate: method === 'moveOnMap' ? state.moveOnMap : vi.fn(),
+		mutateAsync: method === 'moveOnMap' ? state.moveOnMap : vi.fn(),
 		error: null,
 	})),
 }))
 
 vi.mock('$lib/components/slam/map2d/index.svelte', () => ({
-	default: () => {},
+	default: (_anchor: unknown, props: { legendOpen?: boolean }) => {
+		state.legendOpen = props.legendOpen
+	},
 }))
 
 const renderAtWidth = (width: number) => {
@@ -58,7 +62,8 @@ const renderAtWidth = (width: number) => {
 describe('SlamControls', () => {
 	beforeEach(() => {
 		state.cloudSlam = false
-		state.moveOnMap = vi.fn()
+		state.moveOnMap = vi.fn(() => Promise.resolve())
+		state.legendOpen = undefined
 	})
 
 	afterEach(() => {
@@ -89,8 +94,8 @@ describe('SlamControls', () => {
 		const user = userEvent.setup()
 		renderAtWidth(320)
 
-		await user.type(screen.getByRole('spinbutton', { name: 'X' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'Y' }), '2')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(state.moveOnMap).toHaveBeenCalledExactlyOnceWith([
@@ -106,8 +111,8 @@ describe('SlamControls', () => {
 		renderAtWidth(320)
 
 		await user.type(screen.getByRole('textbox', { name: 'Base name' }), 'my-base')
-		await user.type(screen.getByRole('spinbutton', { name: 'X' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'Y' }), '2')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(state.moveOnMap).toHaveBeenCalledExactlyOnceWith([
@@ -115,5 +120,49 @@ describe('SlamControls', () => {
 			'my-base',
 			'',
 		])
+	})
+
+	it('starts the map legend collapsed at 672 px', async () => {
+		renderAtWidth(672)
+
+		await vi.waitFor(() => {
+			expect(state.legendOpen).toBe(false)
+		})
+	})
+
+	it('starts the map legend open below 672 px', async () => {
+		renderAtWidth(671)
+
+		await vi.waitFor(() => {
+			expect(state.legendOpen).toBe(true)
+		})
+	})
+
+	it('drops a second Execute press while MoveOnMap is pending', async () => {
+		state.cloudSlam = true
+		state.moveOnMap.mockReturnValue(new Promise(() => {}))
+		const user = userEvent.setup()
+		renderAtWidth(320)
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+
+		await user.click(screen.getByRole('button', { name: 'Execute' }))
+		await user.click(screen.getByRole('button', { name: 'Execute' }))
+
+		expect(state.moveOnMap).toHaveBeenCalledOnce()
+		expect(screen.getByRole('button', { name: 'Execute' })).toHaveAttribute('aria-disabled', 'true')
+	})
+
+	it('lets Execute run again once MoveOnMap settles', async () => {
+		state.cloudSlam = true
+		const user = userEvent.setup()
+		renderAtWidth(320)
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+
+		await user.click(screen.getByRole('button', { name: 'Execute' }))
+		await user.click(await screen.findByRole('button', { name: 'Execute' }))
+
+		expect(state.moveOnMap).toHaveBeenCalledTimes(2)
 	})
 })

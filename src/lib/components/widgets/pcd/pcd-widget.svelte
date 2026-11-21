@@ -4,6 +4,7 @@
 
 	import { Canvas } from '@threlte/core'
 
+	import type { MediaFitState } from '../../media-frame/media-fit.svelte'
 	import type { MediaFrameCapture } from '../../media-frame/media-frame-capture'
 
 	import MediaFrame from '../../media-frame/media-frame.svelte'
@@ -17,9 +18,13 @@
 		label: string
 		/** Host controls placed first in the frame's controls, above Download raw data. */
 		children?: Snippet
+		/** From `createMediaFit` with `CANVAS_FITS`. Shows the frame's Fit select. Absent, the canvas keeps its square. */
+		fit?: MediaFitState
+		/** Bind it to show the frame's `Start feed automatically` checkbox, before Screenshot and Picture-in-picture. */
+		startAutomatically?: boolean
 	}
 
-	const { data, label, children }: Props = $props()
+	let { data, label, children, fit, startAutomatically = $bindable() }: Props = $props()
 
 	let up: Vector3Tuple = $state([0, 0, 1])
 	let pointSize = $state(0.02)
@@ -87,5 +92,7 @@
 	aspectRatio="1 / 1"
 	{screenshot}
 	{pictureInPicture}
+	{fit}
+	bind:startAutomatically
 	children={controls}
 />

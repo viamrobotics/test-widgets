@@ -3,23 +3,28 @@
 
 	import type { ComponentPreviewSnippet } from './component-preview'
 
-	import DiscoveryControls from './discovery-controls.svelte'
+	import DiscoverResourcesWidget from './discover-resources-widget.svelte'
 
 	interface Props {
 		partID: string
 		resourceName: string
-		/**  A handler for adding a component to the robot. */
+		/**
+		 * @deprecated Moved to `DiscoveryControls`. This widget renders only `DiscoverResources`
+		 * and does nothing with this prop.
+		 */
 		onAddComponent?: ((component: appRobotApi.ComponentConfig) => void) | undefined
-		/** A snippet for creating component previews. Requires a `preview` DoCommand to be implemented. */
+		/**
+		 * @deprecated Moved to `DiscoveryControls`. This widget renders only `DiscoverResources`
+		 * and does nothing with this prop.
+		 */
 		componentPreview?: ComponentPreviewSnippet
 	}
 
-	const { partID, resourceName, onAddComponent, componentPreview }: Props = $props()
+	// eslint-disable-next-line svelte/no-unused-props -- `onAddComponent` and `componentPreview` stay so callers that pass them still type-check until the next major
+	const { partID, resourceName }: Props = $props()
 </script>
 
-<DiscoveryControls
+<DiscoverResourcesWidget
 	{partID}
 	{resourceName}
-	{onAddComponent}
-	{componentPreview}
 />

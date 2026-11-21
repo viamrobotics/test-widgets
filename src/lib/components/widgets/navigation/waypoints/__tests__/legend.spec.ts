@@ -20,11 +20,13 @@ describe('NavigationService waypoint legend', () => {
 
 	const renderSubject = (props?: Partial<ComponentProps<typeof Subject>>) => {
 		const { baseElement } = render(Subject, {
+			hasMap: true,
 			waypoints,
 			hovered: null,
 			onEnter: vi.fn(),
 			onLeave: vi.fn(),
 			onRemove: vi.fn(),
+			isRemoving: () => false,
 			...props,
 		})
 
@@ -87,5 +89,20 @@ describe('NavigationService waypoint legend', () => {
 
 		await expect.element(hoveredRow).toHaveClass('bg-light')
 		await expect.element(otherRow).not.toHaveClass('bg-light')
+	})
+
+	it('disables Focus when there is no map', () => {
+		const screen = renderSubject({ hasMap: false })
+
+		expect(screen.getByRole('button', { name: 'Focus waypoint 1' }).element()).toBeDisabled()
+	})
+
+	it("disables and marks busy only the removing waypoint's Remove", () => {
+		const screen = renderSubject({ isRemoving: (id) => id === waypoint.id })
+
+		const remove = screen.getByRole('button', { name: 'Remove waypoint 1' }).element()
+		expect(remove).toHaveAttribute('aria-disabled', 'true')
+		expect(remove).toHaveAttribute('aria-busy', 'true')
+		expect(screen.getByRole('button', { name: 'Remove waypoint 2' }).element()).toBeEnabled()
 	})
 })

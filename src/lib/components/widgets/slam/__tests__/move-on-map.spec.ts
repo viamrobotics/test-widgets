@@ -20,6 +20,7 @@ describe('Slam move on map', () => {
 		render(Subject, {
 			moveOnMap,
 			stopPlan,
+			isMoving: false,
 			...props,
 		})
 
@@ -36,7 +37,7 @@ describe('Slam move on map', () => {
 	it('holds back execute while only X is typed', async () => {
 		renderSubject({})
 
-		await user.type(screen.getByRole('spinbutton', { name: 'X' }), '1')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(moveOnMap).not.toHaveBeenCalled()
@@ -45,8 +46,8 @@ describe('Slam move on map', () => {
 	it('moves to the typed X and Y with the typed plan deviation', async () => {
 		renderSubject({})
 
-		await user.type(screen.getByRole('spinbutton', { name: 'X' }), '100')
-		await user.type(screen.getByRole('spinbutton', { name: 'Y' }), '200')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '100')
+		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '200')
 		await user.type(screen.getByRole('spinbutton', { name: 'Plan deviation' }), '4')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
@@ -59,6 +60,32 @@ describe('Slam move on map', () => {
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(moveOnMap).toHaveBeenCalledExactlyOnceWith({ x: 1.5, y: -2 }, undefined)
+	})
+
+	it('shows Execute as in progress and drops a press while a move is in flight', async () => {
+		renderSubject({ x: 1, y: 2, isMoving: true })
+
+		const executeButton = screen.getByRole('button', { name: 'Execute' })
+		await user.click(executeButton)
+
+		expect(executeButton).toHaveAttribute('aria-disabled', 'true')
+		expect(executeButton).toHaveAttribute('aria-busy', 'true')
+		expect(moveOnMap).not.toHaveBeenCalled()
+	})
+
+	it('keeps Stop live while a move is in flight', async () => {
+		renderSubject({ x: 1, y: 2, isMoving: true })
+
+		await user.click(screen.getByRole('button', { name: 'Stop' }))
+
+		expect(stopPlan).toHaveBeenCalledOnce()
+	})
+
+	it('keeps the visible labels X and Y on the end position fields', () => {
+		renderSubject({})
+
+		expect(screen.getByText('X', { selector: 'label' })).toBeInTheDocument()
+		expect(screen.getByText('Y', { selector: 'label' })).toBeInTheDocument()
 	})
 
 	it('stops the plan', async () => {

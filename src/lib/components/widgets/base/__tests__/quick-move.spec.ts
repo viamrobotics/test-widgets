@@ -15,6 +15,16 @@ const nextMacrotask = () =>
 		setTimeout(resolve, 0)
 	})
 
+const WAIT_PAST_SECOND_ZERO_MS = 100
+
+const pastSecondZero = () =>
+	new Promise((resolve) => {
+		setTimeout(resolve, WAIT_PAST_SECOND_ZERO_MS)
+	})
+
+const isZeroPower = (linear: { y: number }, angular: { z: number }) =>
+	linear.y === 0 && angular.z === 0
+
 describe('Base QuickMove', () => {
 	let user: ReturnType<typeof userEvent.setup>
 	let setPower: ComponentProps<typeof Subject>['setPower']
@@ -23,7 +33,7 @@ describe('Base QuickMove', () => {
 
 	beforeEach(() => {
 		user = userEvent.setup()
-		setPower = vi.fn()
+		setPower = vi.fn(() => Promise.resolve())
 		stop = vi.fn()
 		sibling = vi.fn()
 		window.addEventListener('keydown', sibling)
@@ -103,6 +113,43 @@ describe('Base QuickMove', () => {
 
 			expect(setPower).toHaveBeenLastCalledWith({ x: 0, y: 0.75, z: 0 }, ZERO)
 		})
+
+		it('combines two held pointers, as W and A do', async () => {
+			vi.spyOn(Element.prototype, 'setPointerCapture').mockImplementation(() => undefined)
+			renderSubject()
+
+			await user.pointer([
+				{ keys: '[TouchA>]', target: screen.getByRole('button', { name: 'Forward (W)' }) },
+				{ keys: '[TouchB>]', target: screen.getByRole('button', { name: 'Left (A)' }) },
+			])
+
+			expect(setPower).toHaveBeenLastCalledWith({ x: 0, y: 0.5, z: 0 }, { x: 0, y: 0, z: 0.5 })
+		})
+
+		it('sends one Stop when the release zero and its repeat both fail', async () => {
+			setPower = vi.fn((linear, angular) =>
+				isZeroPower(linear, angular) ? Promise.reject(new Error('base offline')) : Promise.resolve()
+			)
+			renderSubject()
+
+			await user.click(screen.getByRole('button', { name: 'Forward (W)' }))
+			await pastSecondZero()
+
+			expect(
+				vi.mocked(setPower).mock.calls.filter(([linear, angular]) => isZeroPower(linear, angular)),
+				'the zero and its repeat were both sent'
+			).toHaveLength(2)
+			expect(stop).toHaveBeenCalledOnce()
+		})
+
+		it('sends no Stop when the release zero succeeds', async () => {
+			renderSubject()
+
+			await user.click(screen.getByRole('button', { name: 'Forward (W)' }))
+			await pastSecondZero()
+
+			expect(stop).not.toHaveBeenCalled()
+		})
 	})
 
 	describe('while idle', () => {
@@ -132,6 +179,23 @@ describe('Base QuickMove', () => {
 			renderSubject()
 
 			expect(screen.getByRole('status')).toBeEmptyDOMElement()
+		})
+	})
+
+	describe('engaging while a text field has focus', () => {
+		it('leaves the keys uncaptured and says why', async () => {
+			renderSubject()
+			const textField = document.createElement('input')
+			document.body.append(textField)
+			textField.focus()
+
+			await user.click(toggle())
+
+			expect(toggle(), 'not captured').toHaveAttribute('aria-pressed', 'false')
+			expect(screen.getByRole('status')).toHaveTextContent(
+				'Keyboard not captured while a text field has focus.'
+			)
+			textField.remove()
 		})
 	})
 
@@ -343,7 +407,7 @@ describe('Base QuickMove', () => {
 			await fireEvent.blur(window)
 
 			expect(screen.getByRole('status')).toHaveTextContent(
-				'Keyboard released while driving. Stop sent.'
+				'Keyboard released while driving. Sent Stop.'
 			)
 		})
 

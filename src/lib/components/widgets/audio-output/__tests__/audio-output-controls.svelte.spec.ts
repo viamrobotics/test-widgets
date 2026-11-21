@@ -9,15 +9,25 @@ import Subject from '../audio-output-controls.svelte'
 import Pane from './__fixtures__/audio-output-controls-in-320-pane.svelte'
 import WidePane from './__fixtures__/audio-output-controls-in-672-pane.svelte'
 
+interface StreamCall {
+	info: Parameters<AudioOutClient['playStream']>[0]
+	received: Uint8Array[]
+	isEnded: boolean
+}
+
 interface ControlsState {
 	properties: { supportedCodecs: string[]; sampleRateHz: number; numChannels: number } | undefined
 	play: Mock<AudioOutClient['play']>
+	playStream: Mock<AudioOutClient['playStream']>
+	streamCalls: StreamCall[]
 }
 
 const state = vi.hoisted(
 	(): ControlsState => ({
 		properties: undefined,
 		play: vi.fn<AudioOutClient['play']>(),
+		playStream: vi.fn<AudioOutClient['playStream']>(),
+		streamCalls: [],
 	})
 )
 
@@ -27,6 +37,8 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 		createResourceClient: vi.fn(() => ({
 			current: {
 				play: (...args: Parameters<AudioOutClient['play']>) => state.play(...args),
+				playStream: (...args: Parameters<AudioOutClient['playStream']>) =>
+					state.playStream(...args),
 			},
 		})),
 		createResourceQuery: vi.fn(() => ({
@@ -47,6 +59,7 @@ const PROPS = { partID: 'test-part', resourceName: 'test-audio-out' }
 const DEVICE_SAMPLE_RATE_HZ = 16_000
 const HELD_MS = 300
 const INT16_HALF_SCALE = 16_384
+const FETCH_TRANSPORT_ERROR = '[unknown] The fetch API does not support streaming request bodies'
 
 const RealAudioContext = globalThis.AudioContext
 const contexts: AudioContext[] = []
@@ -69,12 +82,45 @@ const openOscillatorMicrophone = () => {
 	return Promise.resolve(destination.stream)
 }
 
+const receiveStream = async (
+	info: StreamCall['info'],
+	chunks: AsyncIterable<Uint8Array>
+): Promise<StreamCall> => {
+	const call: StreamCall = { info, received: [], isEnded: false }
+	state.streamCalls.push(call)
+	for await (const chunk of chunks) call.received.push(chunk)
+	call.isEnded = true
+	return call
+}
+
+const collectStream: AudioOutClient['playStream'] = async (info, chunks) => {
+	await receiveStream(info, chunks)
+}
+
+const collectStreamThenHang: AudioOutClient['playStream'] = async (info, chunks) => {
+	await receiveStream(info, chunks)
+	await new Promise(() => undefined)
+}
+
+const useTransportWithoutClientStreams = () => {
+	state.playStream.mockRejectedValue(new Error(FETCH_TRANSPORT_ERROR))
+}
+
 const deferred = <TValue>() => {
 	let resolve: (value: TValue) => void = () => undefined
 	const promise = new Promise<TValue>((settle) => {
 		resolve = settle
 	})
 	return { promise, resolve }
+}
+
+const gateStreamReading = () => {
+	const reading = deferred<undefined>()
+	state.playStream.mockImplementation(async (info, chunks) => {
+		await reading.promise
+		await receiveStream(info, chunks)
+	})
+	return reading
 }
 
 let getUserMedia: Mock<MediaDevices['getUserMedia']>
@@ -92,6 +138,8 @@ beforeEach(async () => {
 		numChannels: 2,
 	}
 	state.play = vi.fn<AudioOutClient['play']>().mockResolvedValue(undefined)
+	state.streamCalls = []
+	state.playStream = vi.fn<AudioOutClient['playStream']>(collectStream)
 	contexts.length = 0
 	microphones.length = 0
 	vi.stubGlobal('AudioContext', RecordedAudioContext)
@@ -119,6 +167,43 @@ const pressTalk = async () => {
 const holdUntilHeard = async () => {
 	await pressTalk()
 	await waitMs(HELD_MS)
+}
+
+const streamCall = () => {
+	const [call] = state.streamCalls
+	if (call === undefined) throw new Error('PlayStream was not called')
+	return call
+}
+
+const streamedBytes = (call: StreamCall) => {
+	const total = call.received.reduce((sum, chunk) => sum + chunk.byteLength, 0)
+	const bytes = new Uint8Array(total)
+	let offset = 0
+	for (const chunk of call.received) {
+		bytes.set(chunk, offset)
+		offset += chunk.byteLength
+	}
+	return bytes
+}
+
+const pressTalkAfterFallback = async () => {
+	await fireEvent.pointerDown(talkButton(), { button: 0 })
+	await vi.waitFor(() =>
+		expect(microphones, 'the stream microphone, then the recording one').toHaveLength(2)
+	)
+}
+
+const holdUntilHeardAfterFallback = async () => {
+	await pressTalkAfterFallback()
+	await waitMs(HELD_MS)
+}
+
+const talkOnceWithoutClientStreams = async () => {
+	useTransportWithoutClientStreams()
+	await holdUntilHeardAfterFallback()
+	await fireEvent.pointerUp(talkButton())
+	await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+	microphones.length = 0
 }
 
 const microphoneTrackStates = () =>
@@ -168,26 +253,58 @@ describe('AudioOutputControls', () => {
 		expect(talkButton()).toHaveAttribute('aria-pressed', 'true')
 	})
 
-	it("sends what was heard on release as one mono pcm16 clip at GetProperties' sample rate", async () => {
+	it("streams through PlayStream as mono pcm16 at GetProperties' sample rate", async () => {
 		renderSubject()
-		await holdUntilHeard()
 
-		await fireEvent.pointerUp(talkButton())
+		await pressTalk()
 
-		await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
-		const { audioData, info } = sentClip()
-		expect(info).toEqual(
+		expect(streamCall().info).toEqual(
 			expect.objectContaining({
 				codec: 'pcm16',
 				sampleRateHz: DEVICE_SAMPLE_RATE_HZ,
 				numChannels: 1,
 			})
 		)
-		expect(audioData.byteLength % 2, 'whole int16 samples').toBe(0)
+	})
+
+	it('sends what is heard to PlayStream while Hold to talk is still held', async () => {
+		renderSubject()
+
+		await holdUntilHeard()
+
+		const call = streamCall()
+		expect(call.isEnded, 'the stream is still open').toBe(false)
+		expect(call.received.length, 'one chunk per captured quantum').toBeGreaterThan(1)
 		expect(
-			clipPeak(audioData),
+			clipPeak(streamedBytes(call)),
 			'the full scale oscillator reaches past half scale'
 		).toBeGreaterThan(INT16_HALF_SCALE)
+	})
+
+	it('sends the audio still queued at release before the stream ends', async () => {
+		const reading = gateStreamReading()
+		renderSubject()
+		await holdUntilHeard()
+		await fireEvent.pointerUp(talkButton())
+
+		reading.resolve(undefined)
+
+		await vi.waitFor(() => expect(streamCall().isEnded).toBe(true))
+		expect(streamCall().received.length, 'the chunks queued while held').toBeGreaterThan(1)
+		expect(
+			clipPeak(streamedBytes(streamCall())),
+			'the full scale oscillator reaches past half scale'
+		).toBeGreaterThan(INT16_HALF_SCALE)
+	})
+
+	it('sends no clip through Play after a streamed hold', async () => {
+		renderSubject()
+		await holdUntilHeard()
+
+		await fireEvent.pointerUp(talkButton())
+
+		await vi.waitFor(() => expect(streamCall().isEnded).toBe(true))
+		expect(state.play).not.toHaveBeenCalled()
 	})
 
 	it('records at 48000 Hz when GetProperties reports no sample rate', async () => {
@@ -197,20 +314,6 @@ describe('AudioOutputControls', () => {
 		await pressTalk()
 
 		expect(contexts.map((context) => context.sampleRate)).toEqual([48_000])
-	})
-
-	it('sends nothing for a release before any audio was heard', async () => {
-		const microphone = deferred<MediaStream>()
-		getUserMedia.mockImplementation(() => microphone.promise)
-		renderSubject()
-		await fireEvent.pointerDown(talkButton(), { button: 0 })
-
-		await fireEvent.pointerUp(talkButton())
-		microphone.resolve(await openOscillatorMicrophone())
-		await waitMs(HELD_MS)
-
-		expect(state.play).not.toHaveBeenCalled()
-		expect(microphoneTrackStates(), 'the late microphone is stopped').toEqual(['ended'])
 	})
 
 	it.each([
@@ -237,7 +340,7 @@ describe('AudioOutputControls', () => {
 				await fireEvent(document, new Event('visibilitychange'))
 			},
 		},
-	])('ends recording and sends the clip on $path', async ({ release }) => {
+	])('ends the stream and stops the microphone on $path', async ({ release }) => {
 		renderSubject()
 		await holdUntilHeard()
 
@@ -245,11 +348,11 @@ describe('AudioOutputControls', () => {
 
 		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
 		expect(microphoneTrackStates()).toEqual(['ended'])
-		await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+		await vi.waitFor(() => expect(streamCall().isEnded).toBe(true))
 	})
 
 	it.each(['Space', 'Enter'])(
-		'holds while %s is down and ends recording on its key up',
+		'holds while %s is down and ends the stream on its key up',
 		async (keyName) => {
 			renderSubject()
 			talkButton().focus()
@@ -262,10 +365,11 @@ describe('AudioOutputControls', () => {
 
 			expect(talkButton(), 'released on key up').toHaveAttribute('aria-pressed', 'false')
 			expect(microphoneTrackStates()).toEqual(['ended'])
+			await vi.waitFor(() => expect(streamCall().isEnded).toBe(true))
 		}
 	)
 
-	it('ends recording, stops the microphone, and closes the context on unmount', async () => {
+	it('ends the stream, stops the microphone, and closes the context on unmount', async () => {
 		const { unmount } = renderSubject()
 		await holdUntilHeard()
 
@@ -273,6 +377,7 @@ describe('AudioOutputControls', () => {
 
 		expect(microphoneTrackStates()).toEqual(['ended'])
 		await vi.waitFor(() => expect(contexts.map((context) => context.state)).toEqual(['closed']))
+		await vi.waitFor(() => expect(streamCall().isEnded).toBe(true))
 	})
 
 	it('reports a denied microphone in the section indicator', async () => {
@@ -294,6 +399,138 @@ describe('AudioOutputControls', () => {
 
 		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-pressed', 'false'))
 		expect(talkButton()).toBeEnabled()
+	})
+
+	it('marks Hold to talk busy after release until PlayStream settles', async () => {
+		state.playStream.mockImplementation(collectStreamThenHang)
+		renderSubject()
+		await holdUntilHeard()
+
+		await fireEvent.pointerUp(talkButton())
+
+		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	it('ignores a press of Hold to talk while the last PlayStream has not settled', async () => {
+		state.playStream.mockImplementation(collectStreamThenHang)
+		renderSubject()
+		await holdUntilHeard()
+		await fireEvent.pointerUp(talkButton())
+		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+
+		await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+		expect(state.playStream).toHaveBeenCalledTimes(1)
+		expect(getUserMedia).toHaveBeenCalledTimes(1)
+		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	describe('on a transport that cannot carry PlayStream', () => {
+		it('keeps recording while held after PlayStream fails on the first press', async () => {
+			useTransportWithoutClientStreams()
+			renderSubject()
+
+			await pressTalkAfterFallback()
+
+			expect(talkButton()).toHaveAttribute('aria-pressed', 'true')
+			expect(microphoneTrackStates()).toEqual(['ended', 'live'])
+		})
+
+		it("sends what was heard on release as one mono pcm16 clip at GetProperties' sample rate", async () => {
+			useTransportWithoutClientStreams()
+			renderSubject()
+			await holdUntilHeardAfterFallback()
+
+			await fireEvent.pointerUp(talkButton())
+
+			await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(1))
+			const { audioData, info } = sentClip()
+			expect(info).toEqual(
+				expect.objectContaining({
+					codec: 'pcm16',
+					sampleRateHz: DEVICE_SAMPLE_RATE_HZ,
+					numChannels: 1,
+				})
+			)
+			expect(audioData.byteLength % 2, 'whole int16 samples').toBe(0)
+			expect(
+				clipPeak(audioData),
+				'the full scale oscillator reaches past half scale'
+			).toBeGreaterThan(INT16_HALF_SCALE)
+		})
+
+		it('records later presses without trying PlayStream again', async () => {
+			renderSubject()
+			await talkOnceWithoutClientStreams()
+
+			await holdUntilHeard()
+			await fireEvent.pointerUp(talkButton())
+
+			await vi.waitFor(() => expect(state.play).toHaveBeenCalledTimes(2))
+			expect(state.playStream, 'PlayStream is tried once').toHaveBeenCalledTimes(1)
+		})
+
+		it("keeps the transport's error out of the section indicator", async () => {
+			renderSubject()
+
+			await talkOnceWithoutClientStreams()
+
+			expect(screen.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
+		})
+
+		it('ends recording and stops the microphone on release', async () => {
+			renderSubject()
+			await talkOnceWithoutClientStreams()
+			await holdUntilHeard()
+
+			await fireEvent.pointerUp(globalThis.window)
+
+			expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+			expect(microphoneTrackStates()).toEqual(['ended'])
+		})
+
+		it('sends nothing for a release before any audio was heard', async () => {
+			renderSubject()
+			await talkOnceWithoutClientStreams()
+			const microphone = deferred<MediaStream>()
+			getUserMedia.mockImplementation(() => microphone.promise)
+			await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+			await fireEvent.pointerUp(talkButton())
+			microphone.resolve(await openOscillatorMicrophone())
+			await waitMs(HELD_MS)
+
+			expect(state.play, 'only the first press sent a clip').toHaveBeenCalledTimes(1)
+			expect(microphoneTrackStates(), 'the late microphone is stopped').toEqual(['ended'])
+		})
+
+		it('disables Play and marks Hold to talk busy while its clip is sending', async () => {
+			renderSubject()
+			await talkOnceWithoutClientStreams()
+			state.play.mockReturnValue(new Promise(() => undefined))
+			await chooseFile(wavFile())
+			await holdUntilHeard()
+
+			await fireEvent.pointerUp(talkButton())
+
+			await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+			expect(playButton()).toBeDisabled()
+		})
+
+		it('ignores a press of Hold to talk while its clip is sending', async () => {
+			renderSubject()
+			await talkOnceWithoutClientStreams()
+			state.play.mockReturnValue(new Promise(() => undefined))
+			await holdUntilHeard()
+			await fireEvent.pointerUp(talkButton())
+			await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
+
+			await fireEvent.pointerDown(talkButton(), { button: 0 })
+
+			expect(microphones, 'no microphone after the sending press').toHaveLength(1)
+			expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
+		})
 	})
 
 	it('plays a chosen file through Play with its codec and GetProperties’ format', async () => {
@@ -329,6 +566,28 @@ describe('AudioOutputControls', () => {
 		expect(playButton()).toBeDisabled()
 	})
 
+	it("shows an unsupported file's message as the file field's tooltip", async () => {
+		renderSubject()
+		await chooseFile(new File([WAV_BYTES], 'notes.txt', { type: 'text/plain' }))
+
+		screen.getByRole('button', { name: 'About Audio file' }).focus()
+
+		expect(
+			await screen.findByRole('tooltip', { name: 'Unsupported audio format' })
+		).toBeInTheDocument()
+		expect(screen.getByLabelText('Audio file')).toHaveAccessibleDescription(
+			'Unsupported audio format'
+		)
+	})
+
+	it('draws no tooltip on the file field for a supported file', async () => {
+		renderSubject()
+
+		await chooseFile(wavFile())
+
+		expect(screen.queryByRole('button', { name: 'About Audio file' })).not.toBeInTheDocument()
+	})
+
 	it('disables Play while Hold to talk is held', async () => {
 		renderSubject()
 		await chooseFile(wavFile())
@@ -336,31 +595,6 @@ describe('AudioOutputControls', () => {
 		await pressTalk()
 
 		expect(playButton()).toBeDisabled()
-	})
-
-	it('disables Play and marks Hold to talk busy while its clip is sending', async () => {
-		state.play.mockReturnValue(new Promise(() => undefined))
-		renderSubject()
-		await chooseFile(wavFile())
-		await holdUntilHeard()
-
-		await fireEvent.pointerUp(talkButton())
-
-		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
-		expect(playButton()).toBeDisabled()
-	})
-
-	it('ignores a press of Hold to talk while its clip is sending', async () => {
-		state.play.mockReturnValue(new Promise(() => undefined))
-		renderSubject()
-		await holdUntilHeard()
-		await fireEvent.pointerUp(talkButton())
-		await vi.waitFor(() => expect(talkButton()).toHaveAttribute('aria-busy', 'true'))
-
-		await fireEvent.pointerDown(talkButton(), { button: 0 })
-
-		expect(getUserMedia).toHaveBeenCalledTimes(1)
-		expect(talkButton()).toHaveAttribute('aria-pressed', 'false')
 	})
 
 	it('disables Hold to talk while a file plays', async () => {

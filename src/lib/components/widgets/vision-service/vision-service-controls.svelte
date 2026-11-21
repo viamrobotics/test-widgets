@@ -21,6 +21,7 @@
 
 	import { createCameraChoice } from './camera-choice.svelte'
 	import CameraSelect from './camera-select.svelte'
+	import { describeConfidenceLine } from './confidence-line'
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'
 	import { useSlowRequest } from './use-slow-request.svelte.ts'
@@ -28,9 +29,13 @@
 	interface Props {
 		partID: string
 		resourceName: string
+		/** The mlmodel service's `default_minimum_confidence`. Only 0 to 1 shows. The service applies it. */
+		minimumConfidence?: number
+		/** The mlmodel service's `label_confidences`. Only values from 0 to 1 show. The service applies them. */
+		labelConfidences?: Record<string, number>
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, minimumConfidence, labelConfidences }: Props = $props()
 
 	const CAPTURE_ALL_METHOD = 'CaptureAllFromCamera'
 	const OBJECT_POINT_CLOUDS_METHOD = 'GetObjectPointClouds'
@@ -65,8 +70,6 @@
 	let isImageStarted = $derived(!waitToStartImage.current)
 	let arePointCloudsStarted = $derived(!waitToStartPointClouds.current)
 
-	const cameraChoice = createCameraChoice(() => partID)
-
 	const DETECTIONS_MODE = 'detections'
 	const OBJECT_POINT_CLOUDS_MODE = 'object-point-clouds'
 	const MODE_ITEMS = [
@@ -99,6 +102,13 @@
 	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
 		refetchInterval: propertiesInterval(),
 	}))
+
+	const cameraChoice = createCameraChoice(
+		() => partID,
+		() => propertiesQuery.data?.defaultCamera
+	)
+
+	const confidenceLine = $derived(describeConfidenceLine(minimumConfidence, labelConfidences))
 
 	// Only a report of support shows the Mode toggle, so Detections mode shows while GetProperties is unanswered.
 	const supportsObjectPointClouds = $derived(
@@ -281,6 +291,10 @@
 			{@render cameraRow()}
 		</Image>
 	</Section.Body>
+
+	{#if confidenceLine}
+		<p class="text-subtle-2 px-2 text-xs">{confidenceLine}</p>
+	{/if}
 
 	{#if detectionsSlow}
 		{@render slowLine()}

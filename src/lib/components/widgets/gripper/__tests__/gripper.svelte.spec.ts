@@ -20,7 +20,12 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 			isError: false,
 			error: null,
 		})),
-		createResourceMutation: vi.fn(() => ({ mutate: vi.fn(), isPending: false, error: null })),
+		createResourceMutation: vi.fn(() => ({
+			mutate: vi.fn(),
+			mutateAsync: vi.fn(() => Promise.resolve(true)),
+			isPending: false,
+			error: null,
+		})),
 		useConnectionStatus: vi.fn(() => ({ current: MachineConnectionEvent.CONNECTED })),
 	}
 })

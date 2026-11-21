@@ -5,9 +5,11 @@
 
 	interface Props {
 		data: readonly [number, EncoderPositionType] | undefined
+		/** The readout's label, "Position" unless two readouts share a pane. */
+		label?: string
 	}
 
-	const { data }: Props = $props()
+	const { data, label = 'Position' }: Props = $props()
 
 	const MISSING_VALUE = '-'
 	const DEGREES_SUFFIX = '°'
@@ -37,7 +39,7 @@
 		id={labelId}
 		class="text-subtle-1 w-14 shrink-0 text-xs"
 	>
-		Position
+		{label}
 	</span>
 	<span
 		role="group"

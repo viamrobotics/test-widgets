@@ -7,7 +7,6 @@
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import { Section, useSectionErrors } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
 
 	import { createAudioListener } from './create-audio-listener.svelte'
 	import { PLAYABLE_CODECS } from './pcm-decode'
@@ -122,11 +121,8 @@
 				errorReporter={sectionErrors}
 				class="min-w-0 flex-col gap-2 px-2 py-2"
 			>
-				<Section.Heading>
-					<Section.Method
-						method="GetAudio"
-						api={ResourceTriplets.AudioInput}
-					/>
+				<Section.Heading class="justify-between">
+					Controls
 					{#snippet aside()}
 						<Section.Errors errors={sectionErrors.errors} />
 					{/snippet}
@@ -194,7 +190,7 @@
 								type="button"
 								class={['button button-xs', listener.isRecording && 'button-dark']}
 								aria-pressed={listener.isRecording}
-								disabled={!listener.isListening}
+								disabled={!listener.hasHeardChunk}
 								onclick={toggleRecord}
 							>
 								<Icon icon={mdiRadioboxMarked} />

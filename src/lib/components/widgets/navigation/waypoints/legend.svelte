@@ -7,14 +7,19 @@
 
 	interface Props {
 		map?: Map | undefined
+		/** False when the service has no map, so Focus has nothing to fly to. */
+		hasMap: boolean
 		waypoints: Waypoint[]
 		hovered: string | null
 		onEnter: (id: string) => void
 		onLeave: () => void
 		onRemove: (id: string) => void
+		/** True while this waypoint's remove call is in flight. */
+		isRemoving: (id: string) => boolean
 	}
 
-	const { map, waypoints, hovered, onEnter, onLeave, onRemove }: Props = $props()
+	const { map, hasMap, waypoints, hovered, onEnter, onLeave, onRemove, isRemoving }: Props =
+		$props()
 
 	const FOCUS_ZOOM = 20
 	const FOCUS_SPEED = 2
@@ -62,6 +67,7 @@
 						type="button"
 						class="icon-button size-6"
 						aria-label="Focus waypoint {index + 1}"
+						disabled={!hasMap}
 						onclick={(event) => {
 							event.stopPropagation()
 							flyTo(location)
@@ -82,6 +88,8 @@
 						type="button"
 						class="icon-button size-6"
 						aria-label="Remove waypoint {index + 1}"
+						aria-disabled={isRemoving(id) || undefined}
+						aria-busy={isRemoving(id)}
 						onclick={() => onRemove(id)}
 					>
 						<Icon

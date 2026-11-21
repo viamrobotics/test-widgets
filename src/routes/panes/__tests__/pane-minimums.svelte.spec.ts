@@ -34,11 +34,14 @@ const servedQuery = vi.hoisted(() => (method: string) => ({
 
 vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => {
 	const { MachineConnectionEvent } = await import('@viamrobotics/sdk')
+	const resourceNameFor = (subtype: unknown) => (subtype === 'motion' ? 'builtin' : 'camera-1')
 	return {
 		...(await importOriginal<typeof import('@viamrobotics/svelte-sdk')>()),
 		useConnectionStatus: () => ({ current: MachineConnectionEvent.CONNECTED }),
 		useRobotClient: () => ({ current: undefined }),
-		useResourceStatuses: () => ({ current: [{ name: { name: 'camera-1' } }] }),
+		useResourceStatuses: (_partID: unknown, subtype: unknown) => ({
+			current: [{ name: { name: resourceNameFor(subtype) } }],
+		}),
 		createResourceClient: () => ({ current: {} }),
 		createStreamClient: () => ({ mediaStream: undefined }),
 		createResourceQuery: (_client: unknown, method: string) => servedQuery(method),
@@ -336,6 +339,24 @@ const ARM_DATA = {
 	getPose: { pose: POSE, referenceFrame: 'world' },
 }
 
+const ARM_JOINT_COUNT = 6
+const ARM_JOINT_LIMIT_DEGREES = 180
+
+// The arm control interface also reads the joint limits, and Jog and Joints plan through the frame.
+const ARM_CONTROLS_DATA = {
+	...ARM_DATA,
+	getKinematics: {
+		kinematicParamType: 'SVA',
+		joints: Array.from({ length: ARM_JOINT_COUNT }, () => ({
+			min: -ARM_JOINT_LIMIT_DEGREES,
+			max: ARM_JOINT_LIMIT_DEGREES,
+		})),
+	},
+	frameSystemConfig: [
+		{ frame: { referenceFrame: 'arm-1', poseInObserverFrame: { referenceFrame: 'world' } } },
+	],
+}
+
 const MOTOR_DATA = {
 	getProperties: { positionReporting: true },
 	getPosition: 12.3456,
@@ -373,6 +394,8 @@ interface MinimumRow {
 	id: string
 	resource: ResourceName
 	data: () => Record<string, unknown>
+	/** The narrowest pane width the body lays out in, when its min-content collapses below it. */
+	floorWidth?: number
 }
 
 const arm = resource('arm', 'arm-1')
@@ -385,7 +408,11 @@ const gripper = resource('gripper', 'gripper-1')
 const board = resource('board', 'board-1')
 const boardData = () => ({})
 const armData = () => ARM_DATA
+const armControlsData = () => ARM_CONTROLS_DATA
 const motorData = () => MOTOR_DATA
+// Quick move is narrower holding an RPM (position reporting) than holding a power, 248 px against
+// 276 px, so its row measures the wider power mode. Controls and Move are widest with position.
+const motorPowerModeData = () => ({ ...MOTOR_DATA, getProperties: { positionReporting: false } })
 const motionData = () => MOTION_DATA
 const baseData = () => BASE_DATA
 const gantryData = () => GANTRY_DATA
@@ -414,6 +441,8 @@ const navigationData = () => NAVIGATION_DATA
 
 const ROWS: MinimumRow[] = [
 	{ id: 'arm-1::composite', resource: arm, data: armData },
+	{ id: 'arm-1::jog', resource: arm, data: armControlsData },
+	{ id: 'arm-1::joints', resource: arm, data: armControlsData },
 	{ id: 'arm-1::move-to-joint-positions', resource: arm, data: armData },
 	{ id: 'arm-1::move-to-position', resource: arm, data: armData },
 	{ id: 'arm-1::get-joint-positions', resource: arm, data: armData },
@@ -425,7 +454,9 @@ const ROWS: MinimumRow[] = [
 	{ id: 'arm-1::get-properties', resource: arm, data: armData },
 	{ id: 'arm-1::stop', resource: arm, data: armData },
 	{ id: 'motor-1::composite', resource: motor, data: motorData },
-	{ id: 'motor-1::quick-move', resource: motor, data: motorData },
+	{ id: 'motor-1::controls', resource: motor, data: motorData },
+	{ id: 'motor-1::quick-move', resource: motor, data: motorPowerModeData },
+	{ id: 'motor-1::move', resource: motor, data: motorData },
 	{ id: 'motor-1::set-power', resource: motor, data: motorData },
 	{ id: 'motor-1::set-rpm', resource: motor, data: motorData },
 	{ id: 'motor-1::go-for', resource: motor, data: motorData },
@@ -438,6 +469,7 @@ const ROWS: MinimumRow[] = [
 	{ id: 'motor-1::is-powered', resource: motor, data: motorData },
 	{ id: 'motion-1::composite', resource: motion, data: motionData },
 	{ id: 'base-1::composite', resource: base, data: baseData },
+	{ id: 'base-1::controls', resource: base, data: baseData },
 	{ id: 'base-1::quick-move', resource: base, data: baseData },
 	{ id: 'base-1::move-straight', resource: base, data: baseData },
 	{ id: 'base-1::spin', resource: base, data: baseData },
@@ -447,6 +479,7 @@ const ROWS: MinimumRow[] = [
 	{ id: 'base-1::stop', resource: base, data: baseData },
 	{ id: 'base-1::get-properties', resource: base, data: baseData },
 	{ id: 'gantry-1::composite', resource: gantry, data: gantryData },
+	{ id: 'gantry-1::controls', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::home', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::move-to-position', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::quick-move', resource: gantry, data: gantryData },
@@ -455,14 +488,19 @@ const ROWS: MinimumRow[] = [
 	{ id: 'gantry-1::get-lengths', resource: gantry, data: gantryData },
 	{ id: 'gantry-1::stop', resource: gantry, data: gantryData },
 	{ id: 'servo-1::composite', resource: servo, data: servoData },
+	{ id: 'servo-1::controls', resource: servo, data: servoData },
 	{ id: 'servo-1::move', resource: servo, data: servoData },
 	{ id: 'servo-1::quick-move', resource: servo, data: servoData },
+	{ id: 'servo-1::move-to', resource: servo, data: servoData },
 	{ id: 'servo-1::is-moving', resource: servo, data: servoData },
 	{ id: 'servo-1::get-position', resource: servo, data: servoData },
 	{ id: 'servo-1::stop', resource: servo, data: servoData },
 	{ id: 'board-1::composite', resource: board, data: boardData },
 	{ id: 'board-1::controls', resource: board, data: boardData },
+	{ id: 'board-1::pins', resource: board, data: boardData },
 	{ id: 'gripper-1::composite', resource: gripper, data: gripperData },
+	{ id: 'gripper-1::controls', resource: gripper, data: gripperData },
+	{ id: 'gripper-1::open-grab', resource: gripper, data: gripperData },
 	{ id: 'gripper-1::get-current-inputs', resource: gripper, data: gripperData },
 	{ id: 'gripper-1::go-to-inputs', resource: gripper, data: gripperData },
 	{ id: 'board-1::set-gpio', resource: board, data: boardData },
@@ -477,6 +515,7 @@ const ROWS: MinimumRow[] = [
 	{ id: 'board-1::stream-ticks', resource: board, data: boardData },
 	{ id: 'board-1::set-power-mode', resource: board, data: boardData },
 	{ id: 'sensor-1::composite', resource: sensor, data: () => SENSOR_DATA },
+	{ id: 'movement-sensor-1::controls', resource: movementSensor, data: () => MOVEMENT_SENSOR_DATA },
 	{
 		id: 'movement-sensor-1::composite',
 		resource: movementSensor,
@@ -527,16 +566,19 @@ const ROWS: MinimumRow[] = [
 		resource: movementSensor,
 		data: () => MOVEMENT_SENSOR_DATA,
 	},
+	{ id: 'power-sensor-1::controls', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::composite', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-voltage', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-current', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-power', resource: powerSensor, data: () => POWER_SENSOR_DATA },
 	{ id: 'power-sensor-1::get-readings', resource: powerSensor, data: () => POWER_SENSOR_DATA },
+	{ id: 'encoder-1::controls', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'encoder-1::composite', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'encoder-1::get-position', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'encoder-1::reset-position', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'encoder-1::get-properties', resource: encoder, data: () => ENCODER_DATA },
 	{ id: 'switch-1::composite', resource: switchResource, data: () => SWITCH_DATA },
+	{ id: 'switch-1::controls', resource: switchResource, data: () => SWITCH_DATA },
 	{ id: 'switch-1::set-position', resource: switchResource, data: () => SWITCH_DATA },
 	{ id: 'switch-1::get-position', resource: switchResource, data: () => SWITCH_DATA },
 	{ id: 'switch-1::get-number-of-positions', resource: switchResource, data: () => SWITCH_DATA },
@@ -601,8 +643,14 @@ const ROWS: MinimumRow[] = [
 	{ id: 'ml-model-1::infer', resource: mlModel, data: mlModelData },
 ]
 
+/** The `arm-1::jog` pane's minimum width, Jog's 239 px plus the pane's 2 px of borders. */
+const ARM_JOG_PANE_WIDTH = 241
+
 // Their bodies have no min-content width, so the registry gives each its narrowest entry's width.
 const NO_MIN_CONTENT_ROWS: MinimumRow[] = [
+	// Its columns have `min-w-0`, so it measures 116 px while its Jog rows overflow below the Jog
+	// pane's width. The height is read at that floor.
+	{ id: 'arm-1::controls', resource: arm, data: armControlsData, floorWidth: ARM_JOG_PANE_WIDTH },
 	{ id: 'audio-input-1::composite', resource: audioInput, data: audioInputData },
 	{ id: 'audio-output-1::composite', resource: audioOutput, data: audioOutputData },
 ]
@@ -662,9 +710,13 @@ const letHeaderTitleTruncate = (header: HTMLElement) => {
  * that width, plus the same 2 px. The host starts narrower than any pane, so media a widget sizes
  * to its container adds no width. The body's min-width comes from the row under test, so it is
  * cleared. A container query container reports no min-content, so containment is lifted while the
- * width is read. The header's title truncates by design, so it adds no width.
+ * width is read. The header's title truncates by design, so it adds no width. A `floorWidth` lifts
+ * the width, and the height read at it, for a body whose min-content collapses below its content.
  */
-const measureRenderedMinimum = async (pane: PaneNode<ResourcePane>): Promise<PaneSize> => {
+const measureRenderedMinimum = async (
+	pane: PaneNode<ResourcePane>,
+	floorWidth = 0
+): Promise<PaneSize> => {
 	render(InPaneFrame, { paneNode: pane, partID: PART_ID })
 	await afterLayoutSettles()
 	const { host, frame, header, bodyMinWidth, body } = renderedPaneParts()
@@ -674,7 +726,7 @@ const measureRenderedMinimum = async (pane: PaneNode<ResourcePane>): Promise<Pan
 	letHeaderTitleTruncate(header)
 	frame.style.width = 'min-content'
 	await nextFrame()
-	const width = Math.ceil(frame.getBoundingClientRect().width)
+	const width = Math.max(Math.ceil(frame.getBoundingClientRect().width), floorWidth)
 
 	restoreContainerQueries()
 	frame.style.width = ''
@@ -724,7 +776,7 @@ describe('resourcePaneMinimum, for a body with no min-content width', () => {
 			state.data = row.data()
 			const pane = paneFor(row)
 
-			const measured = await measureRenderedMinimum(pane)
+			const measured = await measureRenderedMinimum(pane, row.floorWidth)
 
 			const listed = resourcePaneMinimum(pane.data)
 			const drift = `${row.id} renders at ${String(measured.width)} x ${String(measured.height)}, resourcePaneMinimum lists ${String(listed.width)} x ${String(listed.height)}`

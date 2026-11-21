@@ -8,15 +8,24 @@ export interface CameraChoice {
 	/** The machine's camera names, in status order. */
 	readonly cameras: string[]
 	/**
-	 * The picked camera. Until the user picks, it is the machine's first camera, or
+	 * The picked camera. Until the user picks, it is the service's default camera when that
+	 * names one of the machine's cameras, else the machine's first camera, or
 	 * `DEFAULT_CAMERA_NAME` when the machine lists none.
 	 */
 	readonly cameraName: string
 	pick(cameraName: string): void
 }
 
-/** Tracks the `Camera` row's choice for one vision widget. Call it during component init. */
-export const createCameraChoice = (partID: () => string): CameraChoice => {
+/**
+ * Tracks the `Camera` row's choice for one vision widget. Call it during component init.
+ *
+ * @param partID Reads the part whose cameras are listed.
+ * @param defaultCameraName Reads the service's `defaultCamera`. An empty or unknown name is ignored.
+ */
+export const createCameraChoice = (
+	partID: () => string,
+	defaultCameraName: () => string | undefined = () => undefined
+): CameraChoice => {
 	const statuses = useResourceStatuses(partID, 'camera')
 
 	const cameras = $derived(
@@ -26,7 +35,12 @@ export const createCameraChoice = (partID: () => string): CameraChoice => {
 	)
 
 	let pickedName = $state<string>()
-	const cameraName = $derived(pickedName ?? cameras[0] ?? DEFAULT_CAMERA_NAME)
+	const preselectedName = $derived.by(() => {
+		const defaultName = defaultCameraName()
+		if (defaultName && cameras.includes(defaultName)) return defaultName
+		return cameras[0] ?? DEFAULT_CAMERA_NAME
+	})
+	const cameraName = $derived(pickedName ?? preselectedName)
 
 	return {
 		get cameras() {

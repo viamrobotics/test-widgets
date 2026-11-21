@@ -24,9 +24,14 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 	return {
 		createResourceClient: vi.fn(() => ({ current: {} })),
 		createResourceMutation: vi.fn((_client: unknown, method: string) => {
-			const mutate = vi.fn()
+			const mutate = vi.fn(() => Promise.resolve())
 			mutateByMethod.set(method, mutate)
-			return { mutate, isPending: false, error: errorByMethod.get(method) ?? null }
+			return {
+				mutate,
+				mutateAsync: mutate,
+				isPending: false,
+				error: errorByMethod.get(method) ?? null,
+			}
 		}),
 		useConnectionStatus: vi.fn(() => ({
 			current: connection.isConnected
@@ -78,13 +83,10 @@ describe('Base QuickMove widget', () => {
 			keys: '[MouseLeft>]',
 		})
 
-		expect(mutateFor('setPower')).toHaveBeenCalledWith(
-			[
-				{ x: 0, y: 0.5, z: 0 },
-				{ x: 0, y: 0, z: 0 },
-			],
-			{}
-		)
+		expect(mutateFor('setPower')).toHaveBeenCalledWith([
+			{ x: 0, y: 0.5, z: 0 },
+			{ x: 0, y: 0, z: 0 },
+		])
 	})
 
 	it('sends the base Stop when capture ends with a drive key held', async () => {

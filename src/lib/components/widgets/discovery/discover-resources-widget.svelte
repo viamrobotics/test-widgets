@@ -45,6 +45,8 @@
 		)
 	)
 
+	const configJson = (config: (typeof configs)[number]) => JSON.stringify(config.toJson(), null, 2)
+
 	const attributesJson = (config: (typeof configs)[number]) =>
 		JSON.stringify({ attributes: config.attributes?.toJson() ?? {} }, null, 2)
 
@@ -106,10 +108,18 @@
 							<span class="text-subtle-1 font-roboto-mono text-xs break-all">{config.api}</span>
 							<span class="text-subtle-1 font-roboto-mono text-xs break-all">{config.model}</span>
 						</div>
-						<pre
-							class="border-medium bg-light text-subtle-1 font-roboto-mono min-w-0 border px-3 py-2 text-xs break-all whitespace-pre-wrap"><code
-								>{attributesJson(config)}</code
-							></pre>
+						<div class="relative min-w-0">
+							<pre
+								class="border-medium bg-light text-subtle-1 font-roboto-mono min-w-0 border py-2 pr-10 pl-3 text-xs break-all whitespace-pre-wrap"><code
+									>{attributesJson(config)}</code
+								></pre>
+							<div class="absolute top-1 right-1">
+								<CopyButton
+									data={configJson(config)}
+									ariaLabel={`Copy ${config.name} JSON`}
+								/>
+							</div>
+						</div>
 					</div>
 				</Folder>
 			{/each}
