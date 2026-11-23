@@ -59,6 +59,7 @@ describe('Sidebar ResourceList', () => {
 					state: robotApi.ResourceStatus_State.READY,
 					revision: '1',
 					error: '',
+					reachability: robotApi.ResourceStatus_Reachability.REACHABLE,
 				},
 				{
 					name: {
@@ -70,6 +71,7 @@ describe('Sidebar ResourceList', () => {
 					state: robotApi.ResourceStatus_State.READY,
 					revision: '1',
 					error: '',
+					reachability: robotApi.ResourceStatus_Reachability.REACHABLE,
 				},
 				{
 					name: {
@@ -81,6 +83,7 @@ describe('Sidebar ResourceList', () => {
 					state: robotApi.ResourceStatus_State.READY,
 					revision: '1',
 					error: '',
+					reachability: robotApi.ResourceStatus_Reachability.REACHABLE,
 				},
 			],
 		})
