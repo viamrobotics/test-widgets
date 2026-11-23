@@ -295,7 +295,7 @@
 					{ ...motion.callOptions, signal }
 				)
 				return {
-					trajectory: parsePlanResult(reply),
+					trajectory: parsePlanResult(reply).trajectory,
 					frame: jog.frame,
 					isStraightLine: jog.isStraightLine,
 				}

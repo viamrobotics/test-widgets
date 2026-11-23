@@ -124,16 +124,56 @@ const isOldInputShape = (step: unknown): boolean =>
 	)
 
 /**
- * Reads a `plan` reply.
+ * Says how a trajectory that failed the step check is malformed. Each way a reply can be wrong gets
+ * its own message, since there is no version RPC to explain it by.
+ */
+const describeMalformedTrajectory = (trajectory: readonly unknown[]): string => {
+	for (const step of trajectory) {
+		if (Array.isArray(step)) {
+			return step.length === 0
+				? 'Motion service returned a trajectory step naming no components.'
+				: 'Motion service returned a trajectory step with unnamed joint values.'
+		}
+		if (!isJsonObject(step)) {
+			return 'Motion service returned a null trajectory step.'
+		}
+		const columns = Object.entries(step)
+		if (columns.length === 0) {
+			return 'Motion service returned a trajectory step naming no components.'
+		}
+		for (const [name, inputs] of columns) {
+			const problem = describeMalformedInputs(inputs)
+			if (problem) return `Motion service returned ${problem} for component "${name}".`
+		}
+	}
+	return 'Motion service returned a trajectory this client cannot read.'
+}
+
+const describeMalformedInputs = (inputs: JsonValue): string | undefined => {
+	if (!Array.isArray(inputs)) return 'a non-list joint value'
+	if (inputs.includes(null)) return 'a null joint value'
+	if (inputs.some((input) => typeof input !== 'number')) return 'a non-numeric joint value'
+	if (inputs.some((input) => !Number.isFinite(input))) return 'a non-finite joint value'
+	return undefined
+}
+
+export interface PlanResult {
+	trajectory: TrajectoryStep[]
+}
+
+/**
+ * Reads a `plan` reply. It mirrors `parsePlanResult` in `@viamrobotics/visualization`, which the
+ * main entry cannot import: same result shape, same messages.
  *
  * @throws {PlanCommandError} For anything but a non-empty list of named, finite steps. An empty
  * result would otherwise read as "planned, nothing to show".
  */
-export const parsePlanResult = (value: JsonValue): TrajectoryStep[] => {
+export const parsePlanResult = (value: JsonValue): PlanResult => {
 	if (!isJsonObject(value)) {
 		throw new PlanCommandError('Motion service returned an unexpected plan response.')
 	}
 	const trajectory = value.plan
+	// A Go nil trajectory marshals to JSON `null`, which is nothing to draw, as an absent key is.
 	if (trajectory === undefined || trajectory === null) {
 		throw new PlanCommandError('Motion service returned no trajectory for this move.')
 	}
@@ -146,17 +186,11 @@ export const parsePlanResult = (value: JsonValue): TrajectoryStep[] => {
 			'Motion service returned a trajectory using an older joint-value format. The machine may be running an older version of RDK.'
 		)
 	}
-	const steps: TrajectoryStep[] = []
-	for (const step of trajectory) {
-		if (!isTrajectoryStep(step)) {
-			throw new PlanCommandError(
-				'Motion service returned a trajectory step this client cannot read.'
-			)
-		}
-		steps.push(step)
+	if (!trajectory.every((step) => isTrajectoryStep(step))) {
+		throw new PlanCommandError(describeMalformedTrajectory(trajectory))
 	}
-	if (steps.length === 0) {
+	if (trajectory.length === 0) {
 		throw new PlanCommandError('Motion service returned an empty trajectory.')
 	}
-	return steps
+	return { trajectory }
 }

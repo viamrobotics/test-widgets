@@ -274,7 +274,7 @@
 					planCommand(moveArgs, previous?.trajectory.at(-1)),
 					signal
 				)
-				return { trajectory: parsePlanResult(reply), jointDegrees: goal }
+				return { trajectory: parsePlanResult(reply).trajectory, jointDegrees: goal }
 			},
 			joinPlans: (plans) => {
 				const last = plans.at(-1)

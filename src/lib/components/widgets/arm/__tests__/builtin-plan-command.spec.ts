@@ -63,7 +63,7 @@ describe('executeCommand', () => {
 describe('parsePlanResult', () => {
 	it('reads a trajectory', () => {
 		const trajectory = [{ 'arm-1': [0, 1] }, { 'arm-1': [0.5, 1] }]
-		expect(parsePlanResult({ plan: trajectory })).toEqual(trajectory)
+		expect(parsePlanResult({ plan: trajectory })).toEqual({ trajectory })
 	})
 
 	it.each([
@@ -77,6 +77,26 @@ describe('parsePlanResult', () => {
 		['the older joint-value format', { plan: [{ 'arm-1': [{ Value: 1 }] }] }],
 	])('throws PlanCommandError for %s', (_label, reply) => {
 		expect(() => parsePlanResult(reply)).toThrow(PlanCommandError)
+	})
+
+	it.each([
+		[{ plan: [{}] }, 'Motion service returned a trajectory step naming no components.'],
+		[{ plan: [[1, 2]] }, 'Motion service returned a trajectory step with unnamed joint values.'],
+		[{ plan: [null] }, 'Motion service returned a null trajectory step.'],
+		[
+			{ plan: [{ 'arm-1': 1 }] },
+			'Motion service returned a non-list joint value for component "arm-1".',
+		],
+		[
+			{ plan: [{ 'arm-1': [null] }] },
+			'Motion service returned a null joint value for component "arm-1".',
+		],
+		[
+			{ plan: [{ 'arm-1': ['1'] }] },
+			'Motion service returned a non-numeric joint value for component "arm-1".',
+		],
+	])('says how %j is malformed', (reply, message) => {
+		expect(() => parsePlanResult(reply)).toThrow(message)
 	})
 })
 
