@@ -1,14 +1,13 @@
 <script lang="ts">
 	import type { LngLat, Map as MaplLibreMap } from 'maplibre-gl'
 
-	import { Tab, TabsBar, ToggleButtons } from '@viamrobotics/prime-core'
-	import { type GeoGeometry, GoalState, NavigationClient } from '@viamrobotics/sdk'
+	import { ToggleButtons } from '@viamrobotics/prime-core'
+	import { GoalState, NavigationClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-	import { PersistedState } from 'runed'
 
 	import ConnectionStatus from '$lib/components/connection-status.svelte'
 	import {
@@ -22,8 +21,6 @@
 	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
 
 	import DirectionalMarker from './directional-marker.svelte'
-	import ObstaclesLegend from './obstacles/legend.svelte'
-	import Obstacles from './obstacles/obstacles.svelte'
 	import { toGeoWaypoint } from './waypoints/geo-waypoint.ts'
 	import WaypointsLegend from './waypoints/legend.svelte'
 	import Waypoints from './waypoints/waypoints.svelte'
@@ -101,14 +98,6 @@
 		robotGeoPose?.orientation.case === 'heading' ? robotGeoPose.orientation.value : 0
 	)
 
-	// Zones replaced obstacles in SDK 0.78, and a zone's geometry is an untyped struct. None are
-	// drawn until the widget is rebuilt for the new API.
-	const obstacles: GeoGeometry[] = []
-
-	const tab = new PersistedState<'obstacles' | 'waypoints'>(
-		'navigation-service-test-card-tab',
-		'obstacles'
-	)
 	let view = $state<'2D' | '3D'>('2D')
 	let hovered = $state<string | null>(null)
 
@@ -162,41 +151,20 @@
 		<div class="@container">
 			<div class="relative flex w-full flex-col items-stretch p-2 @2xl:h-120 @2xl:flex-row">
 				<div class="w-full p-2 @2xl:max-w-62.5">
-					<TabsBar variant="secondary">
-						<Tab
-							title="Obstacles"
-							selected={tab.current === 'obstacles'}
-							selectTab={() => (tab.current = 'obstacles')}
-						/>
-						<Tab
-							title="Waypoints"
-							selected={tab.current === 'waypoints'}
-							selectTab={() => (tab.current = 'waypoints')}
-						/>
-					</TabsBar>
+					<h3 class="text-subtle-1 border-b-medium border-b p-2 text-xs">Waypoints</h3>
 
 					<ul class="max-h-60 overflow-auto @2xl:h-[calc(100%-32px)] @2xl:max-h-none">
-						{#if tab.current === 'obstacles'}
-							<ObstaclesLegend
-								{map}
-								{hovered}
-								{obstacles}
-								onEnter={setHovered}
-								onLeave={setHovered}
-							/>
-						{:else if tab.current === 'waypoints'}
-							<WaypointsLegend
-								{map}
-								{hovered}
-								{waypoints}
-								onEnter={setHovered}
-								onLeave={setHovered}
-								onRemove={async (id) => {
-									await deleteLocationMutation.mutateAsync([id])
-									await locationsQuery.refetch()
-								}}
-							/>
-						{/if}
+						<WaypointsLegend
+							{map}
+							{hovered}
+							{waypoints}
+							onEnter={setHovered}
+							onLeave={setHovered}
+							onRemove={async (id) => {
+								await deleteLocationMutation.mutateAsync([id])
+								await locationsQuery.refetch()
+							}}
+						/>
 					</ul>
 				</div>
 
@@ -231,18 +199,8 @@
 						<Waypoints
 							{waypoints}
 							{addWayPoint}
-							tab={tab.current ?? 'obstacles'}
 							{hovered}
 						/>
-
-						{#snippet layer()}
-							<Obstacles
-								{obstacles}
-								{hovered}
-								{setHovered}
-								{view}
-							/>
-						{/snippet}
 					</MapLibre>
 				</div>
 			</div>

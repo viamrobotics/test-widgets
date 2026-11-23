@@ -10,16 +10,13 @@
 	interface Props {
 		waypoints: GeoWaypoint[]
 		addWayPoint: (_: LngLat) => void
-		tab: 'obstacles' | 'waypoints'
 		hovered: string | null
 	}
 
-	const { waypoints, addWayPoint, tab, hovered }: Props = $props()
+	const { waypoints, addWayPoint, hovered }: Props = $props()
 
 	useMapLibreEvent('click', (event) => {
-		if (tab === 'waypoints') {
-			addWayPoint(event.lngLat)
-		}
+		addWayPoint(event.lngLat)
 	})
 </script>
 

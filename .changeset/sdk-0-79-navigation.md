@@ -8,7 +8,7 @@ SDK 0.78 replaced the navigation service API. Waypoints, obstacles, and modes ar
 
 - A waypoint is now a saved location with a GPS position. A map click saves one, and the legend deletes one.
 - The Waypoint mode starts a route through every saved location, and Manual cancels the current goal.
-- Obstacles are not drawn. Zones replaced them, and the widget does not read zones yet.
+- The Obstacles tab is gone, and the legend lists waypoints only. Zones replaced obstacles, and the widget does not read zones yet. A map click now always adds a waypoint.
 - A navigation service on a local map shows no robot marker and no waypoints.
 
 A machine on an RDK older than the navigation refactor no longer works with this widget.
