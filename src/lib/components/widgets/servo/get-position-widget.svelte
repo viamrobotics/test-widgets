@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { ServoClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
-	import { formatNumeric } from '$lib/format'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { formatNumeric } from '#lib/format.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	interface Props {
 		partID: string

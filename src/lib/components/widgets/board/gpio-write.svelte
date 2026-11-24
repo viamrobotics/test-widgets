@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Label, NumericInput, ToggleButtons } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	import ConfirmingButton from './confirming-button.svelte'
 	import PinSection from './pin-section.svelte'

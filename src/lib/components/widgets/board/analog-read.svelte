@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	import ConfirmingButton from './confirming-button.svelte'
 	import PinSection from './pin-section.svelte'

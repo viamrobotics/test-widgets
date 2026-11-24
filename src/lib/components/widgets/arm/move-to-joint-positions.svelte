@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { Icon, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
-
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
-	import PasteButton from '$lib/components/paste-button.svelte'
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
+	import AngleUnitToggle from '#lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '#lib/components/copy-button.svelte'
+	import PasteButton from '#lib/components/paste-button.svelte'
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '#lib/format.js'
 
 	import JointPositionEditor from './joint-position-editor.svelte'
 	import JointPositionJogging from './joint-position-jogging.svelte'

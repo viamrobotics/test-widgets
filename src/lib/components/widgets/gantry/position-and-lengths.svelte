@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Table from '$lib/components/table.svelte'
-	import { formatNumeric } from '$lib/format'
+	import Table from '#lib/components/table.svelte'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		positions: number[]

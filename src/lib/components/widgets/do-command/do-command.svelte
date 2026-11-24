@@ -5,12 +5,11 @@
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { supportsDoCommand } from '#lib/client-map.js'
+	import { Section } from '#lib/components/section/index.js'
+	import { getResourceAPI } from '#lib/get-resource-api.js'
+	import { getResourceKey } from '#lib/get-resource-key.js'
 	import { PersistedState } from 'runed'
-
-	import { supportsDoCommand } from '$lib/client-map'
-	import { Section } from '$lib/components/section'
-	import { getResourceAPI } from '$lib/get-resource-api'
-	import { getResourceKey } from '$lib/get-resource-key'
 
 	import { createDoCommandClient } from './create-do-command-client.svelte'
 

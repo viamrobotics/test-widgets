@@ -1,8 +1,8 @@
 <script lang="ts">
+	import type { NamedResourceStatus } from '#lib/resource.js'
+
 	import { Badge } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
-
-	import type { NamedResourceStatus } from '$lib/resource'
 
 	interface Props {
 		resource: NamedResourceStatus

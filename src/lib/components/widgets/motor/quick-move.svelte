@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	interface Props {
 		setPower: (_: number) => void

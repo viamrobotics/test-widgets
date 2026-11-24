@@ -8,8 +8,7 @@
 		Select,
 		Tooltip,
 	} from '@viamrobotics/prime-core'
-
-	import { degreesToRadians, formatNumeric } from '$lib/format'
+	import { degreesToRadians, formatNumeric } from '#lib/format.js'
 
 	import type { JointLimit } from './joint-position-limits'
 

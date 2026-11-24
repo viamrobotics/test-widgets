@@ -4,8 +4,7 @@ import {
 	useConnectionStatus,
 	useRobotClient,
 } from '@viamrobotics/svelte-sdk'
-
-import { clientForResource, clientMap } from '$lib/client-map'
+import { clientForResource, clientMap } from '#lib/client-map.js'
 
 type DoCommandable = InstanceType<
 	Exclude<(typeof clientMap)[keyof typeof clientMap], typeof MLModelClient>

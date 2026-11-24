@@ -2,8 +2,7 @@
 	import '../../../../../app.css'
 
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query'
-
-	import { providePip } from '$lib/pip/context.svelte'
+	import { providePip } from '#lib/pip/context.svelte.js'
 
 	import LiveOrPollingVideo from '../live-or-polling-video.svelte'
 

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Badge } from '@viamrobotics/prime-core'
-
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		rtt: number

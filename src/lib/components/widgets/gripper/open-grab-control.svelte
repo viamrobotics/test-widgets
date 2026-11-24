@@ -3,9 +3,8 @@
 
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import { Section, useSectionErrors } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { Section, useSectionErrors } from '#lib/components/section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Grab from './grab.svelte'
 	import Open from './open.svelte'

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { EncoderPositionType } from '@viamrobotics/sdk'
-
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		position: number

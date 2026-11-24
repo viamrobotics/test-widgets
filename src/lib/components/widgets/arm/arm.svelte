@@ -5,12 +5,11 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import { Section } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import IsMoving from '#lib/components/is-moving.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import GetJointPositions from './get-joint-positions.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'

@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { SensorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import ReadingsList from '$lib/components/readings-list.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import ReadingsList from '#lib/components/readings-list.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	interface Props {
 		partID: string

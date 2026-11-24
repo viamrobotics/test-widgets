@@ -2,8 +2,7 @@
 	import type { Snippet } from 'svelte'
 
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
-
-	import Progress from '$lib/components/progress.svelte'
+	import Progress from '#lib/components/progress.svelte'
 
 	import { createControlHost } from './create-control-host.svelte'
 	import { prepareArtifact } from './custom-control'

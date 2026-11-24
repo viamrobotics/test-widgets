@@ -1,11 +1,10 @@
 <script lang="ts">
+	import type { SectionMutation } from '#lib/components/section/use-section-errors.svelte.js'
+
 	import { Button, Label, NumericInput } from '@viamrobotics/prime-core'
-
-	import type { SectionMutation } from '$lib/components/section/use-section-errors.svelte'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import type { PosePosition } from './pose'
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { ResourceName } from '@viamrobotics/sdk'
-
-	import { Section } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { Section } from '#lib/components/section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import DoCommand from '../do-command/do-command.svelte'
 

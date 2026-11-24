@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Section } from '$lib/components/section'
-	import { getResourceKey } from '$lib/get-resource-key'
-	import { type NamedResourceStatus } from '$lib/resource'
+	import { Section } from '#lib/components/section/index.js'
+	import { getResourceKey } from '#lib/get-resource-key.js'
+	import { type NamedResourceStatus } from '#lib/resource.js'
 
 	import CardListItem from './card-list-item.svelte'
 	import NullState from './null-state.svelte'

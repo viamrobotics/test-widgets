@@ -29,7 +29,7 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 	}),
 }))
 
-vi.mock('$lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte', () => ({
+vi.mock('#lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte', () => ({
 	default: () => {},
 }))
 

@@ -5,14 +5,13 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import { Section } from '$lib/components/section'
-	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
-	import StopButton from '$lib/components/stop-button.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import IsMoving from '#lib/components/is-moving.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { useSectionErrors } from '#lib/components/section/use-section-errors.svelte.js'
+	import StopButton from '#lib/components/stop-button.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Home from './home.svelte'
 	import MoveToPosition from './move-to-position.svelte'

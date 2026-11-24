@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Vector3 } from '@viamrobotics/sdk'
 
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		data: Vector3

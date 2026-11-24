@@ -3,19 +3,18 @@
 	import { Button, Label, Select, Switch, ToggleButtons } from '@viamrobotics/prime-core'
 	import { CameraClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-	import { PersistedState } from 'runed'
-	import { untrack } from 'svelte'
-
-	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import { useAddImageToDataset } from '#lib/add-image-to-dataset.js'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
 		RefetchIntervals,
-	} from '$lib/components/refetch-interval-store.svelte'
-	import { Section, useSectionErrors } from '$lib/components/section'
-	import { usePip } from '$lib/pip/context.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	} from '#lib/components/refetch-interval-store.svelte.js'
+	import { Section, useSectionErrors } from '#lib/components/section/index.js'
+	import { usePip } from '#lib/pip/context.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { PersistedState } from 'runed'
+	import { untrack } from 'svelte'
 
 	import PCDWidget from '../pcd/pcd-widget.svelte'
 	import ExportScreenshot from './export-screenshot.svelte'
