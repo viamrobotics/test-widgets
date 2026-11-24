@@ -1,5 +1,20 @@
 # @viamrobotics/test-widgets
 
+## 0.19.0
+
+### Minor Changes
+
+- 34e148e: Show the battery charge in `PowerSensorWidget`. A `GetBatteryPercent` section appears beside current, voltage, and power when the sensor's `GetProperties` reports `isBatteryPercentSupported`. A sensor without a battery, or a machine whose RDK has no `GetProperties`, looks as it did before.
+- 00491af: Bump `@viamrobotics/sdk` to 0.79.1 and raise the peer range to `>=0.78.0`.
+
+  SDK 0.78 replaced the navigation service API. Waypoints, obstacles, and modes are gone, and saved locations, routes, zones, and goals take their place. The navigation widget keeps its layout and is ported as a stopgap until it is rebuilt in the next major version:
+  - A waypoint is now a saved location with a GPS position. A map click saves one, and the legend deletes one.
+  - The Waypoint mode starts a route through every saved location, and Manual cancels the current goal.
+  - The Obstacles tab is gone, and the legend lists waypoints only. Zones replaced obstacles, and the widget does not read zones yet. A map click now always adds a waypoint.
+  - A navigation service on a local map shows no robot marker and no waypoints.
+
+  A machine on an RDK older than the navigation refactor no longer works with this widget.
+
 ## 0.18.0
 
 ### Minor Changes
