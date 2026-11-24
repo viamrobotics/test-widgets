@@ -44,7 +44,7 @@ export const createControlHost = ({
 			// Names the resource in the handshake so the guest's default client targets it.
 			resourceName: resourceName(),
 			allow: ({ resource }) => resource === resourceName(),
-			onSize: (height) => {
+			onSize: ({ height }) => {
 				// A non-finite value would reach the iframe's style as invalid CSS, which the browser
 				// drops, snapping the frame back to its class height. Bounds live in CSS on the frame.
 				if (!Number.isFinite(height)) return
