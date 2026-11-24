@@ -343,7 +343,7 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const modeGroup = screen.getByRole('group', { name: /control mode/iu })
+			const modeGroup = screen.getByRole('radiogroup', { name: /control mode/iu })
 			const labels = within(modeGroup)
 				.getAllByRole('radio')
 				.map((button) => button.textContent?.trim())

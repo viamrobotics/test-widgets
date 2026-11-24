@@ -122,9 +122,12 @@
 				<nav class="border-light bg-extralight flex h-full flex-col divide-y border-b sm:border-r">
 					{@render children()}
 
-					<Field class="flex items-center gap-2 px-4 py-2">
+					<Field
+						label="Single card mode"
+						class="flex items-center gap-2 px-4 py-2"
+					>
 						<Checkbox bind:checked={singleCardMode} />
-						<Label class="text-xs">Single card mode</Label>
+						<Label class="text-xs" />
 					</Field>
 
 					<ResourceList

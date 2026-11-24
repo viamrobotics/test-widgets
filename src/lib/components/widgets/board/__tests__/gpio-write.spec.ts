@@ -34,7 +34,7 @@ describe('Board GPIO Write', () => {
 	it('draws State as Low then High, with High picked', () => {
 		renderSubject({})
 
-		const state = within(screen.getByRole('group', { name: 'State' }))
+		const state = within(screen.getByRole('radiogroup', { name: 'State' }))
 		const [first, second] = state.getAllByRole('radio')
 		expect(first).toHaveAccessibleName('Low')
 		expect(second).toHaveAccessibleName('High')

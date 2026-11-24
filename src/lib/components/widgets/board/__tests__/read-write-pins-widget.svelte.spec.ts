@@ -68,8 +68,8 @@ describe('Board ReadWritePins widget', () => {
 	it('starts on GPIO and Write', () => {
 		renderSubject()
 
-		const pinType = within(screen.getByRole('group', { name: 'Pin type' }))
-		const mode = within(screen.getByRole('group', { name: 'Mode' }))
+		const pinType = within(screen.getByRole('radiogroup', { name: 'Pin type' }))
+		const mode = within(screen.getByRole('radiogroup', { name: 'Mode' }))
 		expect(pinType.getByRole('radio', { name: 'GPIO' })).toHaveAttribute('aria-checked', 'true')
 		expect(mode.getByRole('radio', { name: 'Write' })).toHaveAttribute('aria-checked', 'true')
 	})
@@ -257,8 +257,8 @@ const renderInPane = () => {
 }
 
 const bodyStartsBesideSelector = () => {
-	const mode = screen.getByRole('group', { name: 'Mode' }).getBoundingClientRect()
-	const state = screen.getByRole('group', { name: 'State' }).getBoundingClientRect()
+	const mode = screen.getByRole('radiogroup', { name: 'Mode' }).getBoundingClientRect()
+	const state = screen.getByRole('radiogroup', { name: 'State' }).getBoundingClientRect()
 	return state.top < mode.bottom
 }
 

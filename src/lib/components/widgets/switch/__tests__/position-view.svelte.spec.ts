@@ -164,7 +164,7 @@ describe('Switch position widget in a 320 px pane', () => {
 		renderInPane()
 		await settleLayout()
 
-		expect(screen.getByRole('group', { name: 'Position' })).toBeInTheDocument()
+		expect(screen.getByRole('radiogroup', { name: 'Position' })).toBeInTheDocument()
 		expect(screen.getAllByRole('radio')).toHaveLength(3)
 		expect(screen.queryByRole('combobox', { name: 'Position' })).not.toBeInTheDocument()
 	})

@@ -147,9 +147,12 @@
 	getChecked: () => boolean,
 	setChecked: (checked: boolean) => void
 )}
-	<Field class="flex items-center gap-2">
+	<Field
+		label={fieldLabel}
+		class="flex items-center gap-2"
+	>
 		<Checkbox bind:checked={getChecked, setChecked} />
-		<Label>{fieldLabel}</Label>
+		<Label />
 	</Field>
 {/snippet}
 

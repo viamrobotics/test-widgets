@@ -172,7 +172,7 @@
 						style:background-color={color}
 					></span>
 				</Tooltip.Trigger>
-				<Tooltip.Content placement="right">{label}</Tooltip.Content>
+				<Tooltip.Content side="right">{label}</Tooltip.Content>
 			</Tooltip>
 		</div>
 	</li>

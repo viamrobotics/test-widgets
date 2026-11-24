@@ -704,14 +704,23 @@ const letHeaderTitleTruncate = (header: HTMLElement) => {
 	}
 }
 
+/** The width the registry gives the widget itself, before the pane adds its borders and header. */
+const widgetMinWidth = (pane: PaneNode<ResourcePane>) =>
+	pane.data.kind === 'composite' ? pane.data.size.minWidth : pane.data.entry.size.minWidth
+
 /**
  * The pane's smallest size as rendered, header and borders included. Width is the pane's
- * min-content plus its 2 px of borders. Height is its header plus the body's `scrollHeight` at
- * that width, plus the same 2 px. The host starts narrower than any pane, so media a widget sizes
- * to its container adds no width. The body's min-width comes from the row under test, so it is
- * cleared. A container query container reports no min-content, so containment is lifted while the
- * width is read. The header's title truncates by design, so it adds no width. A `floorWidth` lifts
- * the width, and the height read at it, for a body whose min-content collapses below its content.
+ * min-content plus its 2 px of borders. Height is its header plus the body's `scrollHeight`, plus
+ * the same 2 px. The host starts narrower than any pane, so media a widget sizes to its container
+ * adds no width. The body's min-width comes from the row under test, so it is cleared. A container
+ * query container reports no min-content, so containment is lifted while the widths are read. The
+ * header's title truncates by design, so it adds no width. A `floorWidth` lifts the width for a
+ * body whose min-content collapses below its content.
+ *
+ * The height is read with the body at the widget's own width: its min-content, or the registry's
+ * `minWidth` when that is wider. A header wider than the widget makes the pane wider than the
+ * widget, and the registry's `minHeight` is the height at the widget's `minWidth`, where text wraps
+ * onto more lines than in the wider pane.
  */
 const measureRenderedMinimum = async (
 	pane: PaneNode<ResourcePane>,
@@ -727,9 +736,16 @@ const measureRenderedMinimum = async (
 	frame.style.width = 'min-content'
 	await nextFrame()
 	const width = Math.max(Math.ceil(frame.getBoundingClientRect().width), floorWidth)
+	bodyMinWidth.style.width = 'min-content'
+	await nextFrame()
+	const bodyWidth = Math.max(
+		Math.ceil(bodyMinWidth.getBoundingClientRect().width),
+		widgetMinWidth(pane)
+	)
 
 	restoreContainerQueries()
 	frame.style.width = ''
+	bodyMinWidth.style.width = `${String(bodyWidth)}px`
 	host.style.width = `${String(width)}px`
 	host.style.height = '1px'
 	await afterLayoutSettles()

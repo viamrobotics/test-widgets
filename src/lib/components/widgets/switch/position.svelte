@@ -15,8 +15,8 @@
 	}
 
 	const LABEL = 'Position'
-	// ToggleButtons renders its items inside one `role="group"` element, which is the row to measure.
-	const TOGGLE_GROUP_SELECTOR = '[role="group"]'
+	// ToggleButtons renders its items inside one `role="radiogroup"` element, which is the row to measure.
+	const TOGGLE_GROUP_SELECTOR = '[role="radiogroup"]'
 
 	const { numPositions, labels, currentPosition, onSelect, isBusy = false }: Props = $props()
 

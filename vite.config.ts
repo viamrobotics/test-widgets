@@ -11,14 +11,6 @@ export default defineConfig({
 	server: {
 		port: 6173,
 	},
-	// The scoped scene imports an HDR environment map, and the optimizer does not apply `assetsInclude`.
-	assetsInclude: ['**/*.hdr'],
-	optimizeDeps: {
-		exclude: ['@viamrobotics/visualization'],
-		// Visualization imports the `/webgpu` entries. Served unbundled, each brings a second copy of
-		// its package next to the prebundled root entry, so Threlte's context keys stop matching.
-		include: ['@threlte/core/webgpu', '@threlte/extras/webgpu', 'three/webgpu', 'three/tsl'],
-	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),

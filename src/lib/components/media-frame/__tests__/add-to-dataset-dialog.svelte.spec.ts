@@ -136,7 +136,7 @@ describe('AddToDatasetDialog confirm', () => {
 		await user.click(screen.getByRole('button', { name: 'Add' }))
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(
-			'Could not add to dataset permission denied'
+			'Error: Could not add to dataset permission denied'
 		)
 		expect(dialog).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled()

@@ -77,26 +77,6 @@ Mount these once, above any widget:
 
 Each widget takes the `partID` and `resourceName` of the resource it controls.
 
-### Arm 3D scene
-
-`ArmControls` can show a 3D scene of the arm with a move target gizmo, Preview move, and Execute plan. The scene lives on its own subpath so the main entry never imports `@viamrobotics/visualization`. A host opts in by passing it to `provideArmScene`, before rendering `ArmControls`:
-
-```ts
-import { provideArmScene } from '@viamrobotics/test-widgets'
-import { ArmScene } from '@viamrobotics/test-widgets/arm-scene'
-
-provideArmScene(ArmScene)
-```
-
-Without it, `ArmControls` shows no scene and no "Open 3D scene" button. With it, the scene fills the controls from a 672 px container, and in a narrower one the "Open 3D scene" button in the heading opens it in a pop-out. A host that owns the window calls `providePopOutHost` with an object whose `open(request)` shows `request.content` in its own window and returns a function that closes it. The request's `minSize` matches the entry's `popOutSize`. Without a pop-out host, the scene opens in a full-viewport Takeover.
-
-The scene needs these in the host app:
-
-- `@viamrobotics/visualization` and its peers installed.
-- `assetsInclude: ['**/*.hdr']` in the Vite config.
-- `optimizeDeps.exclude: ['@viamrobotics/visualization']` in the Vite config.
-- Server-side rendering off for the page that shows it.
-
 ### Config props
 
 Some control interfaces take optional props that a host fills from the resource's machine config. A given value is enforced or seeds a field. An absent or invalid value leaves the control as it is without one. A value the resource API reports is never a prop.
@@ -117,35 +97,35 @@ Some control interfaces take optional props that a host fills from the resource'
 
 ### Sizes
 
-Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`. An entry that opens a pop-out window also carries `popOutSize`, the smallest body that window needs. A host that draws its own window sizes it to at least that.
+Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`.
 
 The table lists each resource's composite `minWidth` and each API entry's `minWidth`, keyed by entry id, all in px. Resources with no API entries have none listed.
 
 | Resource        | Composite | API entries                                                                                                                                                                                                                                                         |
 | --------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arm             | 221       | controls `239`, jog `239`, joints `196`, move-to-joint-positions `196`, move-to-position `213`, get-joint-positions `186`, get-end-position `162`, is-moving `96`, manual-mode `193`, set-manual-mode `246`, get-manual-mode `150`, get-properties `224`, stop `92` |
-| AudioInput      | 108       | controls `98`, get-audio `282`, get-properties `237`                                                                                                                                                                                                                |
-| AudioOutput     | 114       | controls `114`, play `252`, play-stream `252`, get-properties `237`                                                                                                                                                                                                 |
-| Base            | 243       | controls `276`, quick-move `276`, move-straight `297`, spin `286`, set-power `115`, set-velocity `150`, is-moving `96`, stop `92`, get-properties `243`                                                                                                             |
-| Board           | 176       | controls `240`, pins `253`, set-gpio `192`, get-gpio `214`, pwm `214`, set-pwm `214`, pwm-frequency `214`, set-pwm-frequency `269`, read-analog-reader `230`, write-analog `222`, get-digital-interrupt-value `240`, stream-ticks `278`, set-power-mode `150`       |
+| Arm             | 233       | controls `239`, jog `239`, joints `196`, move-to-joint-positions `196`, move-to-position `213`, get-joint-positions `186`, get-end-position `162`, is-moving `96`, manual-mode `205`, set-manual-mode `258`, get-manual-mode `150`, get-properties `224`, stop `92` |
+| AudioInput      | 108       | controls `98`, get-audio `293`, get-properties `237`                                                                                                                                                                                                                |
+| AudioOutput     | 114       | controls `114`, play `264`, play-stream `264`, get-properties `237`                                                                                                                                                                                                 |
+| Base            | 243       | controls `276`, quick-move `276`, move-straight `309`, spin `298`, set-power `115`, set-velocity `150`, is-moving `96`, stop `92`, get-properties `243`                                                                                                             |
+| Board           | 176       | controls `240`, pins `265`, set-gpio `192`, get-gpio `214`, pwm `214`, set-pwm `214`, pwm-frequency `214`, set-pwm-frequency `281`, read-analog-reader `230`, write-analog `234`, get-digital-interrupt-value `240`, stream-ticks `278`, set-power-mode `150`       |
 | Button          | 160       |                                                                                                                                                                                                                                                                     |
 | Camera          | 276       | controls `227`, get-images `182`, get-point-cloud `137`, get-properties `276`                                                                                                                                                                                       |
 | Encoder         | 211       | controls `162`, get-position `162`, reset-position `150`, get-properties `251`                                                                                                                                                                                      |
 | Gantry          | 169       | controls `166`, home `150`, move-to-position `142`, quick-move `95`, get-position `176`, is-moving `96`, get-lengths `183`, stop `92`                                                                                                                               |
-| Gripper         | 244       | controls `230`, open-grab `136`, is-holding-something `194`, is-moving `96`, open `81`, grab `115`, stop `92`, get-current-inputs `150`, go-to-inputs `219`                                                                                                         |
+| Gripper         | 244       | controls `230`, open-grab `136`, is-holding-something `194`, is-moving `96`, open `81`, grab `115`, stop `92`, get-current-inputs `150`, go-to-inputs `249`                                                                                                         |
 | InputController | 211       | get-events `240`, trigger-event `232`                                                                                                                                                                                                                               |
-| Motor           | 288       | controls `319`, quick-move `276`, move `310`, set-power `192`, set-rpm `248`, go-for `288`, go-to `268`, is-moving `96`, reset-zero-position `279`, get-position `180`, get-properties `224`, stop `150`, is-powered `150`                                          |
+| Motor           | 300       | controls `331`, quick-move `322`, move `310`, set-power `192`, set-rpm `260`, go-for `300`, go-to `280`, is-moving `96`, reset-zero-position `291`, get-position `180`, get-properties `224`, stop `150`, is-powered `150`                                          |
 | MovementSensor  | 239       | controls `288`, get-position `206`, get-orientation `108`, get-compass-heading `209`, get-accuracy `183`, get-linear-velocity `150`, get-angular-velocity `150`, get-linear-acceleration `150`, get-properties `259`, get-readings `150`                            |
 | PowerSensor     | 211       | controls `303`, get-voltage `195`, get-current `187`, get-power `176`, get-readings `150`                                                                                                                                                                           |
 | Sensor          | 259       |                                                                                                                                                                                                                                                                     |
-| Servo           | 169       | controls `272`, move `276`, quick-move `196`, move-to `272`, is-moving `96`, get-position `140`, stop `92`                                                                                                                                                          |
-| Switch          | 179       | controls `140`, set-position `150`, get-position `150`, get-number-of-positions `150`                                                                                                                                                                               |
+| Servo           | 169       | controls `272`, move `306`, quick-move `196`, move-to `272`, is-moving `96`, get-position `140`, stop `92`                                                                                                                                                          |
+| Switch          | 179       | controls `148`, set-position `150`, get-position `150`, get-number-of-positions `150`                                                                                                                                                                               |
 | Discovery       | 220       | controls `189`, discover-resources `170`                                                                                                                                                                                                                            |
 | MLModel         | 286       | metadata `286`, infer `235`                                                                                                                                                                                                                                         |
 | Motion          | 240       |                                                                                                                                                                                                                                                                     |
-| Navigation      | 116       | controls `248`, get-mode `108`, set-mode `248`, get-location `141`, get-waypoints `137`, add-waypoint `257`, remove-waypoint `180`, get-obstacles `232`, get-paths `177`, get-properties `150`                                                                      |
-| Slam            | 223       | controls `248`, get-position `223`, get-point-cloud-map `165`, get-properties `244`, get-internal-state `184`                                                                                                                                                       |
-| Vision          | 293       | controls `264`, capture-all-from-camera `272`, get-properties `263`, get-object-point-clouds `200`, get-detections-from-camera `230`, get-classifications-from-camera `230`, get-detections `269`, get-classifications `269`                                        |
+| Navigation      | 116       | controls `248`, get-mode `108`, set-mode `248`, get-location `141`, get-waypoints `137`, add-waypoint `269`, remove-waypoint `180`, get-obstacles `232`, get-paths `177`, get-properties `150`                                                                      |
+| Slam            | 223       | controls `253`, get-position `223`, get-point-cloud-map `165`, get-properties `244`, get-internal-state `184`                                                                                                                                                       |
+| Vision          | 293       | controls `264`, capture-all-from-camera `272`, get-properties `263`, get-object-point-clouds `200`, get-detections-from-camera `230`, get-classifications-from-camera `237`, get-detections `269`, get-classifications `269`                                        |
 
 ### In a pane
 

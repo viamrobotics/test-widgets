@@ -131,7 +131,7 @@ describe('Switch position width rule', () => {
 		renderAt(PANE_BODY_WIDTH, LABELED_THREE)
 		await settleLayout()
 
-		const group = screen.getByRole('group', { name: 'Position' })
+		const group = screen.getByRole('radiogroup', { name: 'Position' })
 		const label = labelOf(group)
 
 		expect(group.getBoundingClientRect().top, 'group top').toBeLessThan(
@@ -143,7 +143,7 @@ describe('Switch position width rule', () => {
 		renderAt(PANE_BODY_WIDTH, { numPositions: 12, labels: [] })
 		await settleLayout()
 
-		const group = screen.getByRole('group', { name: 'Position' })
+		const group = screen.getByRole('radiogroup', { name: 'Position' })
 		const label = labelOf(group)
 
 		expect(group.getBoundingClientRect().top, 'group top').toBeGreaterThanOrEqual(

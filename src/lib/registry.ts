@@ -8,7 +8,6 @@ import type {
 } from './resource-widget-types.ts'
 
 import {
-	ARM_SCENE_POP_OUT_SIZE,
 	ArmControls,
 	ArmGetEndPositionWidget,
 	ArmGetJointPositionsWidget,
@@ -214,8 +213,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Arm]: {
 		widget: ArmWidget,
 		size: {
-			minWidth: 221,
-			minHeight: 2022,
+			minWidth: 233,
+			minHeight: 1946,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, ARM_TWO_COLUMNS_MAX_WIDTH],
 			maxWidth: ARM_TWO_COLUMNS_MAX_WIDTH,
 		},
@@ -225,12 +224,11 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				label: 'Controls',
 				kind: 'control',
 				widgets: [ArmControls],
-				popOutSize: ARM_SCENE_POP_OUT_SIZE,
 				size: {
 					minWidth: 239,
 					minHeight: 932,
-					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, ARM_TWO_COLUMNS_MAX_WIDTH],
-					maxWidth: ARM_TWO_COLUMNS_MAX_WIDTH,
+					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
+					maxWidth: CONTAINER_2XL,
 				},
 			},
 			{
@@ -276,7 +274,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				widgets: [ArmMoveToPositionWidget],
 				size: {
 					minWidth: 213,
-					minHeight: 582,
+					minHeight: 618,
 					recommendedWidths: [228, 638],
 					maxWidth: CONTAINER_2XL,
 				},
@@ -318,9 +316,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [ArmManualModeControl],
 				size: {
-					minWidth: 193,
-					minHeight: 198,
-					recommendedWidths: [198, 294],
+					minWidth: 205,
+					minHeight: 164,
+					recommendedWidths: [205, 294],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -330,9 +328,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [ArmSetManualModeWidget],
 				size: {
-					minWidth: 246,
+					minWidth: 258,
 					minHeight: 136,
-					recommendedWidths: [246, 287],
+					recommendedWidths: [258, 287],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -374,7 +372,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	// it takes its narrowest entry's width.
 	[ResourceTriplets.AudioInput]: {
 		widget: AudioInputWidget,
-		size: { minWidth: 108, minHeight: 369, recommendedWidths: [108], maxWidth: CONTAINER_2XL },
+		size: { minWidth: 108, minHeight: 353, recommendedWidths: [108], maxWidth: CONTAINER_2XL },
 		apis: [
 			{
 				id: 'controls',
@@ -394,9 +392,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [AudioInputGetAudioWidget],
 				size: {
-					minWidth: 282,
+					minWidth: 293,
 					minHeight: 148,
-					recommendedWidths: [282],
+					recommendedWidths: [293],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -421,7 +419,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: AudioOutputWidget,
 		size: {
 			minWidth: 114,
-			minHeight: 776,
+			minHeight: 744,
 			recommendedWidths: [114],
 			maxWidth: FIELD_COLUMN_MAX_WIDTH,
 		},
@@ -444,9 +442,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [AudioOutputPlayWidget],
 				size: {
-					minWidth: 252,
+					minWidth: 264,
 					minHeight: 194,
-					recommendedWidths: [252],
+					recommendedWidths: [264],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -456,9 +454,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [AudioOutputPlayStreamWidget],
 				size: {
-					minWidth: 252,
+					minWidth: 264,
 					minHeight: 232,
-					recommendedWidths: [252],
+					recommendedWidths: [264],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -482,7 +480,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: BaseWidget,
 		size: {
 			minWidth: 243,
-			minHeight: 1154,
+			minHeight: 1350,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: THREE_FIELD_COLUMNS_MAX_WIDTH,
 		},
@@ -517,9 +515,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [BaseMoveStraightWidget],
 				size: {
-					minWidth: 297,
+					minWidth: 309,
 					minHeight: 118,
-					recommendedWidths: [297],
+					recommendedWidths: [309],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -529,9 +527,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [BaseSpinWidget],
 				size: {
-					minWidth: 286,
+					minWidth: 298,
 					minHeight: 118,
-					recommendedWidths: [286],
+					recommendedWidths: [298],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -542,7 +540,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				widgets: [BaseSetPowerWidget],
 				size: {
 					minWidth: 115,
-					minHeight: 182,
+					minHeight: 302,
 					recommendedWidths: [246],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
@@ -555,7 +553,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				// The api header's floor less its borders. Narrower, its rows wrap 16 px taller.
 				size: {
 					minWidth: 150,
-					minHeight: 182,
+					minHeight: 302,
 					recommendedWidths: [268],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
@@ -614,7 +612,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [BoardPinsControl],
 				size: {
-					minWidth: 253,
+					minWidth: 265,
 					minHeight: 229,
 					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 					maxWidth: CONTAINER_2XL,
@@ -686,9 +684,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [BoardSetPWMFrequencyWidget],
 				size: {
-					minWidth: 269,
+					minWidth: 281,
 					minHeight: 126,
-					recommendedWidths: [269],
+					recommendedWidths: [281],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -710,9 +708,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [BoardWriteAnalogWidget],
 				size: {
-					minWidth: 222,
+					minWidth: 234,
 					minHeight: 126,
-					recommendedWidths: [222],
+					recommendedWidths: [234],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -878,7 +876,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: GantryWidget,
 		size: {
 			minWidth: 169,
-			minHeight: 1571,
+			minHeight: 1487,
 			recommendedWidths: [200, CONTAINER_2XL],
 			maxWidth: CONTAINER_2XL,
 		},
@@ -911,7 +909,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				// 317 is the widget's `@[317px]` container query, where each axis takes two cells.
 				size: {
 					minWidth: 142,
-					minHeight: 518,
+					minHeight: 434,
 					recommendedWidths: [162, 317],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
@@ -973,7 +971,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: GripperWidget,
 		size: {
 			minWidth: 244,
-			minHeight: 645,
+			minHeight: 589,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 			maxWidth: CAPPED_COMPOSITE_MAX_WIDTH,
 		},
@@ -1050,9 +1048,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [GripperGoToInputsWidget],
 				size: {
-					minWidth: 219,
-					minHeight: 190,
-					recommendedWidths: [219],
+					minWidth: 249,
+					minHeight: 134,
+					recommendedWidths: [249],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1099,7 +1097,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 	[ResourceTriplets.Motor]: {
 		widget: MotorWidget,
 		size: {
-			minWidth: 288,
+			minWidth: 300,
 			minHeight: 1055,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, CONTAINER_4XL],
 			maxWidth: THREE_FIELD_COLUMNS_MAX_WIDTH,
@@ -1111,9 +1109,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [MotorControls],
 				size: {
-					minWidth: 319,
-					minHeight: 477,
-					recommendedWidths: [319, MOTOR_CONTROLS_TWO_FOLDERS_WIDTH],
+					minWidth: 331,
+					minHeight: 445,
+					recommendedWidths: [331, MOTOR_CONTROLS_TWO_FOLDERS_WIDTH],
 					maxWidth: MOTOR_CONTROLS_TWO_FOLDERS_WIDTH,
 				},
 			},
@@ -1135,9 +1133,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [MotorMoveControl],
 				size: {
-					minWidth: 310,
+					minWidth: 322,
 					minHeight: 200,
-					recommendedWidths: [310],
+					recommendedWidths: [322],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1159,9 +1157,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [MotorSetRPMWidget],
 				size: {
-					minWidth: 248,
+					minWidth: 260,
 					minHeight: 92,
-					recommendedWidths: [248, 266],
+					recommendedWidths: [260, 266],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1171,9 +1169,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [MotorGoForWidget],
 				size: {
-					minWidth: 288,
+					minWidth: 300,
 					minHeight: 118,
-					recommendedWidths: [288],
+					recommendedWidths: [300],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1183,9 +1181,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [MotorGoToWidget],
 				size: {
-					minWidth: 268,
+					minWidth: 280,
 					minHeight: 118,
-					recommendedWidths: [268],
+					recommendedWidths: [280],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1202,9 +1200,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [MotorResetZeroPositionWidget],
 				size: {
-					minWidth: 279,
-					minHeight: 92,
-					recommendedWidths: [279],
+					minWidth: 291,
+					minHeight: 58,
+					recommendedWidths: [291],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1463,7 +1461,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: ServoWidget,
 		size: {
 			minWidth: 169,
-			minHeight: 555,
+			minHeight: 527,
 			recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 			maxWidth: CAPPED_COMPOSITE_MAX_WIDTH,
 		},
@@ -1486,9 +1484,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [ServoMoveWidget],
 				size: {
-					minWidth: 276,
-					minHeight: 120,
-					recommendedWidths: [276],
+					minWidth: 306,
+					minHeight: 58,
+					recommendedWidths: [306],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1551,8 +1549,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [SwitchControls],
 				size: {
-					minWidth: 140,
-					minHeight: 112,
+					minWidth: 148,
+					minHeight: 134,
 					recommendedWidths: [207, CONTAINER_XS],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
@@ -1677,7 +1675,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 		widget: MotionServiceWidget,
 		size: {
 			minWidth: 240,
-			minHeight: 668,
+			minHeight: 704,
 			recommendedWidths: [CONTAINER_XS, 638],
 			maxWidth: CONTAINER_2XL,
 		},
@@ -1755,9 +1753,9 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'api',
 				widgets: [NavigationAddWaypointWidget],
 				size: {
-					minWidth: 257,
+					minWidth: 269,
 					minHeight: 118,
-					recommendedWidths: [257],
+					recommendedWidths: [269],
 					maxWidth: FIELD_COLUMN_MAX_WIDTH,
 				},
 			},
@@ -1813,8 +1811,8 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				kind: 'control',
 				widgets: [SlamControls],
 				size: {
-					minWidth: 248,
-					minHeight: 548,
+					minWidth: 253,
+					minHeight: 553,
 					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
 					maxWidth: CONTAINER_4XL,
 				},
@@ -1935,7 +1933,7 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				label: 'GetClassificationsFromCamera',
 				kind: 'api',
 				widgets: [VisionServiceGetClassificationsFromCameraWidget],
-				size: { minWidth: 230, minHeight: 188, recommendedWidths: [414], maxWidth: 414 },
+				size: { minWidth: 237, minHeight: 188, recommendedWidths: [414], maxWidth: 414 },
 			},
 			{
 				id: 'get-detections',
@@ -2018,7 +2016,6 @@ export const widgetSizeForResource = (resource: ResourceName): ResourceWidgetSiz
 
 // Re-exported so `/registry` consumers can type the lookups' return values without importing
 // from the root entry.
-export type { PopOutSize } from './components/index.ts'
 export type {
 	ResourceAPIWidget,
 	ResourceAPIWidgetKind,

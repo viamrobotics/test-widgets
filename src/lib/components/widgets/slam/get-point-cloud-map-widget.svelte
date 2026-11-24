@@ -45,9 +45,12 @@
 	queries={[pointCloudMapQuery]}
 	class="grow flex-col gap-3"
 >
-	<Field class="flex items-center gap-2">
+	<Field
+		label="Return edited map"
+		class="flex items-center gap-2"
+	>
 		<Checkbox bind:checked={shouldReturnEditedMap} />
-		<Label>Return edited map</Label>
+		<Label />
 	</Field>
 
 	<button

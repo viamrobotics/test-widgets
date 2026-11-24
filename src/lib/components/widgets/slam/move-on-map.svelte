@@ -65,14 +65,12 @@
 		</p>
 		<NumberField
 			label="X"
-			aria-label="End position X, meters"
 			suffix="m"
 			step={0.01}
 			bind:value={x}
 		/>
 		<NumberField
 			label="Y"
-			aria-label="End position Y, meters"
 			suffix="m"
 			step={0.01}
 			bind:value={y}

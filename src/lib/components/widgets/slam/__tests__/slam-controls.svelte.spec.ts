@@ -1,11 +1,16 @@
 import '../../../../../app.css'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { MachineConnectionEvent } from '@viamrobotics/sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../slam-controls.svelte'
+
+const endPositionField = (axis: 'X' | 'Y') =>
+	within(screen.getByRole('group', { name: 'End position' })).getByRole('spinbutton', {
+		name: axis,
+	})
 
 const state = vi.hoisted(
 	(): {
@@ -94,8 +99,8 @@ describe('SlamControls', () => {
 		const user = userEvent.setup()
 		renderAtWidth(320)
 
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+		await user.type(endPositionField('X'), '1')
+		await user.type(endPositionField('Y'), '2')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(state.moveOnMap).toHaveBeenCalledExactlyOnceWith([
@@ -111,8 +116,8 @@ describe('SlamControls', () => {
 		renderAtWidth(320)
 
 		await user.type(screen.getByRole('textbox', { name: 'Base name' }), 'my-base')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+		await user.type(endPositionField('X'), '1')
+		await user.type(endPositionField('Y'), '2')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(state.moveOnMap).toHaveBeenCalledExactlyOnceWith([
@@ -143,8 +148,8 @@ describe('SlamControls', () => {
 		state.moveOnMap.mockReturnValue(new Promise(() => {}))
 		const user = userEvent.setup()
 		renderAtWidth(320)
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+		await user.type(endPositionField('X'), '1')
+		await user.type(endPositionField('Y'), '2')
 
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
@@ -157,8 +162,8 @@ describe('SlamControls', () => {
 		state.cloudSlam = true
 		const user = userEvent.setup()
 		renderAtWidth(320)
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '2')
+		await user.type(endPositionField('X'), '1')
+		await user.type(endPositionField('Y'), '2')
 
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 		await user.click(await screen.findByRole('button', { name: 'Execute' }))

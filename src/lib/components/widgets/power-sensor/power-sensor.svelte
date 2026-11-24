@@ -132,9 +132,12 @@
 							method="GetReadings"
 							api={ResourceTriplets.PowerSensor}
 						>
-							<Field class="flex items-center gap-2">
+							<Field
+								label="Show readings"
+								class="flex items-center gap-2"
+							>
 								<Checkbox bind:checked={isGetReadingsEnabled} />
-								<Label>Show readings</Label>
+								<Label />
 							</Field>
 							{#if isGetReadingsEnabled && readingsQuery.data !== undefined}
 								<ReadingsList

@@ -64,12 +64,15 @@
 </script>
 
 {#snippet content()}
-	<Field class="flex items-center gap-2">
+	<Field
+		label="Manual mode"
+		class="flex items-center gap-2"
+	>
 		<Checkbox
 			bind:checked={isManualMode}
 			disabled={!supportsManualMode}
 		/>
-		<Label>Manual mode</Label>
+		<Label />
 	</Field>
 	<div class="flex min-w-0 items-center gap-2">
 		<span

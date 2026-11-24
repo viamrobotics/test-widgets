@@ -253,9 +253,12 @@
 							{/snippet}
 						</Section.Heading>
 
-						<Field class="flex items-center gap-2">
+						<Field
+							label="Show readings"
+							class="flex items-center gap-2"
+						>
 							<Checkbox bind:checked={showFullReadings} />
-							<Label>Show readings</Label>
+							<Label />
 						</Field>
 
 						{#if showFullReadings}

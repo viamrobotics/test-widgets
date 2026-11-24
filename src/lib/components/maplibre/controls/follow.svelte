@@ -59,9 +59,10 @@
 </script>
 
 <Field
+	label="Follow"
 	class="flex items-center gap-2"
 	disabled={lng === undefined || lat === undefined}
 >
 	<Checkbox bind:checked={() => following, setFollowing} />
-	<Label>Follow</Label>
+	<Label />
 </Field>

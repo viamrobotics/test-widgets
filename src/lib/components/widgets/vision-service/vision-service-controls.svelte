@@ -329,7 +329,10 @@
 		aria-label={OBJECT_POINT_CLOUDS_METHOD}
 		class="flex flex-col gap-2 px-2"
 	>
-		<Field class="flex items-center gap-2">
+		<Field
+			label="Start feed automatically"
+			class="flex items-center gap-2"
+		>
 			<Checkbox
 				bind:checked={
 					() => !waitToStartPointClouds.current,
@@ -338,7 +341,7 @@
 					}
 				}
 			/>
-			<Label>Start feed automatically</Label>
+			<Label />
 		</Field>
 		<div class="w-58 max-w-full">
 			<RefetchController

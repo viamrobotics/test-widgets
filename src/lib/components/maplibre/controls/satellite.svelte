@@ -30,7 +30,10 @@
 	}
 </script>
 
-<Field class="flex items-center gap-2">
+<Field
+	label="Satellite"
+	class="flex items-center gap-2"
+>
 	<Checkbox bind:checked={() => $satellite, setSatellite} />
-	<Label>Satellite</Label>
+	<Label />
 </Field>

@@ -58,9 +58,9 @@
 
 <Tree
 	{nodes}
-	nodeToValue={({ pane }) => pane.id}
-	nodeToString={({ pane }) => resourcePaneTreeLabel(pane.data)}
-	nodeToChildren={({ children }) => children}
+	getValue={({ pane }) => pane.id}
+	getLabel={({ pane }) => resourcePaneTreeLabel(pane.data)}
+	getChildren={({ children }) => children}
 	bind:expanded={() => expanded, (next) => (toggledExpanded = next)}
 	bind:selected={() => (selected ? [selected] : []), pick}
 	branchClick="select"

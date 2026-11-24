@@ -75,7 +75,10 @@
 	<div class="flex flex-col gap-2">
 		{#each fields as field (field)}
 			{#if field === 'straight-line'}
-				<Field class="flex items-center gap-2">
+				<Field
+					label="Move in a straight line"
+					class="flex items-center gap-2"
+				>
 					<Checkbox
 						bind:checked={
 							() => steps.isStraightLine,
@@ -84,7 +87,7 @@
 							}
 						}
 					/>
-					<Label>Move in a straight line</Label>
+					<Label />
 				</Field>
 			{:else}
 				{@const stepSize = STEP_SIZE_FIELDS[field]}

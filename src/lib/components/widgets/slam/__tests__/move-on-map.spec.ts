@@ -1,10 +1,15 @@
 import type { ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../move-on-map.svelte'
+
+const endPositionField = (axis: 'X' | 'Y') =>
+	within(screen.getByRole('group', { name: 'End position' })).getByRole('spinbutton', {
+		name: axis,
+	})
 
 describe('Slam move on map', () => {
 	let user: ReturnType<typeof userEvent.setup>
@@ -37,7 +42,7 @@ describe('Slam move on map', () => {
 	it('holds back execute while only X is typed', async () => {
 		renderSubject({})
 
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '1')
+		await user.type(endPositionField('X'), '1')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 
 		expect(moveOnMap).not.toHaveBeenCalled()
@@ -46,8 +51,8 @@ describe('Slam move on map', () => {
 	it('moves to the typed X and Y with the typed plan deviation', async () => {
 		renderSubject({})
 
-		await user.type(screen.getByRole('spinbutton', { name: 'End position X, meters' }), '100')
-		await user.type(screen.getByRole('spinbutton', { name: 'End position Y, meters' }), '200')
+		await user.type(endPositionField('X'), '100')
+		await user.type(endPositionField('Y'), '200')
 		await user.type(screen.getByRole('spinbutton', { name: 'Plan deviation' }), '4')
 		await user.click(screen.getByRole('button', { name: 'Execute' }))
 

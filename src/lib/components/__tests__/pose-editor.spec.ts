@@ -152,7 +152,7 @@ describe('PoseEditor', () => {
 
 	it.each([
 		{ width: 302, layout: 'stacks orientation under position', isBeside: false },
-		{ width: 622, layout: 'puts orientation beside position', isBeside: true },
+		{ width: 722, layout: 'puts orientation beside position', isBeside: true },
 	])('$layout at $width px', ({ width, isBeside }) => {
 		const target = document.createElement('div')
 		document.body.append(target)

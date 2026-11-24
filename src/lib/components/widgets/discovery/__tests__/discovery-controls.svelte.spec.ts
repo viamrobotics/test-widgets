@@ -85,7 +85,7 @@ const readoutText = (scope: HTMLElement, label: string) =>
 		?.textContent.trim()
 
 const pickToggle = async (scope: HTMLElement, field: string, option: string) => {
-	const group = within(scope).getByRole('group', { name: field })
+	const group = within(scope).getByRole('radiogroup', { name: field })
 	await userEvent.click(within(group).getByRole('radio', { name: option }))
 }
 
@@ -116,7 +116,7 @@ describe('DiscoveryControls', () => {
 		const camera = block('IntegratedCamera')
 		expect(within(camera).queryAllByRole('combobox')).toHaveLength(0)
 		const selected = (field: string) =>
-			within(within(camera).getByRole('group', { name: field }))
+			within(within(camera).getByRole('radiogroup', { name: field }))
 				.getAllByRole('radio')
 				.filter((radio) => radio.getAttribute('aria-checked') === 'true')
 				.map((radio) => radio.textContent.trim())
@@ -131,7 +131,7 @@ describe('DiscoveryControls', () => {
 		state.data = webcamModes
 		render(Pane)
 
-		const group = within(block('IntegratedCamera')).getByRole('group', { name: 'width_px' })
+		const group = within(block('IntegratedCamera')).getByRole('radiogroup', { name: 'width_px' })
 
 		expect(
 			within(group)

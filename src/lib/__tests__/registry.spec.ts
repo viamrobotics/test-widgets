@@ -22,7 +22,6 @@ import {
 	widgetForResource,
 	widgetSizeForResource,
 } from '../registry'
-import { ResourceTriplets } from '../resource-triplet'
 import { showResourceWidget } from '../show-resource-widget'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
@@ -92,7 +91,7 @@ describe('availableAPIWidgets', () => {
 				label: 'GoToInputs',
 				kind: 'api',
 				widgets: [GripperGoToInputsWidget],
-				size: { minWidth: 219, minHeight: 190, recommendedWidths: [219], maxWidth: 336 },
+				size: { minWidth: 249, minHeight: 134, recommendedWidths: [249], maxWidth: 336 },
 			},
 		])
 	})
@@ -367,18 +366,6 @@ describe('widget sizes', () => {
 		expect(problems).toEqual([])
 	})
 
-	it('gives arm controls the pop-out size of the 3D scene and no other entry one', () => {
-		const withPopOut = Object.entries(availableAPIWidgets()).flatMap(([triplet, apis]) =>
-			(apis ?? []).filter((api) => api.popOutSize).map((api) => `${triplet} ${api.id}`)
-		)
-		const armControls = availableAPIWidgets()[ResourceTriplets.Arm]?.find(
-			(api) => api.id === 'controls'
-		)
-
-		expect(armControls?.popOutSize).toEqual({ minWidth: 672, minHeight: 504 })
-		expect(withPopOut).toEqual([`${ResourceTriplets.Arm} controls`])
-	})
-
 	it.each([
 		{ problem: 'a missing size', size: undefined, expected: ['x has no size'] },
 		{
@@ -424,7 +411,7 @@ describe('widgetSizeForResource', () => {
 	it("returns the composite card's size", () => {
 		expect(widgetSizeForResource(resourceName('rdk', 'component', 'servo'))).toEqual({
 			minWidth: 169,
-			minHeight: 555,
+			minHeight: 527,
 			recommendedWidths: [320, 672],
 			maxWidth: 688,
 		})
