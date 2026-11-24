@@ -3,6 +3,11 @@ export { Section } from './section'
 
 export { default as ArmWidget } from './widgets/arm/arm.svelte'
 export { default as ArmControls } from './widgets/arm/arm-controls.svelte'
+export {
+	ARM_SCENE_POP_OUT_SIZE,
+	type ArmSceneProps,
+	provideArmScene,
+} from './widgets/arm/arm-scene-context'
 export { default as ArmJogControl } from './widgets/arm/arm-jog-control.svelte'
 export { default as ArmJointsControl } from './widgets/arm/arm-joints-control.svelte'
 export { default as ArmGetJointPositionsWidget } from './widgets/arm/get-joint-positions-widget.svelte'
@@ -228,6 +233,14 @@ export { default as VisionServiceGetDetectionsWidget } from './widgets/vision-se
 export { default as VisionServiceGetClassificationsWidget } from './widgets/vision-service/get-classifications-widget.svelte'
 
 export { default as RefetchController } from './refetch-controller.svelte'
+
+export {
+	type ClosePopOut,
+	type PopOutHost,
+	type PopOutRequest,
+	type PopOutSize,
+	providePopOutHost,
+} from './pop-out/pop-out-host-context'
 
 export {
 	NavigationMap,

@@ -26,9 +26,11 @@
 		partID: string
 		/** Removes the floating window with this entry id. */
 		onclose: (floatEntryId: string) => void
+		/** Removes this pane from where it is docked. */
+		onremove: () => void
 	}
 
-	const { node, paneState, partID, onclose }: Props = $props()
+	const { node, paneState, partID, onclose, onremove }: Props = $props()
 
 	const pane = $derived(node.data)
 	const method = $derived(resourcePaneMethod(pane))
@@ -148,6 +150,17 @@
 								size="sm"
 							/>
 						</Panes.MoveTrigger>
+						<button
+							type="button"
+							aria-label="Close {label}"
+							class="icon-button size-6"
+							onclick={onremove}
+						>
+							<Icon
+								icon={mdiClose}
+								size="sm"
+							/>
+						</button>
 					{/if}
 				</div>
 			</div>

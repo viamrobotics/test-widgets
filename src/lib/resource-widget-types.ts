@@ -1,5 +1,7 @@
 import type { Component } from 'svelte'
 
+import type { PopOutSize } from './components/pop-out/pop-out-host-context'
+
 /** Every resource widget shares this prop contract and is self-contained. */
 export interface ResourceWidgetProps {
 	partID: string
@@ -41,6 +43,11 @@ export interface ResourceAPIWidget {
 	widgets: ResourceWidget[]
 	/** The layout sizes of the entry's widgets, rendered together as the entry renders them. */
 	size: ResourceWidgetSize
+	/**
+	 * The smallest body of the window this entry pops out into, for a host that sizes the window
+	 * before mounting. Absent when the entry opens no pop-out.
+	 */
+	popOutSize?: PopOutSize
 }
 
 /** A registry entry: a resource's composite card plus its individual API widgets. */

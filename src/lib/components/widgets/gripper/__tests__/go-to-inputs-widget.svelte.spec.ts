@@ -62,8 +62,8 @@ describe('Gripper GoToInputs widget', () => {
 
 		expect(screen.getByRole('spinbutton', { name: 'Input 0' })).toHaveValue(0.62)
 		expect(screen.getByRole('spinbutton', { name: 'Input 1' })).toHaveValue(0.38)
-		expect(screen.getByRole('button', { name: /Reset Input 0/u })).toBeDisabled()
-		expect(screen.getByRole('button', { name: /Reset Input 1/u })).toBeDisabled()
+		expect(screen.queryByRole('button', { name: /Reset Input 0/u })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: /Reset Input 1/u })).not.toBeInTheDocument()
 	})
 
 	it('draws no fields before the first read', () => {
@@ -133,7 +133,7 @@ describe('Gripper GoToInputs widget', () => {
 		await fireEvent.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(goToInputsMutate).toHaveBeenCalledWith([[0.8, 0.38]], {})
-		expect(screen.getByRole('button', { name: /Reset Input 0/u })).toBeEnabled()
+		expect(screen.getByRole('button', { name: /Reset Input 0/u })).toBeVisible()
 	})
 
 	it('restores the live value without sending', async () => {

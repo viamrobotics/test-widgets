@@ -8,6 +8,7 @@ import type {
 } from './resource-widget-types.ts'
 
 import {
+	ARM_SCENE_POP_OUT_SIZE,
 	ArmControls,
 	ArmGetEndPositionWidget,
 	ArmGetJointPositionsWidget,
@@ -224,11 +225,12 @@ const resourceWidgetRegistry: Partial<Record<ResourceTriplet, ResourceWidgetEntr
 				label: 'Controls',
 				kind: 'control',
 				widgets: [ArmControls],
+				popOutSize: ARM_SCENE_POP_OUT_SIZE,
 				size: {
 					minWidth: 239,
 					minHeight: 932,
-					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL],
-					maxWidth: CONTAINER_2XL,
+					recommendedWidths: [CONTAINER_XS, CONTAINER_2XL, ARM_TWO_COLUMNS_MAX_WIDTH],
+					maxWidth: ARM_TWO_COLUMNS_MAX_WIDTH,
 				},
 			},
 			{
@@ -2016,6 +2018,7 @@ export const widgetSizeForResource = (resource: ResourceName): ResourceWidgetSiz
 
 // Re-exported so `/registry` consumers can type the lookups' return values without importing
 // from the root entry.
+export type { PopOutSize } from './components/index.ts'
 export type {
 	ResourceAPIWidget,
 	ResourceAPIWidgetKind,

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { mdiBackupRestore, mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
 	import { NumberField } from '@viamrobotics/prime-controls'
 	import { type FieldState, Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { SvelteMap } from 'svelte/reactivity'
 
+	import ResetToCurrentButton from '$lib/components/reset-to-current-button.svelte'
 	import { formatNumeric } from '$lib/format'
 
 	import { useEditedTargets } from '../arm/use-edited-targets.svelte'
@@ -101,7 +102,18 @@
 									bind:value={
 										() => toField(desiredPositions[index]), (value) => setPosition(index, value)
 									}
-								/>
+								>
+									{#snippet trailing()}
+										<ResetToCurrentButton
+											label="Axis {index} position"
+											{current}
+											isEdited={targets.isEdited(index)}
+											onreset={() => {
+												targets.reset(index)
+											}}
+										/>
+									{/snippet}
+								</NumberField>
 							</Tooltip.Trigger>
 							<Tooltip.Content class="max-w-72">{message}</Tooltip.Content>
 						</Tooltip>
@@ -109,28 +121,6 @@
 							<!-- The tooltip is not in the page until it opens, so screen readers get the message here. -->
 							<span class="sr-only">{message}</span>
 						{/if}
-						<div class="flex justify-end">
-							<Tooltip>
-								<Tooltip.Trigger>
-									<button
-										type="button"
-										class="button button-ghost button-xs font-roboto-mono"
-										aria-label="Reset Axis {index} position to its current value, {current}"
-										disabled={!targets.isEdited(index)}
-										onclick={() => {
-											targets.reset(index)
-										}}
-									>
-										<Icon
-											icon={mdiBackupRestore}
-											size="sm"
-										/>
-										{current}
-									</button>
-								</Tooltip.Trigger>
-								<Tooltip.Content>Reset axis {index} to its current position</Tooltip.Content>
-							</Tooltip>
-						</div>
 					</div>
 					<div class="min-w-0 self-start">
 						<NumberField

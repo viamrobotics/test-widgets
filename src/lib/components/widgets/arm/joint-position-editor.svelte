@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { mdiBackupRestore, mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
 	import { type FieldState, FieldStates, Icon, Tooltip } from '@viamrobotics/prime-ui'
 
+	import ResetToCurrentButton from '$lib/components/reset-to-current-button.svelte'
 	import { degreesToRadians, formatNumeric } from '$lib/format'
 
 	import type { EditedTargets } from './use-edited-targets.svelte'
@@ -106,7 +107,18 @@
 						maxDegrees={getSliderMax(index)}
 						{useRadians}
 						state={indicator?.state}
-					/>
+					>
+						{#snippet trailing()}
+							<ResetToCurrentButton
+								label="joint {index}"
+								{current}
+								isEdited={targets.isEdited(index)}
+								onreset={() => {
+									targets.reset(index)
+								}}
+							/>
+						{/snippet}
+					</JointPositionSlider>
 				</Tooltip.Trigger>
 				<Tooltip.Content class="max-w-72">{indicator?.message}</Tooltip.Content>
 			</Tooltip>
@@ -114,28 +126,6 @@
 				<!-- The tooltip is not in the page until it opens, and Slider takes no aria-describedby, so screen readers get the message here. -->
 				<span class="sr-only">{indicator.message}</span>
 			{/if}
-			<div class="flex justify-end">
-				<Tooltip>
-					<Tooltip.Trigger>
-						<button
-							type="button"
-							class="button button-ghost button-xs font-roboto-mono"
-							aria-label="Reset joint {index} to its current value, {current}"
-							disabled={!targets.isEdited(index)}
-							onclick={() => {
-								targets.reset(index)
-							}}
-						>
-							<Icon
-								icon={mdiBackupRestore}
-								size="sm"
-							/>
-							{current}
-						</button>
-					</Tooltip.Trigger>
-					<Tooltip.Content>Reset joint {index} to its current value</Tooltip.Content>
-				</Tooltip>
-			</div>
 		</div>
 	{/each}
 </div>

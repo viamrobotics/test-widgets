@@ -52,20 +52,17 @@ describe('Gantry move-to-position', () => {
 	it('restores one axis to its current value from its restore button', async () => {
 		renderSubject({ positions: [1.5, 2] })
 		const axis0 = within(screen.getByRole('group', { name: 'Axis 0' }))
-		const restore = axis0.getByRole('button', {
-			name: 'Reset Axis 0 position to its current value, 1.50 mm',
-		})
-		expect(restore).toBeDisabled()
+		const restoreName = 'Reset Axis 0 position to 1.50 mm'
+		expect(axis0.queryByRole('button', { name: restoreName })).not.toBeInTheDocument()
 
 		const input = axis0.getByRole('spinbutton', { name: /^position/iu })
 		await user.clear(input)
 		await user.click(input)
 		await user.keyboard('9{Enter}')
-		expect(restore).toBeEnabled()
-		await user.click(restore)
+		await user.click(axis0.getByRole('button', { name: restoreName }))
 
 		expect(input).toHaveValue(1.5)
-		expect(restore).toBeDisabled()
+		expect(axis0.queryByRole('button', { name: restoreName })).not.toBeInTheDocument()
 	})
 
 	it('warns when the gantry drifts away from an edited position', async () => {

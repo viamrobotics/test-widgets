@@ -15,6 +15,9 @@ export default defineConfig({
 	assetsInclude: ['**/*.hdr'],
 	optimizeDeps: {
 		exclude: ['@viamrobotics/visualization'],
+		// Visualization imports the `/webgpu` entries. Served unbundled, each brings a second copy of
+		// its package next to the prebundled root entry, so Threlte's context keys stop matching.
+		include: ['@threlte/core/webgpu', '@threlte/extras/webgpu', 'three/webgpu', 'three/tsl'],
 	},
 	plugins: [
 		tailwindcss(),

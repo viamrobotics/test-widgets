@@ -156,20 +156,18 @@ describe('Arm move-to-position', () => {
 		expect(screen.getAllByRole('spinbutton')[0]).toHaveValue(50)
 	})
 
-	it("shows the current value on each field's restore button", async () => {
+	it("names the current value on each field's restore button", async () => {
 		const { rerender } = renderSubject({})
 
 		await rerender({ endPosition: { ...defaultPose, x: 50 } })
 
-		expect(
-			screen.getByRole('button', { name: 'Reset X to its current value, 50.00' })
-		).toHaveTextContent('50.00')
+		expect(document.querySelector('button[aria-label="Reset X to 50.00 mm"]')).toBeInTheDocument()
 	})
 
-	it('disables the restore button of a field the user has not edited', () => {
+	it('hides the restore button of a field the user has not edited', () => {
 		renderSubject({})
 
-		expect(screen.getByRole('button', { name: /reset x to its current value/iu })).toBeDisabled()
+		expect(screen.queryByRole('button', { name: /^reset x to /iu })).not.toBeInTheDocument()
 	})
 
 	it('keeps an edited value when a poll returns a new pose', async () => {
@@ -208,10 +206,10 @@ describe('Arm move-to-position', () => {
 		renderSubject({})
 		const xInput = await editX('42')
 
-		await user.click(screen.getByRole('button', { name: /reset x to its current value/iu }))
+		await user.click(screen.getByRole('button', { name: /^reset x to /iu }))
 
 		expect(xInput).toHaveValue(1)
-		expect(screen.getByRole('button', { name: /reset x to its current value/iu })).toBeDisabled()
+		expect(screen.queryByRole('button', { name: /^reset x to /iu })).not.toBeInTheDocument()
 	})
 
 	it('keeps fields editable but locks Execute while the arm moves', async () => {

@@ -22,6 +22,7 @@ import {
 	widgetForResource,
 	widgetSizeForResource,
 } from '../registry'
+import { ResourceTriplets } from '../resource-triplet'
 import { showResourceWidget } from '../show-resource-widget'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
@@ -364,6 +365,18 @@ describe('widget sizes', () => {
 		])
 
 		expect(problems).toEqual([])
+	})
+
+	it('gives arm controls the pop-out size of the 3D scene and no other entry one', () => {
+		const withPopOut = Object.entries(availableAPIWidgets()).flatMap(([triplet, apis]) =>
+			(apis ?? []).filter((api) => api.popOutSize).map((api) => `${triplet} ${api.id}`)
+		)
+		const armControls = availableAPIWidgets()[ResourceTriplets.Arm]?.find(
+			(api) => api.id === 'controls'
+		)
+
+		expect(armControls?.popOutSize).toEqual({ minWidth: 672, minHeight: 504 })
+		expect(withPopOut).toEqual([`${ResourceTriplets.Arm} controls`])
 	})
 
 	it.each([

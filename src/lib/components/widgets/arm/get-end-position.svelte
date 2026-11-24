@@ -52,23 +52,20 @@
 	<div class={['grid gap-1', columns]}>
 		{#each items as item (item.tag)}
 			{@const cellLabelId = `${labelId}-${item.tag}`}
+			<!-- The axis letter sits inside the box and the unit at its right edge, as a Point field draws them. -->
 			<div
 				role="group"
 				aria-labelledby={cellLabelId}
-				class="flex min-w-0 flex-col gap-0.5"
+				class="readout font-roboto-mono"
 			>
 				<span
 					id={cellLabelId}
-					class="text-subtle-1 truncate text-xs">{item.tag}</span
+					class="font-public-sans text-subtle-1 shrink-0">{item.tag}</span
 				>
-				<span class="readout font-roboto-mono">
-					<span class="readout-value">
-						{item.value === undefined ? MISSING_VALUE : formatNumeric(item.value)}
-					</span>
-					{#if item.value !== undefined}
-						<span class="readout-suffix">{suffix}</span>
-					{/if}
+				<span class="readout-value">
+					{item.value === undefined ? MISSING_VALUE : formatNumeric(item.value)}
 				</span>
+				<span class="readout-suffix">{item.value === undefined ? '' : suffix}</span>
 			</div>
 		{/each}
 	</div>

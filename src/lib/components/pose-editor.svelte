@@ -40,13 +40,14 @@
 	import type { FieldState } from '@viamrobotics/prime-ui'
 	import type { Snippet } from 'svelte'
 
-	import { mdiBackupRestore, mdiInformationOutline } from '@mdi/js'
+	import { mdiInformationOutline } from '@mdi/js'
 	import { NumberField, Point, type PointValue } from '@viamrobotics/prime-controls'
 	import { Hint, Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
 	import CopyButton from '$lib/components/copy-button.svelte'
 	import PasteButton from '$lib/components/paste-button.svelte'
+	import ResetToCurrentButton from '$lib/components/reset-to-current-button.svelte'
 	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 	import { parsePastedPose } from '$lib/parse-pasted-pose'
 
@@ -181,9 +182,7 @@
 </script>
 
 {#snippet fieldDetails(key: PoseKey)}
-	{@const status = fieldStatus?.(key)}
 	{@const indicator = indicators[key]}
-	{@const label = FIELD_LABELS[key]}
 	{#if indicator}
 		<Hint
 			id={statusId(key)}
@@ -192,25 +191,26 @@
 			{indicator.message}
 		</Hint>
 	{/if}
+{/snippet}
+
+{#snippet fieldReset(key: PoseKey)}
+	{@const status = fieldStatus?.(key)}
 	{#if status && onFieldReset}
-		{@const current = formatNumeric(toDisplay(key, status.current))}
-		<div class="flex min-w-0 justify-end">
-			<button
-				type="button"
-				class="button button-ghost button-xs max-w-full min-w-0"
-				aria-label="Reset {label} to its current value, {current}"
-				disabled={!status.isEdited}
-				onclick={() => {
-					onFieldReset(key)
-				}}
-			>
-				<Icon
-					icon={mdiBackupRestore}
-					size="sm"
-				/>
-				<span class="truncate">{current}</span>
-			</button>
-		</div>
+		<ResetToCurrentButton
+			label={FIELD_LABELS[key]}
+			current="{formatNumeric(toDisplay(key, status.current))}{units[key]}"
+			isEdited={status.isEdited}
+			onreset={() => {
+				onFieldReset(key)
+			}}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet pointReset(keys: Partial<Record<PointAxis, PoseKey>>, axis: PointAxis)}
+	{@const key = keys[axis]}
+	{#if key}
+		{@render fieldReset(key)}
 	{/if}
 {/snippet}
 
@@ -261,11 +261,11 @@
 		<PasteButton onPaste={handlePaste} />
 	</div>
 
-	<!-- One column up to the width where two columns each keep 98 px axes, as at 320 px. -->
+	<!-- Two columns from the width where each holds its three axes in one row. Point stacks them under 22rem. -->
 	<div
 		role="group"
 		aria-labelledby={headingId}
-		class="grid grid-cols-1 items-start gap-2 @min-[38.75rem]:grid-cols-2 @min-[38.75rem]:gap-4"
+		class="grid grid-cols-1 items-start gap-2 @min-[45rem]:grid-cols-2 @min-[45rem]:gap-4"
 	>
 		<Point
 			label="Position, mm"
@@ -284,6 +284,9 @@
 		>
 			{#snippet details(axis)}
 				{@render pointDetails(POSITION_KEYS, axis)}
+			{/snippet}
+			{#snippet trailing(axis)}
+				{@render pointReset(POSITION_KEYS, axis)}
 			{/snippet}
 		</Point>
 
@@ -307,6 +310,9 @@
 				{#snippet details(axis)}
 					{@render pointDetails(ORIENTATION_KEYS, axis)}
 				{/snippet}
+				{#snippet trailing(axis)}
+					{@render pointReset(ORIENTATION_KEYS, axis)}
+				{/snippet}
 			</Point>
 
 			<div class="flex min-w-0 flex-col gap-1">
@@ -320,7 +326,11 @@
 						isThetaCleared = false
 					}}
 					bind:value={() => (isThetaCleared ? undefined : thetaValue), writeTheta}
-				/>
+				>
+					{#snippet trailing()}
+						{@render fieldReset('theta')}
+					{/snippet}
+				</NumberField>
 				{@render fieldDetails('theta')}
 			</div>
 		</div>

@@ -24,6 +24,7 @@ describe('Servo Move', () => {
 
 	const angleField = () => screen.getByRole('spinbutton', { name: /desired angle/iu })
 	const restoreButton = () => screen.getByRole('button', { name: /reset desired angle/iu })
+	const queryRestoreButton = () => screen.queryByRole('button', { name: /reset desired angle/iu })
 
 	it('draws no Quick set buttons', () => {
 		renderSubject({ currentPosition: 45 })
@@ -32,12 +33,11 @@ describe('Servo Move', () => {
 		expect(screen.queryByRole('button', { name: /^current position$/iu })).not.toBeInTheDocument()
 	})
 
-	it('starts the field at the current position, with the restore button disabled', () => {
+	it('starts the field at the current position, with the restore button hidden', () => {
 		renderSubject({ currentPosition: 45 })
 
 		expect(angleField()).toHaveValue(45)
-		expect(restoreButton()).toBeDisabled()
-		expect(restoreButton()).toHaveAccessibleName('Reset desired angle to its current value, 45°')
+		expect(queryRestoreButton()).not.toBeInTheDocument()
 	})
 
 	it('holds an edit while the live position moves, and restores it on the button', async () => {
@@ -48,13 +48,13 @@ describe('Servo Move', () => {
 		await rerender({ currentPosition: 50 })
 
 		expect(angleField()).toHaveValue(120)
-		expect(restoreButton()).toBeEnabled()
-		expect(restoreButton()).toHaveTextContent('50°')
+		expect(restoreButton()).toBeVisible()
+		expect(restoreButton()).toHaveAccessibleName('Reset desired angle to 50°')
 
 		await user.click(restoreButton())
 
 		expect(angleField()).toHaveValue(50)
-		expect(restoreButton()).toBeDisabled()
+		expect(queryRestoreButton()).not.toBeInTheDocument()
 		expect(moveTo).not.toHaveBeenCalled()
 	})
 
@@ -75,7 +75,7 @@ describe('Servo Move', () => {
 		await user.type(angleField(), '-1{Tab}')
 
 		expect(angleField()).toBeInvalid()
-		expect(screen.getByText(/must be non-negative/iu)).toBeInTheDocument()
+		expect(screen.getByText(/must be non-negative/iu, { selector: '.sr-only' })).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
 	})
 

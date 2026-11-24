@@ -218,7 +218,7 @@ describe('Arm move-to-joint-positions', () => {
 
 		expect(jointReadout(0)).toHaveValue(20)
 		expect(
-			screen.getByRole('button', { name: 'Reset joint 0 to its current value, 20.00°' })
+			document.querySelector('button[aria-label="Reset joint 0 to 20.00°"]')
 		).toBeInTheDocument()
 	})
 
@@ -231,15 +231,13 @@ describe('Arm move-to-joint-positions', () => {
 		expect(jointReadout(0)).toHaveValue(12.3)
 	})
 
-	it('disables the restore button of a joint the user has not edited', async () => {
+	it('hides the restore button of a joint the user has not edited', async () => {
 		await renderJointPositionsEditor({
 			positions: [10],
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		expect(
-			screen.getByRole('button', { name: 'Reset joint 0 to its current value, 10.00°' })
-		).toBeDisabled()
+		expect(screen.queryByRole('button', { name: /^Reset joint 0 to / })).not.toBeInTheDocument()
 	})
 
 	it('keeps an edited joint and flags it once the arm drifts past the threshold', async () => {
@@ -265,9 +263,7 @@ describe('Arm move-to-joint-positions', () => {
 		})
 
 		typeJointValue(0, '45')
-		await user.click(
-			screen.getByRole('button', { name: 'Reset joint 0 to its current value, 10.00°' })
-		)
+		await user.click(screen.getByRole('button', { name: 'Reset joint 0 to 10.00°' }))
 
 		expect(jointReadout(0)).toHaveValue(10)
 	})

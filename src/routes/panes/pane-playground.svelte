@@ -1,17 +1,27 @@
 <script lang="ts">
 	import {
 		addPaneToUpperRight,
+		type FloatEntry,
+		type FloatRect,
 		type LayoutNode,
 		type PaneNode,
 		Panes,
 		type PaneState,
 		raiseFloat,
 		removeFloat,
+		removePane,
 		selectPane,
 	} from '@viamrobotics/prime-panes'
 	import { useMachineStatus } from '@viamrobotics/svelte-sdk'
 	import { tick, untrack } from 'svelte'
+	import { SvelteMap } from 'svelte/reactivity'
 
+	import {
+		type PopOutRequest,
+		providePopOutHost,
+	} from '$lib/components/pop-out/pop-out-host-context'
+	import { ArmScene } from '$lib/components/widgets/arm/arm-scene'
+	import { provideArmScene } from '$lib/components/widgets/arm/arm-scene-context'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { providePip } from '$lib/pip/context.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
@@ -19,9 +29,18 @@
 	import { initialMotorLayout } from './initial-motor-layout'
 	import { layoutMinimum } from './layout-minimum'
 	import { floatEntryHolding, hasPane } from './pane-location'
-	import { compositePane, type ResourcePane, resourcePaneLabel } from './resource-pane'
+	import {
+		isResourcePaneNode,
+		type PlaygroundPane,
+		playgroundPaneLabel,
+		playgroundPaneMinimum,
+		type PopOutPane,
+		popOutPaneId,
+	} from './playground-pane'
+	import { addFloatEntry, hasLoosePopOut, withRootFloat } from './pop-out-layout'
+	import PopOutPaneFrame from './pop-out-pane-frame.svelte'
+	import { compositePane, type ResourcePane } from './resource-pane'
 	import ResourcePaneFrame from './resource-pane-frame.svelte'
-	import { resourcePaneMinimum } from './resource-pane-minimums'
 	import ResourceTree from './resource-tree.svelte'
 	import { snapSplitRatios, splitRatiosKey } from './snap-split-ratios'
 
@@ -35,6 +54,9 @@
 
 	// The camera widget reads picture-in-picture from context, as the widgets view provides it.
 	providePip(() => partID)
+
+	// The playground route is the only importer of the arm scene, so the library's main entry never loads visualization.
+	provideArmScene(ArmScene)
 
 	// Motors first so the first motor still opens the layout, then arms, motion services, bases,
 	// gantries, servos, grippers, boards, switches, buttons, sensors, movement sensors, power sensors,
@@ -87,9 +109,11 @@
 	})
 
 	// $state.raw: prime-panes compares layouts by reference to tell an accepted change from a veto.
-	let editedLayout = $state.raw<LayoutNode<ResourcePane>>()
+	let editedLayout = $state.raw<LayoutNode<PlaygroundPane>>()
 	let isEdited = $state(false)
-	const layout = $derived(isEdited ? editedLayout : openingLayout)
+	const layout: LayoutNode<PlaygroundPane> | undefined = $derived(
+		withRootFloat(isEdited ? editedLayout : openingLayout)
+	)
 
 	let hostWidth = $state(0)
 	let hostHeight = $state(0)
@@ -100,11 +124,15 @@
 	/**
 	 * Every layout change passes through here, so each split snaps to its panes' minimums. A
 	 * resize the snap would only put back where it was is refused, so prime-panes resets the split.
+	 * So is a drop that would leave a pop-out anywhere but alone in its own window.
 	 */
-	const setLayout = (next: LayoutNode<ResourcePane> | undefined) => {
+	const setLayout = (next: LayoutNode<PlaygroundPane> | undefined) => {
+		if (hasLoosePopOut(next)) return
+		const rooted = withRootFloat(next)
 		const snapped =
-			next && snapSplitRatios(next, { width: hostWidth, height: hostHeight }, resourcePaneMinimum)
-		if (snapped !== next && splitRatiosKey(snapped) === splitRatiosKey(layout)) return
+			rooted &&
+			snapSplitRatios(rooted, { width: hostWidth, height: hostHeight }, playgroundPaneMinimum)
+		if (snapped !== rooted && splitRatiosKey(snapped) === splitRatiosKey(layout)) return
 		editedLayout = snapped
 		isEdited = true
 	}
@@ -112,7 +140,7 @@
 	const showPane = (pane: PaneNode<ResourcePane>) => {
 		if (!hasPane(layout, pane.id)) {
 			addedSplits += 1
-			return addPaneToUpperRight(layout, pane, `added-split-${addedSplits}`)
+			return addPaneToUpperRight<PlaygroundPane>(layout, pane, `added-split-${addedSplits}`)
 		}
 		const shown = selectPane(layout, pane.id)
 		const floatEntryId = floatEntryHolding(shown, pane.id)
@@ -130,6 +158,53 @@
 	}
 
 	const closeFloat = (floatEntryId: string) => setLayout(removeFloat(layout, floatEntryId))
+
+	// A pop-out opens this far in from the playground's top-right corner, beside the docked panes.
+	const POP_OUT_INSET = 24
+
+	// The layout holds plain data, so each open request's content and onClose stay here, keyed by pop-out id.
+	const popOutRequests = new SvelteMap<string, PopOutRequest>()
+	let openedPopOuts = 0
+
+	const popOutRect = (pane: PopOutPane): FloatRect => {
+		const { width, height } = playgroundPaneMinimum(pane)
+		return { x: Math.max(0, hostWidth - width - POP_OUT_INSET), y: POP_OUT_INSET, width, height }
+	}
+
+	/** Removes the pop-out's window and forgets its request, or returns undefined when it was already closed. */
+	const dismissPopOut = (popOutId: string): PopOutRequest | undefined => {
+		const request = popOutRequests.get(popOutId)
+		if (!request) return undefined
+		popOutRequests.delete(popOutId)
+		setLayout(removePane(layout, popOutPaneId(popOutId)))
+		return request
+	}
+
+	const closePopOutFromChrome = (popOutId: string) => dismissPopOut(popOutId)?.onClose()
+
+	providePopOutHost({
+		open: (request) => {
+			openedPopOuts += 1
+			const popOutId = `${openedPopOuts}`
+			const paneId = popOutPaneId(popOutId)
+			const pane: PopOutPane = {
+				kind: 'pop-out',
+				popOutId,
+				title: request.title,
+				minSize: request.minSize,
+			}
+			const floatEntry: FloatEntry<PlaygroundPane> = {
+				id: `${paneId}::window`,
+				rect: popOutRect(pane),
+				content: { type: 'pane', id: paneId, data: pane },
+			}
+			popOutRequests.set(popOutId, request)
+			setLayout(addFloatEntry(layout, floatEntry, `${paneId}::float`))
+			return () => {
+				dismissPopOut(popOutId)
+			}
+		},
+	})
 </script>
 
 <div class="flex min-h-0 flex-1">
@@ -159,17 +234,28 @@
 	>
 		<Panes
 			bind:layout={() => layout, setLayout}
-			paneLabel={(node) => resourcePaneLabel(node.data)}
-			floatMinSize={(entry) => layoutMinimum(entry.content, resourcePaneMinimum)}
+			paneLabel={(node) => playgroundPaneLabel(node.data)}
+			floatMinSize={(entry) => layoutMinimum(entry.content, playgroundPaneMinimum)}
 			class="size-full"
 		>
-			{#snippet pane(node: PaneNode<ResourcePane>, paneState: PaneState)}
-				<ResourcePaneFrame
-					{node}
-					{paneState}
-					{partID}
-					onclose={closeFloat}
-				/>
+			{#snippet pane(node: PaneNode<PlaygroundPane>, paneState: PaneState)}
+				{#if isResourcePaneNode(node)}
+					<ResourcePaneFrame
+						{node}
+						{paneState}
+						{partID}
+						onclose={closeFloat}
+						onremove={() => setLayout(removePane(layout, node.id))}
+					/>
+				{:else if node.data.kind === 'pop-out'}
+					{@const popOut = node.data}
+					<PopOutPaneFrame
+						paneId={node.id}
+						title={popOut.title}
+						content={popOutRequests.get(popOut.popOutId)?.content}
+						onclose={() => closePopOutFromChrome(popOut.popOutId)}
+					/>
+				{/if}
 			{/snippet}
 			{#snippet empty()}
 				<div

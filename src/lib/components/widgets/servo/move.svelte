@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { mdiBackupRestore, mdiPlayCircleOutline } from '@mdi/js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
 	import { NumberField } from '@viamrobotics/prime-controls'
 	import { type FieldState, Icon, Tooltip } from '@viamrobotics/prime-ui'
+
+	import ResetToCurrentButton from '$lib/components/reset-to-current-button.svelte'
 
 	interface Props {
 		currentPosition: number
@@ -48,7 +50,18 @@
 						min={0}
 						state={fieldState}
 						bind:value={getField, setField}
-					/>
+					>
+						{#snippet trailing()}
+							<ResetToCurrentButton
+								label="desired angle"
+								{current}
+								{isEdited}
+								onreset={() => {
+									edited = undefined
+								}}
+							/>
+						{/snippet}
+					</NumberField>
 				</Tooltip.Trigger>
 				<Tooltip.Content class="max-w-72">{message}</Tooltip.Content>
 			</Tooltip>
@@ -70,23 +83,6 @@
 				size="sm"
 			/>
 			Execute
-		</button>
-	</div>
-	<div class="flex justify-end">
-		<button
-			type="button"
-			class="button button-ghost button-xs font-roboto-mono"
-			aria-label="Reset desired angle to its current value, {current}"
-			disabled={!isEdited}
-			onclick={() => {
-				edited = undefined
-			}}
-		>
-			<Icon
-				icon={mdiBackupRestore}
-				size="sm"
-			/>
-			{current}
 		</button>
 	</div>
 </div>

@@ -103,16 +103,18 @@ describe('Motion move', () => {
 	it('draws a restore button per field once a current pose is read', () => {
 		renderSubject({ currentPose: { x: 1, y: 2, z: 3, oX: 0, oY: 0, oZ: 1, theta: 45 } })
 
+		expect(document.querySelector('button[aria-label="Reset X to 1.00 mm"]')).toBeInTheDocument()
+		expect(document.querySelectorAll('button[aria-label^="Reset "]')).toHaveLength(7)
 		expect(
-			screen.getByRole('button', { name: 'Reset X to its current value, 1.00' })
-		).toBeDisabled()
-		expect(screen.getAllByRole('button', { name: /^Reset / })).toHaveLength(7)
+			screen.queryAllByRole('button', { name: /^Reset / }),
+			'unedited fields hide their buttons'
+		).toHaveLength(0)
 	})
 
 	it('draws no restore buttons before a current pose is read', () => {
 		renderSubject()
 
-		expect(screen.queryAllByRole('button', { name: /^Reset / })).toHaveLength(0)
+		expect(document.querySelectorAll('button[aria-label^="Reset "]')).toHaveLength(0)
 	})
 
 	it('holds an edited field and restores it to the current pose', async () => {
@@ -121,7 +123,7 @@ describe('Motion move', () => {
 		renderSubject({ currentPose, onExecute })
 		await user.click(screen.getByRole('button', { name: 'Zero' }))
 
-		await user.click(screen.getByRole('button', { name: 'Reset X to its current value, 1.00' }))
+		await user.click(screen.getByRole('button', { name: 'Reset X to 1.00 mm' }))
 		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(onExecute).toHaveBeenCalledWith(

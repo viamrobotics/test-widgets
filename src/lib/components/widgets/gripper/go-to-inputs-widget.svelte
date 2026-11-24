@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiBackupRestore, mdiPlayCircleOutline } from '@mdi/js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
 	import { NumberField } from '@viamrobotics/prime-controls'
 	import { type FieldState, FieldStates, Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { GripperClient } from '@viamrobotics/sdk'
@@ -10,6 +10,7 @@
 	} from '@viamrobotics/svelte-sdk'
 
 	import ApiSection from '$lib/components/api-section.svelte'
+	import ResetToCurrentButton from '$lib/components/reset-to-current-button.svelte'
 	import { formatNumeric } from '$lib/format'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
@@ -103,7 +104,18 @@
 										targets.edit(index, next ?? Number.NaN)
 									}
 								}
-							/>
+							>
+								{#snippet trailing()}
+									<ResetToCurrentButton
+										label="Input {index}"
+										current={currentText}
+										isEdited={targets.isEdited(index)}
+										onreset={() => {
+											targets.reset(index)
+										}}
+									/>
+								{/snippet}
+							</NumberField>
 						</Tooltip.Trigger>
 						<Tooltip.Content class="max-w-72">{indicator?.message}</Tooltip.Content>
 					</Tooltip>
@@ -114,23 +126,6 @@
 							class="sr-only">{indicator.message}</span
 						>
 					{/if}
-					<div class="flex justify-end">
-						<button
-							type="button"
-							class="button button-ghost button-xs font-roboto-mono"
-							aria-label="Reset Input {index} to its current value, {currentText}"
-							disabled={!targets.isEdited(index)}
-							onclick={() => {
-								targets.reset(index)
-							}}
-						>
-							<Icon
-								icon={mdiBackupRestore}
-								size="sm"
-							/>
-							{currentText}
-						</button>
-					</div>
 				</div>
 			{/each}
 		</div>

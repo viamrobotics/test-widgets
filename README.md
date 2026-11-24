@@ -77,6 +77,26 @@ Mount these once, above any widget:
 
 Each widget takes the `partID` and `resourceName` of the resource it controls.
 
+### Arm 3D scene
+
+`ArmControls` can show a 3D scene of the arm with a move target gizmo, Preview move, and Execute plan. The scene lives on its own subpath so the main entry never imports `@viamrobotics/visualization`. A host opts in by passing it to `provideArmScene`, before rendering `ArmControls`:
+
+```ts
+import { provideArmScene } from '@viamrobotics/test-widgets'
+import { ArmScene } from '@viamrobotics/test-widgets/arm-scene'
+
+provideArmScene(ArmScene)
+```
+
+Without it, `ArmControls` shows no scene and no "Open 3D scene" button. With it, the scene fills the controls from a 672 px container, and in a narrower one the "Open 3D scene" button in the heading opens it in a pop-out. A host that owns the window calls `providePopOutHost` with an object whose `open(request)` shows `request.content` in its own window and returns a function that closes it. The request's `minSize` matches the entry's `popOutSize`. Without a pop-out host, the scene opens in a full-viewport Takeover.
+
+The scene needs these in the host app:
+
+- `@viamrobotics/visualization` and its peers installed.
+- `assetsInclude: ['**/*.hdr']` in the Vite config.
+- `optimizeDeps.exclude: ['@viamrobotics/visualization']` in the Vite config.
+- Server-side rendering off for the page that shows it.
+
 ### Config props
 
 Some control interfaces take optional props that a host fills from the resource's machine config. A given value is enforced or seeds a field. An absent or invalid value leaves the control as it is without one. A value the resource API reports is never a prop.
@@ -97,7 +117,7 @@ Some control interfaces take optional props that a host fills from the resource'
 
 ### Sizes
 
-Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`.
+Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`. An entry that opens a pop-out window also carries `popOutSize`, the smallest body that window needs. A host that draws its own window sizes it to at least that.
 
 The table lists each resource's composite `minWidth` and each API entry's `minWidth`, keyed by entry id, all in px. Resources with no API entries have none listed.
 

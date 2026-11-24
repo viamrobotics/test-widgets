@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	import { Slider } from '@viamrobotics/prime-controls'
 	import { type FieldState } from '@viamrobotics/prime-ui'
 
@@ -14,9 +16,20 @@
 		maxDegrees: number
 		useRadians: boolean
 		state?: FieldState
+		/** Content inside the right edge of the readout, such as a reset button. */
+		trailing?: Snippet
 	}
 
-	const { label, value, onValueChange, minDegrees, maxDegrees, useRadians, state }: Props = $props()
+	const {
+		label,
+		value,
+		onValueChange,
+		minDegrees,
+		maxDegrees,
+		useRadians,
+		state,
+		trailing,
+	}: Props = $props()
 
 	const ANGLE_UNITS = {
 		degrees: { step: 0.1, decimals: 1, suffix: '°' },
@@ -46,6 +59,7 @@
 	step={unit.step}
 	suffix={unit.suffix}
 	{state}
+	{trailing}
 	bind:value={
 		() => displayValue,
 		(next) => {

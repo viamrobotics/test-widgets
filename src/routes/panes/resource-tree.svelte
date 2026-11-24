@@ -63,6 +63,7 @@
 	nodeToChildren={({ children }) => children}
 	bind:expanded={() => expanded, (next) => (toggledExpanded = next)}
 	bind:selected={() => (selected ? [selected] : []), pick}
+	branchClick="select"
 	aria-label="Resources"
 	class="flex flex-col"
 >
