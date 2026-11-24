@@ -1,5 +1,6 @@
 import { includeIgnoreFile } from '@eslint/compat'
 import js from '@eslint/js'
+import { loadConfig } from '@sveltejs/load-config'
 import prettier from 'eslint-config-prettier'
 import perfectionist from 'eslint-plugin-perfectionist'
 import svelte from 'eslint-plugin-svelte'
@@ -9,7 +10,8 @@ import globals from 'globals'
 import path from 'node:path'
 import ts from 'typescript-eslint'
 
-import svelteConfig from './svelte.config.js'
+const loadedSvelteConfig = await loadConfig('./', { traverse: false })
+const svelteConfig = loadedSvelteConfig?.config
 
 const gitignorePath = path.resolve(import.meta.dirname, '.gitignore')
 

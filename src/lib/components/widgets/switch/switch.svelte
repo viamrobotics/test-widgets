@@ -5,10 +5,9 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Position from './position.svelte'
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { sortObjectKeys } from '#lib/sort.js'
 	import { truncate } from 'lodash-es'
-
-	import { sortObjectKeys } from '$lib/sort'
 
 	interface Props {
 		data: Record<string, unknown>

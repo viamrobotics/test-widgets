@@ -13,20 +13,19 @@
 	}
 
 	const { machines, selectedName }: Props = $props()
-
 	const id = $props.id()
 	const textID = `machine-config-text-${id}`
 	const helpID = `machine-config-help-${id}`
 	const errorID = `machine-config-error-${id}`
-
 	let pastedText = $state('')
 	let hasError = $state(false)
-
 	const machineQuery = (name: string) => new URLSearchParams({ machine: name }).toString()
 
 	const handleSubmit = (event: SubmitEvent) => {
 		event.preventDefault()
+
 		const configs = parseMachineConfigs(pastedText)
+
 		if (!configs) {
 			hasError = true
 			return
@@ -44,7 +43,7 @@
 	{#each machines.current as { name } (name)}
 		<li class="hover:bg-ghost-light flex items-center pr-3 sm:pr-5">
 			<a
-				href={resolve(`/?${machineQuery(name)}`)}
+				href={resolve(`?${machineQuery(name)}`)}
 				aria-current={name === selectedName ? 'page' : undefined}
 				class="focus:bg-ghost-light active:bg-ghost-medium flex min-w-0 grow items-center gap-1.5 px-3 py-1 text-sm sm:px-5"
 			>

@@ -2,8 +2,7 @@
 	import { Button } from '@viamrobotics/prime-core'
 	import { ButtonClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import { Section } from '$lib/components/section'
+	import { Section } from '#lib/components/section/index.js'
 
 	interface Props {
 		partID: string

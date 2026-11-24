@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { EncoderClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'

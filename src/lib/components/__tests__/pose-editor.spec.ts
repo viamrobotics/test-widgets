@@ -2,10 +2,9 @@ import type { Pose } from '@viamrobotics/sdk'
 
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { assertExists } from '#lib/assert.js'
 import { type ComponentProps, createRawSnippet } from 'svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { assertExists } from '$lib/assert'
 
 import Subject from '../pose-editor.svelte'
 

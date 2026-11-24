@@ -1,4 +1,4 @@
-import type { ResourceTriplet } from '$lib/resource-triplet'
+import type { ResourceTriplet } from '#lib/resource-triplet.js'
 
 const NO_LINK_METHODS = new Set(['getStatus', 'getSourceNames'])
 

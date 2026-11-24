@@ -2,9 +2,8 @@
 	import type { Vector3 } from '@viamrobotics/sdk'
 
 	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 	import { onMount } from 'svelte'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
 
 	interface Props {
 		setPower: (linear: Vector3, angular: Vector3) => void

@@ -2,8 +2,7 @@
 	import type { Vector3Tuple } from 'three'
 
 	import { Label, NumericInput, Select } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	import Download from './download.svelte'
 

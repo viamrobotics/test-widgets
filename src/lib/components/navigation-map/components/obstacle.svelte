@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
 	import { theme } from '@viamrobotics/prime-core/theme'
+	import { AxesHelper, CapsuleGeometry } from '#lib/components/three/index.js'
 	import {
 		LngLat,
 		type MapLayerMouseEvent,
@@ -9,8 +10,6 @@
 	} from 'maplibre-gl'
 	import { fromStore } from 'svelte/store'
 	import { type BufferGeometry, Vector2 } from 'three'
-
-	import { AxesHelper, CapsuleGeometry } from '$lib/components/three'
 
 	import type { Obstacle } from '../types'
 

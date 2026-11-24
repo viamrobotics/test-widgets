@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { MLModelClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
 
 	import MetadataWidget from './metadata-widget.svelte'
 

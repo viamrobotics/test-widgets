@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Button, Tooltip } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
-
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		operations: robotApi.Operation[]

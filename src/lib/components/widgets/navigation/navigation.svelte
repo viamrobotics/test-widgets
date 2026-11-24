@@ -8,17 +8,16 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
 	import {
 		CenterControls,
 		MapLibre,
 		MapProviders,
 		NavigationControls,
 		SatelliteControls,
-	} from '$lib/components/maplibre'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
+	} from '#lib/components/maplibre/index.js'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
 
 	import DirectionalMarker from './directional-marker.svelte'
 	import { toGeoWaypoint } from './waypoints/geo-waypoint.ts'

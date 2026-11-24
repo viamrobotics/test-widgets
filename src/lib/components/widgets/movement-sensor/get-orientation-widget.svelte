@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { MovementSensorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Orientation from './orientation.svelte'
 

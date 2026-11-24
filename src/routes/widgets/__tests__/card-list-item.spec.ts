@@ -1,10 +1,9 @@
+import type { NamedResourceStatus } from '#lib/resource.js'
+
 import { render } from '@testing-library/svelte'
 import { robotApi } from '@viamrobotics/sdk'
+import { getResourceKey } from '#lib/get-resource-key.js'
 import { beforeEach, describe, expect, it } from 'vitest'
-
-import type { NamedResourceStatus } from '$lib/resource'
-
-import { getResourceKey } from '$lib/get-resource-key'
 
 import Subject, { collapseAll } from '../card-list-item.svelte'
 

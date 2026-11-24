@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 	import { ViamProvider } from '@viamrobotics/svelte-sdk'
+	import CustomControl from '#lib/components/widgets/custom-control/custom-control.svelte'
 
 	import { page } from '$app/state'
-	import CustomControl from '$lib/components/widgets/custom-control/custom-control.svelte'
 
 	import { createMachineConfigs } from '../machines/machine-configs.svelte'
 	import { getDialConf, loadRobots } from '../robots'

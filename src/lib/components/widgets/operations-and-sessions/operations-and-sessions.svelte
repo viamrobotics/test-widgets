@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { Icon } from '@viamrobotics/prime-core'
 	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
+	import { Section, useSectionErrors } from '#lib/components/section/index.js'
 	import { slide } from 'svelte/transition'
-
-	import { Section, useSectionErrors } from '$lib/components/section'
 
 	import OperationsTable from './operations-table.svelte'
 	import RttPill from './rtt-pill.svelte'

@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type * as SDK from '@viamrobotics/sdk'
+	import type { ResourceTriplet } from '#lib/resource-triplet.js'
 	import type { HTMLAttributes } from 'svelte/elements'
 
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import type { ResourceTriplet } from '$lib/resource-triplet'
 
 	import ApiSection from './api-section.svelte'
 	import { Section } from './section'

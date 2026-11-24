@@ -2,8 +2,7 @@
 	import type { appRobotApi } from '@viamrobotics/sdk'
 
 	import { Button, IconButton, Tooltip } from '@viamrobotics/prime-core'
-
-	import { sortObjectKeys } from '$lib/sort'
+	import { sortObjectKeys } from '#lib/sort.js'
 
 	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
 

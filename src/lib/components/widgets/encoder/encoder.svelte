@@ -6,13 +6,12 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import { Section } from '$lib/components/section'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
+	import { Section } from '#lib/components/section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import { getEncoderPositionArgs } from './encoder-position-type'
 	import Position from './position.svelte'

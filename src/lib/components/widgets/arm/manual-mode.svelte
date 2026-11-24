@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import StatusPill from '$lib/components/status-pill.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import StatusPill from '#lib/components/status-pill.svelte'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	import { useCountdown } from './use-countdown.svelte'
 

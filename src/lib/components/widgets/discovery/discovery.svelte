@@ -5,16 +5,15 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-	import { isEqual } from 'lodash-es'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
 	import {
 		createRefetchIntervalStore,
 		RefetchIntervals,
-	} from '$lib/components/refetch-interval-store.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	} from '#lib/components/refetch-interval-store.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { isEqual } from 'lodash-es'
 
 	import type { ComponentPreviews, ComponentPreviewSnippet } from './component-preview'
 

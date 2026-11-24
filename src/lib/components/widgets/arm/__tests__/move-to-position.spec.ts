@@ -3,9 +3,8 @@ import type { ComponentProps } from 'svelte'
 
 import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { assertExists } from '#lib/assert.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { assertExists } from '$lib/assert'
 
 import Subject from '../move-to-position.svelte'
 

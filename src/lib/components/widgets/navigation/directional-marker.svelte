@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DirectionalMarker, FollowControls } from '$lib/components/maplibre'
+	import { DirectionalMarker, FollowControls } from '#lib/components/maplibre/index.js'
 
 	interface Props {
 		lat?: number

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { degreesToRadians, formatNumeric } from '$lib/format'
+	import AngleUnitToggle from '#lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '#lib/components/copy-button.svelte'
+	import Table from '#lib/components/table.svelte'
+	import { degreesToRadians, formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		positions: number[]

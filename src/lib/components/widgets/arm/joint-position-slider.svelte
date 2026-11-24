@@ -1,7 +1,6 @@
 <script lang="ts">
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '#lib/format.js'
 	import { Slider, ThemeUtils } from 'svelte-tweakpane-ui'
-
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
 
 	interface Props {
 		value: number

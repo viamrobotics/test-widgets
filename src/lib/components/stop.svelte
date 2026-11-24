@@ -13,11 +13,10 @@
 		Servo,
 		ServoClient,
 	} from '@viamrobotics/sdk'
+	import type { ResourceTriplet } from '#lib/resource-triplet.js'
 	import type { Snippet } from 'svelte'
 
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import type { ResourceTriplet } from '$lib/resource-triplet'
 
 	import ApiSection from './api-section.svelte'
 	import StopButton from './stop-button.svelte'

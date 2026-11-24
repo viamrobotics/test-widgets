@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import { RefetchRates } from '#lib/components/refetch-interval-store.svelte.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { RefetchRates } from '$lib/components/refetch-interval-store.svelte'
 
 import Subject from '../ml-model-service.svelte'
 

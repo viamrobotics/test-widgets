@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Section } from '$lib/components/section'
+	import { Section } from '#lib/components/section/index.js'
 
 	import AnalogReadWrapper from './analog-read-wrapper.svelte'
 	import AnalogWriteWrapper from './analog-write-wrapper.svelte'

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import ApiSection from '../api-section.svelte'
 	import { Section } from '../section'
