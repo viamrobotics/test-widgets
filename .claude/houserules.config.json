@@ -127,5 +127,90 @@
       "html",
       "svelte"
     ]
+  },
+  "modules": [
+    "core",
+    "lint-fix",
+    "session-context",
+    "rename",
+    "reviewers",
+    "debug-session",
+    "plans",
+    "orchestrate",
+    "verify-changed",
+    "ready",
+    "sweep",
+    "read-guard",
+    "statusline",
+    "code-cleanliness",
+    "ci-settings",
+    "prose/code-comments",
+    "prose/prose-voice",
+    "prose/output-prose",
+    "prose/pr-description",
+    "ts/typescript",
+    "svelte/svelte",
+    "svelte/svelte-mcp",
+    "three/three",
+    "testing/testing",
+    "testing/playwright-mcp",
+    "changesets/changesets",
+    "design/design",
+    "design/design-review",
+    "design/design-tailwind",
+    "accessibility/accessibility",
+    "accessibility/accessibility-review"
+  ],
+  "rules": {
+    "accessibility-html": {
+      "paths": [
+        "**/*.html"
+      ]
+    },
+    "accessibility": {
+      "paths": [
+        "**/*.html",
+        "**/*.svelte"
+      ]
+    },
+    "design": {
+      "paths": [
+        "**/*.css",
+        "**/*.svelte"
+      ]
+    },
+    "testing-3d": {
+      "paths": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts"
+      ]
+    },
+    "testing-svelte": {
+      "paths": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts",
+        "vite.config.ts"
+      ]
+    },
+    "testing-typescript": {
+      "paths": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts"
+      ]
+    },
+    "testing": {
+      "paths": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts"
+      ]
+    },
+    "three-threlte": {
+      "paths": [
+        "src/**/*.svelte",
+        "src/**/*.svelte.ts",
+        "src/lib/components/navigation-map/plugins/**",
+        "src/lib/components/slam/map2d/hooks/**"
+      ]
+    }
   }
 }
