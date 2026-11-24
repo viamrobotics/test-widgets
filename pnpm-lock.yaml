@@ -142,8 +142,8 @@ importers:
         specifier: ^1.5.4
         version: 1.5.4(@sveltejs/kit@2.69.1(@sveltejs/vite-plugin-svelte@7.3.2(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(svelte@5.56.3(@typescript-eslint/types@8.59.1))(typescript@6.0.3)(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2)))(@viamrobotics/sdk@0.79.1)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(zod@4.6.7)
       '@viamrobotics/tailwind-config':
-        specifier: ^1.2.0
-        version: 1.2.0(tailwindcss@4.2.4)
+        specifier: ^1.12.0
+        version: 1.12.0(tailwindcss@4.2.4)
       '@vitest/browser':
         specifier: ^5.0.5
         version: 5.0.5(vite@8.1.6(@types/node@25.6.0)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.2))(vitest@5.0.1)
@@ -1444,8 +1444,8 @@ packages:
       '@viamrobotics/sdk': '>=0.57'
       svelte: '>=5'
 
-  '@viamrobotics/tailwind-config@1.2.0':
-    resolution: {integrity: sha512-SykknaChHhu+3bka6PtqNsCunHmlg9bZnxb2GNHM0OCNNkwJhfk9Vg4aYZMlgpbEeOyhpcB0mzpEUOY95tticA==}
+  '@viamrobotics/tailwind-config@1.12.0':
+    resolution: {integrity: sha512-2zL2qfA698B1KZsxWNDZTVjk3VSH+MQaeHRuJHa0zQNwbi2zMxe4Q4Bj9PT8nRQqZLZdZwhLpP30RyFyw1px0A==}
     peerDependencies:
       tailwindcss: '>=4 <5'
 
@@ -4550,7 +4550,7 @@ snapshots:
       - '@sveltejs/kit'
       - zod
 
-  '@viamrobotics/tailwind-config@1.2.0(tailwindcss@4.2.4)':
+  '@viamrobotics/tailwind-config@1.12.0(tailwindcss@4.2.4)':
     dependencies:
       '@fontsource-variable/public-sans': 5.2.7
       '@fontsource-variable/roboto-mono': 5.3.0
