@@ -11,6 +11,11 @@ export default defineConfig({
 	server: {
 		port: 6173,
 	},
+	// The scoped scene imports an HDR environment map, and the optimizer does not apply `assetsInclude`.
+	assetsInclude: ['**/*.hdr'],
+	optimizeDeps: {
+		exclude: ['@viamrobotics/visualization'],
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
