@@ -63,6 +63,8 @@
 		propertiesQuery.data?.isBatteryPercentSupported === true
 	)
 
+	const isChargingSupported = $derived(propertiesQuery.data?.isChargingSupported === true)
+
 	const batteryPercentQuery = createResourceQuery(client, 'getBatteryPercent', () => ({
 		enabled: isBatteryPercentSupported,
 		refetchInterval: refetchInterval.current,
@@ -123,7 +125,10 @@
 						class="grow flex-col gap-4 pb-5"
 					>
 						{#if batteryPercentQuery.data !== undefined}
-							<BatteryReading data={batteryPercentQuery.data} />
+							<BatteryReading
+								data={batteryPercentQuery.data}
+								{isChargingSupported}
+							/>
 						{/if}
 					</ApiSection>
 				{/if}

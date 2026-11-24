@@ -2,16 +2,23 @@
 	import { formatNumeric } from '$lib/format'
 
 	interface Props {
-		data: number
+		data: readonly [number, boolean]
+		isChargingSupported: boolean
 	}
 
-	const { data }: Props = $props()
+	const { data, isChargingSupported }: Props = $props()
+
+	const percent = $derived(data[0])
+	const isCharging = $derived(data[1])
 </script>
 
 <span class="font-roboto-mono flex flex-row gap-2">
-	{formatNumeric(data, 1)}
+	{formatNumeric(percent, 1)}
 	<abbr
 		class="text-subtle-2"
 		title="percent">%</abbr
 	>
+	{#if isChargingSupported}
+		<span class="text-subtle-2">({isCharging ? 'charging' : 'not charging'})</span>
+	{/if}
 </span>
