@@ -12,6 +12,7 @@
 	import { Section } from '$lib/components/section'
 	import { ResourceTriplets } from '$lib/resource-triplet'
 
+	import BatteryReading from './battery-reading.svelte'
 	import CurrentReading from './current-reading.svelte'
 	import PowerReading from './power-reading.svelte'
 	import VoltageReading from './voltage-reading.svelte'
@@ -53,6 +54,19 @@
 		enabled: isGetReadingsEnabled,
 		refetchInterval: refetchInterval.current,
 	}))
+
+	// A machine whose RDK predates GetProperties fails this query. The battery section then stays
+	// hidden, and the failure is not shown, since no section lists this query.
+	const propertiesQuery = createResourceQuery(client, 'getProperties')
+
+	const isBatteryPercentSupported = $derived(
+		propertiesQuery.data?.isBatteryPercentSupported === true
+	)
+
+	const batteryPercentQuery = createResourceQuery(client, 'getBatteryPercent', () => ({
+		enabled: isBatteryPercentSupported,
+		refetchInterval: refetchInterval.current,
+	}))
 </script>
 
 <ConnectionStatus {partID}>
@@ -60,12 +74,17 @@
 		<div class="p-4 pb-3">
 			<RefetchController
 				{refetchInterval}
-				queries={[currentQuery, voltageQuery, powerQuery, readingsQuery]}
+				queries={[currentQuery, voltageQuery, powerQuery, batteryPercentQuery, readingsQuery]}
 			/>
 		</div>
 
 		<div class="@container">
-			<div class="grid w-full grid-cols-1 divide-y @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
+			<div
+				class={[
+					'grid w-full grid-cols-1 divide-y @2xl:divide-x @2xl:divide-y-0',
+					isBatteryPercentSupported ? '@2xl:grid-cols-4' : '@2xl:grid-cols-3',
+				]}
+			>
 				<ApiSection
 					queries={[currentQuery]}
 					method="GetCurrent"
@@ -96,6 +115,18 @@
 						<PowerReading data={powerQuery.data} />
 					{/if}
 				</ApiSection>
+				{#if isBatteryPercentSupported}
+					<ApiSection
+						queries={[batteryPercentQuery]}
+						method="GetBatteryPercent"
+						api={ResourceTriplets.PowerSensor}
+						class="grow flex-col gap-4 pb-5"
+					>
+						{#if batteryPercentQuery.data !== undefined}
+							<BatteryReading data={batteryPercentQuery.data} />
+						{/if}
+					</ApiSection>
+				{/if}
 			</div>
 		</div>
 

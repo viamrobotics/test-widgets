@@ -1,26 +1,26 @@
 <script lang="ts">
-	import type { NavigationPosition } from '@viamrobotics/sdk'
-
 	import { DirectionalMarker, FollowControls } from '$lib/components/maplibre'
 
 	interface Props {
-		position: NavigationPosition
+		lat?: number
+		lng?: number
+		rotation?: number
 	}
 
-	const { position }: Props = $props()
+	const { lat, lng, rotation }: Props = $props()
 </script>
 
 <div class="absolute right-4 bottom-12 z-10">
 	<FollowControls
-		lat={position.location?.latitude}
-		lng={position.location?.longitude}
+		{lat}
+		{lng}
 	/>
 </div>
 
-{#if position.location}
+{#if lat !== undefined && lng !== undefined}
 	<DirectionalMarker
-		lat={position.location.latitude}
-		lng={position.location.longitude}
-		rotation={position.compassHeading}
+		{lat}
+		{lng}
+		{rotation}
 	/>
 {/if}

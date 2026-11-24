@@ -20,6 +20,7 @@ const buildResource = (name: string): NamedResourceStatus => ({
 	state: robotApi.ResourceStatus_State.CONFIGURING,
 	revision: '1',
 	error: '',
+	reachability: robotApi.ResourceStatus_Reachability.REACHABLE,
 })
 
 const collapseKey = (resource: NamedResourceStatus) =>
