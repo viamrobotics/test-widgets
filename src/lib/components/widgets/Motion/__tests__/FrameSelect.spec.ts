@@ -7,6 +7,8 @@ import Subject from '../FrameSelect.svelte'
 
 const options = ['my-arm', 'my-gripper']
 
+const componentLabel = createRawSnippet(() => ({ render: () => '<span>Component</span>' }))
+
 describe('Motion frame select', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
@@ -14,41 +16,41 @@ describe('Motion frame select', () => {
 		user = userEvent.setup()
 	})
 
-	it('renders a placeholder plus an option per frame', () => {
-		render(Subject, {
-			value: '',
-			options,
-			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
-			onChange: vi.fn(),
-		})
+	it('is named by its label', () => {
+		render(Subject, { value: 'my-arm', options, label: componentLabel, onChange: vi.fn() })
 
-		expect(screen.getByRole('option', { name: /select a frame/iu })).toBeInTheDocument()
+		expect(screen.getByRole('combobox', { name: 'Component' })).toBeInTheDocument()
+	})
+
+	it('reads "Select a frame…" while no frame is chosen', () => {
+		render(Subject, { value: '', options, label: componentLabel, onChange: vi.fn() })
+
+		expect(screen.getByRole('combobox', { name: 'Component' })).toHaveTextContent('Select a frame…')
+	})
+
+	it('lists an option per frame', async () => {
+		render(Subject, { value: '', options, label: componentLabel, onChange: vi.fn() })
+
+		await user.click(screen.getByRole('combobox', { name: 'Component' }))
+
+		expect(await screen.findAllByRole('option')).toHaveLength(2)
 		expect(screen.getByRole('option', { name: 'my-arm' })).toBeInTheDocument()
 		expect(screen.getByRole('option', { name: 'my-gripper' })).toBeInTheDocument()
 	})
 
 	it('emits the selected frame name', async () => {
 		const onChange = vi.fn()
-		render(Subject, {
-			value: '',
-			options,
-			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
-			onChange,
-		})
+		render(Subject, { value: '', options, label: componentLabel, onChange })
 
-		await user.selectOptions(screen.getByRole('combobox'), 'my-gripper')
+		await user.click(screen.getByRole('combobox', { name: 'Component' }))
+		await user.click(await screen.findByRole('option', { name: 'my-gripper' }))
 
 		expect(onChange).toHaveBeenCalledWith('my-gripper')
 	})
 
-	it('reflects the current value as selected', () => {
-		render(Subject, {
-			value: 'my-arm',
-			options,
-			label: createRawSnippet(() => ({ render: () => '<span>Component</span>' })),
-			onChange: vi.fn(),
-		})
+	it('shows the current value', () => {
+		render(Subject, { value: 'my-arm', options, label: componentLabel, onChange: vi.fn() })
 
-		expect(screen.getByRole('combobox')).toHaveValue('my-arm')
+		expect(screen.getByRole('combobox', { name: 'Component' })).toHaveTextContent('my-arm')
 	})
 })

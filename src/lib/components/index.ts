@@ -59,9 +59,6 @@ export { default as InputControllerWidget } from './widgets/InputController/Inpu
 export { default as MLModelServiceMetadataWidget } from './widgets/MLModel/MetadataWidget.svelte'
 export { default as MLModelServiceWidget } from './widgets/MLModel/MlModelService.svelte'
 
-export { default as MotionServiceWidget } from './widgets/Motion/Motion.svelte'
-export { default as MotionMoveWidget } from './widgets/Motion/MoveWidget.svelte'
-
 export { default as MovementSensorWidget } from './widgets/MovementSensor/MovementSensor.svelte'
 export { default as MovementSensorGetPositionWidget } from './widgets/MovementSensor/GetPositionWidget.svelte'
 export { default as MovementSensorGetOrientationWidget } from './widgets/MovementSensor/GetOrientationWidget.svelte'

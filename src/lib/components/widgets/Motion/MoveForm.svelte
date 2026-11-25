@@ -56,7 +56,7 @@
 	const executeMove = (input: MoveInput) => {
 		try {
 			parseError = undefined
-			move.mutate(parseMoveArgs(frameName, input), {})
+			move.mutate(parseMoveArgs(frameName, input))
 		} catch (error) {
 			parseError = error instanceof Error ? error : new Error(String(error))
 		}
@@ -70,8 +70,12 @@
 	queries={[...queries, poseQuery]}
 	mutations={[move, parseFailure]}
 >
-	<div class="flex min-w-0 flex-col gap-4">
-		{@render children?.()}
+	<div class="flex min-w-0 flex-col gap-3">
+		{#if children}
+			<div class="flex min-w-0 flex-col gap-2">
+				{@render children()}
+			</div>
+		{/if}
 		<Move
 			{frameName}
 			{destination}
