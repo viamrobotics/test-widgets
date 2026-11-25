@@ -28,13 +28,15 @@ describe('Arm manual mode', () => {
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
 
-		expect(screen.getByText('Enabling in 5s')).toBeInTheDocument()
+		const enterButton = screen.getByRole('button', { name: 'Enabling in 5s' })
+		expect(enterButton).toHaveAttribute('aria-busy', 'true')
 		expect(setManualMode).not.toHaveBeenCalled()
 
 		await vi.advanceTimersByTimeAsync(5000)
 
 		expect(setManualMode).toHaveBeenCalledTimes(1)
 		expect(setManualMode).toHaveBeenCalledWith(true, 90)
+		expect(screen.getByRole('button', { name: 'Enter' })).toHaveAttribute('aria-busy', 'false')
 	})
 
 	it('enters immediately when enable-after is 0', async () => {
@@ -42,7 +44,7 @@ describe('Arm manual mode', () => {
 		renderSubject({ setManualMode })
 
 		const [, enableAfterInput] = screen.getAllByRole('spinbutton')
-		await fireEvent.change(enableAfterInput!, { target: { value: '0' } })
+		await fireEvent.input(enableAfterInput!, { target: { value: '0' } })
 		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
 
 		expect(setManualMode).toHaveBeenCalledWith(true, 90)
@@ -53,8 +55,8 @@ describe('Arm manual mode', () => {
 		renderSubject({ setManualMode })
 
 		const [enabledForInput, enableAfterInput] = screen.getAllByRole('spinbutton')
-		await fireEvent.change(enabledForInput!, { target: { value: '30' } })
-		await fireEvent.change(enableAfterInput!, { target: { value: '0' } })
+		await fireEvent.input(enabledForInput!, { target: { value: '30' } })
+		await fireEvent.input(enableAfterInput!, { target: { value: '0' } })
 		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
 
 		expect(setManualMode).toHaveBeenCalledWith(true, 30)
@@ -97,25 +99,47 @@ describe('Arm manual mode', () => {
 		expect(screen.getByRole('button', { name: 'Exit' })).toBeDisabled()
 	})
 
-	it('shows the enabled status pill when manual mode is active', () => {
-		renderSubject({ isManualMode: true })
+	it('marks Enter busy while an enter request is in flight', async () => {
+		const { rerender } = renderSubject()
 
-		expect(screen.getByText('Enabled')).toBeInTheDocument()
+		await fireEvent.click(screen.getByRole('button', { name: 'Enter' }))
+		await vi.advanceTimersByTimeAsync(5000)
+		await rerender({ isPending: true })
+
+		expect(screen.getByRole('button', { name: 'Enter' })).toHaveAttribute('aria-busy', 'true')
+		expect(screen.getByRole('button', { name: 'Exit' })).toHaveAttribute('aria-busy', 'false')
 	})
 
-	it('shows the disabled status pill when manual mode is inactive', () => {
+	it('marks Exit busy while an exit request is in flight', async () => {
+		const { rerender } = renderSubject({ isManualMode: true })
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
+		await rerender({ isPending: true })
+
+		expect(screen.getByRole('button', { name: 'Exit' })).toHaveAttribute('aria-busy', 'true')
+	})
+
+	it('disables Enter once manual mode is on', () => {
+		renderSubject({ isManualMode: true })
+
+		expect(screen.getByRole('button', { name: 'Enter' })).toBeDisabled()
+		expect(screen.getByText('Manual mode')).toBeInTheDocument()
+	})
+
+	it('shows the off status when manual mode is inactive', () => {
 		renderSubject({})
 
 		expect(screen.getByText('Disabled')).toBeInTheDocument()
 	})
 
-	it('explains gravity compensation below the controls', () => {
+	it('names the timing group and both fields', () => {
 		renderSubject({})
 
-		expect(
-			screen.getByText(
-				'Manual mode puts the arm into gravity compensation or servo release mode so the arm can be moved by hand.'
-			)
-		).toBeInTheDocument()
+		const group = screen.getByRole('group', { name: 'Manual mode timing' })
+		expect(group).toContainElement(screen.getByRole('spinbutton', { name: 'Enable for, seconds' }))
+		expect(group).toContainElement(
+			screen.getByRole('spinbutton', { name: 'Enable after, seconds' })
+		)
+		expect(screen.getByRole('button', { name: 'About manual mode timing' })).toBeInTheDocument()
 	})
 })

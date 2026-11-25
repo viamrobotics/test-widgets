@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Motor } from '../index.ts'
+import { Arm, Motor } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -20,14 +20,20 @@ interface ResourceCase {
 const RESOURCE_CASES: ResourceCase[] = [
 	{
 		label: 'Arm',
+		namespace: Arm,
 		triplet: ResourceTriplets.Arm,
 		keys: [
+			'jog',
+			'joints',
 			'moveToJointPositions',
 			'moveToPosition',
-			'quickMove',
 			'getJointPositions',
+			'getEndPosition',
 			'isMoving',
 			'manualMode',
+			'setManualMode',
+			'getManualMode',
+			'getProperties',
 			'stop',
 		],
 	},

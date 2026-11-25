@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiContentCopy } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		data: string
@@ -26,12 +27,18 @@
 </script>
 
 <Tooltip>
-	<IconButton
-		onclick={handleCopyClick}
-		aria-label={ariaLabel}
-		class="text-gray-6 hover:border-medium hover:bg-medium active:bg-gray-2 justify-items-end p-0.5"
-		icon={showCopySuccess ? 'check' : 'content-copy'}
-		label="Copy to clipboard"
-	/>
-	<span slot="description">{ariaLabel}</span>
+	<Tooltip.Trigger>
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label={ariaLabel}
+			onclick={handleCopyClick}
+		>
+			<Icon
+				icon={showCopySuccess ? mdiCheck : mdiContentCopy}
+				size="sm"
+			/>
+		</button>
+	</Tooltip.Trigger>
+	<Tooltip.Content>{ariaLabel}</Tooltip.Content>
 </Tooltip>

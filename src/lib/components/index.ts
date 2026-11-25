@@ -1,15 +1,6 @@
 export { default as ConnectionStatus } from './ConnectionStatus.svelte'
 export { Section } from './Section'
 
-export { default as ArmWidget } from './widgets/Arm/Arm.svelte'
-export { default as ArmGetJointPositionsWidget } from './widgets/Arm/GetJointPositionsWidget.svelte'
-export { default as ArmIsMovingWidget } from './widgets/Arm/IsMovingWidget.svelte'
-export { default as ArmManualModeWidget } from './widgets/Arm/ManualModeWidget.svelte'
-export { default as ArmMoveToJointPositionsWidget } from './widgets/Arm/MoveToJointPositionsWidget.svelte'
-export { default as ArmMoveToPositionWidget } from './widgets/Arm/MoveToPositionWidget.svelte'
-export { default as ArmQuickMoveWidget } from './widgets/Arm/QuickMoveWidget.svelte'
-export { default as ArmStopWidget } from './widgets/Arm/StopWidget.svelte'
-
 export { default as AudioInputWidget } from './widgets/AudioInput/AudioInput.svelte'
 export { default as AudioInputGetPropertiesWidget } from './widgets/AudioInput/GetPropertiesWidget.svelte'
 

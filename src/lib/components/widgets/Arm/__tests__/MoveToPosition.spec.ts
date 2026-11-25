@@ -126,10 +126,15 @@ describe('Arm move-to-position', () => {
 		})
 	})
 
-	it('renders a warning tooltip about the motion service and frame system', () => {
+	it('renders a warning tooltip about the motion service and frame system', async () => {
 		renderSubject({})
+
+		screen.getByRole('button', { name: 'About Pose Values' }).focus()
+
 		expect(
-			screen.getByText(/does not take into account the motion service or frame system/iu)
+			await screen.findByRole('tooltip', {
+				name: /does not take into account the motion service or frame system/iu,
+			})
 		).toBeInTheDocument()
 	})
 
@@ -150,12 +155,18 @@ describe('Arm move-to-position', () => {
 		expect(screen.getAllByRole('spinbutton')[0]).toHaveValue(50)
 	})
 
-	it('shows the current value under each field', async () => {
+	it("names the current value on each field's restore button", async () => {
 		const { rerender } = renderSubject({})
 
 		await rerender({ endPosition: { ...defaultPose, x: 50 } })
 
-		expect(screen.getByText(/current 50(\.0+)?$/iu)).toBeInTheDocument()
+		expect(document.querySelector('button[aria-label="Reset X to 50.00 mm"]')).toBeInTheDocument()
+	})
+
+	it('hides the restore button of a field the user has not edited', () => {
+		renderSubject({})
+
+		expect(screen.queryByRole('button', { name: /^reset x to /iu })).not.toBeInTheDocument()
 	})
 
 	it('keeps an edited value when a poll returns a new pose', async () => {
@@ -175,18 +186,29 @@ describe('Arm move-to-position', () => {
 		await rerender({ endPosition: { ...defaultPose, x: 10 } })
 
 		expect(xInput).toHaveValue(42)
-		const message = screen.getByText(/arm moved 9(\.0+)? mm since you edited x/iu)
-		expect(xInput).toHaveAttribute('aria-describedby', message.closest('[role="tooltip"]')?.id)
+		const message = screen.getByText('Arm moved 9.00 mm.')
+		expect(xInput.getAttribute('aria-describedby')?.split(' ')).toContain(message.id)
+	})
+
+	it('warns on the drifted field alone', async () => {
+		const { rerender } = renderSubject({})
+		const xInput = await editX('42')
+
+		await rerender({ endPosition: { ...defaultPose, x: 10 } })
+
+		const [, yInput] = screen.getAllByRole('spinbutton')
+		expect(xInput).toHaveAttribute('data-field-state', 'warn')
+		expect(yInput).not.toHaveAttribute('data-field-state')
 	})
 
 	it('resets one edited field to the live value', async () => {
 		renderSubject({})
 		const xInput = await editX('42')
 
-		await user.click(screen.getByRole('button', { name: /reset x to current/iu }))
+		await user.click(screen.getByRole('button', { name: /^reset x to /iu }))
 
 		expect(xInput).toHaveValue(1)
-		expect(screen.queryByRole('button', { name: /reset x to current/iu })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: /^reset x to /iu })).not.toBeInTheDocument()
 	})
 
 	it('keeps fields editable but locks Execute while the arm moves', async () => {

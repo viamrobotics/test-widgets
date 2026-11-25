@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Banner, Icon, Label, Select, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
+	import { Select, ToggleButtons } from '@viamrobotics/prime-controls'
+	import { Banner } from '@viamrobotics/prime-ui'
 	import { ArmClient, MotionClient, type Pose, type RobotClient } from '@viamrobotics/sdk'
 	import {
 		createResourceClient,
@@ -11,7 +12,9 @@
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useArmState } from './arm-state.svelte'
 	import {
 		canPlanMotion,
 		motionServiceOptions,
@@ -79,9 +82,11 @@
 	const moveMutation = createResourceMutation(motionClient, 'move')
 	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
 	const activeMutation = $derived(mode === 'motion' ? moveMutation : moveToPosMutation)
+	const { motion: motionGuard } = untrack(() => useArmState(partID, resourceName))
 
+	// A move from any widget in the motion group locks the editor, the same as this widget's own.
 	const motionTracking = useArmMotionTracking(armClient, {
-		isMovePending: () => moveMutation.isPending || moveToPosMutation.isPending,
+		isMovePending: () => motionGuard.isBusy,
 		refetchPosition: () => activeQuery.refetch(),
 	})
 	const refetchInterval = $derived(motionTracking.refetchInterval)
@@ -101,22 +106,23 @@
 	const activeQuery = $derived(mode === 'motion' ? poseQuery : endPositionQuery)
 	const endPosition = $derived(mode === 'motion' ? poseQuery.data?.pose : endPositionQuery.data)
 
-	const handleModeInput = (event: CustomEvent<string>) => {
-		userChoice = event.detail === 'Motion service' ? 'motion' : 'direct'
-	}
+	const modeItems = $derived([
+		{ value: 'motion', label: 'Motion service' },
+		{ value: 'direct', label: 'Arm', disabled: cartesianUnsupported },
+	] satisfies { value: MoveControlMode; label: string; disabled?: boolean }[])
 
-	const handleServiceChange = (event: Event) => {
-		if (event.target instanceof HTMLSelectElement) {
-			userServiceChoice = event.target.value
+	const serviceItems = $derived(serviceOptions.map((name) => ({ value: name, label: name })))
+	const serviceLabelId = $props.id()
+
+	const sendMove = (position: Pose) => {
+		if (mode === 'motion') {
+			return moveMutation.mutateAsync([{ referenceFrame: 'world', pose: position }, resourceName])
 		}
+		return moveToPosMutation.mutateAsync([position])
 	}
 
 	const moveToPosition = (position: Pose) => {
-		if (mode === 'motion') {
-			moveMutation.mutate([{ referenceFrame: 'world', pose: position }, resourceName], {})
-		} else {
-			moveToPosMutation.mutate([position], {})
-		}
+		void motionGuard.run(() => sendMove(position))
 	}
 </script>
 
@@ -134,51 +140,49 @@
 	api={ResourceTriplets.Arm}
 	queries={[frameSystemQuery, activeQuery]}
 	mutations={[activeMutation]}
-	class="grow flex-col gap-4"
+	class="grow flex-col gap-3"
 >
 	{#if motionAvailable}
-		<Label position="top">
-			<span class="flex items-center gap-1 text-xs">
-				Control mode
-				<Tooltip>
-					<Icon
-						name="information-outline"
-						size="sm"
-					/>
-					<span slot="description">
-						Using a motion service will include motion planning and obstacle avoidance. Direct arm
-						control will move the arm without any planning and regardless of obstacles.
-					</span>
-				</Tooltip>
-			</span>
-
-			<ToggleButtons
-				slot="input"
-				options={['Motion service', 'Arm']}
-				selected={mode === 'motion' ? 'Motion service' : 'Arm'}
-				disabled={cartesianUnsupported}
-				on:input={handleModeInput}
-			/>
-		</Label>
+		<ToggleButtons
+			label="Control mode"
+			hint="Using a motion service will include motion planning and obstacle avoidance. Direct arm control will move the arm without any planning and regardless of obstacles."
+			items={modeItems}
+			bind:value={
+				() => mode,
+				(next) => {
+					userChoice = next === 'motion' ? 'motion' : 'direct'
+				}
+			}
+		/>
 	{/if}
 	{#if showServiceSelect}
-		<Label>
-			Motion service name
-
-			<Select
-				slot="input"
-				value={activeMotionServiceName ?? ''}
-				on:change={handleServiceChange}
+		<div class="flex items-center gap-2">
+			<span
+				id={serviceLabelId}
+				class="text-subtle-1 shrink-0 text-xs"
 			>
-				{#each serviceOptions as name (name)}
-					<option value={name}>{name}</option>
-				{/each}
-			</Select>
-		</Label>
+				Motion service name
+			</span>
+			<div class="min-w-0 flex-1">
+				<Select
+					items={serviceItems}
+					aria-labelledby={serviceLabelId}
+					bind:value={
+						() => activeMotionServiceName ?? '',
+						(next: string) => {
+							userServiceChoice = next
+						}
+					}
+				/>
+			</div>
+		</div>
 	{/if}
 	{#if frameSystem !== undefined}
 		<Banner variant={mode === 'motion' ? 'info' : 'danger'}>
-			{#snippet subtitle()}
+			{#if mode !== 'motion'}
+				<Banner.Title>Danger</Banner.Title>
+			{/if}
+			<Banner.Description>
 				{#if mode === 'motion'}
 					Movement goes through motion planning and attempts to avoid obstacles.
 				{:else if hasMotionService && !motionAvailable}
@@ -187,7 +191,7 @@
 				{:else}
 					The arm will not avoid obstacles when moving. Use with caution.
 				{/if}
-			{/snippet}
+			</Banner.Description>
 		</Banner>
 	{/if}
 	<!-- Re-seed the editor on a mode change: the two modes report the pose in different frames. -->

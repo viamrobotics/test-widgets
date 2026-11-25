@@ -16,4 +16,5 @@
 	api={ResourceTriplets.Arm}
 	{partID}
 	{resourceName}
+	isCompact
 />
