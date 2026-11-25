@@ -1,5 +1,15 @@
 # @viamrobotics/test-widgets
 
+## 0.20.0
+
+### Minor Changes
+
+- 7a1a2c8: Show the charging state in the `PowerSensorWidget` battery section. It appears as `(charging)` or `(not charging)` after the percent when the sensor's `GetProperties` reports `isChargingSupported`. Raise the `@viamrobotics/sdk` peer range to `>=0.79.2`, where `getBatteryPercent` resolves to `[percent, isCharging]`.
+
+### Patch Changes
+
+- 28467fe: Update `@viamrobotics/post-message-sdk` to 0.4.1, reading the custom control guest's height from its new size report.
+
 ## 0.19.0
 
 ### Minor Changes
