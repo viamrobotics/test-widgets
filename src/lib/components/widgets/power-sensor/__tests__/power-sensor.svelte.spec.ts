@@ -21,7 +21,7 @@ vi.mock('@viamrobotics/svelte-sdk', async () => {
 				getVoltage: [12.5, true],
 				getCurrent: [1.5, false],
 				getPower: 18.75,
-				getBatteryPercent: 87.25,
+				getBatteryPercent: [87.25, true],
 				getProperties: queryState.properties,
 			}[method]
 			const error = method === 'getProperties' ? queryState.propertiesError : null
@@ -55,6 +55,23 @@ describe('PowerSensor widget battery section', () => {
 
 		expect(screen.getByRole('heading', { name: 'GetBatteryPercent' })).toBeInTheDocument()
 		expect(screen.getByText('87.3')).toBeInTheDocument()
+	})
+
+	it('shows the charging state when the sensor supports it', () => {
+		queryState.properties = { isBatteryPercentSupported: true, isChargingSupported: true }
+
+		renderSubject()
+
+		expect(screen.getByText('(charging)')).toBeInTheDocument()
+	})
+
+	it('hides the charging state when the sensor does not support it', () => {
+		queryState.properties = { isBatteryPercentSupported: true, isChargingSupported: false }
+
+		renderSubject()
+
+		expect(screen.getByText('87.3')).toBeInTheDocument()
+		expect(screen.queryByText(/charging\)/u)).not.toBeInTheDocument()
 	})
 
 	it('hides the battery section when the sensor reports no battery percent', () => {
