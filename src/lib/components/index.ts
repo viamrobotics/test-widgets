@@ -30,14 +30,6 @@ export { default as EncoderGetPositionWidget } from './widgets/Encoder/GetPositi
 
 export { default as GenericWidget } from './widgets/Generic/Generic.svelte'
 
-export { default as GripperGrabWidget } from './widgets/Gripper/GrabWidget.svelte'
-export { default as GripperWidget } from './widgets/Gripper/Gripper.svelte'
-export { default as GripperIsHoldingSomethingWidget } from './widgets/Gripper/IsHoldingSomethingWidget.svelte'
-export { default as GripperIsMovingWidget } from './widgets/Gripper/IsMovingWidget.svelte'
-export { default as GripperOpenGrabWidget } from './widgets/Gripper/OpenGrabControl.svelte'
-export { default as GripperOpenWidget } from './widgets/Gripper/OpenWidget.svelte'
-export { default as GripperStopWidget } from './widgets/Gripper/StopWidget.svelte'
-
 export { default as InputControllerWidget } from './widgets/InputController/InputController.svelte'
 
 export { default as MLModelServiceMetadataWidget } from './widgets/MLModel/MetadataWidget.svelte'

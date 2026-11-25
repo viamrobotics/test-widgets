@@ -1,21 +1,39 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
-
-	import ClosedGripperSvg from './ClosedGripperSvg.svelte'
+	import { Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		onGrab: () => void
+		/** True while a gripper move is in flight. The button reads disabled and says why. */
+		isBusy: boolean
 	}
 
-	const { onGrab }: Props = $props()
+	const BUSY_REASON = 'Wait for the gripper to finish moving.'
+
+	const { onGrab, isBusy }: Props = $props()
+
+	const reasonId = $props.id()
 </script>
 
-<Button
-	onclick={onGrab}
-	class="w-20 p-3 py-3"
->
-	<div class="flex flex-col gap-2">
-		<ClosedGripperSvg />
-		<p class="font-roboto-mono text-xs uppercase">grab</p>
-	</div>
-</Button>
+<Tooltip disabled={!isBusy}>
+	<Tooltip.Trigger>
+		<!-- aria-disabled, not disabled: the button keeps focus, so the tooltip can say why. -->
+		<button
+			type="button"
+			class="button button-compact"
+			aria-disabled={isBusy || undefined}
+			aria-describedby={isBusy ? reasonId : undefined}
+			onclick={() => {
+				if (!isBusy) onGrab()
+			}}
+		>
+			Grab
+		</button>
+	</Tooltip.Trigger>
+	<Tooltip.Content class="max-w-72">{BUSY_REASON}</Tooltip.Content>
+</Tooltip>
+{#if isBusy}
+	<span
+		id={reasonId}
+		class="sr-only">{BUSY_REASON}</span
+	>
+{/if}
