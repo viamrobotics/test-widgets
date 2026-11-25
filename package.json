@@ -208,9 +208,9 @@
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
 		},
-		"./registry": {
-			"types": "./dist/registry.d.ts",
-			"svelte": "./dist/registry.js"
+		"./widgets": {
+			"types": "./dist/resource-widgets.d.ts",
+			"svelte": "./dist/resource-widgets.js"
 		}
 	},
 	"publishConfig": {
