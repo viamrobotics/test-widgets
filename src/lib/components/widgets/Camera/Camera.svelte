@@ -16,7 +16,7 @@
 	import { PersistedState } from 'runed'
 	import { untrack } from 'svelte'
 
-	import PCDWidget from '../Pcd/PcdWidget.svelte'
+	import PCDWidget from '../PCD/PCDWidget.svelte'
 	import ExportScreenshot from './ExportScreenshot.svelte'
 	import { getPanoCoverageFromXmp } from './get-pano-coverage-from-xmp'
 	import { getSourceNames } from './get-source-names'

@@ -208,8 +208,8 @@
       "paths": [
         "src/**/*.svelte",
         "src/**/*.svelte.ts",
-        "src/lib/components/navigation-map/plugins/**",
-        "src/lib/components/slam/map2d/hooks/**"
+        "src/lib/components/NavigationMap/plugins/**",
+        "src/lib/components/Slam/map2d/hooks/**"
       ]
     }
   }

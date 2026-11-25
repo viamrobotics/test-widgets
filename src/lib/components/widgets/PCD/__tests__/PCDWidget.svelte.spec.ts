@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { PerspectiveCamera, Points, PointsMaterial, Scene } from 'three'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import Subject from '../PcdWidget.svelte'
+import Subject from '../PCDWidget.svelte'
 import { pcd } from './__fixtures__/pcd.ts'
 
 const observeThreeScenes = () => {

@@ -25,7 +25,7 @@ A cold run can fail while Vite optimizes dependencies. Re-run once before invest
 
 ## What to mock here
 
-Where a spec needs SDK data, mock the SDK boundary rather than the widget: `vi.mock('@viamrobotics/svelte-sdk')` or `vi.mock('@viamrobotics/sdk')`, then `vi.mocked(createResourceQuery).mockReturnValue(...)` per test. Threlte scenes are tested with `render` and `cleanup` from `@threlte/test`, asserting on the returned `scene` and `camera` rather than on pixels (see `src/lib/components/widgets/Pcd/__tests__/Scene.spec.ts`).
+Where a spec needs SDK data, mock the SDK boundary rather than the widget: `vi.mock('@viamrobotics/svelte-sdk')` or `vi.mock('@viamrobotics/sdk')`, then `vi.mocked(createResourceQuery).mockReturnValue(...)` per test. Threlte scenes are tested with `render` and `cleanup` from `@threlte/test`, asserting on the returned `scene` and `camera` rather than on pixels (see `src/lib/components/widgets/PCD/__tests__/Scene.spec.ts`).
 
 The `fix-prime-core-theme` plugin in `vite.config.ts` rewrites Tailwind v3 `theme(...)` calls inside prime-core CSS so it compiles under Tailwind v4. A prime-core style error in a spec usually traces there.
 

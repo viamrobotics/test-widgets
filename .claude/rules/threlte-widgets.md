@@ -11,7 +11,7 @@ Threlte's upstream docs URLs are in `../reference/three-upstream-docs-threlte.md
 relevant page rather than recalling a Threlte API from memory.
 
 - **Every 3D widget mounts its own `<Canvas>`**, and a page can show many widgets at once. Keep scenes cheap: no per-frame work unless a frame actually changes, dispose what you create, and share helpers from `src/lib/components/Three/`.
-- **Rendering is on demand.** After mutating a scene object, call `invalidate()` from `useThrelte()`, usually inside `$effect.pre` so the draw follows the state change in the same flush (`src/lib/components/widgets/Pcd/Points.svelte`, `src/lib/components/widgets/Vision/ObjectPointCloudScene.svelte`).
+- **Rendering is on demand.** After mutating a scene object, call `invalidate()` from `useThrelte()`, usually inside `$effect.pre` so the draw follows the state change in the same flush (`src/lib/components/widgets/PCD/Points.svelte`, `src/lib/components/widgets/Vision/ObjectPointCloudScene.svelte`).
 - **`<Canvas autoRender={false}>`** where the scene schedules its own renders (`src/lib/components/widgets/Navigation/obstacles/Obstacles.svelte`, `src/lib/components/NavigationMap/components/SceneLayer.svelte`).
 - **`renderMode="always"` only for live video.** `src/lib/components/widgets/Camera/Camera.svelte` needs it so the `VideoTexture` advances every frame. Nothing else should opt in.
 - **`useTask` is currently unused.** If you add one, its callback must not throw. An uncaught error in a per-frame task stops that canvas's render loop for good, and there is no recovery short of remounting.
