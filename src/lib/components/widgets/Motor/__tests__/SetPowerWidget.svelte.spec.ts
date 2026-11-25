@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import InWidgetsProvider from '#lib/__tests__/__fixtures__/InWidgetsProvider.svelte'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../SetPowerWidget.svelte'
@@ -16,7 +17,7 @@ vi.mock('@viamrobotics/sdk', () => ({
 vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
 	createResourceMutation: vi.fn(() => ({
-		mutate: state.mutate,
+		mutateAsync: state.mutate,
 		isPending: false,
 		get error() {
 			return state.error
@@ -25,8 +26,8 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 }))
 
 const renderSubject = () =>
-	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-motor' },
+	render(InWidgetsProvider, {
+		props: { component: Subject, props: { partID: 'test-part', resourceName: 'test-motor' } },
 	})
 
 describe('Motor SetPower widget', () => {
@@ -49,7 +50,7 @@ describe('Motor SetPower widget', () => {
 		await userEvent.type(numericInput, '0.75')
 		await userEvent.click(screen.getByRole('button', { name: /execute/iu }))
 
-		expect(state.mutate).toHaveBeenCalledWith([0.75], {})
+		expect(state.mutate).toHaveBeenCalledWith([0.75])
 	})
 
 	it("shows the mutation error in the section's error indicator", () => {

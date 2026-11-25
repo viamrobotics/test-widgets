@@ -39,4 +39,23 @@ describe('Motor GoTo', () => {
 
 		expect(goTo).toHaveBeenCalledWith(1001, -10)
 	})
+
+	it('steps the target position by a fraction of a revolution', async () => {
+		renderSubject({})
+
+		const targetInput = screen.getByRole('spinbutton', { name: /^target position/iu })
+		await user.click(targetInput)
+		await user.keyboard('{ArrowUp}')
+
+		expect(targetInput).toHaveValue(0.6)
+	})
+
+	it('does not send when the target position is empty', async () => {
+		renderSubject({})
+
+		await user.clear(screen.getByRole('spinbutton', { name: /^target position/iu }))
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(goTo).not.toHaveBeenCalled()
+	})
 })

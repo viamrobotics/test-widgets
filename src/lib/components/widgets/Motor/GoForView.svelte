@@ -3,8 +3,10 @@
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
 	import GoFor from './GoFor.svelte'
+	import { useMotorState } from './motor-state.svelte'
 
 	interface Props {
 		partID: string
@@ -20,6 +22,7 @@
 	)
 
 	const goForMutation = createResourceMutation(client, 'goFor')
+	const { motion } = untrack(() => useMotorState(partID, resourceName))
 </script>
 
 <ApiSection
@@ -31,8 +34,9 @@
 	<div class="flex grow flex-wrap justify-between gap-2">
 		<GoFor
 			goFor={(rpm: number, revolutions: number) => {
-				goForMutation.mutate([rpm, revolutions], {})
+				void motion.run(() => goForMutation.mutateAsync([rpm, revolutions]))
 			}}
+			isBusy={motion.isBusy}
 		/>
 	</div>
 </ApiSection>
