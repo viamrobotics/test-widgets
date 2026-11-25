@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Motion, Motor } from '../index.ts'
+import { Arm, Base, Motion, Motor } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -41,8 +41,18 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'AudioOutput', triplet: ResourceTriplets.AudioOutput, keys: ['getProperties'] },
 	{
 		label: 'Base',
+		namespace: Base,
 		triplet: ResourceTriplets.Base,
-		keys: ['quickMove', 'moveStraight', 'spin', 'setPower', 'setVelocity', 'isMoving', 'stop'],
+		keys: [
+			'quickMove',
+			'moveStraight',
+			'spin',
+			'setPower',
+			'setVelocity',
+			'isMoving',
+			'stop',
+			'getProperties',
+		],
 	},
 	{ label: 'Board', triplet: ResourceTriplets.Board, keys: [] },
 	{ label: 'Button', triplet: ResourceTriplets.Button, keys: [] },

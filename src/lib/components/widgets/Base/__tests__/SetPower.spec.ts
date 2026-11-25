@@ -16,6 +16,11 @@ describe('Base SetPower', () => {
 		setPower = vi.fn()
 	})
 
+	const replaceValue = async (input: HTMLElement, text: string) => {
+		await user.clear(input)
+		await user.type(input, text)
+	}
+
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		render(Subject, {
 			setPower,
@@ -26,34 +31,28 @@ describe('Base SetPower', () => {
 		renderSubject({})
 
 		{
-			const linPower = screen.getByRole('region', { name: /linear power/iu })
+			const linPower = screen.getByRole('group', { name: /^linear/iu })
 			const xInput = within(linPower).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(linPower).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(linPower).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '0.3')
-			await user.clear(yInput)
-			await user.type(yInput, '0.2')
-			await user.clear(zInput)
-			await user.type(zInput, '0.1')
+			await replaceValue(xInput, '0.3')
+			await replaceValue(yInput, '0.2')
+			await replaceValue(zInput, '0.1')
 		}
 		{
-			const angPower = screen.getByRole('region', { name: /angular power/iu })
+			const angPower = screen.getByRole('group', { name: /^angular/iu })
 			const xInput = within(angPower).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(angPower).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(angPower).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '0.4')
-			await user.clear(yInput)
-			await user.type(yInput, '-0.5')
-			await user.clear(zInput)
-			await user.type(zInput, '1')
+			await replaceValue(xInput, '0.4')
+			await replaceValue(yInput, '-0.5')
+			await replaceValue(zInput, '1')
 		}
 
 		const executeButton = screen.getByRole('button', { name: /execute/iu })

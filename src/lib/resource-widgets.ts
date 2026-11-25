@@ -5,13 +5,6 @@ import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-
 import {
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
-	BaseIsMovingWidget,
-	BaseMoveStraightWidget,
-	BaseQuickMoveWidget,
-	BaseSetPowerWidget,
-	BaseSetVelocityWidget,
-	BaseSpinWidget,
-	BaseStopWidget,
 	EncoderGetPositionWidget,
 	GantryGetPositionWidget,
 	GantryHomeWidget,
@@ -40,6 +33,7 @@ import {
 	SlamGetPositionWidget,
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
+import * as Base from './components/widgets/Base/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
@@ -71,6 +65,7 @@ interface ResourceWidgetKeys {
 		| 'setVelocity'
 		| 'isMoving'
 		| 'stop'
+		| 'getProperties'
 	[ResourceTriplets.AudioInput]: 'getProperties'
 	[ResourceTriplets.AudioOutput]: 'getProperties'
 	[ResourceTriplets.Board]: never
@@ -150,13 +145,38 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Base]: {
 		widgets: {
-			quickMove: { component: BaseQuickMoveWidget, kind: 'control' },
-			moveStraight: { component: BaseMoveStraightWidget, kind: 'api' },
-			spin: { component: BaseSpinWidget, kind: 'api' },
-			setPower: { component: BaseSetPowerWidget, kind: 'api' },
-			setVelocity: { component: BaseSetVelocityWidget, kind: 'api' },
-			isMoving: { component: BaseIsMovingWidget, kind: 'api' },
-			stop: { component: BaseStopWidget, kind: 'api' },
+			quickMove: {
+				component: Base.QuickMove,
+				kind: 'control',
+			},
+			moveStraight: {
+				component: Base.MoveStraight,
+				kind: 'api',
+			},
+			spin: {
+				component: Base.Spin,
+				kind: 'api',
+			},
+			setPower: {
+				component: Base.SetPower,
+				kind: 'api',
+			},
+			setVelocity: {
+				component: Base.SetVelocity,
+				kind: 'api',
+			},
+			isMoving: {
+				component: Base.IsMoving,
+				kind: 'api',
+			},
+			stop: {
+				component: Base.Stop,
+				kind: 'api',
+			},
+			getProperties: {
+				component: Base.GetProperties,
+				kind: 'api',
+			},
 		},
 	},
 	[ResourceTriplets.AudioInput]: {

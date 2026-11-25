@@ -1,8 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/svelte'
 import { createResourceMutation } from '@viamrobotics/svelte-sdk'
+import InWidgetsProvider from '#lib/__tests__/__fixtures__/InWidgetsProvider.svelte'
 import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../SetPowerWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 const { setPowerMutate } = vi.hoisted(() => ({
 	setPowerMutate: vi.fn(),
@@ -15,15 +17,15 @@ vi.mock('@viamrobotics/sdk', () => ({
 vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
 	createResourceMutation: vi.fn(() => ({
-		mutate: setPowerMutate,
+		mutateAsync: setPowerMutate,
 		isPending: false,
 		error: null,
 	})),
 }))
 
 const renderSubject = () =>
-	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-base' },
+	render(InWidgetsProvider, {
+		props: { component: Subject, props: { partID: 'test-part', resourceName: 'test-base' } },
 	})
 
 describe('Base SetPower widget', () => {
@@ -39,18 +41,15 @@ describe('Base SetPower widget', () => {
 		await fireEvent.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(setPowerMutate).toHaveBeenCalledTimes(1)
-		expect(setPowerMutate).toHaveBeenCalledWith(
-			[
-				{ x: 0.5, y: 0, z: 0 },
-				{ x: 0, y: 0, z: 0.75 },
-			],
-			{}
-		)
+		expect(setPowerMutate).toHaveBeenCalledWith([
+			{ x: 0.5, y: 0, z: 0 },
+			{ x: 0, y: 0, z: 0.75 },
+		])
 	})
 
 	it("shows the setPower error in the section's error indicator", async () => {
 		vi.mocked(createResourceMutation).mockReturnValue({
-			mutate: setPowerMutate,
+			mutateAsync: setPowerMutate,
 			isPending: false,
 			error: new Error('base refused setPower'),
 		} as never)
@@ -61,5 +60,30 @@ describe('Base SetPower widget', () => {
 		)
 
 		expect(screen.getByText(/base refused setPower/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Base SetPower widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

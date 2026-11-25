@@ -1,77 +1,59 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
+	import { emptyOnClear } from '#lib/components/empty-on-clear.js'
 
 	interface Props {
 		moveStraight: (distanceMm: number, mmPerSec: number) => void
+		/** True while another motion call is in flight, which holds back Execute. @default false */
+		isBusy?: boolean
 	}
 
-	const { moveStraight }: Props = $props()
+	const { moveStraight, isBusy = false }: Props = $props()
 
-	let distanceMm = $state(200)
-	let mmPerSec = $state(100)
+	let distanceMm = $state<number | undefined>(200)
+	let mmPerSec = $state<number | undefined>(100)
+
+	// An empty field is `undefined`, so it holds back Execute.
+	const validDistance: number | undefined = $derived(
+		distanceMm !== undefined && Number.isFinite(distanceMm) ? distanceMm : undefined
+	)
+	const validSpeed: number | undefined = $derived(
+		mmPerSec !== undefined && Number.isFinite(mmPerSec) ? mmPerSec : undefined
+	)
 </script>
 
-<div class="flex flex-wrap gap-4">
-	<Label cx="max-w-[96px] gap-1 text-xs whitespace-nowrap">
-		<span class="flex gap-1">
-			Distance
-			<abbr class="text-disabled">(mm)</abbr>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-				<p
-					slot="description"
-					class="whitespace-normal"
-				>
-					Positive is forward, negative is backward
-				</p>
-			</Tooltip>
-		</span>
-		<NumericInput
-			value={distanceMm}
-			on:change={(event) => {
-				distanceMm = numberValueFromEvent(event) ?? 0
+<div class="flex w-full flex-col gap-1">
+	<NumberField
+		label="Distance"
+		hint="Positive is forward, negative is backward"
+		suffix="mm"
+		state={validDistance === undefined ? 'error' : undefined}
+		{...emptyOnClear(() => (distanceMm = undefined))}
+		bind:value={distanceMm}
+	/>
+	<NumberField
+		label="Speed"
+		hint="Positive is forward, negative is backward"
+		suffix="mm/s"
+		state={validSpeed === undefined ? 'error' : undefined}
+		{...emptyOnClear(() => (mmPerSec = undefined))}
+		bind:value={mmPerSec}
+	/>
+	<div class="flex justify-end">
+		<button
+			type="button"
+			class="button button-compact"
+			disabled={validDistance === undefined || validSpeed === undefined || isBusy}
+			onclick={() => {
+				if (validDistance !== undefined && validSpeed !== undefined) {
+					moveStraight(validDistance, validSpeed)
+				}
 			}}
-			slot="input"
-		/>
-	</Label>
-	<Label cx="max-w-[96px] gap-1 text-xs whitespace-nowrap">
-		<span class="flex gap-1">
-			Speed
-			<abbr class="text-disabled">(mm/s)</abbr>
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-				<p
-					slot="description"
-					class="whitespace-normal"
-				>
-					Positive is forward, negative is backward
-				</p>
-			</Tooltip>
-		</span>
-		<NumericInput
-			value={mmPerSec}
-			on:change={(event) => {
-				mmPerSec = numberValueFromEvent(event) ?? 0
-			}}
-			slot="input"
-		/>
-	</Label>
+		>
+			<Icon icon={mdiPlayCircleOutline} />
+			Execute
+		</button>
+	</div>
 </div>
-
-<Button
-	slot="action"
-	class="mt-auto"
-	icon="play-circle-outline"
-	onclick={() => {
-		moveStraight(distanceMm, mmPerSec)
-	}}
->
-	Execute
-</Button>

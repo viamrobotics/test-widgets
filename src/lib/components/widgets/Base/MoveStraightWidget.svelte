@@ -2,9 +2,10 @@
 	import { BaseClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
-	import { Section } from '#lib/components/Section/index.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useBaseState } from './base-state.svelte'
 	import MoveStraight from './MoveStraight.svelte'
 
 	interface Props {
@@ -22,8 +23,10 @@
 
 	const moveStraightMutation = createResourceMutation(client, 'moveStraight')
 
+	const { motion } = untrack(() => useBaseState(partID, resourceName))
+
 	const moveStraight = (distanceMm: number, mmPerSec: number) => {
-		moveStraightMutation.mutate([distanceMm, mmPerSec])
+		void motion.run(() => moveStraightMutation.mutateAsync([distanceMm, mmPerSec]))
 	}
 </script>
 
@@ -33,10 +36,10 @@
 	api={ResourceTriplets.Base}
 	mutations={[moveStraightMutation]}
 >
-	{#snippet subheading()}
-		<Section.Text>Move across a given distance at a given velocity</Section.Text>
-	{/snippet}
 	<div class="flex grow flex-wrap justify-between gap-2">
-		<MoveStraight {moveStraight} />
+		<MoveStraight
+			{moveStraight}
+			isBusy={motion.isBusy}
+		/>
 	</div>
 </ApiSection>

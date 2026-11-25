@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { Label, Switch } from '@viamrobotics/prime-core'
-	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
-	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { BaseClient, MachineConnectionEvent, type Vector3 } from '@viamrobotics/sdk'
+	import {
+		createResourceClient,
+		createResourceMutation,
+		useConnectionStatus,
+	} from '@viamrobotics/svelte-sdk'
 	import { Section } from '#lib/components/Section/index.js'
 	import { useSectionErrors } from '#lib/components/Section/use-section-errors.svelte.js'
+	import { untrack } from 'svelte'
 
+	import { useBaseState } from './base-state.svelte'
 	import QuickMove from './QuickMove.svelte'
 
 	interface Props {
@@ -20,45 +25,88 @@
 		() => resourceName
 	)
 
-	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+	const connectionStatus = useConnectionStatus(() => partID)
+	const isConnected = $derived(connectionStatus.current === MachineConnectionEvent.CONNECTED)
 
-	const quickSetPower = (linear: Vector3, angular: Vector3) => {
-		quickSetPowerMutation.mutate([linear, angular], {})
+	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+	const stopMutation = createResourceMutation(client, 'stop')
+
+	const { motion } = untrack(() => useBaseState(partID, resourceName))
+
+	type Power = [linear: Vector3, angular: Vector3]
+
+	// The drive power the held pads and keys ask for now. Undefined once everything is released.
+	let heldPower: Power | undefined
+	let sentPower: Power | undefined
+	let isDriveInFlight = $state(false)
+
+	// Another base widget's call holds the group, so a drive would contradict it.
+	const isDriveBlocked = $derived(motion.isBusy && !isDriveInFlight)
+
+	const isSameVector = (a: Vector3, b: Vector3) => a.x === b.x && a.y === b.y && a.z === b.z
+
+	const isSamePower = (a: Power, b: Power) => isSameVector(a[0], b[0]) && isSameVector(a[1], b[1])
+
+	const isZeroPower = (linear: Vector3, angular: Vector3) =>
+		[linear, angular].every(({ x, y, z }) => x === 0 && y === 0 && z === 0)
+
+	// A hold that changed while the last drive was in flight is sent once that drive settles. Only
+	// the power held at that moment goes out, so nothing is stored and nothing fires after a release.
+	const sendDrive = (power: Power) => {
+		const outcome = motion.run(() => quickSetPowerMutation.mutateAsync(power))
+		if (!outcome) {
+			return
+		}
+		isDriveInFlight = true
+		sentPower = power
+		void outcome.then(() => {
+			isDriveInFlight = false
+			if (heldPower && sentPower && !isSamePower(heldPower, sentPower)) {
+				sendDrive(heldPower)
+			}
+		})
 	}
 
-	const sectionErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
+	// A zero power is a release, so it never joins the group and always sends. A drive's failure
+	// reaches the section through the mutation.
+	const quickSetPower = async (linear: Vector3, angular: Vector3) => {
+		if (isZeroPower(linear, angular)) {
+			heldPower = undefined
+			await quickSetPowerMutation.mutateAsync([linear, angular])
+			return
+		}
+		heldPower = [linear, angular]
+		if (!isDriveInFlight) {
+			sendDrive(heldPower)
+		}
+	}
+	const stop = () => {
+		heldPower = undefined
+		stopMutation.mutate([], {})
+	}
 
-	let isKeyboardEnabled = $state(false)
+	const sectionErrors = useSectionErrors(() => ({
+		mutations: [quickSetPowerMutation, stopMutation],
+	}))
 </script>
 
 <Section
 	errorReporter={sectionErrors}
-	class="flex-row flex-wrap gap-2"
+	class="flex-col gap-2"
 >
-	<div class="flex flex-col gap-0.5">
-		<Section.Heading>
-			Quick move
-			{#snippet aside()}
-				<Section.Errors errors={sectionErrors.errors} />
-			{/snippet}
-		</Section.Heading>
-		<Label cx="w-fit!">
-			Keyboard control
-
-			<Switch
-				slot="input"
-				on={isKeyboardEnabled}
-				on:change={() => (isKeyboardEnabled = !isKeyboardEnabled)}
-			/>
-		</Label>
-	</div>
+	<Section.Heading>
+		Quick move
+		{#snippet aside()}
+			<Section.Errors errors={sectionErrors.errors} />
+		{/snippet}
+	</Section.Heading>
 
 	<Section.Body>
-		<div class="flex grow flex-wrap justify-between gap-2">
-			<QuickMove
-				setPower={quickSetPower}
-				{isKeyboardEnabled}
-			/>
-		</div>
+		<QuickMove
+			setPower={quickSetPower}
+			{stop}
+			{isConnected}
+			{isDriveBlocked}
+		/>
 	</Section.Body>
 </Section>

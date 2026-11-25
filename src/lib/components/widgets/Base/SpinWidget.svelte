@@ -2,9 +2,10 @@
 	import { BaseClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
-	import { Section } from '#lib/components/Section/index.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useBaseState } from './base-state.svelte'
 	import Spin from './Spin.svelte'
 
 	interface Props {
@@ -21,6 +22,7 @@
 	)
 
 	const spinMutation = createResourceMutation(client, 'spin')
+	const { motion } = untrack(() => useBaseState(partID, resourceName))
 </script>
 
 <ApiSection
@@ -29,14 +31,12 @@
 	api={ResourceTriplets.Base}
 	mutations={[spinMutation]}
 >
-	{#snippet subheading()}
-		<Section.Text>Turn to a given angle at a given velocity</Section.Text>
-	{/snippet}
 	<div class="flex grow flex-wrap justify-between gap-2">
 		<Spin
 			spin={(angleDeg: number, degsPerSec: number) => {
-				spinMutation.mutate([angleDeg, degsPerSec], {})
+				void motion.run(() => spinMutation.mutateAsync([angleDeg, degsPerSec]))
 			}}
+			isBusy={motion.isBusy}
 		/>
 	</div>
 </ApiSection>

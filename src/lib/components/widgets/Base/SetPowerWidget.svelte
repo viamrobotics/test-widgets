@@ -2,9 +2,10 @@
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
-	import { Section } from '#lib/components/Section/index.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useBaseState } from './base-state.svelte'
 	import SetPower from './SetPower.svelte'
 
 	interface Props {
@@ -21,6 +22,7 @@
 	)
 
 	const setPowerMutation = createResourceMutation(client, 'setPower')
+	const { motion } = untrack(() => useBaseState(partID, resourceName))
 </script>
 
 <ApiSection
@@ -29,14 +31,12 @@
 	api={ResourceTriplets.Base}
 	mutations={[setPowerMutation]}
 >
-	{#snippet subheading()}
-		<Section.Text>Move continuously at a given amount of power</Section.Text>
-	{/snippet}
 	<div class="flex grow flex-wrap justify-between gap-2">
 		<SetPower
 			setPower={(linear: Vector3, angular: Vector3) => {
-				setPowerMutation.mutate([linear, angular], {})
+				void motion.run(() => setPowerMutation.mutateAsync([linear, angular]))
 			}}
+			isBusy={motion.isBusy}
 		/>
 	</div>
 </ApiSection>
