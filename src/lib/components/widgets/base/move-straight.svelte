@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	interface Props {
 		moveStraight: (distanceMm: number, mmPerSec: number) => void

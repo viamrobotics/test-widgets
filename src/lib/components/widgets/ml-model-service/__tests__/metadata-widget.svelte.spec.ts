@@ -1,10 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/svelte'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
 import {
 	type RefetchInterval,
 	RefetchIntervals,
-} from '$lib/components/refetch-interval-store.svelte'
+} from '#lib/components/refetch-interval-store.svelte.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../metadata-widget.svelte'
 

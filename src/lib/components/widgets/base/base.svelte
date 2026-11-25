@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
 
 	import IsMovingWidget from './is-moving-widget.svelte'
 	import MoveStraightWidget from './move-straight-widget.svelte'

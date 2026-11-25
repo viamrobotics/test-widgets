@@ -5,9 +5,8 @@
 		createResourceMutation,
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './move-to-joint-positions.svelte'

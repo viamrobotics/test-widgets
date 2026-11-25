@@ -2,8 +2,7 @@
 	import type { MovementSensorAccuracy } from '@viamrobotics/sdk'
 
 	import { Icon, Tooltip } from '@viamrobotics/prime-core'
-
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		data: MovementSensorAccuracy

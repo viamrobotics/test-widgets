@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
-
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
 
 	import FrameSelect from './frame-select.svelte'
 	import { movableFrameNames, parentFrame, referenceFrameNames } from './frame-system-config'

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { Button, Icon, IconButton, Tooltip } from '@viamrobotics/prime-core'
-
-	import StatusPill from '$lib/components/status-pill.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { degreesToRadians, formatNumeric } from '$lib/format'
+	import StatusPill from '#lib/components/status-pill.svelte'
+	import Table from '#lib/components/table.svelte'
+	import { degreesToRadians, formatNumeric } from '#lib/format.js'
 
 	import type { EditedTargets } from './use-edited-targets.svelte'
 

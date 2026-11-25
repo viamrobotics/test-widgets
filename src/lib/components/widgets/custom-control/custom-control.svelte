@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Section } from '$lib/components/section'
+	import { Section } from '#lib/components/section/index.js'
 
 	import ControlFrame from './control-frame.svelte'
 

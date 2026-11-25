@@ -1,8 +1,7 @@
 <script lang="ts">
+	import type { ResourceTriplet } from '#lib/resource-triplet.js'
 	import type { Snippet } from 'svelte'
 	import type { HTMLAttributes } from 'svelte/elements'
-
-	import type { ResourceTriplet } from '$lib/resource-triplet'
 
 	import { Section } from './section'
 	import {

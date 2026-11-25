@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
-
-	import Table from '$lib/components/table.svelte'
+	import Table from '#lib/components/table.svelte'
 
 	interface Props {
 		positions: number[]

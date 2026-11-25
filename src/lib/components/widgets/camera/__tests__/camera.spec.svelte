@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query'
-
-	import { providePip } from '$lib/pip/context.svelte'
+	import { providePip } from '#lib/pip/context.svelte.js'
 
 	import Camera from '../camera.svelte'
 

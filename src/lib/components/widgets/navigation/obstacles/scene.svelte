@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { T, useThrelte } from '@threlte/core'
 	import { interactivity } from '@threlte/extras'
-	import { fromStore } from 'svelte/store'
-	import { Camera, type Intersection, Plane, Vector3 } from 'three'
-
 	import {
 		useMapLibre,
 		useMapLibreThreeRaycast,
 		useMapLibreThreeRenderer,
-	} from '$lib/components/maplibre'
+	} from '#lib/components/maplibre/index.js'
+	import { fromStore } from 'svelte/store'
+	import { Camera, type Intersection, Plane, Vector3 } from 'three'
 
 	interface Props {
 		view: '2D' | '3D'

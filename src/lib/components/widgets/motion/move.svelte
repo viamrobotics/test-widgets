@@ -3,9 +3,8 @@
 
 	import { Button, Icon, Progress, Tooltip } from '@viamrobotics/prime-core'
 	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
+	import PoseEditor from '#lib/components/pose-editor.svelte'
 	import { PersistedState } from 'runed'
-
-	import PoseEditor from '$lib/components/pose-editor.svelte'
 
 	import type { MoveInput } from './parse-move-args'
 

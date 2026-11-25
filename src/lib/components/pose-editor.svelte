@@ -26,14 +26,13 @@
 	import type { Snippet } from 'svelte'
 
 	import { Icon, IconButton, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import AngleUnitToggle from '$lib/components/angle-unit-toggle.svelte'
-	import CopyButton from '$lib/components/copy-button.svelte'
-	import PasteButton from '$lib/components/paste-button.svelte'
-	import Table from '$lib/components/table.svelte'
-	import { numberValueFromEvent } from '$lib/event-handlers'
-	import { degreesToRadians, formatNumeric, radiansToDegrees } from '$lib/format'
-	import { parsePastedPose } from '$lib/parse-pasted-pose'
+	import AngleUnitToggle from '#lib/components/angle-unit-toggle.svelte'
+	import CopyButton from '#lib/components/copy-button.svelte'
+	import PasteButton from '#lib/components/paste-button.svelte'
+	import Table from '#lib/components/table.svelte'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { degreesToRadians, formatNumeric, radiansToDegrees } from '#lib/format.js'
+	import { parsePastedPose } from '#lib/parse-pasted-pose.js'
 
 	interface Props {
 		pose: Pose

@@ -9,7 +9,7 @@
 		MapProviders,
 		NavigationControls,
 		SatelliteControls,
-	} from '$lib/components/maplibre'
+	} from '#lib/components/maplibre/index.js'
 
 	import { safeReadCoordinate } from './safe-read-coordinate'
 

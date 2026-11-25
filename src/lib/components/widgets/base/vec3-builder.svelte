@@ -8,8 +8,7 @@ I'd be wary of using this elsewhere unless the use case & styling is identitcal
 	import type { Snippet } from 'svelte'
 
 	import { Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-
-	import { numberValueFromEvent } from '$lib/event-handlers'
+	import { numberValueFromEvent } from '#lib/event-handlers.js'
 
 	interface Props {
 		title: Snippet

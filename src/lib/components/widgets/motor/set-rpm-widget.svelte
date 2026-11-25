@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { MotorClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import SetRPM from './set-rpm.svelte'
 

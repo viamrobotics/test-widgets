@@ -2,9 +2,8 @@
 	import { Label, Switch } from '@viamrobotics/prime-core'
 	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import { Section } from '$lib/components/section'
-	import { useSectionErrors } from '$lib/components/section/use-section-errors.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { useSectionErrors } from '#lib/components/section/use-section-errors.svelte.js'
 
 	import QuickMove from './quick-move.svelte'
 

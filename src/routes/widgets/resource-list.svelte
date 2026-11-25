@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { TooltipContainer, TooltipTarget, TooltipText } from '@viamrobotics/prime-core'
-
-	import ResourceIcon from '$lib/components/resource-icon.svelte'
-	import { Section } from '$lib/components/section'
-	import { getResourceKey } from '$lib/get-resource-key'
-	import { type NamedResourceStatus } from '$lib/resource'
+	import ResourceIcon from '#lib/components/resource-icon.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import { getResourceKey } from '#lib/get-resource-key.js'
+	import { type NamedResourceStatus } from '#lib/resource.js'
 
 	interface Props {
 		isLoading: boolean

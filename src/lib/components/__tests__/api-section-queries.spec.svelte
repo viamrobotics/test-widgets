@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import type { SectionQuery } from '../section/use-section-errors.svelte'
 

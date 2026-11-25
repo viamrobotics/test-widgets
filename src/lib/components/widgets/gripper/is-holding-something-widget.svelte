@@ -2,11 +2,10 @@
 	import { Pill } from '@viamrobotics/prime-core'
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { Section } from '$lib/components/section'
-	import StatusPill from '$lib/components/status-pill.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import StatusPill from '#lib/components/status-pill.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import ClosedGripperSvg from './closed-gripper-svg.svelte'
 	import OpenGripperSvg from './open-gripper-svg.svelte'

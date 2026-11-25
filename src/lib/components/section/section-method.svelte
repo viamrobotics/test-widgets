@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { ResourceTriplet } from '$lib/resource-triplet'
+	import type { ResourceTriplet } from '#lib/resource-triplet.js'
 
-	import { apiDocsHref } from '$lib/api-docs-href'
+	import { apiDocsHref } from '#lib/api-docs-href.js'
 
 	interface Props {
 		/** RDK method name in PascalCase. */

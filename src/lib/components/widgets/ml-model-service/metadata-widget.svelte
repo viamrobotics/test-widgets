@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { type Metadata, MLModelClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
+	import ApiSection from '#lib/components/api-section.svelte'
 	import {
 		type RefetchInterval,
 		RefetchIntervals,
-	} from '$lib/components/refetch-interval-store.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	} from '#lib/components/refetch-interval-store.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import ResultsTable from './results-table.svelte'
 

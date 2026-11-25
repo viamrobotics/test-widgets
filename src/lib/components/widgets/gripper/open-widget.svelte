@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { GripperClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Open from './open.svelte'
 

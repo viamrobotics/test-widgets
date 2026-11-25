@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { ServoClient } from '@viamrobotics/sdk'
-
-	import Stop from '$lib/components/stop.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import Stop from '#lib/components/stop.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	interface Props {
 		partID: string

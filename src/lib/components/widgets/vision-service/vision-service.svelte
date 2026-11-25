@@ -6,13 +6,12 @@
 		createResourceQuery,
 		useResourceStatuses,
 	} from '@viamrobotics/svelte-sdk'
-
-	import { useAddImageToDataset } from '$lib/add-image-to-dataset'
-	import ApiSection from '$lib/components/api-section.svelte'
-	import ConnectionStatus from '$lib/components/connection-status.svelte'
-	import RefetchController from '$lib/components/refetch-controller.svelte'
-	import { createRefetchIntervalStore } from '$lib/components/refetch-interval-store.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { useAddImageToDataset } from '#lib/add-image-to-dataset.js'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import ConnectionStatus from '#lib/components/connection-status.svelte'
+	import RefetchController from '#lib/components/refetch-controller.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Image from './image.svelte'
 	import ObjectPointClouds from './object-point-clouds.svelte'

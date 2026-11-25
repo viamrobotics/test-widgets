@@ -3,10 +3,9 @@
 
 	import { Canvas } from '@threlte/core'
 	import { Progress } from '@viamrobotics/prime-core'
+	import { useMeasureFps } from '#lib/fps.svelte.js'
 	import { useResizeObserver } from 'runed'
 	import { provideFontFamilies } from 'threlte-uikit'
-
-	import { useMeasureFps } from '$lib/fps.svelte'
 
 	import { provideDetectionsContext } from './context.svelte'
 	import { getImageSize, type Size } from './get-image-size'

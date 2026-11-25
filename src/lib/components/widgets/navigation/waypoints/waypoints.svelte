@@ -2,8 +2,7 @@
 	import type { LngLat } from 'maplibre-gl'
 
 	import { theme } from '@viamrobotics/prime-core/theme'
-
-	import { MapLibreMarker, useMapLibreEvent } from '$lib/components/maplibre'
+	import { MapLibreMarker, useMapLibreEvent } from '#lib/components/maplibre/index.js'
 
 	import type { GeoWaypoint } from './geo-waypoint.ts'
 

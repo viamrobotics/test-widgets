@@ -24,9 +24,8 @@
 	import type { Snippet } from 'svelte'
 
 	import { Button, Icon, Tooltip } from '@viamrobotics/prime-core'
-
-	import PoseEditor from '$lib/components/pose-editor.svelte'
-	import StatusPill from '$lib/components/status-pill.svelte'
+	import PoseEditor from '#lib/components/pose-editor.svelte'
+	import StatusPill from '#lib/components/status-pill.svelte'
 
 	import { useEditedTargets } from './use-edited-targets.svelte'
 

@@ -2,9 +2,8 @@
 	import { Canvas } from '@threlte/core'
 	import { InputControllerClient, type InputControllerEvent } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-
-	import { Section } from '$lib/components/section'
-	import StatusPill from '$lib/components/status-pill.svelte'
+	import { Section } from '#lib/components/section/index.js'
+	import StatusPill from '#lib/components/status-pill.svelte'
 
 	import type { StandardGamepadEvent } from './standard-gamepad-event'
 

@@ -8,10 +8,9 @@
 		createRobotQuery,
 		useRobotClient,
 	} from '@viamrobotics/svelte-sdk'
-
-	import ApiSection from '$lib/components/api-section.svelte'
-	import { type SectionQuery } from '$lib/components/section/use-section-errors.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import ApiSection from '#lib/components/api-section.svelte'
+	import { type SectionQuery } from '#lib/components/section/use-section-errors.svelte.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	import Move from './move.svelte'
 	import { type MoveInput, parseMoveArgs } from './parse-move-args'

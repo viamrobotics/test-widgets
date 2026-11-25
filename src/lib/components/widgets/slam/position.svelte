@@ -2,8 +2,7 @@
 	import type { SlamPosition } from '@viamrobotics/sdk'
 
 	import { Button, Label } from '@viamrobotics/prime-core'
-
-	import { formatNumeric } from '$lib/format'
+	import { formatNumeric } from '#lib/format.js'
 
 	interface Props {
 		position: SlamPosition

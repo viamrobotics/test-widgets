@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { ServoClient } from '@viamrobotics/sdk'
-
-	import IsMoving from '$lib/components/is-moving.svelte'
-	import { ResourceTriplets } from '$lib/resource-triplet'
+	import IsMoving from '#lib/components/is-moving.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
 
 	interface Props {
 		partID: string
