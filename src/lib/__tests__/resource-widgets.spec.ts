@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Gantry, Motion, Motor } from '../index.ts'
+import { Arm, Base, Gantry, Motion, Motor, Servo } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -115,8 +115,9 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'Sensor', triplet: ResourceTriplets.Sensor, keys: [] },
 	{
 		label: 'Servo',
+		namespace: Servo,
 		triplet: ResourceTriplets.Servo,
-		keys: ['move', 'quickMove', 'isMoving', 'getPosition', 'stop'],
+		keys: ['move', 'quickMove', 'moveTo', 'isMoving', 'getPosition', 'stop'],
 	},
 	{ label: 'Slam', triplet: ResourceTriplets.Slam, keys: ['getPosition'] },
 	{ label: 'Switch', triplet: ResourceTriplets.Switch, keys: [] },

@@ -20,11 +20,6 @@ import {
 	PowerSensorGetCurrentWidget,
 	PowerSensorGetPowerWidget,
 	PowerSensorGetVoltageWidget,
-	ServoGetPositionWidget,
-	ServoIsMovingWidget,
-	ServoMoveWidget,
-	ServoQuickMoveWidget,
-	ServoStopWidget,
 	SlamGetPositionWidget,
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
@@ -32,6 +27,7 @@ import * as Base from './components/widgets/Base/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
+import * as Servo from './components/widgets/Servo/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
 
@@ -109,7 +105,7 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.Navigation]: never
 	[ResourceTriplets.PowerSensor]: 'getVoltage' | 'getCurrent' | 'getPower'
 	[ResourceTriplets.Sensor]: never
-	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'isMoving' | 'getPosition' | 'stop'
+	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
 	[ResourceTriplets.Slam]: 'getPosition'
 	[ResourceTriplets.Switch]: never
 	[ResourceTriplets.Vision]: never
@@ -311,11 +307,30 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Servo]: {
 		widgets: {
-			move: { component: ServoMoveWidget, kind: 'api' },
-			quickMove: { component: ServoQuickMoveWidget, kind: 'control' },
-			isMoving: { component: ServoIsMovingWidget, kind: 'api' },
-			getPosition: { component: ServoGetPositionWidget, kind: 'api' },
-			stop: { component: ServoStopWidget, kind: 'api' },
+			move: {
+				component: Servo.Move,
+				kind: 'api',
+			},
+			quickMove: {
+				component: Servo.QuickMove,
+				kind: 'control',
+			},
+			moveTo: {
+				component: Servo.MoveTo,
+				kind: 'control',
+			},
+			isMoving: {
+				component: Servo.IsMoving,
+				kind: 'api',
+			},
+			getPosition: {
+				component: Servo.GetPosition,
+				kind: 'api',
+			},
+			stop: {
+				component: Servo.Stop,
+				kind: 'api',
+			},
 		},
 	},
 	[ResourceTriplets.Slam]: {

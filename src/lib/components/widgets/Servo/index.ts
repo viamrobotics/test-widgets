@@ -1,0 +1,6 @@
+export { default as Move } from './MoveWidget.svelte'
+export { default as QuickMove } from './QuickMoveWidget.svelte'
+export { default as MoveTo } from './MoveToControl.svelte'
+export { default as IsMoving } from './IsMovingWidget.svelte'
+export { default as GetPosition } from './GetPositionWidget.svelte'
+export { default as Stop } from './StopWidget.svelte'

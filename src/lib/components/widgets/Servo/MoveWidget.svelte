@@ -7,15 +7,29 @@
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
 	import Move from './Move.svelte'
+	import { effectiveServoMax, resolveServoRange } from './servo-angle-limits'
+	import { recordServoMove, useServoState } from './servo-state.svelte'
 
 	interface Props {
 		partID: string
 		resourceName: string
+		/**
+		 * The lowest angle Execute sends. A host fills it from the servo config's `min_angle_deg`.
+		 * Outside 0 to 360, or not below `maxDegrees`, it is ignored. @default 0
+		 */
+		minDegrees?: number
+		/**
+		 * The highest angle Execute sends. A host fills it from the servo config's `max_angle_deg`.
+		 * Outside 0 to 360, or not above `minDegrees`, it is ignored. Without it, the highest angle
+		 * is the Max the user set in MoveTo. @default 180
+		 */
+		maxDegrees?: number
 	}
 
-	const { partID, resourceName }: Props = $props()
+	const { partID, resourceName, minDegrees, maxDegrees }: Props = $props()
 
 	const client = createResourceClient(
 		ServoClient,
@@ -28,8 +42,15 @@
 	})
 	const moveMutation = createResourceMutation(client, 'move')
 
-	const moveTo = (angle: number) => {
-		moveMutation.mutate([angle], {})
+	const { motion, limits, commanded } = untrack(() => useServoState(partID, resourceName))
+
+	const range = $derived(resolveServoRange(minDegrees, maxDegrees))
+	const highest = $derived(effectiveServoMax(range, limits.userMaxDegrees))
+
+	const moveTo = async (angle: number) => {
+		const outcome = await motion.run(() => moveMutation.mutateAsync([angle]))
+		if (outcome === undefined) return
+		recordServoMove(commanded, angle, outcome)
 	}
 </script>
 
@@ -43,7 +64,10 @@
 	{#if positionQuery.data !== undefined}
 		<Move
 			currentPosition={positionQuery.data}
+			min={range.min}
+			max={highest}
 			{moveTo}
+			isBusy={motion.isBusy}
 		/>
 	{/if}
 </ApiSection>
