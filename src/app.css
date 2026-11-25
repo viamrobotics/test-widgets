@@ -2,6 +2,7 @@
 @import '@viamrobotics/tailwind-config';
 @import '@viamrobotics/prime-ui/styles.css';
 @import '@viamrobotics/prime-controls/styles.css';
+@import '@viamrobotics/prime-map/styles.css';
 @import '@viamrobotics/prime-panes/styles.css';
 @import '@viamrobotics/prime-tree/styles.css';
 

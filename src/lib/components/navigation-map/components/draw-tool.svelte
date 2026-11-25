@@ -6,6 +6,12 @@
 	import type * as THREE from 'three'
 
 	import { T } from '@threlte/core'
+	import {
+		cartesianToMercator,
+		lngLatToMercator,
+		useMapLibre,
+		useMapLibreEvent,
+	} from '@viamrobotics/prime-map'
 	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import {
 		LngLat,
@@ -14,14 +20,7 @@
 		type MapMouseEvent,
 		MercatorCoordinate,
 	} from 'maplibre-gl'
-	import { fromStore } from 'svelte/store'
 
-	import {
-		cartesianToMercator,
-		lngLatToMercator,
-		useMapLibre,
-		useMapLibreEvent,
-	} from '../../maplibre'
 	import { useNavigationMap } from '../use-navigation-map.svelte'
 
 	interface Props {
@@ -32,7 +31,6 @@
 	const { onUpdate }: Props = $props()
 
 	const context = useMapLibre()
-	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	let downLngLat = $state(new LngLat(0, 0))
@@ -96,26 +94,26 @@
 
 	const handleKeydown = (event: KeyboardEvent) => {
 		if (event.shiftKey) {
-			map.current.getCanvas().classList.add('!cursor-crosshair')
+			context.map.getCanvas().classList.add('!cursor-crosshair')
 		}
 	}
 
 	const handleKeyup = () => {
-		map.current.getCanvas().classList.remove('!cursor-crosshair')
+		context.map.getCanvas().classList.remove('!cursor-crosshair')
 	}
 
 	$effect(() => {
 		if (drawing) {
-			map.current.on('mousemove', handlePointerMove)
-			map.current.on('mouseup', handlePointerUp)
+			context.map.on('mousemove', handlePointerMove)
+			context.map.on('mouseup', handlePointerUp)
 		} else {
-			map.current.off('mousemove', handlePointerMove)
-			map.current.off('mouseup', handlePointerUp)
+			context.map.off('mousemove', handlePointerMove)
+			context.map.off('mouseup', handlePointerUp)
 		}
 
 		return () => {
-			map.current.off('mousemove', handlePointerMove)
-			map.current.off('mouseup', handlePointerUp)
+			context.map.off('mousemove', handlePointerMove)
+			context.map.off('mouseup', handlePointerUp)
 		}
 	})
 </script>

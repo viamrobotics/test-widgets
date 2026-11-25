@@ -33,6 +33,7 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'Introduction', link: '/' },
 				{ label: 'Getting started', link: '/getting-started/' },
+				{ label: 'Recipes', autogenerate: { directory: 'recipes' } },
 				{ label: 'Playground', link: '/playground/' },
 			],
 		}),

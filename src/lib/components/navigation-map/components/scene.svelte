@@ -2,12 +2,12 @@
 	import type { LngLat } from 'maplibre-gl'
 
 	import { T, useThrelte } from '@threlte/core'
+	import { useMapLibreThreeRenderer } from '@viamrobotics/prime-map/three'
 	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import { Camera, Plane, Vector3 } from 'three'
 
 	import type { Obstacle } from '../types'
 
-	import { useMapLibreThreeRenderer } from '../../maplibre'
 	import { createName } from '../lib/create-name'
 	import { createObstacle } from '../lib/create-obstacle'
 	import { computeBoundingPlugin } from '../plugins/compute-bounding.svelte'

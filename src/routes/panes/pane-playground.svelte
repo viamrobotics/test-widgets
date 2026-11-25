@@ -16,11 +16,12 @@
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { providePip } from '$lib/pip/context.svelte'
 	import { ResourceTriplets } from '$lib/resource-triplet'
+	import WidgetsProvider from '$lib/widgets-provider.svelte'
 
 	import { initialMotorLayout } from './initial-motor-layout'
 	import { layoutMinimum } from './layout-minimum'
 	import { floatEntryHolding, hasPane } from './pane-location'
-	import { compositePane, type ResourcePane, resourcePaneLabel } from './resource-pane'
+	import { type ResourcePane, resourcePaneLabel, resourcePanes } from './resource-pane'
 	import ResourcePaneFrame from './resource-pane-frame.svelte'
 	import { resourcePaneMinimum } from './resource-pane-minimums'
 	import ResourceTree from './resource-tree.svelte'
@@ -83,7 +84,7 @@
 			if (!first) return undefined
 			return getResourceAPI(first) === ResourceTriplets.Motor
 				? initialMotorLayout(first)
-				: compositePane(first)
+				: resourcePanes(first).at(0)
 		})
 	})
 
@@ -133,53 +134,55 @@
 	const closeFloat = (floatEntryId: string) => setLayout(removeFloat(layout, floatEntryId))
 </script>
 
-<div class="flex min-h-0 flex-1">
-	<nav
-		aria-label="Resources"
-		class="border-light w-60 shrink-0 overflow-auto border-r bg-white p-1"
-	>
-		{#if machineStatus.query.error}
-			<p class="text-danger-dark p-2 text-sm">Could not load this machine's resources.</p>
-		{:else if machineStatus.current === undefined}
-			<p class="text-subtle-2 p-2 text-sm">Loading resources...</p>
-		{:else if resources.length === 0}
-			<p class="text-subtle-2 p-2 text-sm">This machine has no resources the playground hosts.</p>
-		{:else}
-			<ResourceTree
-				{resources}
-				selected={selectedPaneId}
-				onpick={pick}
-			/>
-		{/if}
-	</nav>
-	<main
-		bind:this={host}
-		bind:clientWidth={hostWidth}
-		bind:clientHeight={hostHeight}
-		class="min-h-0 min-w-0 flex-1 p-2"
-	>
-		<Panes
-			bind:layout={() => layout, setLayout}
-			paneLabel={(node) => resourcePaneLabel(node.data)}
-			floatMinSize={(entry) => layoutMinimum(entry.content, resourcePaneMinimum)}
-			class="size-full"
+<WidgetsProvider>
+	<div class="flex min-h-0 flex-1">
+		<nav
+			aria-label="Resources"
+			class="border-light w-60 shrink-0 overflow-auto border-r bg-white p-1"
 		>
-			{#snippet pane(node: PaneNode<ResourcePane>, paneState: PaneState)}
-				<ResourcePaneFrame
-					{node}
-					{paneState}
-					{partID}
-					onclose={closeFloat}
-					onremove={() => setLayout(removePane(layout, node.id))}
+			{#if machineStatus.query.error}
+				<p class="text-danger-dark p-2 text-sm">Could not load this machine's resources.</p>
+			{:else if machineStatus.current === undefined}
+				<p class="text-subtle-2 p-2 text-sm">Loading resources...</p>
+			{:else if resources.length === 0}
+				<p class="text-subtle-2 p-2 text-sm">This machine has no resources the playground hosts.</p>
+			{:else}
+				<ResourceTree
+					{resources}
+					selected={selectedPaneId}
+					onpick={pick}
 				/>
-			{/snippet}
-			{#snippet empty()}
-				<div
-					class="border-light text-subtle-2 flex size-full items-center justify-center border text-sm"
-				>
-					No panes. Pick a resource or one of its APIs to add one.
-				</div>
-			{/snippet}
-		</Panes>
-	</main>
-</div>
+			{/if}
+		</nav>
+		<main
+			bind:this={host}
+			bind:clientWidth={hostWidth}
+			bind:clientHeight={hostHeight}
+			class="min-h-0 min-w-0 flex-1 p-2"
+		>
+			<Panes
+				bind:layout={() => layout, setLayout}
+				paneLabel={(node) => resourcePaneLabel(node.data)}
+				floatMinSize={(entry) => layoutMinimum(entry.content, resourcePaneMinimum)}
+				class="size-full"
+			>
+				{#snippet pane(node: PaneNode<ResourcePane>, paneState: PaneState)}
+					<ResourcePaneFrame
+						{node}
+						{paneState}
+						{partID}
+						onclose={closeFloat}
+						onremove={() => setLayout(removePane(layout, node.id))}
+					/>
+				{/snippet}
+				{#snippet empty()}
+					<div
+						class="border-light text-subtle-2 flex size-full items-center justify-center border text-sm"
+					>
+						No panes. Pick one of a resource's widgets to add one.
+					</div>
+				{/snippet}
+			</Panes>
+		</main>
+	</div>
+</WidgetsProvider>

@@ -6,29 +6,62 @@ Also includes reusable building blocks for visualizations, such as maps (MapLibr
 
 ## Entry points
 
-There is one root entry plus a registry entry point. Which you reach for depends on whether you name widgets **statically** or resolve them **dynamically** at runtime.
+There is a root entry and a `/widgets` entry. Which you reach for depends on whether you name widgets **statically** or resolve them **dynamically** at runtime.
 
 ### Static use
 
-Import the widget components you need and render them:
+Each resource has a namespace on the root, and each widget is a member of it. Wrap the page in one `WidgetsProvider`, then render the widgets you need:
 
-```ts
-import { ArmWidget, CameraWidget } from '@viamrobotics/test-widgets'
+```svelte
+<script lang="ts">
+	import { Arm, WidgetsProvider } from '@viamrobotics/test-widgets'
+
+	const partID = 'my-part-id'
+</script>
+
+<WidgetsProvider>
+	<Arm.Jog
+		{partID}
+		resourceName="arm-1"
+	/>
+</WidgetsProvider>
 ```
+
+Mount one `WidgetsProvider` per page. Widgets for the same `partID` and `resourceName` find each other through it, which is how they share a conflict group. A widget rendered without a provider above it throws. Importing one widget from the root pulls in only that widget.
 
 ### Dynamic use
 
-If you resolve widgets at runtime from a resource (for example, a control panel that lists every API of every resource on a scanned machine), import the registry:
+If you resolve widgets at runtime from a resource, import the catalog. A control panel that lists every widget of every resource on a scanned machine is the typical host.
 
 ```ts
-import { apiWidgetsForResource, widgetForResource } from '@viamrobotics/test-widgets/registry'
+import { resourceWidgets, widgetsForResource } from '@viamrobotics/test-widgets/widgets'
 ```
 
-- **`@viamrobotics/test-widgets/registry`** — the lookups `apiWidgetsForResource(resource)`, `widgetForResource(resource)`, and `availableAPIWidgets()`, which resolve any resource, component or service. Each API entry has a `kind`. An `api` entry renders one RDK method and is labeled with its name. A `control` entry is a control interface that is not bound to one method, such as quick move. The registry references every widget, so importing it pulls **all** widgets, `maplibre-gl` included, into your build. Keeping these lookups out of the root is what lets the root stay tree-shakeable.
+- **`resourceWidgets`** is every resource's widgets, keyed by API triplet.
+- **`widgetsForResource(resource)`** returns the entry for a `ResourceName`, or `undefined` for a resource with no widgets.
+
+An entry holds `widgets`, keyed by id. Each widget has a `component`, a `kind`, and a `size`:
+
+```ts
+widgetsForResource(armResourceName)?.widgets.jog
+// { component: Arm.Jog, kind: 'control', size: { width: { min: 'xs', max: 'xs' }, height: 'lg' } }
+```
+
+Render a `component` with the `partID` and `resourceName` props every widget takes, inside the same `WidgetsProvider`.
+
+The catalog is a separate entry because it references every widget. Importing it pulls **all** widgets into your build. Keeping it out of the root is what lets the root stay tree-shakeable.
+
+#### Keys and kinds
+
+A widget's key is its namespace member in camelCase, such as `moveToJointPositions` for `Arm.MoveToJointPositions`. A key is safe to persist as a widget id. The keys list in declared order, which a menu can keep.
+
+If you persisted the old kebab slugs, convert each one once, for example `move-to-joint-positions` to `moveToJointPositions`.
+
+`kind` says what a widget is. An `api` widget renders one RDK method, and its key is that method's name in camelCase. A `control` widget is bound to no one method, such as `Base.QuickMove`.
 
 ### maplibre-gl
 
-`maplibre-gl` is a required peer and by far the heaviest one. It reaches your bundle only if you import something that renders a map: `MovementSensorWidget`, `NavigationServiceControls`, the `maplibre` and `navigation-map` building blocks, or `/registry`. `NavigationServiceWidget` is a stack of API widgets and draws no map. Otherwise it is tree-shaken out.
+`maplibre-gl` is a required peer and by far the heaviest one. The map API on the root, such as `MapLibre`, its controls and markers, the projection functions, and the Three.js hooks, comes from `@viamrobotics/prime-map`, a dependency of this package that takes `maplibre-gl` as its own peer. It reaches your bundle through the `Navigation.Map` and `MovementSensor.PositionMap` widgets, the `NavigationMap` root export, and those map exports. The `/widgets` entry imports every widget, so it always pulls `maplibre-gl` in. From the root, it is tree-shaken out unless you import one of them.
 
 ## Embedding
 
@@ -40,6 +73,7 @@ The widgets are styled with Tailwind 4 utility classes, so your Tailwind build h
 @import 'tailwindcss';
 @import '@viamrobotics/prime-ui/styles.css';
 @import '@viamrobotics/prime-controls/styles.css';
+@import '@viamrobotics/prime-map/styles.css';
 @import '@viamrobotics/test-widgets/styles.css';
 ```
 
@@ -55,12 +89,12 @@ Install these in your app. The ranges come from this package's `peerDependencies
 - `@tanstack/svelte-query` `>=6`
 - `@threlte/core` `>=8`
 - `@threlte/extras` `>=9`
-- `@viamrobotics/prime-controls` `>=0.5`
+- `@viamrobotics/prime-controls` `>=0.6`
 - `@viamrobotics/prime-editor` `>=0.1`
-- `@viamrobotics/prime-ui` `>=0.6`
+- `@viamrobotics/prime-ui` `>=0.7`
 - `@viamrobotics/sdk` `>=0.76.0`
 - `@viamrobotics/svelte-sdk` `>=1.5`
-- `@viamrobotics/tailwind-config` `>=1.10`
+- `@viamrobotics/tailwind-config` `>=1.12`
 - `lodash-es` `>=4`
 - `maplibre-gl` `>=6`
 - `runed` `>=0.28`
@@ -73,59 +107,73 @@ Install these in your app. The ranges come from this package's `peerDependencies
 Mount these once, above any widget:
 
 - `ViamProvider` from `@viamrobotics/svelte-sdk`, with `dialConfigs` for each part a widget talks to. A widget outside it throws.
+- `WidgetsProvider` from `@viamrobotics/test-widgets`, once per page. A widget outside it throws.
 - `providePip()` from `@viamrobotics/test-widgets`, before rendering a camera widget.
 
 Each widget takes the `partID` and `resourceName` of the resource it controls.
 
+### Layouts
+
+A widget does one job. To lay out several for one resource, such as a test card or a control interface, follow the recipe for that resource:
+
+- [Arm](docs/src/content/docs/recipes/arm.md)
+- [Base](docs/src/content/docs/recipes/base.md)
+- [Board](docs/src/content/docs/recipes/board.md)
+- [Camera](docs/src/content/docs/recipes/camera.md)
+- [Gantry](docs/src/content/docs/recipes/gantry.md)
+- [Gripper](docs/src/content/docs/recipes/gripper.md)
+- [Motor](docs/src/content/docs/recipes/motor.md)
+- [Movement sensor](docs/src/content/docs/recipes/movement-sensor.md)
+- [Navigation](docs/src/content/docs/recipes/navigation.md)
+- [Power sensor](docs/src/content/docs/recipes/power-sensor.md)
+- [Sensor](docs/src/content/docs/recipes/sensor.md)
+- [Servo](docs/src/content/docs/recipes/servo.md)
+- [SLAM](docs/src/content/docs/recipes/slam.md)
+- [Vision](docs/src/content/docs/recipes/vision.md)
+
 ### Config props
 
-Some control interfaces take optional props that a host fills from the resource's machine config. A given value is enforced or seeds a field. An absent or invalid value leaves the control as it is without one. A value the resource API reports is never a prop.
+Some widgets take optional props that a host fills from the resource's machine config. A given value is enforced or seeds a field. An absent or invalid value leaves the widget as it is without one. A value the resource API reports is never a prop.
 
-| Prop                    | Components                                                     | Config key                                                                               |
-| ----------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `minDegrees`            | `ServoControls`, `ServoMoveToControl`, `ServoQuickMoveControl` | `min_angle_deg`                                                                          |
-| `maxDegrees`            | `ServoControls`, `ServoMoveToControl`, `ServoQuickMoveControl` | `max_angle_deg`. A given maximum removes the Max field.                                  |
-| `axisNames`             | `GantryControls`, `GantryQuickMoveControl`                     | multi-axis `subaxes_list`, used when its length matches `GetLengths`                     |
-| `defaultSpeedsMmPerSec` | `GantryControls`, `GantryQuickMoveControl`                     | each axis's `gantry_mm_per_sec`. Speed starts at the smallest.                           |
-| `maxRpm`                | `MotorControls`, `MotorMoveControl`, `MotorQuickMoveControl`   | gpio `max_rpm`                                                                           |
-| `minPowerPct`           | `MotorControls`, `MotorQuickMoveControl`                       | gpio `min_power_pct`, a fraction from 0 to 1                                             |
-| `maxPowerPct`           | `MotorControls`, `MotorQuickMoveControl`                       | gpio `max_power_pct`, a fraction from 0 to 1                                             |
-| `widthPx`               | `CameraControls`                                               | webcam `width_px`. With `heightPx` it sets the feed's ratio before the first frame.      |
-| `heightPx`              | `CameraControls`                                               | webcam `height_px`                                                                       |
-| `minimumConfidence`     | `VisionServiceControls`                                        | mlmodel `default_minimum_confidence`, from 0 to 1. Shown as a line, the service filters. |
-| `labelConfidences`      | `VisionServiceControls`                                        | mlmodel `label_confidences`, each from 0 to 1. Shown as a line, the service filters.     |
+| Prop                    | Widgets                           | Config key                                                           |
+| ----------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| `minDegrees`            | `Servo.MoveTo`, `Servo.QuickMove` | `min_angle_deg`                                                      |
+| `maxDegrees`            | `Servo.MoveTo`, `Servo.QuickMove` | `max_angle_deg`. A given maximum removes the Max field of `MoveTo`.  |
+| `axisNames`             | `Gantry.QuickMove`                | multi-axis `subaxes_list`, used when its length matches `GetLengths` |
+| `defaultSpeedsMmPerSec` | `Gantry.QuickMove`                | each axis's `gantry_mm_per_sec`. Speed starts at the smallest.       |
+| `maxRpm`                | `Motor.Move`, `Motor.QuickMove`   | gpio `max_rpm`                                                       |
+| `minPowerPct`           | `Motor.QuickMove`                 | gpio `min_power_pct`, a fraction from 0 to 1                         |
+| `maxPowerPct`           | `Motor.QuickMove`                 | gpio `max_power_pct`, a fraction from 0 to 1                         |
 
 ### Sizes
 
-Every registry entry carries a `size` of type `ResourceWidgetSize`: `minWidth`, `minHeight`, `recommendedWidths`, and `maxWidth`, in px. A host uses them to size, snap, or cap the box it renders a widget in. Each number is the widget's own box, without any header, padding, or border the host draws around it. `widgetSizeForResource(resource)` from `@viamrobotics/test-widgets/registry` returns a resource's composite size. An API entry's size is its `size` field, from `apiWidgetsForResource(resource)`.
+Every catalog entry carries a `size` of type `WidgetSize`. A host uses it to size, snap, or cap the box it renders a widget in. Each size is the widget's own box, without any header, padding, or border the host draws around it.
 
-The table lists each resource's composite `minWidth` and each API entry's `minWidth`, keyed by entry id, all in px. Resources with no API entries have none listed.
+```ts
+interface WidgetSize {
+	width: { min: WidthClass; max: WidthClass | 'fill' }
+	height: HeightBand
+}
+```
 
-| Resource        | Composite | API entries                                                                                                                                                                                                                                                         |
-| --------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arm             | 233       | controls `239`, jog `239`, joints `196`, move-to-joint-positions `196`, move-to-position `213`, get-joint-positions `186`, get-end-position `162`, is-moving `96`, manual-mode `205`, set-manual-mode `258`, get-manual-mode `150`, get-properties `224`, stop `92` |
-| AudioInput      | 108       | controls `98`, get-audio `293`, get-properties `237`                                                                                                                                                                                                                |
-| AudioOutput     | 114       | controls `114`, play `264`, play-stream `264`, get-properties `237`                                                                                                                                                                                                 |
-| Base            | 243       | controls `276`, quick-move `276`, move-straight `309`, spin `298`, set-power `115`, set-velocity `150`, is-moving `96`, stop `92`, get-properties `243`                                                                                                             |
-| Board           | 176       | controls `240`, pins `265`, set-gpio `192`, get-gpio `214`, pwm `214`, set-pwm `214`, pwm-frequency `214`, set-pwm-frequency `281`, read-analog-reader `230`, write-analog `234`, get-digital-interrupt-value `240`, stream-ticks `278`, set-power-mode `150`       |
-| Button          | 160       |                                                                                                                                                                                                                                                                     |
-| Camera          | 276       | controls `227`, get-images `182`, get-point-cloud `137`, get-properties `276`                                                                                                                                                                                       |
-| Encoder         | 211       | controls `162`, get-position `162`, reset-position `150`, get-properties `251`                                                                                                                                                                                      |
-| Gantry          | 169       | controls `166`, home `150`, move-to-position `142`, quick-move `95`, get-position `176`, is-moving `96`, get-lengths `183`, stop `92`                                                                                                                               |
-| Gripper         | 244       | controls `230`, open-grab `136`, is-holding-something `194`, is-moving `96`, open `81`, grab `115`, stop `92`, get-current-inputs `150`, go-to-inputs `249`                                                                                                         |
-| InputController | 211       | get-events `240`, trigger-event `232`                                                                                                                                                                                                                               |
-| Motor           | 300       | controls `331`, quick-move `322`, move `310`, set-power `192`, set-rpm `260`, go-for `300`, go-to `280`, is-moving `96`, reset-zero-position `291`, get-position `180`, get-properties `224`, stop `150`, is-powered `150`                                          |
-| MovementSensor  | 239       | controls `288`, get-position `206`, get-orientation `108`, get-compass-heading `209`, get-accuracy `183`, get-linear-velocity `150`, get-angular-velocity `150`, get-linear-acceleration `150`, get-properties `259`, get-readings `150`                            |
-| PowerSensor     | 211       | controls `303`, get-voltage `195`, get-current `187`, get-power `176`, get-readings `150`                                                                                                                                                                           |
-| Sensor          | 259       |                                                                                                                                                                                                                                                                     |
-| Servo           | 169       | controls `272`, move `306`, quick-move `196`, move-to `272`, is-moving `96`, get-position `140`, stop `92`                                                                                                                                                          |
-| Switch          | 179       | controls `148`, set-position `150`, get-position `150`, get-number-of-positions `150`                                                                                                                                                                               |
-| Discovery       | 220       | controls `189`, discover-resources `170`                                                                                                                                                                                                                            |
-| MLModel         | 286       | metadata `286`, infer `235`                                                                                                                                                                                                                                         |
-| Motion          | 240       |                                                                                                                                                                                                                                                                     |
-| Navigation      | 116       | controls `248`, get-mode `108`, set-mode `248`, get-location `141`, get-waypoints `137`, add-waypoint `269`, remove-waypoint `180`, get-obstacles `232`, get-paths `177`, get-properties `150`                                                                      |
-| Slam            | 223       | controls `253`, get-position `223`, get-point-cloud-map `165`, get-properties `244`, get-internal-state `184`                                                                                                                                                       |
-| Vision          | 293       | controls `264`, capture-all-from-camera `272`, get-properties `263`, get-object-point-clouds `200`, get-detections-from-camera `230`, get-classifications-from-camera `237`, get-detections `269`, get-classifications `269`                                        |
+**Width.** A width class is named for Tailwind's container sizes. The widgets switch layout at exactly these widths through `@xs:` and `@2xl:` container classes. `min` is the class floor, and a box narrower than it makes the widget overflow. `max` is the class past which the widget adds only empty space, and `fill` means it takes any width. `WIDTH_CLASS_PX` maps each class to px:
+
+| Class | px  |
+| ----- | --- |
+| `xs`  | 320 |
+| `2xl` | 672 |
+| `4xl` | 896 |
+
+**Height.** A height band is the band the widget's height falls in at its class floor. `HEIGHT_BAND_PX` maps each bounded band to its tallest height in px:
+
+| Band | px                                               |
+| ---- | ------------------------------------------------ |
+| `sm` | 120                                              |
+| `md` | 240                                              |
+| `lg` | 480                                              |
+| `xl` | no bound, scrolls inside the box a host gives it |
+
+`WIDTH_CLASS_PX`, `HEIGHT_BAND_PX`, and the `WidgetSize`, `WidthClass`, and `HeightBand` types are root exports.
 
 ### In a pane
 
@@ -134,7 +182,7 @@ A widget renders its body only, so a host can draw the frame. Wrap a pane's head
 ```svelte
 <script lang="ts">
 	import { Panes } from '@viamrobotics/prime-panes'
-	import { MotorSetPowerWidget, Section } from '@viamrobotics/test-widgets'
+	import { Motor, Section } from '@viamrobotics/test-widgets'
 
 	const { partID }: { partID: string } = $props()
 </script>
@@ -151,7 +199,7 @@ A widget renders its body only, so a host can draw the frame. Wrap a pane's head
 		</Panes.DragTrigger>
 		<Panes.PaneBody>
 			<Section.Loading />
-			<MotorSetPowerWidget
+			<Motor.SetPower
 				{partID}
 				resourceName="motor-1"
 			/>

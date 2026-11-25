@@ -8,12 +8,7 @@
 
 	import ResourceIcon from '$lib/components/resource-icon.svelte'
 
-	import {
-		compositePane,
-		entryPanes,
-		type ResourcePane,
-		resourcePaneTreeLabel,
-	} from './resource-pane'
+	import { type ResourcePane, resourcePanes } from './resource-pane'
 
 	interface Props {
 		resources: ResourceName[]
@@ -25,27 +20,39 @@
 	const { resources, selected, onpick }: Props = $props()
 
 	interface ResourceTreeNode {
-		pane: PaneNode<ResourcePane>
+		/** The row's value: the pane id of a widget, or the resource name of its branch. */
+		id: string
+		label: string
+		/** Set on a widget row, unset on its resource's branch. */
+		pane?: PaneNode<ResourcePane>
 		children?: ResourceTreeNode[]
 	}
 
 	const nodes = $derived(
 		resources.flatMap((resource): ResourceTreeNode[] => {
-			const composite = compositePane(resource)
-			if (!composite) return []
-			return [{ pane: composite, children: entryPanes(resource).map((pane) => ({ pane })) }]
+			const panes = resourcePanes(resource)
+			if (panes.length === 0) return []
+			return [
+				{
+					id: resource.name,
+					label: resource.name,
+					children: panes.map((pane) => ({ id: pane.id, label: pane.data.title, pane })),
+				},
+			]
 		})
 	)
 
 	const panesById = $derived(
 		new Map(
-			nodes.flatMap((node) => [node, ...(node.children ?? [])]).map(({ pane }) => [pane.id, pane])
+			nodes
+				.flatMap(({ children }) => children ?? [])
+				.flatMap(({ id, pane }): [string, PaneNode<ResourcePane>][] => (pane ? [[id, pane]] : []))
 		)
 	)
 
 	// Every resource starts open. The first toggle takes over from that default.
 	let toggledExpanded = $state<string[]>()
-	const expanded = $derived(toggledExpanded ?? nodes.map(({ pane }) => pane.id))
+	const expanded = $derived(toggledExpanded ?? nodes.map(({ id }) => id))
 
 	const pick = (values: string[]) => {
 		const pane = panesById.get(values.at(0) ?? '')
@@ -58,12 +65,12 @@
 
 <Tree
 	{nodes}
-	getValue={({ pane }) => pane.id}
-	getLabel={({ pane }) => resourcePaneTreeLabel(pane.data)}
+	getValue={({ id }) => id}
+	getLabel={({ label }) => label}
 	getChildren={({ children }) => children}
 	bind:expanded={() => expanded, (next) => (toggledExpanded = next)}
 	bind:selected={() => (selected ? [selected] : []), pick}
-	branchClick="select"
+	branchClick="toggle"
 	aria-label="Resources"
 	class="flex flex-col"
 >
@@ -93,7 +100,7 @@
 					>
 						<ResourceIcon type="component" />
 					</span>
-					<span class="truncate">{resourcePaneTreeLabel(item.pane.data)}</span>
+					<span class="truncate">{item.label}</span>
 				</Tree.BranchControl>
 				<Tree.BranchContent />
 			</Tree.Branch>
@@ -102,7 +109,7 @@
 				class={ROW_CLASSES}
 				style="padding-inline-start: calc(var(--depth) * 1rem + 0.25rem)"
 			>
-				<span class="truncate">{resourcePaneTreeLabel(item.pane.data)}</span>
+				<span class="truncate">{item.label}</span>
 			</Tree.Item>
 		{/if}
 	{/snippet}

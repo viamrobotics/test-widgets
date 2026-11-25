@@ -18,7 +18,7 @@
 		resourcePaneLabel,
 		resourcePaneMethod,
 	} from './resource-pane'
-	import { resourcePaneBodyMinWidth } from './resource-pane-minimums'
+	import { resourcePaneBodyMaxWidth, resourcePaneBodyMinWidth } from './resource-pane-minimums'
 
 	interface Props {
 		node: PaneNode<ResourcePane>
@@ -35,8 +35,9 @@
 	const pane = $derived(node.data)
 	const method = $derived(resourcePaneMethod(pane))
 	const label = $derived(resourcePaneLabel(pane))
-	const widgets = $derived(pane.kind === 'composite' ? [pane.widget] : pane.entry.widgets)
+	const Widget = $derived(pane.definition.component)
 	const bodyMinWidth = $derived(resourcePaneBodyMinWidth(pane))
+	const bodyMaxWidth = $derived(resourcePaneBodyMaxWidth(pane))
 </script>
 
 {#snippet tab(tabNode: PaneNode<ResourcePane>)}
@@ -169,13 +170,14 @@
 			{#if method}
 				<Section.Loading />
 			{/if}
-			<div style:min-width="{bodyMinWidth}px">
-				{#each widgets as Widget, index (index)}
-					<Widget
-						{partID}
-						resourceName={pane.resource.name}
-					/>
-				{/each}
+			<div
+				style:min-width="{bodyMinWidth}px"
+				style:max-width={bodyMaxWidth === undefined ? undefined : `${bodyMaxWidth}px`}
+			>
+				<Widget
+					{partID}
+					resourceName={pane.resource.name}
+				/>
 			</div>
 		</Panes.PaneBody>
 	</div>

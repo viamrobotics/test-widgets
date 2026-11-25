@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { mdiImageFilterCenterFocus, mdiTrashCanOutline } from '@mdi/js'
+	import { LngLatInput, useMapLibre } from '@viamrobotics/prime-map'
 	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { LngLat, LngLatBounds } from 'maplibre-gl'
-	import { fromStore } from 'svelte/store'
 
 	import type { Geometry, Obstacle } from '../../types'
 
-	import { LngLatInput, useMapLibre } from '../../../maplibre'
 	import { useNavigationMap } from '../../use-navigation-map.svelte'
 	import GeometryInputs from '../input/geometry.svelte'
 	import OrientationInput from '../input/orientation.svelte'
@@ -19,14 +18,13 @@
 	const { onupdate }: Props = $props()
 
 	const context = useMapLibre()
-	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	const handleSelect = (selection: { name: string; location: LngLat }) => {
 		const radius = nav.boundingRadius[selection.name]
 		const lngLat = new LngLat(selection.location.lng, selection.location.lat)
 		const bounds = LngLatBounds.fromLngLat(lngLat, radius)
-		map.current.fitBounds(bounds, {
+		context.map.fitBounds(bounds, {
 			padding: 100,
 			duration: 800,
 			curve: 0.1,

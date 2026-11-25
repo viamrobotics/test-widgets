@@ -8,6 +8,7 @@
  *   @import "tailwindcss";
  *   @import "@viamrobotics/prime-ui/styles.css";
  *   @import "@viamrobotics/prime-controls/styles.css";
+ *   @import "@viamrobotics/prime-map/styles.css";
  *   @import "@viamrobotics/test-widgets/styles.css";
  *
  * The @source path is relative to this file, which resolves to the package's compiled

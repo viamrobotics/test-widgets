@@ -20,6 +20,10 @@ export default defineConfig({
 		}),
 		devtoolsJson(),
 	],
+	// Prebundled up front, so a cold test run does not reload the browser when it first meets prime-map.
+	optimizeDeps: {
+		include: ['@viamrobotics/prime-map', '@viamrobotics/prime-map/three'],
+	},
 	test: {
 		mockReset: true,
 		restoreMocks: true,

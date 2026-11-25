@@ -1,0 +1,8 @@
+export { default as QuickMove } from './quick-move-widget.svelte'
+export { default as MoveStraight } from './move-straight-widget.svelte'
+export { default as Spin } from './spin-widget.svelte'
+export { default as SetPower } from './set-power-widget.svelte'
+export { default as SetVelocity } from './set-velocity-widget.svelte'
+export { default as IsMoving } from './is-moving-widget.svelte'
+export { default as Stop } from './stop-widget.svelte'
+export { default as GetProperties } from './get-properties-widget.svelte'

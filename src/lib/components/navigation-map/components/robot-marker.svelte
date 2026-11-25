@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { DirectionalMarker, type GeoPose } from '../../maplibre'
+	import { DirectionalMarker } from '@viamrobotics/prime-map'
+
+	import type { GeoPose } from '../geo-pose'
 
 	interface Props {
 		/** The Lng,Lat and rotation of the marker. */

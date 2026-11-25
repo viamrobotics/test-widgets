@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { MapLibreMarker } from '../../maplibre'
+	import { MapLibreMarker } from '@viamrobotics/prime-map'
+
 	import { useNavigationMap } from '../use-navigation-map.svelte'
 
 	const nav = useNavigationMap()

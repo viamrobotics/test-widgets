@@ -1,0 +1,45 @@
+<script lang="ts">
+	import { MotorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { untrack } from 'svelte'
+
+	import ApiSection from '$lib/components/api-section.svelte'
+	import { ResourceTriplets } from '$lib/resource-triplet'
+
+	import { useMotorState } from './motor-state.svelte'
+	import SetRPM from './set-rpm.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const client = createResourceClient(
+		MotorClient,
+		() => partID,
+		() => resourceName
+	)
+
+	const setRPMMutation = createResourceMutation(client, 'setRPM')
+	const { motion } = untrack(() => useMotorState(partID, resourceName))
+
+	const setRPM = (rpm: number) => {
+		void motion.run(() => setRPMMutation.mutateAsync([rpm]))
+	}
+</script>
+
+<ApiSection
+	class="flex-row flex-wrap gap-2"
+	method="SetRPM"
+	api={ResourceTriplets.Motor}
+	mutations={[setRPMMutation]}
+>
+	<div class="flex grow flex-wrap justify-between gap-2">
+		<SetRPM
+			{setRPM}
+			isBusy={motion.isBusy}
+		/>
+	</div>
+</ApiSection>

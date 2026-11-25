@@ -4,20 +4,20 @@
 
 	import { mdiHelpCircleOutline } from '@mdi/js'
 	import { ToggleButtons } from '@viamrobotics/prime-controls'
-	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
-
-	import type { Obstacle } from '../types'
-
 	import {
 		CenterControls,
 		FollowControls,
-		GeoPose,
 		MapLibre,
 		type MapProvider,
 		MapProviders,
 		NavigationControls,
 		SatelliteControls,
-	} from '../../maplibre'
+	} from '@viamrobotics/prime-map'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
+
+	import type { GeoPose } from '../geo-pose'
+	import type { Obstacle } from '../types'
+
 	import { useNavigationMap } from '../use-navigation-map.svelte'
 	import Nav from './nav/index.svelte'
 	import ObstaclesLegend from './nav/obstacles-legend.svelte'
@@ -144,7 +144,7 @@
 			/>
 
 			<div class="flex w-60 flex-wrap items-end justify-between gap-y-2">
-				<CenterControls />
+				<CenterControls storageKey="viam-blocks-navigation-map-center" />
 			</div>
 		</div>
 

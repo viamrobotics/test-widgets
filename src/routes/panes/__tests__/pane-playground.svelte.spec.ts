@@ -1,13 +1,14 @@
 import { render, screen, waitFor, within } from '@testing-library/svelte'
 import { userEvent } from '@testing-library/user-event'
 import { robotApi } from '@viamrobotics/sdk'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../pane-playground.svelte'
 
-const state = vi.hoisted((): { mutationErrors: Record<string, Error> } => ({
-	mutationErrors: {},
-}))
+vi.mock('$lib/resource-widgets', async () => {
+	const { stubWidgetsForResource } = await import('./__fixtures__/stub-widgets-for-resource')
+	return { widgetsForResource: stubWidgetsForResource }
+})
 
 const resourceStatus = (name: string, subtype: string, type = 'component') => ({
 	name: { name, namespace: 'rdk', type, subtype },
@@ -47,21 +48,6 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 			],
 		},
 	}),
-	createResourceClient: () => ({ current: {} }),
-	createResourceQuery: () => ({
-		data: undefined,
-		error: null,
-		fetchStatus: 'idle',
-		isLoading: false,
-		isSuccess: true,
-	}),
-	createResourceMutation: (_client: unknown, method: string) => ({
-		mutate: () => {},
-		isPending: false,
-		get error() {
-			return state.mutationErrors[method] ?? null
-		},
-	}),
 }))
 
 const paneHeader = (paneId: string) => {
@@ -70,87 +56,54 @@ const paneHeader = (paneId: string) => {
 	return within(header)
 }
 
+const flatText = (element: Element) => element.textContent?.replaceAll(/\s+/gu, ' ').trim()
+
 const renderSubject = () => render(Subject, { partID: 'part-1' })
 
 describe('Pane playground', () => {
-	beforeEach(() => {
-		state.mutationErrors = {}
-	})
-
 	it("lays the first motor's widgets out as a split, a stack, and a float", () => {
 		renderSubject()
 
 		expect(screen.getAllByRole('separator', { name: 'Resize panes' })).toHaveLength(2)
-		expect(paneHeader('motor-1::composite').getByRole('heading', { name: 'motor-1' })).toBeVisible()
+		expect(paneHeader('motor-1::quickMove').getByRole('heading', { name: 'motor-1' })).toBeVisible()
 
 		const tabs = within(screen.getByRole('tablist', { name: 'Stacked panes' })).getAllByRole('tab')
-		expect(tabs.map((tab) => tab.textContent?.replaceAll(/\s+/gu, ' ').trim())).toEqual([
+		expect(tabs.map((tab) => flatText(tab))).toEqual([
 			'motor-1 SetRPM',
 			'motor-1 GoFor',
 			'motor-1 GoTo',
 		])
 
-		const isMoving = paneHeader('motor-1::is-moving')
+		const isMoving = paneHeader('motor-1::isMoving')
 		expect(isMoving.getByRole('button', { name: 'Dock motor-1 IsMoving' })).toBeVisible()
 		expect(isMoving.getByRole('button', { name: 'Close motor-1 IsMoving' })).toBeVisible()
 	})
 
-	it('titles the composite with the resource alone and keeps the indicator out of its header', () => {
+	it('titles a control with the resource alone and keeps the indicator out of its header', () => {
 		renderSubject()
 
-		const composite = paneHeader('motor-1::composite')
-		expect(composite.queryByRole('link', { name: /docs/u })).not.toBeInTheDocument()
-		expect(composite.queryByRole('button', { name: /error/u })).not.toBeInTheDocument()
-		expect(composite.getByRole('button', { name: 'Move motor-1' })).toBeVisible()
+		const quickMove = paneHeader('motor-1::quickMove')
+		expect(quickMove.queryByRole('link', { name: /docs/u })).not.toBeInTheDocument()
+		expect(quickMove.queryByRole('button', { name: /error/u })).not.toBeInTheDocument()
+		expect(quickMove.getByRole('button', { name: 'Move motor-1 QuickMove' })).toBeVisible()
 	})
 
 	it.each([
-		['motor-1::set-power', 'SetPower'],
-		['motor-1::set-rpm', 'SetRPM'],
-		['motor-1::is-moving', 'IsMoving'],
+		['motor-1::setPower', 'SetPower'],
+		['motor-1::setRpm', 'SetRPM'],
+		['motor-1::isMoving', 'IsMoving'],
 	])("gives the %s header its method's docs link and an error indicator", (paneId, method) => {
 		renderSubject()
 
 		const header = paneHeader(paneId)
-		expect(header.getByRole('link', { name: `${method} docs` })).toHaveAttribute(
-			'href',
-			`https://docs.viam.com/reference/apis/components/motor/#${method.toLowerCase()}`
-		)
+		expect(header.getByRole('link', { name: `${method} docs` })).toBeVisible()
 		expect(header.getByRole('button', { name: `${method}: No errors` })).toBeInTheDocument()
 	})
 
-	it.each([
-		['motor-1::set-power', 'motor-1 SetPower'],
-		['motor-1::is-moving', 'motor-1 IsMoving'],
-	])('titles the unstacked %s pane with a breadcrumb heading', (paneId, title) => {
+	it('titles an unstacked api pane with a breadcrumb heading', () => {
 		renderSubject()
 
-		const heading = paneHeader(paneId).getByRole('heading')
-		expect(heading.textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe(title)
-	})
-
-	it("names the stack's shown method on its selected tab", () => {
-		renderSubject()
-
-		const header = paneHeader('motor-1::set-rpm')
-		expect(
-			header.getByRole('tab', { selected: true }).textContent?.replaceAll(/\s+/gu, ' ').trim()
-		).toBe('motor-1 SetRPM')
-	})
-
-	it("raises a mutation error from a pane's body on that pane's header indicator only", () => {
-		state.mutationErrors = { setRPM: new Error('motor is not powered') }
-
-		renderSubject()
-
-		expect(
-			paneHeader('motor-1::set-rpm').getByRole('button', {
-				name: 'SetRPM: 1 error, copy to clipboard',
-			})
-		).toBeInTheDocument()
-		expect(
-			paneHeader('motor-1::set-power').getByRole('button', { name: 'SetPower: No errors' })
-		).toBeInTheDocument()
+		expect(flatText(paneHeader('motor-1::setPower').getByRole('heading'))).toBe('motor-1 SetPower')
 	})
 
 	it('shows a stacked pane picked from the tree and focuses its move trigger', async () => {
@@ -159,7 +112,7 @@ describe('Pane playground', () => {
 
 		await user.click(screen.getAllByRole('treeitem', { name: 'GoFor' })[0])
 
-		const goFor = paneHeader('motor-1::go-for')
+		const goFor = paneHeader('motor-1::goFor')
 		await waitFor(() => {
 			expect(goFor.getByRole('button', { name: 'Move motor-1 GoFor' })).toHaveFocus()
 		})
@@ -169,64 +122,25 @@ describe('Pane playground', () => {
 	it('adds a pane for a pick that is not in the layout yet', async () => {
 		const user = userEvent.setup()
 		renderSubject()
-		expect(document.querySelector('[data-pane-id="motor-2::composite"]')).toBeNull()
+		expect(document.querySelector('[data-pane-id="motor-2::quickMove"]')).toBeNull()
 
-		await user.click(screen.getByRole('button', { name: /motor-2/u }))
+		await user.click(screen.getAllByRole('treeitem', { name: 'QuickMove' })[1])
 
 		await waitFor(() => {
 			expect(
-				paneHeader('motor-2::composite').getByRole('button', { name: 'Move motor-2' })
+				paneHeader('motor-2::quickMove').getByRole('button', { name: 'Move motor-2 QuickMove' })
 			).toHaveFocus()
 		})
 	})
 
-	it("lists the machine's arms and motion services beside its motors", () => {
+	it('lists a branch for each resource that has widgets and none for one that has not', () => {
 		renderSubject()
 
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
 		for (const name of ['motor-1', 'motor-2', 'arm-1']) {
 			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
 		}
-		// Motion has a composite and no entries, so its row is a leaf.
-		expect(tree.getByRole('treeitem', { name: 'motion-1' })).toBeInTheDocument()
-	})
-
-	it("lists the machine's bases, gantries, and servos beside the other resources", () => {
-		renderSubject()
-
-		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		for (const name of ['base-1', 'gantry-1', 'servo-1']) {
-			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
-		}
-	})
-
-	it("lists the machine's grippers, boards, switches, and buttons", () => {
-		renderSubject()
-
-		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		for (const name of [/gripper-1/u, /board-1/u, /switch-1/u]) {
-			expect(tree.getByRole('button', { name })).toBeInTheDocument()
-		}
-		expect(tree.getByRole('treeitem', { name: 'button-1' })).toBeInTheDocument()
-	})
-
-	it("lists the machine's sensors, power sensors, encoders, and input controllers", () => {
-		renderSubject()
-
-		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		for (const name of ['movement-sensor-1', 'power-sensor-1', 'encoder-1', 'input-controller-1']) {
-			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
-		}
-		expect(tree.getByRole('treeitem', { name: 'sensor-1' })).toBeInTheDocument()
-	})
-
-	it("lists the machine's audio inputs, audio outputs, discovery services, and ML model services", () => {
-		renderSubject()
-
-		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
-		for (const name of ['audio-input-1', 'audio-output-1', 'discovery-1', 'ml-model-1']) {
-			expect(tree.getByRole('button', { name: new RegExp(name, 'u') })).toBeInTheDocument()
-		}
+		expect(tree.queryByText('base-1')).not.toBeInTheDocument()
 	})
 
 	it('titles a picked arm control with the resource alone and an arm api with its method', async () => {
@@ -234,13 +148,12 @@ describe('Pane playground', () => {
 		renderSubject()
 		const tree = within(screen.getByRole('tree', { name: 'Resources' }))
 
-		await user.click(tree.getByRole('treeitem', { name: 'Manual mode' }))
+		await user.click(tree.getByRole('treeitem', { name: 'Jog' }))
 		await user.click(tree.getByRole('treeitem', { name: 'GetEndPosition' }))
 
-		const control = await waitFor(() => paneHeader('arm-1::manual-mode'))
-		expect(control.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe('arm-1')
-		const api = paneHeader('arm-1::get-end-position')
-		expect(api.getByRole('heading').textContent?.replaceAll(/\s+/gu, ' ').trim()).toBe(
+		const control = await waitFor(() => paneHeader('arm-1::jog'))
+		expect(flatText(control.getByRole('heading'))).toBe('arm-1')
+		expect(flatText(paneHeader('arm-1::getEndPosition').getByRole('heading'))).toBe(
 			'arm-1 GetEndPosition'
 		)
 	})

@@ -1,7 +1,7 @@
 import { getContext, setContext } from 'svelte'
 
-import type { Waypoint } from '../maplibre/types'
 import type { NavigationTabType, Obstacle, Path } from './types'
+import type { Waypoint } from './waypoint'
 
 const CONTEXT_KEY = 'navigation-map-context'
 

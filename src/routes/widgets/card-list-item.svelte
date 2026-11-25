@@ -40,11 +40,12 @@
 	import DoCommandWidget from '$lib/components/widgets/do-command/do-command.svelte'
 	import { getResourceAPI } from '$lib/get-resource-api'
 	import { getResourceKey } from '$lib/get-resource-key'
-	import { apiWidgetsForResource, widgetForResource } from '$lib/registry'
 	import { type NamedResourceStatus, ResourceStatusText } from '$lib/resource'
 	import { ResourceTriplets } from '$lib/resource-triplet'
+	import { widgetsForResource } from '$lib/resource-widgets'
 	import { scrollIntoView } from '$lib/scroll-into-view'
 
+	import { resourceWidgetTitle } from '../resource-widget-title'
 	import ResourceStatus from './resource-status.svelte'
 	import SectionGroup from './section-group.svelte'
 
@@ -68,19 +69,11 @@
 		)
 	)
 
-	const isApiWidgetsCollapsed = $derived(
-		new PersistedState(
-			`control/${partID}/${getResourceKey(resource.name)}/test/apiWidgets/collapse`,
-			true
-		)
-	)
-
 	const resourceName = $derived(resource.name.name)
 	const namespace = $derived(resource.name.namespace)
 	const type = $derived(resource.name.type)
 	const subtype = $derived(resource.name.subtype)
-	const ResourceTestView = $derived(widgetForResource(resource.name))
-	const apiWidgets = $derived(apiWidgetsForResource(resource.name))
+	const widgets = $derived(Object.entries(widgetsForResource(resource.name)?.widgets ?? {}))
 	const resourceAPI = $derived(getResourceAPI(resource.name))
 	const id = $derived(encodeURIComponent(resourceName))
 	// Exclude the # character
@@ -89,13 +82,11 @@
 	const unregisterCollapseAll = registerCollapseAllCallback(() => {
 		isTestCollapsed.current = true
 		isDoCommandCollapsed.current = true
-		isApiWidgetsCollapsed.current = true
 	})
 
 	const unregisterExpandAll = registerExpandAllCallback(() => {
 		isTestCollapsed.current = false
 		isDoCommandCollapsed.current = false
-		isApiWidgetsCollapsed.current = false
 	})
 
 	let isActive = $state(false)
@@ -153,38 +144,22 @@
 		</header>
 		{#if resource.state === robotApi.ResourceStatus_State.READY}
 			<div class="flex flex-col divide-y">
-				{#if ResourceTestView}
+				{#if widgets.length > 0}
 					<SectionGroup
 						isCollapsed={isTestCollapsed.current ?? false}
 						toggleIsCollapsed={() => {
 							isTestCollapsed.current = !isTestCollapsed.current
 						}}
 					>
-						{#snippet title()}Test{/snippet}
-						<ResourceTestView
-							{partID}
-							{resourceName}
-						/>
-					</SectionGroup>
-				{/if}
-				{#if apiWidgets.length > 0}
-					<SectionGroup
-						isCollapsed={isApiWidgetsCollapsed.current ?? true}
-						toggleIsCollapsed={() => {
-							isApiWidgetsCollapsed.current = !isApiWidgetsCollapsed.current
-						}}
-					>
-						{#snippet title()}API widgets{/snippet}
+						{#snippet title()}Widgets{/snippet}
 						<div class="flex flex-col gap-4 p-4">
-							{#each apiWidgets as { id: widgetId, widgets, label } (widgetId)}
+							{#each widgets as [key, { component: Widget }] (key)}
 								<div class="flex flex-col gap-1">
-									<span class="font-bold">{label}</span>
-									{#each widgets as Widget, index (index)}
-										<Widget
-											{partID}
-											{resourceName}
-										/>
-									{/each}
+									<span class="font-bold">{resourceWidgetTitle(resourceAPI, key)}</span>
+									<Widget
+										{partID}
+										{resourceName}
+									/>
 								</div>
 							{/each}
 						</div>

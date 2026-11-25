@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
+	import { useMapLibre, useMapLibreEvent } from '@viamrobotics/prime-map'
 	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 	import {
 		LngLat,
@@ -7,14 +8,12 @@
 		type MapLayerTouchEvent,
 		type MapMouseEvent,
 	} from 'maplibre-gl'
-	import { fromStore } from 'svelte/store'
 	import { type BufferGeometry, Vector2 } from 'three'
 
 	import { AxesHelper, CapsuleGeometry } from '$lib/components/three'
 
 	import type { Obstacle } from '../types'
 
-	import { useMapLibre, useMapLibreEvent } from '../../maplibre'
 	import { useNavigationMap } from '../use-navigation-map.svelte'
 
 	interface Props {
@@ -27,7 +26,6 @@
 	const { name, onupdate }: Props = $props()
 
 	const context = useMapLibre()
-	const map = fromStore(context.map)
 	const nav = useNavigationMap()
 
 	let pointerdownTheta = 0
@@ -55,7 +53,7 @@
 			return
 		}
 
-		map.current.dragPan.disable()
+		context.map.dragPan.disable()
 		draggingObstacle = true
 	}
 
@@ -69,7 +67,7 @@
 
 		if (isManipulating) {
 			event.preventDefault()
-			map.current.getCanvas().classList.add('!cursor-ns-resize')
+			context.map.getCanvas().classList.add('!cursor-ns-resize')
 		}
 
 		pointerdown.set(event.point.x, event.point.y)
@@ -167,21 +165,21 @@
 
 	const handlePointerUp = () => {
 		draggingObstacle = false
-		map.current.dragPan.enable()
-		map.current.getCanvas().classList.remove('!cursor-ns-resize')
+		context.map.dragPan.enable()
+		context.map.getCanvas().classList.remove('!cursor-ns-resize')
 	}
 
 	const active = $derived(nav.hovered === name || nav.selected === name)
 
 	$effect(() => {
 		if (draggingObstacle) {
-			map.current.on('mousemove', handlePointerMove)
+			context.map.on('mousemove', handlePointerMove)
 		} else {
-			map.current.off('mousemove', handlePointerMove)
+			context.map.off('mousemove', handlePointerMove)
 		}
 
 		return () => {
-			map.current.off('mousemove', handlePointerMove)
+			context.map.off('mousemove', handlePointerMove)
 		}
 	})
 

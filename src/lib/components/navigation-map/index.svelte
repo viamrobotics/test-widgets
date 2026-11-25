@@ -18,7 +18,11 @@
 	import type { LngLat, Map as MapType } from 'maplibre-gl'
 	import type { Snippet } from 'svelte'
 
-	import { type GeoPose, type MapProvider, MapProviders, type Waypoint } from '../maplibre/types'
+	import { type MapProvider, MapProviders } from '@viamrobotics/prime-map'
+
+	import type { GeoPose } from './geo-pose'
+	import type { Waypoint } from './waypoint'
+
 	import Map from './components/map.svelte'
 	import { NavigationTab, type NavigationTabType, type Obstacle, type Path } from './types'
 	import { provideNavigationMapContext } from './use-navigation-map.svelte'

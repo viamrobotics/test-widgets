@@ -10,6 +10,42 @@ export { clientForResource, supportsDoCommand } from './client-map'
 export * from './components'
 
 export { getResourceAPI } from './get-resource-api'
+
+export {
+	CenterControls,
+	DirectionalMarker,
+	FollowControls,
+	LngLatInput,
+	MapLibre,
+	MapLibreMarker,
+	type MapProvider,
+	MapProviders,
+	NavigationControls,
+	SatelliteControls,
+	cartesianToLngLat,
+	cartesianToMercator,
+	lngLatToCartesian,
+	lngLatToMercator,
+	mercatorToCartesian,
+	useMapLibre,
+	useMapLibreEvent,
+} from '@viamrobotics/prime-map'
+export { useMapLibreThreeRaycast, useMapLibreThreeRenderer } from '@viamrobotics/prime-map/three'
+export { GeoPose } from './components/navigation-map/geo-pose'
+export { default as NavigationMap } from './components/navigation-map/index.svelte'
+export {
+	type BoxGeometry,
+	type CapsuleGeometry,
+	type Geometry,
+	NavigationTab,
+	type NavigationTabType,
+	type Obstacle,
+	type Path,
+	type Shapes,
+	type SphereGeometry,
+} from './components/navigation-map/types'
+export { Waypoint } from './components/navigation-map/waypoint'
+
 export {
 	isKnownResource,
 	// TODO: Delete `hasWidget`
@@ -20,10 +56,37 @@ export { hasPip, providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
 export type { ResourceTriplet } from './resource-triplet'
 export type {
-	ResourceAPIWidget,
-	ResourceAPIWidgetKind,
 	ResourceWidget,
+	ResourceWidgetDefinition,
+	ResourceWidgetKind,
 	ResourceWidgetProps,
-	ResourceWidgetSize,
+	ResourceWidgetsEntry,
 } from './resource-widget-types'
+export { HEIGHT_BAND_PX, WIDTH_CLASS_PX } from './widget-size'
+export type { HeightBand, WidgetSize, WidthClass } from './widget-size'
 export { showResourceWidget } from './show-resource-widget'
+export { default as WidgetsProvider } from './widgets-provider.svelte'
+
+export * as Arm from './components/widgets/Arm/index.ts'
+export * as AudioInput from './components/widgets/AudioInput/index.ts'
+export * as AudioOutput from './components/widgets/AudioOutput/index.ts'
+export * as Base from './components/widgets/Base/index.ts'
+export * as Board from './components/widgets/Board/index.ts'
+export * as Button from './components/widgets/Button/index.ts'
+export * as Camera from './components/widgets/Camera/index.ts'
+export * as Discovery from './components/widgets/Discovery/index.ts'
+export * as Encoder from './components/widgets/Encoder/index.ts'
+export * as Gantry from './components/widgets/Gantry/index.ts'
+export * as Gripper from './components/widgets/Gripper/index.ts'
+export * as InputController from './components/widgets/InputController/index.ts'
+export * as MLModel from './components/widgets/MLModel/index.ts'
+export * as Motion from './components/widgets/Motion/index.ts'
+export * as Motor from './components/widgets/Motor/index.ts'
+export * as MovementSensor from './components/widgets/MovementSensor/index.ts'
+export * as Navigation from './components/widgets/Navigation/index.ts'
+export * as PowerSensor from './components/widgets/PowerSensor/index.ts'
+export * as Sensor from './components/widgets/Sensor/index.ts'
+export * as Servo from './components/widgets/Servo/index.ts'
+export * as Slam from './components/widgets/Slam/index.ts'
+export * as Switch from './components/widgets/Switch/index.ts'
+export * as Vision from './components/widgets/Vision/index.ts'

@@ -213,9 +213,9 @@
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
 		},
-		"./registry": {
-			"types": "./dist/registry.d.ts",
-			"svelte": "./dist/registry.js"
+		"./widgets": {
+			"types": "./dist/resource-widgets.d.ts",
+			"svelte": "./dist/resource-widgets.js"
 		},
 		"./styles.css": "./styles.css"
 	},
@@ -341,6 +341,7 @@
 	},
 	"dependencies": {
 		"@mdi/js": "^7.4.47",
-		"@viamrobotics/post-message-sdk": "0.4.1"
+		"@viamrobotics/post-message-sdk": "0.4.1",
+		"@viamrobotics/prime-map": "^0.1.0"
 	}
 }

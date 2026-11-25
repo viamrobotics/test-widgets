@@ -1,59 +1,56 @@
 import type { FloatRect, LayoutNode } from '@viamrobotics/prime-panes'
 import type { ResourceName } from '@viamrobotics/sdk'
 
-import { compositePane, entryPanes, type ResourcePane } from './resource-pane'
+import { type ResourcePane, resourcePanes } from './resource-pane'
 
-// IsMoving's recommended and maximum width on the Motor-Frames registry table. The height fits
-// today's IsMoving body, which is taller than the compact badge the table measures.
 const IS_MOVING_WINDOW: FloatRect = { x: 24, y: 64, width: 242, height: 140 }
 
-const COMPOSITE_SHARE = 0.5
+const QUICK_MOVE_SHARE = 0.5
 const SET_POWER_SHARE = 0.4
 
 /**
- * The layout the playground opens with for one motor: the composite beside SetPower in a split,
- * SetRPM, GoFor, and GoTo in a stack under SetPower, and IsMoving floating over them. Falls back
- * to the composite alone when the registry no longer lists one of those entries.
+ * The layout the playground opens with for one motor: QuickMove beside SetPower in a split, SetRPM,
+ * GoFor, and GoTo in a stack under SetPower, and IsMoving floating over them. Returns undefined
+ * when the motor's entry no longer lists one of those keys.
  */
 export const initialMotorLayout = (
 	resource: ResourceName
 ): LayoutNode<ResourcePane> | undefined => {
-	const composite = compositePane(resource)
-	const entries = entryPanes(resource)
-	const entry = (id: string) =>
-		entries.find(({ data }) => data.kind !== 'composite' && data.entry.id === id)
+	const panes = resourcePanes(resource)
+	const widget = (key: string) => panes.find(({ data }) => data.key === key)
 
-	const setPower = entry('set-power')
-	const setRpm = entry('set-rpm')
-	const goFor = entry('go-for')
-	const goTo = entry('go-to')
-	const isMoving = entry('is-moving')
+	const quickMove = widget('quickMove')
+	const setPower = widget('setPower')
+	const setRpm = widget('setRpm')
+	const goFor = widget('goFor')
+	const goTo = widget('goTo')
+	const isMoving = widget('isMoving')
 
-	if (!composite || !setPower || !setRpm || !goFor || !goTo || !isMoving) return composite
+	if (!quickMove || !setPower || !setRpm || !goFor || !goTo || !isMoving) return undefined
 
 	return {
 		type: 'float',
-		id: `${composite.id}::float`,
+		id: `${quickMove.id}::float`,
 		base: {
 			type: 'split',
-			id: `${composite.id}::split`,
+			id: `${quickMove.id}::split`,
 			direction: 'row',
-			ratio: COMPOSITE_SHARE,
-			first: composite,
+			ratio: QUICK_MOVE_SHARE,
+			first: quickMove,
 			second: {
 				type: 'split',
-				id: `${composite.id}::api-split`,
+				id: `${quickMove.id}::api-split`,
 				direction: 'column',
 				ratio: SET_POWER_SHARE,
 				first: setPower,
 				second: {
 					type: 'stack',
-					id: `${composite.id}::stack`,
+					id: `${quickMove.id}::stack`,
 					activeId: setRpm.id,
 					panes: [setRpm, goFor, goTo],
 				},
 			},
 		},
-		floats: [{ id: `${composite.id}::window`, rect: IS_MOVING_WINDOW, content: isMoving }],
+		floats: [{ id: `${quickMove.id}::window`, rect: IS_MOVING_WINDOW, content: isMoving }],
 	}
 }
