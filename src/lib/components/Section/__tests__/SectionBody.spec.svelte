@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Section } from '..'
-	import Control from './SectionBodyControl.spec.svelte'
 
 	interface Props {
 		isLoading: boolean
@@ -14,6 +13,5 @@
 	{isLoading}
 	{skeleton}
 >
-	<p>Position <Section.Placeholder /></p>
-	<Control />
+	<p>Position</p>
 </Section.Body>

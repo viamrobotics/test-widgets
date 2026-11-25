@@ -68,7 +68,7 @@ describe('MovementSensor widget', () => {
 		})
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
 
 		expect(screen.getByText(/properties unavailable/iu)).toBeInTheDocument()
 	})
@@ -99,7 +99,9 @@ describe('MovementSensor widget', () => {
 		queryStates.set('getPosition', { data: undefined, error: new Error('position unavailable') })
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetPosition: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/position unavailable/iu)).toBeInTheDocument()
 	})
@@ -109,7 +111,9 @@ describe('MovementSensor widget', () => {
 		queryStates.set('getAccuracy', { data: undefined, error: new Error('accuracy unavailable') })
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetAccuracy: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/accuracy unavailable/iu)).toBeInTheDocument()
 	})

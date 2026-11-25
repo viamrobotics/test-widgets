@@ -4,12 +4,12 @@ A library of Svelte components for interacting with Viam-powered machines. Each 
 
 ## Tech stack
 
-| Layer           | Technology                                                           |
-| --------------- | -------------------------------------------------------------------- |
-| Frontend        | Svelte 5 (runes), Threlte/Three.js for 3D widgets                    |
-| Styling         | TailwindCSS 4 with `@viamrobotics/tailwind-config`, PRIME components |
-| Package manager | pnpm                                                                 |
-| Testing         | Vitest (browser mode) + Playwright                                   |
+| Layer           | Technology                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| Frontend        | Svelte 5 (runes), Threlte/Three.js for 3D widgets                                                            |
+| Styling         | TailwindCSS 4 with `@viamrobotics/tailwind-config`, `@viamrobotics/prime-controls`, `@viamrobotics/prime-ui` |
+| Package manager | pnpm                                                                                                         |
+| Testing         | Vitest (browser mode) + Playwright                                                                           |
 
 ## Commands
 
@@ -29,8 +29,7 @@ pnpm exec houserules update   # refresh kit files after a @houserules/* bump
 
 ## Generated code — never hand-edit
 
-- Any files included in `.gitignore` should not be edited
-- `.claude/scripts/` is build output written by houserules and gitignored. If a hook reports a missing script, run `pnpm exec houserules update`.
+- Gitignored files, including `.claude/scripts/` (houserules build output). If a hook reports a missing script, run `pnpm exec houserules update`.
 
 ## Code organization
 
@@ -38,14 +37,7 @@ Organize code by feature with **one focused unit per file**. File names should d
 
 ## Topic-specific rules
 
-Detailed guidance lives in `.claude/rules/`. Path-scoped rules load when Claude reads matching files; rules without `paths` load every session. Kit-managed rules (svelte, typescript, three, testing, design, accessibility, code-comments, prose-voice, code-cleanliness) are installed and documented by houserules, see the houserules block below. The repo-owned rules:
-
-| Rule                     | Loads when                                     |
-| ------------------------ | ---------------------------------------------- |
-| `testing-frontend.md`    | editing `src/**/*.spec.ts` or `vite.config.ts` |
-| `frontend-aesthetics.md` | editing `.svelte` or `.css`                    |
-| `threlte-widgets.md`     | editing `.svelte` or `.svelte.ts` under `src/` |
-| `viam-context.md`        | editing anything under `src/`                  |
+Detailed guidance lives in `.claude/rules/`. Each rule's `paths:` frontmatter sets when it loads. Repo-owned rules: `testing-frontend.md`, `frontend-aesthetics.md`, `threlte-widgets.md`, `viam-context.md`. The rest are kit-managed by houserules.
 
 <!-- houserules:claude-md start -->
 

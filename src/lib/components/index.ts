@@ -1,4 +1,5 @@
 export { default as ConnectionStatus } from './ConnectionStatus.svelte'
+export { Section } from './Section'
 
 export { default as ArmWidget } from './widgets/Arm/Arm.svelte'
 export { default as ArmGetJointPositionsWidget } from './widgets/Arm/GetJointPositionsWidget.svelte'

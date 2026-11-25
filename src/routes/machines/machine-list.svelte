@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Icon, IconButton } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiRobotOutline, mdiTrashCanOutline } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
 
 	import { resolve } from '$app/paths'
 
@@ -48,25 +49,31 @@
 				class="focus:bg-ghost-light active:bg-ghost-medium flex min-w-0 grow items-center gap-1.5 px-3 py-1 text-sm sm:px-5"
 			>
 				<Icon
-					name="check"
+					icon={mdiCheck}
 					aria-hidden="true"
-					cx={['text-gray-6', { 'opacity-0': name !== selectedName }]}
+					class={['text-gray-6', name !== selectedName && 'opacity-0']}
 				/>
 				<Icon
-					name="robot-outline"
+					icon={mdiRobotOutline}
 					aria-hidden="true"
-					cx="text-gray-6"
+					class="text-gray-6"
 				/>
 				<span class="truncate overflow-auto">
 					{name}
 				</span>
 			</a>
 			{#if !machines.isEnvConfig(name)}
-				<IconButton
-					icon="trash-can-outline"
-					label={`Remove ${name}`}
+				<button
+					type="button"
+					class="icon-button"
+					aria-label={`Remove ${name}`}
 					onclick={() => machines.remove(name)}
-				/>
+				>
+					<Icon
+						icon={mdiTrashCanOutline}
+						aria-hidden="true"
+					/>
+				</button>
 			{/if}
 		</li>
 	{/each}
@@ -116,6 +123,11 @@
 				That text is not a valid machine config.
 			</p>
 		{/if}
-		<Button type="submit">Add machine</Button>
+		<button
+			type="submit"
+			class="button"
+		>
+			Add machine
+		</button>
 	</form>
 </details>

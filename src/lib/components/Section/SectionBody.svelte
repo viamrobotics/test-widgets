@@ -3,7 +3,6 @@
 
 	import Boundary from '../Boundary.svelte'
 	import Progress from '../Progress.svelte'
-	import { provideSectionLoading } from './section-loading'
 
 	interface Props {
 		children: Snippet
@@ -16,8 +15,6 @@
 	}
 
 	const { isLoading = false, skeleton = false, children }: Props = $props()
-
-	provideSectionLoading(() => skeleton && isLoading)
 </script>
 
 {#if skeleton}

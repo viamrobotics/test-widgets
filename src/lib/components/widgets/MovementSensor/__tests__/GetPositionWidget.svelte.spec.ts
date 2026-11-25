@@ -89,7 +89,9 @@ describe('MovementSensor GetPosition widget', () => {
 		queryState.error = new Error('position unavailable')
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'GetPosition: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/position unavailable/iu)).toBeInTheDocument()
 	})

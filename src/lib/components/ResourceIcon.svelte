@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Icon } from '@viamrobotics/prime-core'
+	import { mdiCheck } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
+	import { ViamComponent, ViamService } from '@viamrobotics/prime-ui/icons'
 
 	interface Props {
 		type: string
@@ -7,25 +9,19 @@
 
 	const { type }: Props = $props()
 
-	const getIconName = (resourceType: string) => {
+	const getIcon = (resourceType: string) => {
 		if (resourceType === 'component') {
-			return 'viam-component' as const
+			return ViamComponent
 		}
 
-		return resourceType === 'service' ? ('viam-service' as const) : undefined
+		return resourceType === 'service' ? ViamService : undefined
 	}
 
-	const iconName = $derived(getIconName(type))
+	const icon = $derived(getIcon(type))
 </script>
 
-<!-- 'check' is just a placeholder when there's not an iconName -->
+<!-- 'check' is just a placeholder when there's not an icon -->
 <Icon
-	name={iconName ?? 'check'}
-	cx={[
-		'shrink-0',
-		'text-gray-6',
-		{
-			'opacity-0': !iconName,
-		},
-	]}
+	icon={icon ?? mdiCheck}
+	class={['text-gray-6 shrink-0', { 'opacity-0': !icon }]}
 />

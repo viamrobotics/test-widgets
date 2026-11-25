@@ -50,7 +50,9 @@ describe('Base Stop widget', () => {
 		} as never)
 
 		renderSubject()
-		await fireEvent.focus(screen.getByRole('button', { name: '1 error, copy to clipboard' }))
+		await fireEvent.focusIn(
+			screen.getByRole('button', { name: 'Stop: 1 error, copy to clipboard' })
+		)
 
 		expect(screen.getByText(/base refused to stop/iu)).toBeInTheDocument()
 	})
