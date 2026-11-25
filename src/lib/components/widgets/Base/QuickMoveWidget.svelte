@@ -1,0 +1,64 @@
+<script lang="ts">
+	import { Label, Switch } from '@viamrobotics/prime-core'
+	import { BaseClient, type Vector3 } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+	import { Section } from '#lib/components/Section/index.js'
+	import { useSectionErrors } from '#lib/components/Section/use-section-errors.svelte.js'
+
+	import QuickMove from './QuickMove.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const client = createResourceClient(
+		BaseClient,
+		() => partID,
+		() => resourceName
+	)
+
+	const quickSetPowerMutation = createResourceMutation(client, 'setPower')
+
+	const quickSetPower = (linear: Vector3, angular: Vector3) => {
+		quickSetPowerMutation.mutate([linear, angular], {})
+	}
+
+	const sectionErrors = useSectionErrors(() => ({ mutations: [quickSetPowerMutation] }))
+
+	let isKeyboardEnabled = $state(false)
+</script>
+
+<Section
+	errorReporter={sectionErrors}
+	class="flex-row flex-wrap gap-2"
+>
+	<div class="flex flex-col gap-0.5">
+		<Section.Heading>
+			Quick move
+			{#snippet aside()}
+				<Section.Errors errors={sectionErrors.errors} />
+			{/snippet}
+		</Section.Heading>
+		<Label cx="w-fit!">
+			Keyboard control
+
+			<Switch
+				slot="input"
+				on={isKeyboardEnabled}
+				on:change={() => (isKeyboardEnabled = !isKeyboardEnabled)}
+			/>
+		</Label>
+	</div>
+
+	<Section.Body>
+		<div class="flex grow flex-wrap justify-between gap-2">
+			<QuickMove
+				setPower={quickSetPower}
+				{isKeyboardEnabled}
+			/>
+		</div>
+	</Section.Body>
+</Section>

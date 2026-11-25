@@ -33,8 +33,8 @@
 <script lang="ts">
 	import { Breadcrumbs } from '@viamrobotics/prime-core'
 	import { robotApi } from '@viamrobotics/sdk'
-	import ResourceIcon from '#lib/components/resource-icon.svelte'
-	import DoCommandWidget from '#lib/components/widgets/do-command/do-command.svelte'
+	import ResourceIcon from '#lib/components/ResourceIcon.svelte'
+	import DoCommandWidget from '#lib/components/widgets/DoCommand/DoCommand.svelte'
 	import { getResourceAPI } from '#lib/get-resource-api.js'
 	import { getResourceKey } from '#lib/get-resource-key.js'
 	import { apiWidgetsForResource, widgetForResource } from '#lib/registry.js'

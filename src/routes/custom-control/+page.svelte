@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '@viamrobotics/prime-core'
 	import { ViamProvider } from '@viamrobotics/svelte-sdk'
-	import CustomControl from '#lib/components/widgets/custom-control/custom-control.svelte'
+	import CustomControl from '#lib/components/widgets/CustomControl/CustomControl.svelte'
 
 	import { page } from '$app/state'
 

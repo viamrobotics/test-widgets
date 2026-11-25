@@ -5,7 +5,7 @@
 	import { MachineConnectionEvent } from '@viamrobotics/sdk'
 	import { useConnectionStatus, useMachineStatus } from '@viamrobotics/svelte-sdk'
 	import { providePip } from '#lib'
-	import OperationsAndSessionsView from '#lib/components/widgets/operations-and-sessions/operations-and-sessions.svelte'
+	import OperationsAndSessionsView from '#lib/components/widgets/OperationsAndSessions/OperationsAndSessions.svelte'
 	import { getResourceAPI } from '#lib/get-resource-api.js'
 	import { getResourceKey } from '#lib/get-resource-key.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'

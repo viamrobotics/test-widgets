@@ -1,0 +1,107 @@
+<script lang="ts">
+	import { Button } from '@viamrobotics/prime-core'
+	import { EncoderClient } from '@viamrobotics/sdk'
+	import {
+		createResourceClient,
+		createResourceMutation,
+		createResourceQuery,
+	} from '@viamrobotics/svelte-sdk'
+	import ApiSection from '#lib/components/ApiSection.svelte'
+	import ConnectionStatus from '#lib/components/ConnectionStatus.svelte'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
+	import RefetchController from '#lib/components/RefetchController.svelte'
+	import { Section } from '#lib/components/Section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+
+	import { getEncoderPositionArgs } from './encoder-position-type'
+	import Position from './Position.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const client = createResourceClient(
+		EncoderClient,
+		() => partID,
+		() => resourceName
+	)
+
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => resourceName,
+		'encoder-view'
+	)
+
+	const propertiesQuery = createResourceQuery(client, 'getProperties', () => ({
+		refetchInterval: refetchInterval.current,
+	}))
+
+	const positionQuery = createResourceQuery(
+		client,
+		'getPosition',
+		() => getEncoderPositionArgs(propertiesQuery.data),
+		() => ({
+			enabled: propertiesQuery.data !== undefined,
+			refetchInterval: refetchInterval.current,
+		})
+	)
+	const resetMutation = createResourceMutation(client, 'resetPosition')
+</script>
+
+<ConnectionStatus {partID}>
+	{#snippet connected()}
+		<div class="p-4 pb-3">
+			<RefetchController
+				{refetchInterval}
+				queries={[propertiesQuery, positionQuery]}
+			/>
+		</div>
+
+		<div class="@container">
+			<div class="grid w-full grid-cols-1 divide-y @lg:grid-cols-2 @lg:divide-x @lg:divide-y-0">
+				<ApiSection
+					method="GetPosition"
+					api={ResourceTriplets.Encoder}
+					queries={[propertiesQuery, positionQuery]}
+					class="grow flex-col gap-3"
+				>
+					{#snippet tooltip()}
+						Relative encoders return ticks since last zeroing. Absolute encoders return degrees.
+					{/snippet}
+					{#if positionQuery.data !== undefined}
+						{@const [position, encoderPositionType] = positionQuery.data}
+						<div class="font-roboto-mono flex flex-col gap-2 text-sm">
+							<Position
+								{position}
+								{encoderPositionType}
+							/>
+						</div>
+					{/if}
+				</ApiSection>
+
+				<ApiSection
+					class="grow flex-col gap-4"
+					method="ResetPosition"
+					api={ResourceTriplets.Encoder}
+					mutations={[resetMutation]}
+				>
+					{#snippet subheading()}
+						<Section.Text>Set the current position as the new zero position</Section.Text>
+					{/snippet}
+					<Button
+						icon="play-circle-outline"
+						class="w-fit"
+						onclick={() => {
+							resetMutation.mutate([], {})
+						}}
+					>
+						Execute
+					</Button>
+				</ApiSection>
+			</div>
+		</div>
+	{/snippet}
+</ConnectionStatus>
