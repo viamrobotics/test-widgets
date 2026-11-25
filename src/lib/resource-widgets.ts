@@ -6,11 +6,6 @@ import {
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
 	EncoderGetPositionWidget,
-	GantryGetPositionWidget,
-	GantryHomeWidget,
-	GantryIsMovingWidget,
-	GantryMoveToPositionWidget,
-	GantryQuickMoveWidget,
 	GripperGrabWidget,
 	GripperIsHoldingSomethingWidget,
 	GripperIsMovingWidget,
@@ -34,6 +29,7 @@ import {
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
+import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
@@ -73,7 +69,15 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.Camera]: never
 	[ResourceTriplets.Discovery]: never
 	[ResourceTriplets.Encoder]: 'getPosition'
-	[ResourceTriplets.Gantry]: 'home' | 'moveToPosition' | 'quickMove' | 'getPosition' | 'isMoving'
+	[ResourceTriplets.Gantry]:
+		| 'home'
+		| 'moveToPosition'
+		| 'quickMove'
+		| 'getPosition'
+		| 'isMoving'
+		| 'getLengths'
+		| 'stop'
+		| 'homingStatus'
 	[ResourceTriplets.Gripper]:
 		| 'openGrab'
 		| 'isHoldingSomething'
@@ -208,11 +212,38 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Gantry]: {
 		widgets: {
-			home: { component: GantryHomeWidget, kind: 'api' },
-			moveToPosition: { component: GantryMoveToPositionWidget, kind: 'api' },
-			quickMove: { component: GantryQuickMoveWidget, kind: 'control' },
-			getPosition: { component: GantryGetPositionWidget, kind: 'api' },
-			isMoving: { component: GantryIsMovingWidget, kind: 'api' },
+			home: {
+				component: Gantry.Home,
+				kind: 'api',
+			},
+			moveToPosition: {
+				component: Gantry.MoveToPosition,
+				kind: 'api',
+			},
+			quickMove: {
+				component: Gantry.QuickMove,
+				kind: 'control',
+			},
+			getPosition: {
+				component: Gantry.GetPosition,
+				kind: 'api',
+			},
+			isMoving: {
+				component: Gantry.IsMoving,
+				kind: 'api',
+			},
+			getLengths: {
+				component: Gantry.GetLengths,
+				kind: 'api',
+			},
+			stop: {
+				component: Gantry.Stop,
+				kind: 'api',
+			},
+			homingStatus: {
+				component: Gantry.HomingStatus,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.Gripper]: {

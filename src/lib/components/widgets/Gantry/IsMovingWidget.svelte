@@ -16,4 +16,5 @@
 	api={ResourceTriplets.Gantry}
 	{partID}
 	{resourceName}
+	isCompact
 />

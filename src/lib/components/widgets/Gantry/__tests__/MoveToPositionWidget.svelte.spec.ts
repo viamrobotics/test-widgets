@@ -1,8 +1,10 @@
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
+import InWidgetsProvider from '#lib/__tests__/__fixtures__/InWidgetsProvider.svelte'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../MoveToPositionWidget.svelte'
+import InPane from './__fixtures__/In320Pane.svelte'
 
 const state = vi.hoisted((): { moveMutate: Mock; error: Error | null } => ({
 	moveMutate: vi.fn(),
@@ -23,7 +25,7 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		error: null,
 	})),
 	createResourceMutation: vi.fn(() => ({
-		mutate: state.moveMutate,
+		mutateAsync: state.moveMutate,
 		isPending: false,
 		get error() {
 			return state.error
@@ -32,8 +34,8 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 }))
 
 const renderSubject = () =>
-	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-gantry' },
+	render(InWidgetsProvider, {
+		props: { component: Subject, props: { partID: 'test-part', resourceName: 'test-gantry' } },
 	})
 
 describe('Gantry MoveToPosition widget', () => {
@@ -42,32 +44,28 @@ describe('Gantry MoveToPosition widget', () => {
 		state.error = null
 	})
 
-	it('fills the Move to inputs from the current positions', async () => {
+	it('fills the Position inputs from the current positions', () => {
 		renderSubject()
-		await userEvent.click(screen.getByRole('button', { name: 'Current position' }))
 
-		const inputs = screen.getAllByRole('spinbutton', { name: /move to/iu })
+		const inputs = screen.getAllByRole('spinbutton', { name: /^position/iu })
 
 		expect(inputs[0]).toHaveValue(11)
 		expect(inputs[1]).toHaveValue(22)
 	})
 
-	it('calls the moveToPosition mutation with the edited position and default speeds', async () => {
+	it('calls the moveToPosition mutation with the edited position, the live position for the rest, and default speeds', async () => {
 		renderSubject()
 
-		const input = screen.getAllByRole('spinbutton', { name: /move to/iu })[0]!
+		const input = screen.getAllByRole('spinbutton', { name: /^position/iu })[0]!
 		await userEvent.clear(input)
 		await userEvent.click(input)
 		await userEvent.keyboard('77{Enter}')
 		await userEvent.click(screen.getByRole('button', { name: /execute/iu }))
 
-		expect(state.moveMutate).toHaveBeenCalledWith(
-			[
-				[77, 0],
-				[50, 50],
-			],
-			{}
-		)
+		expect(state.moveMutate).toHaveBeenCalledWith([
+			[77, 22],
+			[50, 50],
+		])
 	})
 
 	it('renders the MoveToPosition section heading', () => {
@@ -84,5 +82,24 @@ describe('Gantry MoveToPosition widget', () => {
 		expect(
 			screen.getByRole('button', { name: 'MoveToPosition: 1 error, copy to clipboard' })
 		).toBeInTheDocument()
+	})
+})
+
+describe('Gantry MoveToPosition widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		render(InPane, { props: { widget: Subject } })
+
+		expect(getComputedStyle(screen.getByTestId('pane')).width).toBe('320px')
+	})
+
+	it('does not scroll horizontally', () => {
+		render(InPane, { props: { widget: Subject } })
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+
+		expect(screen.getAllByRole('spinbutton')).toHaveLength(4)
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })
