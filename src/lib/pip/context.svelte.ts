@@ -4,12 +4,12 @@ import {
 	createResourceQuery,
 	createStreamClient,
 } from '@viamrobotics/svelte-sdk'
-import { getContext, setContext } from 'svelte'
+import { getContext, hasContext, setContext } from 'svelte'
 
 const PIP_KEY = Symbol('pip-context')
 
 interface PipContext {
-	/** Called by PictureInPictureButton to start or stop PiP. */
+	/** Called by the media frame's picture-in-picture action to start or stop PiP. */
 	toggle(resourceName: string): Promise<void>
 
 	setRate(rate: 'live' | number | false): void
@@ -207,6 +207,11 @@ export function providePip(partID: () => string): PipContext {
 	setContext(PIP_KEY, context)
 
 	return context
+}
+
+/** Whether a `providePip` ancestor exists. Call it during component init, as `usePip`. */
+export function hasPip(): boolean {
+	return hasContext(PIP_KEY)
 }
 
 export function usePip(): PipContext {
