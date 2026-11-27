@@ -18,6 +18,7 @@ import {
 	Sensor,
 	Servo,
 	Switch,
+	Vision,
 } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
@@ -211,7 +212,21 @@ const RESOURCE_CASES: ResourceCase[] = [
 		triplet: ResourceTriplets.Switch,
 		keys: ['setPosition', 'getPosition', 'getNumberOfPositions'],
 	},
-	{ label: 'Vision', triplet: ResourceTriplets.Vision, keys: [] },
+	{
+		label: 'Vision',
+		namespace: Vision,
+		triplet: ResourceTriplets.Vision,
+		keys: [
+			'overlayFeed',
+			'captureAllFromCamera',
+			'getProperties',
+			'getObjectPointClouds',
+			'getDetectionsFromCamera',
+			'getClassificationsFromCamera',
+			'getDetections',
+			'getClassifications',
+		],
+	},
 ]
 
 const camelCase = (member: string): string => member.charAt(0).toLowerCase() + member.slice(1)
