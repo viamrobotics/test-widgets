@@ -10,6 +10,7 @@ import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
 import * as Button from './components/widgets/Button/index.ts'
 import * as Camera from './components/widgets/Camera/index.ts'
+import * as Discovery from './components/widgets/Discovery/index.ts'
 import * as Encoder from './components/widgets/Encoder/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
@@ -79,7 +80,7 @@ interface ResourceWidgetKeys {
 		| 'powerMode'
 	[ResourceTriplets.Button]: 'push'
 	[ResourceTriplets.Camera]: 'liveFeed' | 'getImages' | 'getPointCloud' | 'getProperties'
-	[ResourceTriplets.Discovery]: never
+	[ResourceTriplets.Discovery]: 'discoverResources' | 'resourcePreview'
 	[ResourceTriplets.Encoder]: 'getPosition' | 'resetPosition' | 'getProperties' | 'zeroPosition'
 	[ResourceTriplets.Gantry]:
 		| 'home'
@@ -361,7 +362,16 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Discovery]: {
-		widgets: {},
+		widgets: {
+			discoverResources: {
+				component: Discovery.DiscoverResources,
+				kind: 'api',
+			},
+			resourcePreview: {
+				component: Discovery.ResourcePreview,
+				kind: 'control',
+			},
+		},
 	},
 	[ResourceTriplets.Encoder]: {
 		widgets: {

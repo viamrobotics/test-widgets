@@ -5,7 +5,6 @@ export type {
 	ComponentPreview,
 	ComponentPreviewSnippet,
 } from './widgets/Discovery/component-preview.ts'
-export { default as DiscoveryWidget } from './widgets/Discovery/Discovery.svelte'
 
 export { default as DoCommandWidget } from './widgets/DoCommand/DoCommand.svelte'
 export { default as ResourceDoCommandWidget } from './widgets/DoCommand/ResourceDoCommand.svelte'
