@@ -52,6 +52,7 @@ export { default as WidgetsProvider } from './WidgetsProvider.svelte'
 
 export * as Arm from './components/widgets/Arm/index.ts'
 export * as AudioInput from './components/widgets/AudioInput/index.ts'
+export * as AudioOutput from './components/widgets/AudioOutput/index.ts'
 export * as Base from './components/widgets/Base/index.ts'
 export * as Board from './components/widgets/Board/index.ts'
 export * as Button from './components/widgets/Button/index.ts'
