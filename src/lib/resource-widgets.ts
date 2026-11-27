@@ -24,6 +24,7 @@ import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
+import * as Switch from './components/widgets/Switch/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
 
@@ -122,7 +123,7 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.Sensor]: never
 	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
 	[ResourceTriplets.Slam]: 'getPosition'
-	[ResourceTriplets.Switch]: never
+	[ResourceTriplets.Switch]: 'setPosition' | 'getPosition' | 'getNumberOfPositions'
 	[ResourceTriplets.Vision]: never
 }
 
@@ -449,7 +450,20 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Switch]: {
-		widgets: {},
+		widgets: {
+			setPosition: {
+				component: Switch.SetPosition,
+				kind: 'control',
+			},
+			getPosition: {
+				component: Switch.GetPosition,
+				kind: 'api',
+			},
+			getNumberOfPositions: {
+				component: Switch.GetNumberOfPositions,
+				kind: 'api',
+			},
+		},
 	},
 	[ResourceTriplets.Vision]: {
 		widgets: {},
