@@ -2,7 +2,6 @@ import type { ResourceName } from '@viamrobotics/sdk'
 
 import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-widget-types.ts'
 
-import { MLModelServiceMetadataWidget } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as AudioInput from './components/widgets/AudioInput/index.ts'
 import * as AudioOutput from './components/widgets/AudioOutput/index.ts'
@@ -15,6 +14,7 @@ import * as Encoder from './components/widgets/Encoder/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as InputController from './components/widgets/InputController/index.ts'
+import * as MLModel from './components/widgets/MLModel/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import * as MovementSensor from './components/widgets/MovementSensor/index.ts'
@@ -102,7 +102,7 @@ interface ResourceWidgetKeys {
 		| 'getCurrentInputs'
 		| 'goToInputs'
 	[ResourceTriplets.InputController]: 'getEvents' | 'triggerEvent' | 'webGamepad'
-	[ResourceTriplets.MLModel]: 'metadata'
+	[ResourceTriplets.MLModel]: 'metadata' | 'infer'
 	[ResourceTriplets.Motion]: 'move'
 	[ResourceTriplets.Motor]:
 		| 'quickMove'
@@ -487,7 +487,14 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.MLModel]: {
 		widgets: {
-			metadata: { component: MLModelServiceMetadataWidget, kind: 'api' },
+			metadata: {
+				component: MLModel.Metadata,
+				kind: 'api',
+			},
+			infer: {
+				component: MLModel.Infer,
+				kind: 'api',
+			},
 		},
 	},
 	[ResourceTriplets.Motion]: {
