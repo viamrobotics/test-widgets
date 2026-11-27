@@ -2,60 +2,39 @@ import type { ComponentProps } from 'svelte'
 
 import { render, screen, within } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../AnalogRead.svelte'
 
 const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 	render(Subject, {
 		value: undefined,
-		getValue: vi.fn(),
+		getValue: vi.fn(async () => true),
 		...props,
 	})
 
+const valueRow = () => within(screen.getByRole('group', { name: 'Value' }))
+
 describe('Board Analog Read', () => {
-	let user: ReturnType<typeof userEvent.setup>
-	let getValue: () => void
+	it('calls getValue from the Value row', async () => {
+		const user = userEvent.setup()
+		const getValue = vi.fn(async () => true)
+		renderSubject({ getValue })
 
-	beforeEach(() => {
-		user = userEvent.setup()
-		getValue = vi.fn()
+		await user.click(valueRow().getByRole('button', { name: 'Get' }))
+
+		expect(getValue).toHaveBeenCalledOnce()
 	})
 
-	it('calls getValue', async () => {
-		renderSubject({
-			getValue,
-		})
-
-		const valueSection = screen.getByRole('region', { name: 'Value' })
-		const getValueButton = within(valueSection).getByRole('button', {
-			name: /get/iu,
-		})
-		await user.click(getValueButton)
-
-		expect(getValue).toHaveBeenCalled()
-	})
-
-	it('displays empty initial value', () => {
+	it('reads - before a read', () => {
 		renderSubject({})
-		const valueSection = screen.getByRole('region', {
-			name: /value/iu,
-		})
-		const valueOutput = within(valueSection).getByRole('status')
-		expect(valueOutput).toBeInTheDocument()
-		expect(valueOutput).toMatchTextContent(/––/iu)
+
+		expect(valueRow().getByRole('status')).toHaveTextContent('-')
 	})
 
-	it('displays value', () => {
-		renderSubject({
-			value: 50,
-		})
+	it('reads the value', () => {
+		renderSubject({ value: 50 })
 
-		const valueSection = screen.getByRole('region', {
-			name: /value/iu,
-		})
-		const valueOutput = within(valueSection).getByRole('status')
-		expect(valueOutput).toBeInTheDocument()
-		expect(valueOutput).toMatchTextContent('50')
+		expect(valueRow().getByRole('status')).toHaveTextContent('50')
 	})
 })

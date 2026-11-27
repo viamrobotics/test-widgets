@@ -7,9 +7,6 @@ export { default as AudioInputGetPropertiesWidget } from './widgets/AudioInput/G
 export { default as AudioOutputWidget } from './widgets/AudioOutput/AudioOutput.svelte'
 export { default as AudioOutputGetPropertiesWidget } from './widgets/AudioOutput/GetPropertiesWidget.svelte'
 
-export { default as BoardWidget } from './widgets/Board/Board.svelte'
-export { default as BoardReadWritePinsWidget } from './widgets/Board/ReadWritePinsWidget.svelte'
-
 export { default as ButtonWidget } from './widgets/Button/Button.svelte'
 export { default as ButtonPushWidget } from './widgets/Button/Push.svelte'
 
