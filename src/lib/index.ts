@@ -9,6 +9,27 @@ export {
 export { clientForResource, supportsDoCommand } from './client-map'
 export * from './components'
 
+export {
+	CenterControls,
+	DirectionalMarker,
+	FollowControls,
+	LngLatInput,
+	MapLibre,
+	MapLibreMarker,
+	type MapProvider,
+	MapProviders,
+	NavigationControls,
+	SatelliteControls,
+	cartesianToLngLat,
+	cartesianToMercator,
+	lngLatToCartesian,
+	lngLatToMercator,
+	mercatorToCartesian,
+	useMapLibre,
+	useMapLibreEvent,
+} from '@viamrobotics/prime-map'
+export { useMapLibreThreeRaycast, useMapLibreThreeRenderer } from '@viamrobotics/prime-map/three'
+
 export { getResourceAPI } from './get-resource-api'
 export {
 	isKnownResource,
