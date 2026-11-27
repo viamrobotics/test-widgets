@@ -19,6 +19,7 @@ import {
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
+import * as Button from './components/widgets/Button/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
@@ -74,7 +75,7 @@ interface ResourceWidgetKeys {
 		| 'analogReader'
 		| 'digitalInterrupt'
 		| 'powerMode'
-	[ResourceTriplets.Button]: never
+	[ResourceTriplets.Button]: 'push'
 	[ResourceTriplets.Camera]: never
 	[ResourceTriplets.Discovery]: never
 	[ResourceTriplets.Encoder]: 'getPosition'
@@ -274,7 +275,12 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Button]: {
-		widgets: {},
+		widgets: {
+			push: {
+				component: Button.Push,
+				kind: 'api',
+			},
+		},
 	},
 	[ResourceTriplets.Camera]: {
 		widgets: {},
