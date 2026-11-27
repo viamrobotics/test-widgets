@@ -31,11 +31,6 @@ export { default as MLModelServiceWidget } from './widgets/MLModel/MlModelServic
 
 export { default as NavigationServiceWidget } from './widgets/Navigation/Navigation.svelte'
 
-export { default as PowerSensorWidget } from './widgets/PowerSensor/PowerSensor.svelte'
-export { default as PowerSensorGetVoltageWidget } from './widgets/PowerSensor/GetVoltageWidget.svelte'
-export { default as PowerSensorGetCurrentWidget } from './widgets/PowerSensor/GetCurrentWidget.svelte'
-export { default as PowerSensorGetPowerWidget } from './widgets/PowerSensor/GetPowerWidget.svelte'
-
 export { default as SlamMap2D } from './Slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/Slam/Slam.svelte'
 export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidget.svelte'

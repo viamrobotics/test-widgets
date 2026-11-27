@@ -1,14 +1,24 @@
 <script lang="ts">
 	import { formatNumeric } from '#lib/format.js'
 
+	import ReadingRow from './ReadingRow.svelte'
+
 	interface Props {
-		data: number
+		data: number | undefined
 	}
 
 	const { data }: Props = $props()
+
+	const POWER_READING_DECIMALS = 4
+
+	const value = $derived(
+		data === undefined ? undefined : formatNumeric(data, POWER_READING_DECIMALS)
+	)
 </script>
 
-<span class="font-roboto-mono flex flex-row gap-2">
-	{formatNumeric(data, 4)}
-	<abbr class="text-subtle-2">W</abbr>
-</span>
+<ReadingRow
+	label="Power"
+	{value}
+>
+	<span class="readout-suffix">W</span>
+</ReadingRow>
