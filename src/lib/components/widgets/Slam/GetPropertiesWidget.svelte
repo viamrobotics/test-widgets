@@ -73,7 +73,7 @@
 	method="GetProperties"
 	api={ResourceTriplets.Slam}
 	queries={[propertiesQuery]}
-	class="grow flex-col gap-2"
+	class="grow flex-col gap-1"
 >
 	<div
 		role="group"
