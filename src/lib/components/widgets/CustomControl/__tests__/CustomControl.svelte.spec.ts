@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { CUSTOM_CONTROL_CSP, prepareArtifact } from '../custom-control'
 import Subject from '../CustomControl.svelte'
+import Pane from './__fixtures__/In320Pane.svelte'
 import WithSibling from './__fixtures__/WithSibling.svelte'
 
 // The widget reads the robot through useRobotClient, so the spec stubs that hook the way the other
@@ -23,7 +24,19 @@ const IDLE_GUEST = '<p>Waiting</p>'
 const guestReportingHeight = (height: number) => `<script type="module">
 	window.addEventListener('message', (event) => {
 		if (event.data?.type === 'connect') {
-			event.ports[0].postMessage({ type: 'size', height: ${height} })
+			event.ports[0].postMessage({ type: 'size', width: 320, height: ${height} })
+		}
+	})
+	parent.postMessage({ protocol: 'viam-post-message', version: 1, type: 'ready' }, '*')
+</script>`
+
+const guestStatingLayout = (layout: {
+	minWidth: number
+	minHeight: number
+}) => `<script type="module">
+	window.addEventListener('message', (event) => {
+		if (event.data?.type === 'connect') {
+			event.ports[0].postMessage({ type: 'layout', ...${JSON.stringify(layout)} })
 		}
 	})
 	parent.postMessage({ protocol: 'viam-post-message', version: 1, type: 'ready' }, '*')
@@ -65,14 +78,45 @@ describe('CustomControl', () => {
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 	})
 
-	// The harness loads no stylesheet, so the 80vh cap itself is Tailwind's rule to honor; the
-	// component's contract is the requested height on the element plus the capping class.
-	it('sets a large reported height inline and leaves the 80vh cap to the class', async () => {
+	it('applies a tall reported height in full, with no viewport cap', async () => {
 		renderSubject({ html: guestReportingHeight(5000) })
 
 		await expect.poll(() => getFrame().style.height).toBe('5000px')
-		expect(getFrame()).toHaveClass('max-h-[80vh]')
+		expect(getFrame().className).not.toMatch(/max-h/u)
 		expect(getFrame()).toHaveClass('min-h-px')
+	})
+
+	it("applies the guest's stated minimums as the iframe's min sizes", async () => {
+		renderSubject({ html: guestStatingLayout({ minWidth: 240, minHeight: 144 }) })
+
+		await expect.poll(() => getFrame().style.minWidth).toBe('240px')
+		expect(getFrame().style.minHeight).toBe('144px')
+	})
+
+	it('keeps the class height and no inline height for a connected guest that never reports a size', async () => {
+		renderSubject({ html: guestStatingLayout({ minWidth: 240, minHeight: 144 }) })
+
+		await expect.poll(() => getFrame().style.minWidth).toBe('240px')
+		expect(getFrame()).toHaveClass('h-40')
+		expect(getFrame().style.height).toBe('')
+	})
+
+	it("passes the guest's stated layout to onLayout", async () => {
+		const onLayout = vi.fn()
+
+		renderSubject({ html: guestStatingLayout({ minWidth: 240, minHeight: 144 }), onLayout })
+
+		await vi.waitFor(() =>
+			expect(onLayout).toHaveBeenCalledExactlyOnceWith({ minWidth: 240, minHeight: 144 })
+		)
+	})
+
+	it('keeps the frame and the pane within 320 px', () => {
+		render(Pane, { partID: 'part-id', resourceName: 'my-sensor', html: IDLE_GUEST })
+
+		const pane = screen.getByTestId('pane')
+		expect(getFrame().getBoundingClientRect().width).toBeLessThanOrEqual(320)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
 	})
 
 	it('renders the loading snippet in place of the default progress', () => {
@@ -141,14 +185,27 @@ describe('CustomControl', () => {
 			expect(screen.getByTestId('sibling')).toBeInTheDocument()
 		})
 
-		it('falls back to the repo error display', () => {
+		it('reports the guest error to the indicator and leaves the box empty', async () => {
 			failToStart()
 
 			renderSubject()
 
-			expect(
-				within(screen.getByRole('alert')).getByText(/Error: no contentWindow/u)
-			).toBeInTheDocument()
+			const indicator = screen.getByRole('button', { name: /1 error/u })
+			expect(indicator).toBeInTheDocument()
+			expect(screen.getByRole('alert').children).toHaveLength(0)
+			expect(screen.getByRole('alert').textContent).toBe('')
+		})
+
+		it('does not report to the indicator when the error snippet renders', () => {
+			failToStart()
+			const error = createRawSnippet<[{ failure: Error; reset: () => void }]>(() => ({
+				render: () => '<p>Host failure</p>',
+			}))
+
+			renderSubject({ error })
+
+			expect(within(screen.getByRole('alert')).getByText('Host failure')).toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
 		})
 	})
 })

@@ -1,7 +1,20 @@
+import type { Component, ComponentProps } from 'svelte'
+
 import { render, screen } from '@testing-library/svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../OperationsAndSessions.svelte'
+import RttPill from '../RttPill.svelte'
+import PaneFixture, { type InPaneProps } from './__fixtures__/InPane.svelte'
+import WithQueryClientFixture, {
+	type WithQueryClientProps,
+} from './__fixtures__/WithQueryClient.svelte'
+
+const Pane: Component<InPaneProps<ComponentProps<typeof Subject>>> = PaneFixture
+const WithQueryClient: Component<WithQueryClientProps<ComponentProps<typeof Subject>>> =
+	WithQueryClientFixture
+
+const NARROW_PX = 320
 
 const state = vi.hoisted(
 	(): {
@@ -45,18 +58,53 @@ describe('OperationsAndSessions', () => {
 	})
 
 	it('shows no errors when nothing failed', () => {
-		render(Subject, { partID: 'part-id' })
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
 
 		expect(screen.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
 	})
 
-	it('reports a failed operations query in the heading indicator, even while collapsed', () => {
+	it('reports a failed operations query in the heading indicator', () => {
 		state.operationsError = new Error('operations unavailable')
 
-		render(Subject, { partID: 'part-id' })
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
 
 		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Copy error' })).not.toBeInTheDocument()
+	})
+
+	it('fills its container with no fixed position and no collapse', () => {
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
+
+		const region = screen.getByRole('region', { name: 'Operations and sessions' })
+		expect(getComputedStyle(region).position).not.toBe('fixed')
+		expect(screen.queryByRole('button', { name: /expand|collapse/iu })).not.toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: 'Operations' })).toBeInTheDocument()
+	})
+
+	it('keeps the root and the pane within 320 px', () => {
+		render(Pane, {
+			props: { widget: Subject, width: NARROW_PX, props: { partID: 'part-id' } },
+		})
+
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild ?? pane
+		expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
+	})
+
+	it('draws Pause and the rate picker for its polling reads', () => {
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
+
+		expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+		expect(screen.getByRole('combobox', { name: 'Updates' })).toBeInTheDocument()
+	})
+
+	it('says a kill failed', () => {
+		state.cancelError = new Error('cancel refused')
+
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
+
+		expect(screen.getByTestId('status-line').textContent.trim()).toBe('Kill failed')
 	})
 
 	it('collects the query and cancel errors in one indicator', () => {
@@ -64,8 +112,23 @@ describe('OperationsAndSessions', () => {
 		state.sessionsError = new Error('sessions unavailable')
 		state.cancelError = new Error('cancel refused')
 
-		render(Subject, { partID: 'part-id' })
+		render(WithQueryClient, { props: { widget: Subject, props: { partID: 'part-id' } } })
 
 		expect(screen.getByRole('button', { name: '3 errors, copy to clipboard' })).toBeInTheDocument()
+	})
+})
+
+describe('RttPill', () => {
+	it.each([
+		[0, 'badge-success', 'healthy'],
+		[49, 'badge-success', 'healthy'],
+		[50, 'badge-warning', 'slow'],
+		[499, 'badge-warning', 'slow'],
+		[500, 'badge-danger', 'failing'],
+		[2000, 'badge-danger', 'failing'],
+	])('colors %i ms as %s and reads %s', (rtt, variantClass, word) => {
+		render(RttPill, { rtt })
+
+		expect(screen.getByText(`RTT ${rtt} ms, ${word}`)).toHaveClass('badge', variantClass)
 	})
 })

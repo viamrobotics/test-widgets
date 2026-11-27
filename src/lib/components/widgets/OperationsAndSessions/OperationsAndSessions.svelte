@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { Icon } from '@viamrobotics/prime-core'
+	import { Progress } from '@viamrobotics/prime-ui'
 	import { createRobotMutation, createRobotQuery, useRobotClient } from '@viamrobotics/svelte-sdk'
+	import { createRefetchIntervalStore } from '#lib/components/refetch-interval-store.svelte.js'
+	import RefetchController from '#lib/components/RefetchController.svelte'
 	import { Section, useSectionErrors } from '#lib/components/Section/index.js'
-	import { slide } from 'svelte/transition'
+	import StatusLine from '#lib/components/StatusLine.svelte'
 
+	import { createRoundTripTimer } from './create-round-trip-timer.svelte'
 	import OperationsTable from './OperationsTable.svelte'
 	import RttPill from './RttPill.svelte'
 	import SessionsTable from './SessionsTable.svelte'
@@ -14,106 +17,86 @@
 
 	const { partID }: Props = $props()
 
-	let isCollapsed = $state(true)
+	// Operations and sessions belong to the machine, so the store is named for the robot client.
+	const refetchInterval = createRefetchIntervalStore(
+		() => partID,
+		() => 'robot',
+		'robot/getOperations'
+	)
 
 	const client = useRobotClient(() => partID)
 	const operationsQuery = createRobotQuery(client, 'getOperations', () => ({
-		refetchInterval: 1000,
+		refetchInterval: refetchInterval.current,
 	}))
 	const cancelOperationMutation = createRobotMutation(client, 'cancelOperation')
-	// only enabled if not collapsed
 	const sessionsQuery = createRobotQuery(client, 'getSessions', () => ({
-		refetchInterval: 1000,
-		enabled: !isCollapsed,
+		refetchInterval: refetchInterval.current,
 	}))
+
+	const killStatusText = $derived(cancelOperationMutation.error ? 'Kill failed' : '')
 
 	const sectionErrors = useSectionErrors(() => ({
 		queries: [operationsQuery, sessionsQuery],
 		mutations: [cancelOperationMutation],
 	}))
 
-	let rtt = $state(0)
-	let then = Date.now()
-
-	$effect.pre(() => {
-		if (operationsQuery.isRefetching) {
-			then = Date.now()
-		} else if (operationsQuery.isSuccess) {
-			rtt = Date.now() - then
-		}
-	})
+	const roundTripTimer = createRoundTripTimer(() => partID, 'getOperations')
 
 	const operations = $derived(operationsQuery.data ?? [])
 
 	const cancelOperation = (id: string) => cancelOperationMutation.mutate([id])
+	const pendingOperationId = $derived(
+		cancelOperationMutation.isPending ? cancelOperationMutation.variables?.[0] : undefined
+	)
 
 	const id = $props.id()
-	const collapseID = `${id}-ops-sessions-collapse`
-	const headingID = `${id}-ops-sessions-heading`
+	const headingId = `${id}-ops-sessions-heading`
 </script>
 
-<!-- z-10 is enough to ensure it is above the 'maplibre Google Maps' floating element-->
 <section
-	class="fixed bottom-0 z-10 w-full bg-white"
-	aria-labelledby={headingID}
+	class="flex min-w-0 flex-col gap-4"
+	aria-labelledby={headingId}
 >
-	<header class="border-light bg-extralight flex h-8 items-center border-y">
-		<button
-			class="group flex grow items-center gap-2 self-stretch px-2"
-			aria-controls={collapseID}
-			aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} Operations and Sessions`}
-			aria-expanded={!isCollapsed}
-			onclick={() => (isCollapsed = !isCollapsed)}
+	<!-- px-0.5 holds the error indicator's 2px touch target inside the pane. -->
+	<header class="flex flex-wrap items-center gap-2 px-0.5">
+		<h3
+			id={headingId}
+			class="text-default text-sm font-semibold"
 		>
-			<Icon
-				cx="text-gray-6"
-				name={isCollapsed ? 'chevron-up' : 'chevron-down'}
-			/>
-			<h3
-				id={headingID}
-				class="font-roboto-mono text-subtle-1 text-xs tracking-wider uppercase"
-			>
-				Operations and Sessions
-			</h3>
-			{#if operations}
-				<spacer class="w-4"></spacer>
-				<span class="font-roboto-mono text-subtle-2 text-xs">RTT</span>
-				<RttPill {rtt} />
-			{/if}
-		</button>
-		<div class="px-2">
+			Operations and sessions
+		</h3>
+		<RttPill rtt={roundTripTimer.current} />
+		<div class="ml-auto">
 			<Section.Errors errors={sectionErrors.errors} />
 		</div>
 	</header>
 
-	{#if !isCollapsed}
-		<!-- 
-  NOTE(zp, 2024-09-04) height is calculated here using 30vh because the parent (section) is the child of a flexbox and so it has to use min-h in order to get the right height (not h))
-    but transition:slide and transition-[height] dont work without a height change (not a min-height change) so I can't put it on the section 
-    (transition-[min-height] doesn't work).
-   -->
-		<div
-			transition:slide={{ duration: 250 }}
-			class="flex h-[calc(30vh-32px)] flex-col gap-4 overflow-y-auto px-4 pt-3 pb-4"
-		>
-			<div class="flex h-max flex-col gap-2">
-				<span class="text-default text-sm font-semibold">Operations</span>
-				{#if operations}
-					<OperationsTable
-						{operations}
-						{cancelOperation}
-					/>
-				{/if}
-			</div>
-			<div class="flex h-max flex-col gap-2">
-				<span class="text-default text-sm font-semibold">Sessions</span>
-				{#if sessionsQuery.data}
-					<SessionsTable
-						sessions={sessionsQuery.data}
-						ourSessionId={client.current?.sessionId}
-					/>
-				{/if}
-			</div>
-		</div>
-	{/if}
+	<div class="flex min-w-0 flex-col gap-2">
+		<h4 class="text-default text-sm font-semibold">Operations</h4>
+		{#if operationsQuery.data}
+			<OperationsTable
+				{operations}
+				{cancelOperation}
+				{pendingOperationId}
+			/>
+		{:else if operationsQuery.isLoading}
+			<Progress label="Loading operations" />
+		{/if}
+		<StatusLine text={killStatusText} />
+	</div>
+	<div class="flex min-w-0 flex-col gap-2">
+		<h4 class="text-default text-sm font-semibold">Sessions</h4>
+		{#if sessionsQuery.data}
+			<SessionsTable
+				sessions={sessionsQuery.data}
+				ourSessionId={client.current?.sessionId}
+			/>
+		{:else if sessionsQuery.isLoading}
+			<Progress label="Loading sessions" />
+		{/if}
+	</div>
+	<RefetchController
+		{refetchInterval}
+		queries={[operationsQuery, sessionsQuery]}
+	/>
 </section>
