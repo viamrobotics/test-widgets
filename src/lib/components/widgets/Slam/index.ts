@@ -1,0 +1,6 @@
+export { default as Map } from './SlamMapControl.svelte'
+export { default as MoveOnMap } from './MoveOnMapControl.svelte'
+export { default as GetPosition } from './GetPositionWidget.svelte'
+export { default as GetPointCloudMap } from './GetPointCloudMapWidget.svelte'
+export { default as GetProperties } from './GetPropertiesWidget.svelte'
+export { default as GetInternalState } from './GetInternalStateWidget.svelte'

@@ -17,6 +17,7 @@ import {
 	PowerSensor,
 	Sensor,
 	Servo,
+	Slam,
 	Switch,
 	Vision,
 } from '../index.ts'
@@ -205,7 +206,19 @@ const RESOURCE_CASES: ResourceCase[] = [
 		triplet: ResourceTriplets.Servo,
 		keys: ['move', 'quickMove', 'moveTo', 'isMoving', 'getPosition', 'stop'],
 	},
-	{ label: 'Slam', triplet: ResourceTriplets.Slam, keys: ['getPosition'] },
+	{
+		label: 'Slam',
+		namespace: Slam,
+		triplet: ResourceTriplets.Slam,
+		keys: [
+			'map',
+			'moveOnMap',
+			'getPosition',
+			'getPointCloudMap',
+			'getProperties',
+			'getInternalState',
+		],
+	},
 	{
 		label: 'Switch',
 		namespace: Switch,

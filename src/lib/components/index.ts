@@ -24,8 +24,6 @@ export { default as MLModelServiceWidget } from './widgets/MLModel/MlModelServic
 export { default as NavigationServiceWidget } from './widgets/Navigation/Navigation.svelte'
 
 export { default as SlamMap2D } from './Slam/map2d/index.svelte'
-export { default as SlamWidget } from './widgets/Slam/Slam.svelte'
-export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidget.svelte'
 
 export { default as StopWidget } from './Stop.svelte'
 
