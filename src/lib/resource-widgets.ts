@@ -15,6 +15,7 @@ import * as Button from './components/widgets/Button/index.ts'
 import * as Encoder from './components/widgets/Encoder/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
+import * as InputController from './components/widgets/InputController/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import * as MovementSensor from './components/widgets/MovementSensor/index.ts'
@@ -94,7 +95,7 @@ interface ResourceWidgetKeys {
 		| 'stop'
 		| 'getCurrentInputs'
 		| 'goToInputs'
-	[ResourceTriplets.InputController]: never
+	[ResourceTriplets.InputController]: 'getEvents' | 'triggerEvent' | 'webGamepad'
 	[ResourceTriplets.MLModel]: 'metadata'
 	[ResourceTriplets.Motion]: 'move'
 	[ResourceTriplets.Motor]:
@@ -393,7 +394,20 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.InputController]: {
-		widgets: {},
+		widgets: {
+			getEvents: {
+				component: InputController.GetEvents,
+				kind: 'api',
+			},
+			triggerEvent: {
+				component: InputController.TriggerEvent,
+				kind: 'api',
+			},
+			webGamepad: {
+				component: InputController.WebGamepad,
+				kind: 'control',
+			},
+		},
 	},
 	[ResourceTriplets.MLModel]: {
 		widgets: {

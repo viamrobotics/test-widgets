@@ -21,8 +21,6 @@ export { default as ResourceDoCommandWidget } from './widgets/DoCommand/Resource
 
 export { default as GenericWidget } from './widgets/Generic/Generic.svelte'
 
-export { default as InputControllerWidget } from './widgets/InputController/InputController.svelte'
-
 export { default as MLModelServiceMetadataWidget } from './widgets/MLModel/MetadataWidget.svelte'
 export { default as MLModelServiceWidget } from './widgets/MLModel/MlModelService.svelte'
 

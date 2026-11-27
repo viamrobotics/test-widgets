@@ -19,4 +19,9 @@
 	$effect.pre(() => {
 		onConnectionChange($connected)
 	})
+
+	// A scene taken down, as when the machine connection drops, reads no gamepad.
+	$effect(() => () => {
+		onConnectionChange(false)
+	})
 </script>
