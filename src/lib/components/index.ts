@@ -1,9 +1,6 @@
 export { default as ConnectionStatus } from './ConnectionStatus.svelte'
 export { Section } from './Section'
 
-export { default as AudioInputWidget } from './widgets/AudioInput/AudioInput.svelte'
-export { default as AudioInputGetPropertiesWidget } from './widgets/AudioInput/GetPropertiesWidget.svelte'
-
 export { default as AudioOutputWidget } from './widgets/AudioOutput/AudioOutput.svelte'
 export { default as AudioOutputGetPropertiesWidget } from './widgets/AudioOutput/GetPropertiesWidget.svelte'
 
