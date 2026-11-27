@@ -5,7 +5,6 @@ import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-
 import {
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
-	EncoderGetPositionWidget,
 	MLModelServiceMetadataWidget,
 	SlamGetPositionWidget,
 } from './components/index.ts'
@@ -13,6 +12,7 @@ import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
 import * as Button from './components/widgets/Button/index.ts'
+import * as Encoder from './components/widgets/Encoder/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
@@ -74,7 +74,7 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.Button]: 'push'
 	[ResourceTriplets.Camera]: never
 	[ResourceTriplets.Discovery]: never
-	[ResourceTriplets.Encoder]: 'getPosition'
+	[ResourceTriplets.Encoder]: 'getPosition' | 'resetPosition' | 'getProperties' | 'zeroPosition'
 	[ResourceTriplets.Gantry]:
 		| 'home'
 		| 'moveToPosition'
@@ -298,7 +298,22 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Encoder]: {
 		widgets: {
-			getPosition: { component: EncoderGetPositionWidget, kind: 'api' },
+			getPosition: {
+				component: Encoder.GetPosition,
+				kind: 'api',
+			},
+			resetPosition: {
+				component: Encoder.ResetPosition,
+				kind: 'api',
+			},
+			getProperties: {
+				component: Encoder.GetProperties,
+				kind: 'api',
+			},
+			zeroPosition: {
+				component: Encoder.ZeroPosition,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.Gantry]: {
