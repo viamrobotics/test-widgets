@@ -12,6 +12,7 @@ import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
 import * as Button from './components/widgets/Button/index.ts'
+import * as Camera from './components/widgets/Camera/index.ts'
 import * as Encoder from './components/widgets/Encoder/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
@@ -73,7 +74,7 @@ interface ResourceWidgetKeys {
 		| 'digitalInterrupt'
 		| 'powerMode'
 	[ResourceTriplets.Button]: 'push'
-	[ResourceTriplets.Camera]: never
+	[ResourceTriplets.Camera]: 'liveFeed' | 'getImages' | 'getPointCloud' | 'getProperties'
 	[ResourceTriplets.Discovery]: never
 	[ResourceTriplets.Encoder]: 'getPosition' | 'resetPosition' | 'getProperties' | 'zeroPosition'
 	[ResourceTriplets.Gantry]:
@@ -292,7 +293,24 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Camera]: {
-		widgets: {},
+		widgets: {
+			liveFeed: {
+				component: Camera.LiveFeed,
+				kind: 'control',
+			},
+			getImages: {
+				component: Camera.GetImages,
+				kind: 'api',
+			},
+			getPointCloud: {
+				component: Camera.GetPointCloud,
+				kind: 'api',
+			},
+			getProperties: {
+				component: Camera.GetProperties,
+				kind: 'api',
+			},
+		},
 	},
 	[ResourceTriplets.Discovery]: {
 		widgets: {},

@@ -1,54 +1,85 @@
 <script lang="ts">
+	import type { QueryObserverResult } from '@tanstack/svelte-query'
+	import type { MediaFit } from '#lib/components/MediaFrame/media-fit.js'
+
 	import * as Sentry from '@sentry/svelte'
-	import { createMutation, type QueryObserverResult } from '@tanstack/svelte-query'
-	import { Button, Label, Select } from '@viamrobotics/prime-core'
-	import { CameraClient, type RobotClient, streamApi, StreamClient } from '@viamrobotics/sdk'
+	import { CameraClient, type RobotClient, StreamClient } from '@viamrobotics/sdk'
 	import { useRobotClient } from '@viamrobotics/svelte-sdk'
-	import { assertExists } from '#lib/assert.js'
-	import ApiSection from '#lib/components/ApiSection.svelte'
+	import { toError } from '#lib/components/MediaFrame/to-error.js'
 	import Progress from '#lib/components/Progress.svelte'
 	import { Section } from '#lib/components/Section/index.js'
 	import { formatNumeric } from '#lib/format.js'
 	import { useMeasureFps } from '#lib/fps.svelte.js'
 	import { usePip } from '#lib/pip/context.svelte.js'
-	import { ResourceTriplets } from '#lib/resource-triplet.js'
 	import { useResizeObserver } from 'runed'
 	import { untrack } from 'svelte'
 
 	import { getBlobForViamDepth, VIAM_DEPTH_MIME_TYPE } from './decode-viam-depth'
 	import { pickImageForSource } from './pick-image-for-source'
+	import { pixelUnderCursor } from './pixel-under-cursor'
+
+	/** One presented video frame: the measured frame rate and the frame's own size in pixels. */
+	interface VideoFrameInfo {
+		fps: number
+		width: number
+		height: number
+	}
+
+	// The video fills its box, and `object-fit` places the frame in it. The host's box keeps the frame's ratio under Keep ratio.
+	const VIDEO_FIT_CLASSES: Record<MediaFit, string> = {
+		'keep-ratio': 'object-contain',
+		fit: 'object-contain',
+		stretch: 'object-fill',
+		crop: 'object-cover',
+	}
 
 	interface Props {
 		resourceName: string
 		partID: string
-		showResolutionOptions?: boolean
 		isLive: boolean
 		data: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['data']
 		error?: QueryObserverResult<Awaited<ReturnType<CameraClient['getImages']>>>['error']
 		isLoading: boolean
-		videoClass?: string
+		/** How the frame sits in the video's box. */
+		fit: MediaFit
 		showMousePositionTooltip?: boolean
 		sourceName?: string
 		refetch: () => Promise<unknown>
+		/** Called on each presented frame. When set, the host draws the fps badge, so the video omits its own. */
+		onFrame?: (frame: VideoFrameInfo) => void
+		/**
+		 * Set it to take polling errors off the overlay. The feed keeps its last frame and the next poll
+		 * retries. Each failed poll or undecodable frame arrives here, then `undefined` once one succeeds.
+		 */
+		onPollingError?: (error: Error | undefined) => void
+		/**
+		 * Set it to take Live stream errors off the overlay. The stream still stops, and each error
+		 * arrives here, so the host can offer the restart.
+		 */
+		onStreamError?: (error: Error) => void
 	}
 
 	const {
 		resourceName,
 		partID,
-		showResolutionOptions,
 		isLive,
 		data,
 		error,
 		isLoading,
-		videoClass = '',
+		fit,
 		showMousePositionTooltip = false,
 		sourceName = '',
 		refetch,
+		onFrame,
+		onPollingError,
+		onStreamError,
 	}: Props = $props()
 
 	let videoElement = $state.raw<HTMLVideoElement>()
 	let isStreamLoading = $state(false)
-	let streamError: Error | null
+	let streamError = $state.raw<Error>()
+	// A polled frame that could not be decoded, cleared by the next frame that could.
+	let frameError = $state.raw<Error>()
 	let vfcID = 0
 	let liveStreamStart: DOMHighResTimeStamp | undefined
 
@@ -116,50 +147,29 @@
 	}
 
 	let streamClient: StreamClient | undefined
-	let resolutionOptions = $state<streamApi.Resolution[]>([])
-	let selectedResolution: streamApi.Resolution | undefined
 
 	const disableStream = async () => {
 		try {
 			isStreamLoading = false
-			streamError = null
 			const last = streamClient
 			streamClient = undefined
 			last?.off('track', handleTrack)
 			await last?.remove(resourceName)
-			resolutionOptions = []
-			selectedResolution = undefined
 			liveStreamStart = undefined
 		} catch (nextError: unknown) {
-			lastError = nextError as Error
+			streamError = toError(nextError)
 		}
 	}
 
-	const handleResolutionChange = (event: Event) => {
-		if (event.target instanceof HTMLSelectElement) {
-			const [width, height] = event.target.value.split('x').map(Number) as [number, number]
-			selectedResolution = new streamApi.Resolution({ width, height })
-		}
+	// Until the first frame arrives the video has no size of its own, so it holds the feed's usual ratio.
+	let hasFrame = $state(false)
+	const updateHasFrame = () => {
+		hasFrame = (videoElement?.videoWidth ?? 0) > 0
 	}
-
-	// NOTE(ELP): I don't know that this will be used anywhere else, so I'm
-	// opting to leave it here for now. This could be moved to a shared
-	// createMutation function.
-	const mutationOptions = $derived({
-		mutationKey: [partID, resourceName, 'setOptions'],
-		mutationFn: async (resolution?: streamApi.Resolution) => {
-			assertExists(streamClient, 'Expected stream client')
-			if (resolution) {
-				return streamClient.setOptions(resourceName, resolution.width, resolution.height)
-			}
-			return streamClient.resetOptions(resourceName)
-		},
-	})
-
-	const resolutionMutation = createMutation(() => mutationOptions)
 
 	const startStream = async (robotClient: RobotClient, name: string, live: boolean) => {
 		try {
+			streamError = undefined
 			await disableStream()
 			// Don't setMediaStream(null) here or else the PiP thrashes.
 
@@ -171,8 +181,6 @@
 				streamClient = new StreamClient(robotClient)
 				streamClient.on('track', handleTrack)
 				await streamClient.getStream(name)
-				resolutionOptions = await streamClient.getOptions(name)
-				selectedResolution = resolutionOptions[0]
 			} else {
 				// Polling
 
@@ -182,14 +190,38 @@
 				setMediaStream(canvas.captureStream())
 			}
 		} catch (nextError) {
-			streamError = nextError as Error
+			streamError = toError(nextError)
 		}
 	}
 
+	const pollingError = $derived(error ?? frameError)
+	const isReportingPollingErrors = $derived(onPollingError !== undefined)
+	const overlayPollingError = $derived(isReportingPollingErrors ? undefined : pollingError)
+	// The live stream's error while Live, and the polling query's or the frame decode's otherwise, each stops the stream.
+	const stoppingError = $derived(isLive ? streamError : overlayPollingError)
+	// One overlay shows the stopping error, unless the host takes the live stream's.
+	const lastError = $derived(isLive && onStreamError ? undefined : stoppingError)
+
+	// A polling error on the overlay pauses the stream until it clears. A live stream error stays until the stream's inputs change.
+	// A reported polling error is not read here, so it never restarts the stream: the next scheduled poll is the retry.
 	$effect(() => {
-		if (client.current && !lastError) {
+		const isPollingBlocked = !isLive && overlayPollingError !== undefined
+		if (client.current && !isPollingBlocked) {
 			void startStream(client.current, resourceName, isLive)
 		}
+	})
+
+	$effect(() => {
+		const report = onPollingError
+		if (!report) return
+		report(pollingError)
+		return () => {
+			report(undefined)
+		}
+	})
+
+	$effect(() => {
+		if (isLive && streamError) onStreamError?.(streamError)
 	})
 
 	$effect(() => {
@@ -202,15 +234,14 @@
 			})
 	})
 
+	const stopStream = async () => {
+		await disableStream()
+		setMediaStream(null)
+	}
+
 	$effect(() => {
-		if (lastError) {
-			disableStream()
-				.then(() => {
-					setMediaStream(null)
-				})
-				.catch((nextError: unknown) => {
-					lastError = nextError as Error
-				})
+		if (stoppingError) {
+			void stopStream()
 		}
 	})
 
@@ -222,38 +253,43 @@
 		}
 	})
 
+	interface FrameDraw {
+		cancelled: boolean
+		objectUrl?: string
+	}
+
+	const decodeFrame = async (bytes: Uint8Array, mimeType: string) => {
+		if (mimeType !== VIAM_DEPTH_MIME_TYPE) {
+			return new Blob([new Uint8Array(bytes)], { type: mimeType || 'image/jpeg' })
+		}
+		return getBlobForViamDepth(bytes)
+	}
+
+	// Writes the decode result from the promise, after the effect that started it has returned.
+	const drawFrame = async (bytes: Uint8Array, mimeType: string, draw: FrameDraw) => {
+		const blob = await decodeFrame(bytes, mimeType)
+		if (draw.cancelled) return
+		if (!blob) {
+			frameError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
+			return
+		}
+		frameError = undefined
+		draw.objectUrl = URL.createObjectURL(blob)
+		img.src = draw.objectUrl
+	}
+
 	$effect(() => {
 		const matchingImage = pickImageForSource(data?.images, sourceName)
 		if (!matchingImage?.image) {
 			return
 		}
 
-		const bytes = new Uint8Array(matchingImage.image)
-		let cancelled = false
-		let objectUrl: string | undefined
-
-		const render = async () => {
-			let blob: Blob | undefined
-			if (matchingImage.mimeType === VIAM_DEPTH_MIME_TYPE) {
-				blob = await getBlobForViamDepth(bytes)
-				if (!blob) {
-					lastError = new Error('Failed to decode depth frame: truncated or corrupt buffer')
-					return
-				}
-			} else {
-				blob = new Blob([bytes], { type: matchingImage.mimeType || 'image/jpeg' })
-			}
-			if (cancelled) return
-			lastError = undefined
-			objectUrl = URL.createObjectURL(blob)
-			img.src = objectUrl
-		}
-
-		void render()
+		const draw: FrameDraw = { cancelled: false }
+		void drawFrame(new Uint8Array(matchingImage.image), matchingImage.mimeType, draw)
 
 		return () => {
-			cancelled = true
-			if (objectUrl) URL.revokeObjectURL(objectUrl)
+			draw.cancelled = true
+			if (draw.objectUrl) URL.revokeObjectURL(draw.objectUrl)
 		}
 	})
 
@@ -279,26 +315,22 @@
 		mouseHoverClientPosition = { x: event.clientX, y: event.clientY }
 
 		const rect = videoElement.getBoundingClientRect()
-		const dx = event.pageX - (rect.x ?? 0)
-		const dy = event.pageY - (rect.y ?? 0)
-
-		let pctX = dx / (rect.width ?? 1)
-		let pctY = dy / (rect.height ?? 1)
-
-		pctX = Math.min(Math.max(pctX, 0), 1)
-		pctY = Math.min(Math.max(pctY, 0), 1)
-
-		let absX = 0
-		let absY = 0
-
-		if (isLive && selectedResolution) {
-			absX = pctX * selectedResolution.width
-			absY = pctY * selectedResolution.height
-		} else {
-			absX = pctX * canvas.width
-			absY = pctY * canvas.height
+		// The fit draws the source inside the box at its own scale and offset, so the box fraction alone is not the source pixel.
+		const pixel = pixelUnderCursor({
+			offsetX: event.clientX - rect.left,
+			offsetY: event.clientY - rect.top,
+			boxWidth: rect.width,
+			boxHeight: rect.height,
+			sourceWidth: isLive ? videoElement.videoWidth : canvas.width,
+			sourceHeight: isLive ? videoElement.videoHeight : canvas.height,
+			objectFit: getComputedStyle(videoElement).objectFit,
+		})
+		mouseHoverImagePosition = {
+			pctX: pixel.fractionX,
+			pctY: pixel.fractionY,
+			absX: pixel.x,
+			absY: pixel.y,
 		}
-		mouseHoverImagePosition = { pctX, pctY, absX, absY }
 	}
 	const handleMouseEnterVideo = () => {
 		if (showMousePositionTooltip) {
@@ -313,33 +345,22 @@
 	$effect(() => {
 		let id: number | undefined
 
-		const measure = (now: DOMHighResTimeStamp) => {
+		const measure = (now: DOMHighResTimeStamp, metadata: VideoFrameCallbackMetadata) => {
 			fps.measure(now)
+			onFrame?.({ fps: fps.current, width: metadata.width, height: metadata.height })
 			id = videoElement?.requestVideoFrameCallback?.(measure)
 		}
 
 		id = videoElement?.requestVideoFrameCallback?.(measure)
 		return () => id && videoElement?.cancelVideoFrameCallback(id)
 	})
-
-	// Errors are null during loading, so keep the latest errors during polling.
-	let lastError = $state.raw<Error>()
-	$effect(() => {
-		if (!isLive && error) {
-			lastError = error
-		} else if (isLive && streamError) {
-			lastError = streamError
-		} else {
-			lastError = undefined
-		}
-	})
 </script>
 
-<div class="relative">
+<div class="relative size-full">
 	<!-- One overlay merges the live stream error with the polling query's error. -->
 	{#if lastError}
 		<div
-			class="bg-medium/50 absolute top-0 left-0 flex h-64 w-80 max-w-full items-center justify-center"
+			class="bg-medium/50 absolute inset-0 flex items-center justify-center"
 			style:width={overlayWidth}
 			style:height={overlayHeight}
 		>
@@ -350,21 +371,24 @@
 		</div>
 	{:else if isLive ? isStreamLoading : isLoading}
 		<div
-			class="absolute top-0 left-0 h-64 w-80 max-w-full"
+			class="absolute inset-0"
 			style:width={overlayWidth}
 			style:height={overlayHeight}
 		>
 			<Progress />
 		</div>
 	{/if}
-	<div
-		class="absolute bottom-2 left-2 z-10 rounded-[3px] bg-black/30 px-1 py-0.5 text-right font-mono text-xs text-white"
-	>
-		{fps.current.toFixed(1)}fps
-	</div>
+	{#if !onFrame}
+		<div class="badge badge-neutral pointer-events-none absolute bottom-2 left-2 z-10 font-mono">
+			{fps.current.toFixed(1)}fps
+		</div>
+	{/if}
 	<video
 		bind:this={videoElement}
-		class={videoClass}
+		class={['block size-full', VIDEO_FIT_CLASSES[fit], !hasFrame && 'aspect-video']}
+		onloadedmetadata={updateHasFrame}
+		onresize={updateHasFrame}
+		onemptied={updateHasFrame}
 		onmouseenter={handleMouseEnterVideo}
 		onmouseleave={handleMouseLeaveVideo}
 		onmousemove={handleMouseMoveWithinVideo}
@@ -396,59 +420,4 @@
 			1
 		)}%)
 	</div>
-{/if}
-
-{#if showResolutionOptions && isLive}
-	<ApiSection
-		method="SetStreamOptions"
-		api={ResourceTriplets.Camera}
-		mutations={[resolutionMutation]}
-		class={['flex-row flex-wrap gap-2', '-m-4 mt-4']}
-	>
-		{#snippet subheading()}
-			<Section.Text>Change the resolution of the live stream video feed</Section.Text>
-		{/snippet}
-		<div class="flex grow flex-wrap justify-between gap-2">
-			<Label cx="max-w-[96px] gap-1 text-xs">
-				<span class="flex gap-1 whitespace-nowrap">
-					Resolution
-					<abbr class="text-disabled">(width x height)</abbr>
-				</span>
-				<Select
-					slot="input"
-					on:change={handleResolutionChange}
-				>
-					{#each resolutionOptions as { width, height } (`${width}x${height}`)}
-						<option>
-							{width}x{height}
-						</option>
-					{/each}
-					{#if resolutionOptions.length === 0}
-						<option disabled>Camera did not return resolution options</option>
-					{/if}
-				</Select>
-			</Label>
-			<div class="flex flex-row items-end gap-2">
-				<Button
-					onclick={() => {
-						resolutionMutation.mutate(undefined)
-					}}
-				>
-					Reset
-				</Button>
-				<Button
-					icon="play-circle-outline"
-					variant="dark"
-					disabled={resolutionOptions.length === 0}
-					onclick={() => {
-						if (selectedResolution) {
-							resolutionMutation.mutate(selectedResolution)
-						}
-					}}
-				>
-					Execute
-				</Button>
-			</div>
-		</div>
-	</ApiSection>
 {/if}
