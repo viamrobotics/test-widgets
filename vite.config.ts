@@ -21,6 +21,10 @@ export default defineConfig({
 	server: {
 		port: 6173,
 	},
+	resolve: {
+		// three is a peer of this package and of the visualizer. Two copies break `instanceof`.
+		dedupe: ['three'],
+	},
 	plugins: [
 		{
 			name: 'fix-prime-core-theme',

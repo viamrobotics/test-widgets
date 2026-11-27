@@ -369,7 +369,10 @@
 			{#if isShowingPointcloud}
 				<Section.Body isLoading={pointcloudErrors.isLoading}>
 					{#if pointcloudQuery.data !== undefined}
-						<PCDWidget data={pointcloudQuery.data} />
+						<PCDWidget
+							data={pointcloudQuery.data}
+							label={resourceName}
+						/>
 					{/if}
 				</Section.Body>
 			{/if}

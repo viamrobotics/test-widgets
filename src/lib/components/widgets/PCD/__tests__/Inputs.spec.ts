@@ -20,16 +20,12 @@ describe('<Inputs>', () => {
 		render(Subject, {
 			up,
 			pointSize,
-			data: new Uint8Array(),
 			onPointSizeChange: vi.fn(),
 			onUpChange: vi.fn(),
 		})
 
-		const sizeInput = screen.getByLabelText<HTMLInputElement>(/point size/iu)
-		expect(sizeInput.valueAsNumber).toBe(pointSize)
-
-		const upInput = screen.getByLabelText<HTMLInputElement>(/camera up vector/iu)
-		expect(upInput.value).toBe(up.toString())
+		expect(screen.getByRole('spinbutton', { name: /point size/iu })).toHaveValue(pointSize)
+		expect(screen.getByRole('combobox', { name: 'Up axis' })).toHaveTextContent('+z')
 	})
 
 	it('calls update callbacks with the correct values when inputs are modified', async () => {
@@ -42,30 +38,38 @@ describe('<Inputs>', () => {
 		render(Subject, {
 			up,
 			pointSize,
-			data: new Uint8Array(),
 			onPointSizeChange,
 			onUpChange,
 		})
 
-		const sizeInput = screen.getByLabelText<HTMLInputElement>(/point size/iu)
+		const sizeInput = screen.getByRole('spinbutton', { name: /point size/iu })
 		await user.clear(sizeInput)
 		await user.type(sizeInput, '1')
-		expect(sizeInput.value).toBe('1')
+		await user.tab()
 
-		const upInput = screen.getByLabelText<HTMLInputElement>(/camera up vector/iu)
-		const option = screen.getByRole<HTMLOptionElement>('option', {
-			name: /-y/iu,
-		})
-		await user.click(upInput)
-		await user.selectOptions(upInput, option)
+		await user.click(screen.getByRole('combobox', { name: 'Up axis' }))
+		await user.click(await screen.findByRole('option', { name: '-y' }))
 
-		expect(upInput).toHaveValue('0,-1,0')
-		expect(option.selected).toBe(true)
-
-		expect(onPointSizeChange).toHaveBeenCalledOnce()
+		expect(onPointSizeChange).toHaveBeenLastCalledWith(1)
 		expect(onUpChange).toHaveBeenCalledOnce()
-
-		expect(onPointSizeChange).toHaveBeenCalledWith(1)
 		expect(onUpChange).toHaveBeenCalledWith([0, -1, 0])
+	})
+
+	it('does not report a zero point size, which the visualizer reads as unset', async () => {
+		const onPointSizeChange = vi.fn()
+
+		render(Subject, {
+			up: [0, 0, 1],
+			pointSize: 0.02,
+			onPointSizeChange,
+			onUpChange: vi.fn(),
+		})
+
+		const sizeInput = screen.getByRole('spinbutton', { name: /point size/iu })
+		await user.clear(sizeInput)
+		await user.type(sizeInput, '0')
+		await user.tab()
+
+		expect(onPointSizeChange).not.toHaveBeenCalled()
 	})
 })
