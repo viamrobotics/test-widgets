@@ -10,6 +10,7 @@ import {
 	Gripper,
 	Motion,
 	Motor,
+	Sensor,
 	Servo,
 	Switch,
 } from '../index.ts'
@@ -156,7 +157,7 @@ const RESOURCE_CASES: ResourceCase[] = [
 		triplet: ResourceTriplets.PowerSensor,
 		keys: ['getVoltage', 'getCurrent', 'getPower'],
 	},
-	{ label: 'Sensor', triplet: ResourceTriplets.Sensor, keys: [] },
+	{ label: 'Sensor', namespace: Sensor, triplet: ResourceTriplets.Sensor, keys: ['getReadings'] },
 	{
 		label: 'Servo',
 		namespace: Servo,

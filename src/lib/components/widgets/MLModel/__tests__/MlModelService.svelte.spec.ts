@@ -47,6 +47,11 @@ const activePollingIntervals = () =>
 		.map((options) => (typeof options === 'function' ? options() : options).refetchInterval)
 		.filter((interval) => interval !== false)
 
+const pickRate = async (user: ReturnType<typeof userEvent.setup>, rate: string) => {
+	await user.click(screen.getByRole('combobox', { name: 'Updates' }))
+	await user.click(await screen.findByRole('option', { name: rate }))
+}
+
 describe('ML model service widget', () => {
 	let user: ReturnType<typeof userEvent.setup>
 
@@ -65,16 +70,16 @@ describe('ML model service widget', () => {
 	it('polls Metadata only at the rate picked', async () => {
 		renderSubject()
 
-		await user.selectOptions(screen.getByRole('combobox'), RefetchRates.FIVE_SEC)
+		await pickRate(user, RefetchRates.FIVE_SEC)
 
 		expect(activePollingIntervals()).toEqual([5000])
 	})
 
 	it('refetches Metadata when manual refresh is pressed', async () => {
 		renderSubject()
-		await user.selectOptions(screen.getByRole('combobox'), RefetchRates.MANUAL)
+		await user.click(screen.getByRole('button', { name: 'Pause' }))
 
-		await user.click(screen.getByRole('button', { name: /refetch/iu }))
+		await user.click(screen.getByRole('button', { name: 'Refresh' }))
 
 		expect(refetch).toHaveBeenCalledTimes(1)
 	})

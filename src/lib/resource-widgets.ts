@@ -24,6 +24,7 @@ import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
+import * as Sensor from './components/widgets/Sensor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
 import * as Switch from './components/widgets/Switch/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
@@ -121,7 +122,7 @@ interface ResourceWidgetKeys {
 		| 'getAccuracy'
 	[ResourceTriplets.Navigation]: never
 	[ResourceTriplets.PowerSensor]: 'getVoltage' | 'getCurrent' | 'getPower'
-	[ResourceTriplets.Sensor]: never
+	[ResourceTriplets.Sensor]: 'getReadings'
 	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
 	[ResourceTriplets.Slam]: 'getPosition'
 	[ResourceTriplets.Switch]: 'setPosition' | 'getPosition' | 'getNumberOfPositions'
@@ -420,7 +421,9 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Sensor]: {
-		widgets: {},
+		widgets: {
+			getReadings: { component: Sensor.GetReadings, kind: 'api' },
+		},
 	},
 	[ResourceTriplets.Servo]: {
 		widgets: {

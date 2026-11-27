@@ -2,7 +2,9 @@
 	import type { QueryObserverResult } from '@tanstack/svelte-query'
 	import type { PersistedState } from 'runed'
 
-	import { IconButton, Select } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiPause, mdiPlay, mdiRefresh } from '@mdi/js'
+	import { Select } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
 
 	import {
 		type RefetchInterval,
@@ -26,100 +28,134 @@
 		allowLive = false,
 	}: Props = $props()
 
-	let selectedOption = $derived(
-		RefetchRateToInterval.find(([, interval]) => interval === refetchInterval.current)?.[0] ??
-			RefetchRates.ONE_SEC
+	const REFETCHING_NOTICE_DELAY_MS = 250
+	const rateLabelId = $props.id()
+
+	const isPaused = $derived(refetchInterval.current === RefetchIntervals.MANUAL)
+
+	// The rate Resume returns to. A reload while paused forgets it, so it starts at the default.
+	let resumeInterval: RefetchInterval = RefetchIntervals.ONE_SEC
+
+	const rateItems = $derived(
+		Object.values(RefetchRates)
+			.filter((rate) => rate !== RefetchRates.MANUAL)
+			.filter((rate) => allowLive || rate !== RefetchRates.LIVE)
+			.map((rate) => ({ value: rate, label: rate }))
 	)
 
-	const selectOption = (selected: string) => {
-		selectedOption = selected as RefetchRate
-		const interval =
-			RefetchRateToInterval.find(([rate]) => rate === selectedOption)?.[1] ??
-			RefetchIntervals.ONE_SEC
+	const rateOf = (interval: RefetchInterval): RefetchRate | undefined =>
+		RefetchRateToInterval.find(([, candidate]) => candidate === interval)?.[0]
+
+	const offeredRate = $derived.by(() => {
+		const rate = rateOf(refetchInterval.current)
+		return rateItems.some((item) => item.value === rate) ? rate : undefined
+	})
+	const selectedRate = $derived(offeredRate ?? RefetchRates.ONE_SEC)
+
+	// A stored rate this control does not offer, such as live, would poll at a rate the picker cannot show.
+	$effect(() => {
+		if (!isPaused && offeredRate === undefined) refetchInterval.current = RefetchIntervals.ONE_SEC
+	})
+
+	const getSelectedRate = () => selectedRate
+	const pickRate = (next: string | undefined) => {
+		const interval = RefetchRateToInterval.find(([rate]) => rate === next)?.[1]
+		if (interval === undefined || interval === RefetchIntervals.MANUAL) return
 		refetchInterval.current = interval
 	}
 
 	let refetchState = $state<'idle' | 'success' | 'refetching'>('idle')
-	const manualIconState = $derived(
-		{
-			idle: { name: 'refresh' as const },
-			success: { name: 'check' as const },
-			refetching: { progress: 'indeterminate' as const },
-		}[refetchState]
-	)
 
-	let refetchingStateTimeout: number | undefined
+	// Read by a screen reader only. The visible "Paused" and "Updates" text is not a live region.
+	let announcement = $state('')
 
-	const refetchQueries = async () => {
-		// Clear the timeout to prevent races if refetchQueries is called during a refetch
-		window.clearTimeout(refetchingStateTimeout)
-
-		// This is in a timeout to prevent icon-flashing on very quick queries
-		refetchingStateTimeout = window.setTimeout(() => {
-			refetchState = 'refetching'
-		}, 250)
-		const refetchCalls = queries.map(async (query) => query.refetch())
-		await Promise.all(refetchCalls)
-		clearTimeout(refetchingStateTimeout)
-		refetchState = 'success'
-		resetToIdleEventually()
+	const togglePause = () => {
+		if (isPaused) {
+			refetchInterval.current = resumeInterval
+			announcement = 'Updates resumed'
+			return
+		}
+		resumeInterval = refetchInterval.current
+		refetchInterval.current = RefetchIntervals.MANUAL
+		announcement = 'Updates paused'
 	}
 
-	let stateNotifyTimeout: number | undefined
+	let refetchesInFlight = 0
+	let isDestroyed = false
+	let refetchingNoticeTimeout: number | undefined
+	let idleTimeout: number | undefined
 
-	const resetToIdleEventually = () => {
-		window.clearTimeout(stateNotifyTimeout)
-		stateNotifyTimeout = window.setTimeout(() => {
+	const refetchQueries = async () => {
+		refetchesInFlight += 1
+		window.clearTimeout(refetchingNoticeTimeout)
+		window.clearTimeout(idleTimeout)
+		// Delayed, so a quick refetch does not flash the status.
+		refetchingNoticeTimeout = window.setTimeout(() => {
+			refetchState = 'refetching'
+			announcement = 'Refreshing'
+		}, REFETCHING_NOTICE_DELAY_MS)
+		await Promise.all(queries.map(async (query) => query.refetch()))
+		refetchesInFlight -= 1
+		if (refetchesInFlight > 0 || isDestroyed) return
+		window.clearTimeout(refetchingNoticeTimeout)
+		refetchState = 'success'
+		announcement = 'Refreshed'
+		idleTimeout = window.setTimeout(() => {
 			refetchState = 'idle'
 		}, refetchNotifyDurationMs)
 	}
 
-	const onChange = (event: Event) => {
-		selectOption((event.target as HTMLSelectElement).value)
-	}
-
-	const refetchOptions = $derived(
-		allowLive
-			? Object.values(RefetchRates)
-			: Object.values(RefetchRates).filter((value) => value !== RefetchRates.LIVE)
-	)
-
 	$effect(() => {
 		return () => {
-			globalThis.clearTimeout(stateNotifyTimeout)
+			isDestroyed = true
+			window.clearTimeout(refetchingNoticeTimeout)
+			window.clearTimeout(idleTimeout)
 		}
 	})
 </script>
 
-<div class="text-default flex text-xs">
-	<div class="w-50 max-w-full">
-		<Select
-			on:change={onChange}
-			cx="border-r-0"
+<div class="text-default flex min-w-0 items-center gap-2 text-xs">
+	<button
+		type="button"
+		class="icon-button size-6"
+		aria-label={isPaused ? 'Resume' : 'Pause'}
+		onclick={togglePause}
+	>
+		<Icon
+			icon={isPaused ? mdiPlay : mdiPause}
+			size="sm"
+		/>
+	</button>
+	{#if isPaused}
+		<button
+			type="button"
+			class="icon-button size-6"
+			aria-label="Refresh"
+			onclick={refetchQueries}
 		>
-			{#each refetchOptions as option (option)}
-				<option selected={selectedOption === option}>{option}</option>
-			{/each}
-		</Select>
-	</div>
-	{#if selectedOption === RefetchRates.MANUAL}
-		<IconButton
-			icon={manualIconState.name ?? 'refresh'}
-			progress={'progress' in manualIconState ? 'indeterminate' : undefined}
-			label="refetch"
-			variant="secondary"
-			cx="border-light border"
-			on:click={refetchQueries}
-		/>
+			<Icon
+				icon={refetchState === 'success' ? mdiCheck : mdiRefresh}
+				size="sm"
+			/>
+		</button>
+		<span class="text-subtle-2 shrink-0">Paused</span>
 	{:else}
-		<IconButton
-			icon="pause"
-			label="pause"
-			variant="secondary"
-			cx="border-light border"
-			on:click={() => {
-				selectOption(RefetchRates.MANUAL)
-			}}
-		/>
+		<span
+			id={rateLabelId}
+			class="text-subtle-2 shrink-0">Updates</span
+		>
+		<div class="max-w-40 min-w-0 flex-1">
+			<Select
+				items={rateItems}
+				bind:value={getSelectedRate, pickRate}
+				aria-labelledby={rateLabelId}
+			/>
+		</div>
 	{/if}
+	<span
+		class="sr-only"
+		role="status"
+	>
+		{announcement}
+	</span>
 </div>
