@@ -336,6 +336,7 @@
 	"dependencies": {
 		"@mdi/js": "^7.4.47",
 		"@viamrobotics/post-message-sdk": "0.4.1",
+		"@viamrobotics/prime-map": "^0.1.0",
 		"svelte-tweakpane-ui": "^1.5.17"
 	},
 	"imports": {

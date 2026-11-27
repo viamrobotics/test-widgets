@@ -1,8 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../GetOrientationWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 const { queryState } = vi.hoisted(() => {
 	const state: { data: unknown; error: Error | null } = {
@@ -36,6 +38,7 @@ describe('MovementSensor GetOrientation widget', () => {
 		queryState.data = undefined
 		queryState.error = null
 		vi.mocked(createResourceQuery).mockClear()
+		localStorage.clear()
 	})
 
 	it('renders the GetOrientation section heading', () => {
@@ -76,12 +79,32 @@ describe('MovementSensor GetOrientation widget', () => {
 		expect(screen.getByText('45.68')).toBeInTheDocument()
 	})
 
-	it('polls getOrientation every 500 ms', () => {
+	it('puts degrees on theta alone', () => {
+		queryState.data = { oX: 1, oY: 2, oZ: 3, theta: 4 }
+
 		renderSubject()
 
-		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getOrientation', {
-			refetchInterval: 500,
-		})
+		expect(screen.getByRole('group', { name: 'θ' })).toHaveTextContent('4.00 °')
+		expect(screen.getByRole('group', { name: 'OX' })).not.toHaveTextContent('°')
+	})
+
+	it('polls getOrientation every second until Pause is pressed', async () => {
+		queryState.data = { oX: 1.111, oY: 2.222, oZ: 3.333, theta: 45.678 }
+		renderSubject()
+		const options = (vi
+			.mocked(createResourceQuery)
+			.mock.calls.find(([, method]) => String(method) === 'getOrientation') ?? [])[2]
+		if (typeof options !== 'function')
+			throw new Error('getOrientation takes its options as a function')
+
+		expect(options()).toEqual({ refetchInterval: 1000 })
+		expect(screen.getByText('Updates')).toBeInTheDocument()
+
+		await userEvent.click(screen.getByRole('button', { name: 'Pause' }))
+
+		expect(options()).toEqual({ refetchInterval: false })
+		expect(screen.getByText('Paused')).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument()
 	})
 
 	it("shows the query error in the section's error indicator", async () => {
@@ -93,5 +116,31 @@ describe('MovementSensor GetOrientation widget', () => {
 		)
 
 		expect(screen.getByText(/orientation unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('MovementSensor GetOrientation widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		queryState.data = { oX: -1.111, oY: 2.222, oZ: -3.333, theta: 359.678 }
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })
