@@ -74,10 +74,8 @@ describe('<Legend>', () => {
 		expect(item3).toBeInTheDocument()
 	})
 
-	it('adds a list of classifications with confidence level', async () => {
+	it('lists classifications alone, with each confidence as a readout, when only they are supported', () => {
 		const context = createDetectionContext(() => [])
-
-		const user = userEvent.setup()
 
 		render(Subject, {
 			context: new Map([[DETECTIONS_CONTEXT_KEY, context]]),
@@ -88,14 +86,43 @@ describe('<Legend>', () => {
 			},
 		})
 
-		const label1 = screen.getByRole('button', { name: /classifications/iu })
-		await user.click(label1)
+		const list = screen.getByRole('list', { name: 'Classifications' })
+		expect(screen.queryByRole('group', { name: 'Legend view' })).not.toBeInTheDocument()
+		expect(
+			within(list)
+				.getAllByRole('listitem')
+				.map((item) => item.textContent)
+		).toEqual(['dog 50.00 %', 'dragon 40.00 %', 'liopleurodon 10.00 %'])
+	})
 
-		const [c1, c2] = classifications
-		expect(screen.getByText(c1.className)).toBeInTheDocument()
-		expect(screen.getByText(`${(c1.confidence * 100).toFixed(2)}%`)).toBeInTheDocument()
+	it('offers no Legend view toggle when only detections are supported', () => {
+		render(Subject, {
+			context: new Map([[DETECTIONS_CONTEXT_KEY, createDetectionContext(() => [detection])]]),
+			props: {
+				classificationsSupported: false,
+				detectionsSupported: true,
+			},
+		})
 
-		expect(screen.getByText(c2.className)).toBeInTheDocument()
-		expect(screen.getByText(`${(c2.confidence * 100).toFixed(2)}%`)).toBeInTheDocument()
+		expect(screen.queryByRole('group', { name: 'Legend view' })).not.toBeInTheDocument()
+		expect(screen.getByRole('list', { name: 'Labels' })).toBeInTheDocument()
+	})
+
+	it('switches from Labels to Classifications with the Legend view toggle when both are supported', async () => {
+		const user = userEvent.setup()
+		render(Subject, {
+			context: new Map([[DETECTIONS_CONTEXT_KEY, createDetectionContext(() => [detection])]]),
+			props: {
+				classificationsSupported: true,
+				detectionsSupported: true,
+				classifications,
+			},
+		})
+		expect(screen.getByRole('radio', { name: 'Labels' })).toBeChecked()
+
+		await user.click(screen.getByRole('radio', { name: 'Classifications' }))
+
+		expect(screen.getByRole('list', { name: 'Classifications' })).toBeInTheDocument()
+		expect(screen.queryByRole('list', { name: 'Labels' })).not.toBeInTheDocument()
 	})
 })

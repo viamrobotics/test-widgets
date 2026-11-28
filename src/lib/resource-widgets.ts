@@ -24,6 +24,7 @@ import * as PowerSensor from './components/widgets/PowerSensor/index.ts'
 import * as Sensor from './components/widgets/Sensor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
 import * as Switch from './components/widgets/Switch/index.ts'
+import * as Vision from './components/widgets/Vision/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
 
@@ -135,7 +136,15 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
 	[ResourceTriplets.Slam]: 'getPosition'
 	[ResourceTriplets.Switch]: 'setPosition' | 'getPosition' | 'getNumberOfPositions'
-	[ResourceTriplets.Vision]: never
+	[ResourceTriplets.Vision]:
+		| 'overlayFeed'
+		| 'captureAllFromCamera'
+		| 'getProperties'
+		| 'getObjectPointClouds'
+		| 'getDetectionsFromCamera'
+		| 'getClassificationsFromCamera'
+		| 'getDetections'
+		| 'getClassifications'
 }
 
 /** The declared type of `resourceWidgets`: each triplet's entry, with exactly its own keys. */
@@ -586,7 +595,40 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Vision]: {
-		widgets: {},
+		widgets: {
+			overlayFeed: {
+				component: Vision.OverlayFeed,
+				kind: 'control',
+			},
+			captureAllFromCamera: {
+				component: Vision.CaptureAllFromCamera,
+				kind: 'api',
+			},
+			getProperties: {
+				component: Vision.GetProperties,
+				kind: 'api',
+			},
+			getObjectPointClouds: {
+				component: Vision.GetObjectPointClouds,
+				kind: 'api',
+			},
+			getDetectionsFromCamera: {
+				component: Vision.GetDetectionsFromCamera,
+				kind: 'api',
+			},
+			getClassificationsFromCamera: {
+				component: Vision.GetClassificationsFromCamera,
+				kind: 'api',
+			},
+			getDetections: {
+				component: Vision.GetDetections,
+				kind: 'api',
+			},
+			getClassifications: {
+				component: Vision.GetClassifications,
+				kind: 'api',
+			},
+		},
 	},
 }
 

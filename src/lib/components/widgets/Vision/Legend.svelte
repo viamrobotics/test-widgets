@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Classification } from '@viamrobotics/sdk'
 
-	import { Icon } from '@viamrobotics/prime-core'
+	import { mdiChevronRight } from '@mdi/js'
+	import { ToggleButtons } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { SvelteSet } from 'svelte/reactivity'
 
 	import { useDetections } from './context.svelte'
@@ -15,15 +17,30 @@
 
 	const { classifications = [], detectionsSupported, classificationsSupported }: Props = $props()
 
+	type LegendView = 'detections' | 'classifications'
+
+	const VIEW_ITEMS = [
+		{ value: 'detections', label: 'Labels' },
+		{ value: 'classifications', label: 'Classifications' },
+	]
+
+	const MAX_CLASSIFICATIONS = 100
+
 	const context = useDetections()
 
 	let hoveredLabel = $state<keyof typeof context.byLabel>()
 
 	const expandedLabels = new SvelteSet<string>()
 
-	let selectedTab = $derived<'detections' | 'classifications'>(
-		detectionsSupported ? 'detections' : 'classifications'
-	)
+	let selectedView = $derived<LegendView>(detectionsSupported ? 'detections' : 'classifications')
+
+	const isLegendView = (value: string | undefined): value is LegendView =>
+		value === 'detections' || value === 'classifications'
+
+	const getSelectedView = () => selectedView
+	const selectView = (next: string | undefined) => {
+		if (isLegendView(next)) selectedView = next
+	}
 
 	const toggleExpand = (label: string) => {
 		if (expandedLabels.has(label)) {
@@ -64,74 +81,77 @@
 	const sortedClassifications = $derived(classifications.toSorted(compareConfidence))
 </script>
 
-<div class="flex">
-	{#if detectionsSupported}
-		<button
-			class="grow border-b {selectedTab === 'detections' ? 'border-black' : ''}"
-			onclick={() => (selectedTab = 'detections')}>Labels</button
-		>
+<div class="flex flex-col gap-1 text-xs">
+	{#if detectionsSupported && classificationsSupported}
+		<ToggleButtons
+			aria-label="Legend view"
+			items={VIEW_ITEMS}
+			bind:value={getSelectedView, selectView}
+		/>
 	{/if}
 
-	{#if classificationsSupported}
-		<button
-			class="grow border-b px-4 py-1 {selectedTab === 'classifications' ? 'border-black' : ''}"
-			onclick={() => (selectedTab = 'classifications')}
+	{#if selectedView === 'classifications'}
+		<ul
+			aria-label="Classifications"
+			class="flex flex-col gap-0.5"
 		>
-			Classifications
-		</button>
-	{/if}
-</div>
-
-<div class="overflow-x-hidden overflow-y-auto py-2 text-sm">
-	{#if selectedTab === 'classifications'}
-		<ul class="flex flex-col gap-2">
-			{#each sortedClassifications.slice(0, 100) as classification (classification)}
-				<li class="bg-light flex justify-between gap-2 rounded px-2 py-1">
-					<span class="text-ellipsis">{classification.className}</span>
-					<span>{(classification.confidence * 100).toFixed(2)}%</span>
+			{#each sortedClassifications.slice(0, MAX_CLASSIFICATIONS) as classification (classification)}
+				<li class="flex min-w-0 items-center justify-between gap-2">
+					<span class="text-subtle-1 min-w-0 truncate">{classification.className}</span>
+					<span class="readout font-roboto-mono shrink-0">
+						<span class="readout-value">{(classification.confidence * 100).toFixed(2)}</span>
+						<span class="readout-suffix">%</span>
+					</span>
 				</li>
 			{/each}
 		</ul>
-	{:else if selectedTab === 'detections'}
-		<ul>
+	{:else}
+		<ul
+			aria-label="Labels"
+			class="flex flex-col"
+		>
 			{#each Object.entries(context.byLabel) as [label, { detections, color }] (label)}
+				{@const isExpanded = expandedLabels.has(label)}
 				<li>
 					<button
+						type="button"
 						aria-label={label}
-						class="hover:bg-light flex w-full items-center justify-between gap-2 py-1 pr-1"
+						aria-expanded={isExpanded}
+						class="button button-ghost button-compact w-full justify-start"
 						onpointerover={() => (hoveredLabel = label)}
 						onpointerleave={() => (hoveredLabel = undefined)}
-						onclick={() => toggleExpand(label)}
+						onclick={() => {
+							toggleExpand(label)
+						}}
 					>
-						<div class="flex items-center gap-2">
-							<Icon
-								name="chevron-right"
-								cx="text-gray-6 {expandedLabels.has(label) ? 'rotate-90' : ''}"
-							/>
-							<div
-								class="h-3 w-3"
-								style:background-color={color}
-							></div>
-							{label}
-						</div>
-
-						<div class="bg-medium rounded px-2 py-1 text-xs">
-							{detections.length}
-						</div>
+						<Icon
+							icon={mdiChevronRight}
+							size="sm"
+							class={['text-subtle-2 shrink-0', isExpanded && 'rotate-90']}
+						/>
+						<span
+							aria-hidden="true"
+							class="size-3 shrink-0"
+							style:background-color={color}
+						></span>
+						<span class="min-w-0 truncate">{label}</span>
+						<span class="pill ml-auto">{detections.length}</span>
 					</button>
+					{#if isExpanded}
+						<ul
+							aria-label="{label} detections"
+							class="flex flex-col pl-6"
+						>
+							{#each detections as detection (detection.id)}
+								<li>
+									<DetectionRow {detection}>
+										{#snippet label()}{detection.className}{/snippet}
+									</DetectionRow>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</li>
-				{#if expandedLabels.has(label)}
-					<ul>
-						{#each detections as detection (detection.id)}
-							{@const detectionLabel = label}
-							<li>
-								<DetectionRow {detection}>
-									{#snippet label()}{detectionLabel}{/snippet}
-								</DetectionRow>
-							</li>
-						{/each}
-					</ul>
-				{/if}
 			{/each}
 		</ul>
 	{/if}

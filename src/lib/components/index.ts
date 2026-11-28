@@ -29,10 +29,6 @@ export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidg
 
 export { default as StopWidget } from './Stop.svelte'
 
-export { labelToColor } from './widgets/Vision/color'
-export { getImageSize, type Size } from './widgets/Vision/get-image-size'
-export { default as VisionServiceWidget } from './widgets/Vision/VisionService.svelte'
-
 export { default as RefetchController } from './RefetchController.svelte'
 
 export {
