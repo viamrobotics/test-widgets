@@ -1,7 +1,18 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Board, Gantry, Gripper, Motion, Motor, Servo, Switch } from '../index.ts'
+import {
+	Arm,
+	Base,
+	Board,
+	Button,
+	Gantry,
+	Gripper,
+	Motion,
+	Motor,
+	Servo,
+	Switch,
+} from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -77,7 +88,7 @@ const RESOURCE_CASES: ResourceCase[] = [
 			'powerMode',
 		],
 	},
-	{ label: 'Button', triplet: ResourceTriplets.Button, keys: [] },
+	{ label: 'Button', namespace: Button, triplet: ResourceTriplets.Button, keys: ['push'] },
 	{ label: 'Camera', triplet: ResourceTriplets.Camera, keys: [] },
 	{ label: 'Discovery', triplet: ResourceTriplets.Discovery, keys: [] },
 	{ label: 'Encoder', triplet: ResourceTriplets.Encoder, keys: ['getPosition'] },
