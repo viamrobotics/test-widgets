@@ -1,0 +1,67 @@
+<script lang="ts">
+	import type {
+		Arm,
+		ArmClient,
+		Base,
+		BaseClient,
+		Gantry,
+		GantryClient,
+		Gripper,
+		GripperClient,
+		Motor,
+		MotorClient,
+		Servo,
+		ServoClient,
+	} from '@viamrobotics/sdk'
+	import type { ResourceTriplet } from '#lib/resource-triplet.js'
+	import type { Snippet } from 'svelte'
+
+	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
+
+	import ApiSection from './ApiSection.svelte'
+	import StopButton from './StopButton.svelte'
+
+	type Client =
+		| typeof ArmClient
+		| typeof BaseClient
+		| typeof GantryClient
+		| typeof GripperClient
+		| typeof MotorClient
+		| typeof ServoClient
+
+	interface Props {
+		client: Client
+		partID: string
+		resourceName: string
+		api: ResourceTriplet
+		children?: Snippet
+	}
+
+	const { client: clientClass, partID, resourceName, api, children }: Props = $props()
+
+	const client = $derived(
+		createResourceClient<Arm | Base | Gantry | Gripper | Motor | Servo>(
+			clientClass,
+			() => partID,
+			() => resourceName
+		)
+	)
+
+	const stopMutation = $derived(createResourceMutation(client, 'stop'))
+</script>
+
+<ApiSection
+	class="grow flex-col gap-4"
+	method="Stop"
+	{api}
+	mutations={[stopMutation]}
+>
+	<StopButton
+		onStop={() => {
+			stopMutation.mutate([])
+		}}
+	/>
+
+	<!-- snippet for additional actuation info Ex: Motor's IsPowered & GetPosition -->
+	{@render children?.()}
+</ApiSection>

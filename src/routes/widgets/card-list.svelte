@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Section } from '#lib/components/section/index.js'
+	import { Section } from '#lib/components/Section/index.js'
 	import { getResourceKey } from '#lib/get-resource-key.js'
 	import { type NamedResourceStatus } from '#lib/resource.js'
 

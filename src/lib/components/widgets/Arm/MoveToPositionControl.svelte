@@ -1,0 +1,204 @@
+<script lang="ts">
+	import { Banner, Icon, Label, Select, ToggleButtons, Tooltip } from '@viamrobotics/prime-core'
+	import { ArmClient, MotionClient, type Pose, type RobotClient } from '@viamrobotics/sdk'
+	import {
+		createResourceClient,
+		createResourceMutation,
+		createResourceQuery,
+		createRobotQuery,
+		useResourceStatuses,
+		useRobotClient,
+	} from '@viamrobotics/svelte-sdk'
+	import ApiSection from '#lib/components/ApiSection.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+
+	import {
+		canPlanMotion,
+		motionServiceOptions,
+		type MoveControlMode,
+		moveMotionServiceName,
+	} from './move-control-mode'
+	import MoveToPosition from './MoveToPosition.svelte'
+	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const FRAME_SYSTEM_REFETCH_INTERVAL_MS = 5000
+
+	const motionServices = useResourceStatuses(() => partID, 'motion')
+	const motionServiceNames = $derived(
+		motionServices.current
+			.map((service) => service.name?.name)
+			.filter((name): name is string => name !== undefined)
+	)
+
+	const robotClient = useRobotClient(() => partID)
+	const frameSystemQuery = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
+		refetchInterval: FRAME_SYSTEM_REFETCH_INTERVAL_MS,
+	}))
+	const frameSystem = $derived(frameSystemQuery.data)
+	const hasMotionService = $derived(motionServiceNames.length > 0)
+	const motionAvailable = $derived(
+		frameSystem !== undefined && canPlanMotion(motionServiceNames, frameSystem, resourceName)
+	)
+
+	const armClient = createResourceClient(
+		ArmClient,
+		() => partID,
+		() => resourceName
+	)
+	// An arm that reports it cannot take direct cartesian commands can only be
+	// moved through the motion service, so lock the toggle onto that mode.
+	const propertiesQuery = createResourceQuery(armClient, 'getProperties')
+	const cartesianUnsupported = $derived(propertiesQuery.data?.supportCartesianCommands === false)
+
+	let userChoice = $state<MoveControlMode>()
+	const preferredMode = $derived<MoveControlMode>(
+		motionAvailable ? (userChoice ?? 'motion') : 'direct'
+	)
+	const mode = $derived<MoveControlMode>(cartesianUnsupported ? 'motion' : preferredMode)
+
+	let userServiceChoice = $state<string>()
+	const activeMotionServiceName = $derived(
+		userServiceChoice ?? moveMotionServiceName(motionServiceNames)
+	)
+	const serviceOptions = $derived(motionServiceOptions(motionServiceNames))
+	const showServiceSelect = $derived(mode === 'motion' && serviceOptions.length > 1)
+
+	const motionClient = createResourceClient(
+		MotionClient,
+		() => partID,
+		() => activeMotionServiceName ?? ''
+	)
+
+	const moveMutation = createResourceMutation(motionClient, 'move')
+	const moveToPosMutation = createResourceMutation(armClient, 'moveToPosition')
+	const activeMutation = $derived(mode === 'motion' ? moveMutation : moveToPosMutation)
+
+	const motionTracking = useArmMotionTracking(armClient, {
+		isMovePending: () => moveMutation.isPending || moveToPosMutation.isPending,
+		refetchPosition: () => activeQuery.refetch(),
+	})
+	const refetchInterval = $derived(motionTracking.refetchInterval)
+
+	const poseQuery = createRobotQuery(
+		robotClient,
+		'getPose',
+		() => [resourceName, 'world', []] satisfies Parameters<RobotClient['getPose']>,
+		() => ({ refetchInterval, enabled: mode === 'motion' })
+	)
+
+	const endPositionQuery = createResourceQuery(armClient, 'getEndPosition', () => ({
+		refetchInterval,
+		enabled: mode === 'direct',
+	}))
+
+	const activeQuery = $derived(mode === 'motion' ? poseQuery : endPositionQuery)
+	const endPosition = $derived(mode === 'motion' ? poseQuery.data?.pose : endPositionQuery.data)
+
+	const handleModeInput = (event: CustomEvent<string>) => {
+		userChoice = event.detail === 'Motion service' ? 'motion' : 'direct'
+	}
+
+	const handleServiceChange = (event: Event) => {
+		if (event.target instanceof HTMLSelectElement) {
+			userServiceChoice = event.target.value
+		}
+	}
+
+	const moveToPosition = (position: Pose) => {
+		if (mode === 'motion') {
+			moveMutation.mutate([{ referenceFrame: 'world', pose: position }, resourceName], {})
+		} else {
+			moveToPosMutation.mutate([position], {})
+		}
+	}
+</script>
+
+{#snippet description()}
+	{#if mode === 'motion'}
+		Pose is in the world frame, as required by the motion service.
+	{:else}
+		Pose is with respect to the arm origin and does not take into account the motion service or
+		frame system.
+	{/if}
+{/snippet}
+
+<ApiSection
+	method="MoveToPosition"
+	api={ResourceTriplets.Arm}
+	queries={[frameSystemQuery, activeQuery]}
+	mutations={[activeMutation]}
+	class="grow flex-col gap-4"
+>
+	{#if motionAvailable}
+		<Label position="top">
+			<span class="flex items-center gap-1 text-xs">
+				Control mode
+				<Tooltip>
+					<Icon
+						name="information-outline"
+						size="sm"
+					/>
+					<span slot="description">
+						Using a motion service will include motion planning and obstacle avoidance. Direct arm
+						control will move the arm without any planning and regardless of obstacles.
+					</span>
+				</Tooltip>
+			</span>
+
+			<ToggleButtons
+				slot="input"
+				options={['Motion service', 'Arm']}
+				selected={mode === 'motion' ? 'Motion service' : 'Arm'}
+				disabled={cartesianUnsupported}
+				on:input={handleModeInput}
+			/>
+		</Label>
+	{/if}
+	{#if showServiceSelect}
+		<Label>
+			Motion service name
+
+			<Select
+				slot="input"
+				value={activeMotionServiceName ?? ''}
+				on:change={handleServiceChange}
+			>
+				{#each serviceOptions as name (name)}
+					<option value={name}>{name}</option>
+				{/each}
+			</Select>
+		</Label>
+	{/if}
+	{#if frameSystem !== undefined}
+		<Banner variant={mode === 'motion' ? 'info' : 'danger'}>
+			{#snippet subtitle()}
+				{#if mode === 'motion'}
+					Movement goes through motion planning and attempts to avoid obstacles.
+				{:else if hasMotionService && !motionAvailable}
+					{resourceName} has no frame, so the motion service cannot plan for it. The arm will not avoid
+					obstacles when moving. Use with caution.
+				{:else}
+					The arm will not avoid obstacles when moving. Use with caution.
+				{/if}
+			{/snippet}
+		</Banner>
+	{/if}
+	<!-- Re-seed the editor on a mode change: the two modes report the pose in different frames. -->
+	{#key mode}
+		{#if endPosition}
+			<MoveToPosition
+				{endPosition}
+				{moveToPosition}
+				isMoving={motionTracking.isTracking}
+				{description}
+			/>
+		{/if}
+	{/key}
+</ApiSection>

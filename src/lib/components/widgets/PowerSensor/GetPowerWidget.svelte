@@ -1,0 +1,34 @@
+<script lang="ts">
+	import { PowerSensorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import ApiSection from '#lib/components/ApiSection.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+
+	import PowerReading from './PowerReading.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const client = createResourceClient(
+		PowerSensorClient,
+		() => partID,
+		() => resourceName
+	)
+
+	const query = createResourceQuery(client, 'getPower', { refetchInterval: 500 })
+</script>
+
+<ApiSection
+	queries={[query]}
+	method="GetPower"
+	api={ResourceTriplets.PowerSensor}
+	class="grow flex-col gap-4"
+>
+	{#if query.data !== undefined}
+		<PowerReading data={query.data} />
+	{/if}
+</ApiSection>

@@ -1,0 +1,34 @@
+<script lang="ts">
+	import { MovementSensorClient } from '@viamrobotics/sdk'
+	import { createResourceClient, createResourceQuery } from '@viamrobotics/svelte-sdk'
+	import ApiSection from '#lib/components/ApiSection.svelte'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+
+	import Accuracy from './Accuracy.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+	}
+
+	const { partID, resourceName }: Props = $props()
+
+	const client = createResourceClient(
+		MovementSensorClient,
+		() => partID,
+		() => resourceName
+	)
+
+	const query = createResourceQuery(client, 'getAccuracy', { refetchInterval: 500 })
+</script>
+
+<ApiSection
+	method="GetAccuracy"
+	api={ResourceTriplets.MovementSensor}
+	queries={[query]}
+	class="grow flex-col gap-4"
+>
+	{#if query.data !== undefined}
+		<Accuracy data={query.data} />
+	{/if}
+</ApiSection>

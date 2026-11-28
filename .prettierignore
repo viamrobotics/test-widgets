@@ -8,7 +8,7 @@ bun.lockb
 # Miscellaneous
 /static/
 # Generated MSDF font data
-src/lib/components/widgets/vision-service/fonts/
+src/lib/components/widgets/Vision/fonts/
 
 # Docs site build output
 docs/dist/

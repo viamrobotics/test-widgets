@@ -1,0 +1,42 @@
+<script lang="ts">
+	import { ResourceName } from '@viamrobotics/sdk'
+	import { Section } from '#lib/components/Section/index.js'
+	import { ResourceTriplets } from '#lib/resource-triplet.js'
+
+	import DoCommand from '../DoCommand/DoCommand.svelte'
+
+	interface Props {
+		partID: string
+		resourceName: string
+		isComponent: boolean
+	}
+
+	const { partID, resourceName, isComponent }: Props = $props()
+
+	const api = $derived(
+		isComponent ? ResourceTriplets.GenericComponent : ResourceTriplets.GenericService
+	)
+
+	const genericResourceName = $derived<ResourceName>({
+		namespace: 'rdk',
+		type: isComponent ? 'component' : 'service',
+		subtype: 'generic',
+		name: resourceName,
+	})
+</script>
+
+<div class="flex flex-col py-2 pl-4">
+	<Section.Heading>
+		<Section.Method
+			method="DoCommand"
+			{api}
+		/>
+	</Section.Heading>
+</div>
+
+{#key genericResourceName}
+	<DoCommand
+		{partID}
+		resource={genericResourceName}
+	/>
+{/key}
