@@ -40,6 +40,7 @@ import {
 	SlamGetPositionWidget,
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
+import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
@@ -87,7 +88,7 @@ interface ResourceWidgetKeys {
 		| 'stop'
 	[ResourceTriplets.InputController]: never
 	[ResourceTriplets.MLModel]: 'metadata'
-	[ResourceTriplets.Motion]: never
+	[ResourceTriplets.Motion]: 'move'
 	[ResourceTriplets.Motor]:
 		| 'quickMove'
 		| 'move'
@@ -213,7 +214,12 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Motion]: {
-		widgets: {},
+		widgets: {
+			move: {
+				component: Motion.Move,
+				kind: 'api',
+			},
+		},
 	},
 	[ResourceTriplets.Motor]: {
 		widgets: {

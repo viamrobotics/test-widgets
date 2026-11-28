@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Motor } from '../index.ts'
+import { Arm, Motion, Motor } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -61,7 +61,7 @@ const RESOURCE_CASES: ResourceCase[] = [
 	},
 	{ label: 'InputController', triplet: ResourceTriplets.InputController, keys: [] },
 	{ label: 'MLModel', triplet: ResourceTriplets.MLModel, keys: ['metadata'] },
-	{ label: 'Motion', triplet: ResourceTriplets.Motion, keys: [] },
+	{ label: 'Motion', namespace: Motion, triplet: ResourceTriplets.Motion, keys: ['move'] },
 	{
 		label: 'Motor',
 		namespace: Motor,

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Label, Select } from '@viamrobotics/prime-core'
+	import { Select } from '@viamrobotics/prime-controls'
 
 	interface Props {
 		value: string
@@ -11,21 +11,23 @@
 	}
 
 	const { value, options, label, onChange }: Props = $props()
+
+	const labelId = $props.id()
+
+	const items = $derived(options.map((name) => ({ value: name, label: name })))
 </script>
 
-<Label>
-	{@render label()}
-
-	<Select
-		slot="input"
-		{value}
-		on:change={(event) => {
-			onChange((event.target as HTMLSelectElement).value)
-		}}
+<div class="flex min-w-0 flex-col gap-1">
+	<span
+		id={labelId}
+		class="text-subtle-1 text-xs"
 	>
-		<option value="">Select a frame…</option>
-		{#each options as name (name)}
-			<option value={name}>{name}</option>
-		{/each}
-	</Select>
-</Label>
+		{@render label()}
+	</span>
+	<Select
+		{items}
+		aria-labelledby={labelId}
+		placeholder="Select a frame…"
+		bind:value={() => value, onChange}
+	/>
+</div>

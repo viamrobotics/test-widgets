@@ -4,7 +4,7 @@
 
 	import { movableFrameNames, parentFrame, referenceFrameNames } from './frame-system-config'
 	import FrameSelect from './FrameSelect.svelte'
-	import MoveWidget from './MoveWidget.svelte'
+	import MoveForm from './MoveForm.svelte'
 
 	interface Props {
 		partID: string
@@ -13,9 +13,11 @@
 
 	const { partID, resourceName }: Props = $props()
 
+	const FRAME_SYSTEM_REFETCH_MS = 5000
+
 	const robotClient = useRobotClient(() => partID)
 	const frameSystem = createRobotQuery(robotClient, 'frameSystemConfig', () => ({
-		refetchInterval: 5000,
+		refetchInterval: FRAME_SYSTEM_REFETCH_MS,
 	}))
 
 	const frameNames = $derived(movableFrameNames(frameSystem.data))
@@ -30,7 +32,7 @@
 
 <ConnectionStatus {partID}>
 	{#snippet connected()}
-		<MoveWidget
+		<MoveForm
 			{partID}
 			{resourceName}
 			{frameName}
@@ -57,6 +59,6 @@
 			>
 				{#snippet label()}Destination frame{/snippet}
 			</FrameSelect>
-		</MoveWidget>
+		</MoveForm>
 	{/snippet}
 </ConnectionStatus>

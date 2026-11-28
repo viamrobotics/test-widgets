@@ -31,6 +31,7 @@ describe('<ConnectionStatus>', () => {
 		render(Subject, { props: { partID: 'abc' } })
 
 		expect(screen.getByText(/connecting/iu)).toBeInTheDocument()
+		expect(screen.getByRole('progressbar', { name: 'Connection status' })).toBeInTheDocument()
 	})
 
 	it('Shows the connected section when a machine is connected', () => {
@@ -42,9 +43,10 @@ describe('<ConnectionStatus>', () => {
 
 	it('Shows the failure section when reconnection fails', () => {
 		connection.current = MachineConnectionEvent.RECONNECTION_FAILED
-		render(Subject, { props: { partID: 'abc' } })
+		const { container } = render(Subject, { props: { partID: 'abc' } })
 
 		expect(screen.getByText(/could not connect to the machine/iu)).toBeInTheDocument()
+		expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
 	})
 
 	it('Shows the offline section before the first status arrives', () => {

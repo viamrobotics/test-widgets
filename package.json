@@ -229,6 +229,7 @@
 		"@threlte/core": ">=8",
 		"@threlte/extras": ">=9",
 		"@viamrobotics/prime-controls": ">=0.7",
+		"@viamrobotics/prime-editor": ">=0.1",
 		"@viamrobotics/prime-core": ">=0.1",
 		"@viamrobotics/prime-ui": ">=0.7.1",
 		"@viamrobotics/sdk": ">=0.79.2",
@@ -282,6 +283,7 @@
 		"@types/node": "^25.6.0",
 		"@types/three": "^0.187.0",
 		"@viamrobotics/prime-controls": "^0.7.0",
+		"@viamrobotics/prime-editor": "^0.1.1",
 		"@viamrobotics/prime-core": "^0.1.22",
 		"@viamrobotics/prime-ui": "^0.7.1",
 		"@viamrobotics/sdk": "^0.79.2",
@@ -327,7 +329,8 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"uuid": ">=14.0.0"
+			"uuid": ">=14.0.0",
+			"@codemirror/lang-json>@codemirror/language": "^6.13.1"
 		}
 	},
 	"dependencies": {
