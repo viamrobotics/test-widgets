@@ -14,6 +14,7 @@ import {
 	Gantry,
 	Gripper,
 	InputController,
+	MLModel,
 	Motion,
 	Motor,
 	MovementSensor,
@@ -34,7 +35,7 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 
 interface ResourceCase {
 	label: string
-	namespace?: Record<string, unknown>
+	namespace: Record<string, unknown>
 	triplet: keyof typeof resourceWidgets
 	keys: string[]
 }
@@ -165,7 +166,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 		triplet: ResourceTriplets.InputController,
 		keys: ['getEvents', 'triggerEvent', 'webGamepad'],
 	},
-	{ label: 'MLModel', triplet: ResourceTriplets.MLModel, keys: ['metadata'] },
+	{
+		label: 'MLModel',
+		namespace: MLModel,
+		triplet: ResourceTriplets.MLModel,
+		keys: ['metadata', 'infer'],
+	},
 	{ label: 'Motion', namespace: Motion, triplet: ResourceTriplets.Motion, keys: ['move'] },
 	{
 		label: 'Motor',
@@ -203,7 +209,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 			'positionMap',
 		],
 	},
-	{ label: 'Navigation', triplet: ResourceTriplets.Navigation, keys: [] },
+	{
+		label: 'Navigation',
+		namespace: {},
+		triplet: ResourceTriplets.Navigation,
+		keys: [],
+	},
 	{
 		label: 'PowerSensor',
 		namespace: PowerSensor,
@@ -264,10 +275,6 @@ const camelCase = (member: string): string => member.charAt(0).toLowerCase() + m
 
 const CAMEL_CASE_KEY = /^[a-z][a-zA-Z0-9]*$/
 
-const NAMESPACE_CASES = RESOURCE_CASES.flatMap(({ label, namespace, triplet }) =>
-	namespace ? [{ label, namespace, triplet }] : []
-)
-
 describe('resourceWidgets', () => {
 	it.each(RESOURCE_CASES)('lists exactly the $label widget keys, in order', ({ triplet, keys }) => {
 		expect(Object.keys(resourceWidgets[triplet].widgets)).toEqual(keys)
@@ -279,7 +286,7 @@ describe('resourceWidgets', () => {
 		)
 	})
 
-	it.each(NAMESPACE_CASES)(
+	it.each(RESOURCE_CASES)(
 		'maps each $label namespace member to the camelCase key holding that component',
 		({ namespace, triplet }) => {
 			const widgets: Record<string, { component: unknown }> = resourceWidgets[triplet].widgets
