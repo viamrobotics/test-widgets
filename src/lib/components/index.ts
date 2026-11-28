@@ -53,9 +53,6 @@ export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidg
 
 export { default as StopWidget } from './Stop.svelte'
 
-export { default as SwitchPositionWidget } from './widgets/Switch/PositionView.svelte'
-export { default as SwitchWidget } from './widgets/Switch/Switch.svelte'
-
 export { labelToColor } from './widgets/Vision/color'
 export { getImageSize, type Size } from './widgets/Vision/get-image-size'
 export { default as VisionServiceWidget } from './widgets/Vision/VisionService.svelte'

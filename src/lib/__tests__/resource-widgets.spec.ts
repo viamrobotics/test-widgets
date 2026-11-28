@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Board, Gantry, Gripper, Motion, Motor, Servo } from '../index.ts'
+import { Arm, Base, Board, Gantry, Gripper, Motion, Motor, Servo, Switch } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -153,7 +153,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 		keys: ['move', 'quickMove', 'moveTo', 'isMoving', 'getPosition', 'stop'],
 	},
 	{ label: 'Slam', triplet: ResourceTriplets.Slam, keys: ['getPosition'] },
-	{ label: 'Switch', triplet: ResourceTriplets.Switch, keys: [] },
+	{
+		label: 'Switch',
+		namespace: Switch,
+		triplet: ResourceTriplets.Switch,
+		keys: ['setPosition', 'getPosition', 'getNumberOfPositions'],
+	},
 	{ label: 'Vision', triplet: ResourceTriplets.Vision, keys: [] },
 ]
 
@@ -210,6 +215,7 @@ describe('resourceWidgets', () => {
 
 	it('marks bespoke widgets as controls', () => {
 		expect(resourceWidgets[ResourceTriplets.Motor].widgets.quickMove.kind).toBe('control')
+		expect(resourceWidgets[ResourceTriplets.Switch].widgets.setPosition.kind).toBe('control')
 	})
 })
 

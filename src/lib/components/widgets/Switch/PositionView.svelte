@@ -6,9 +6,12 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
+	import StatusLine from '#lib/components/StatusLine.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
 	import Position from './Position.svelte'
+	import { useSwitchState } from './switch-state.svelte.ts'
 
 	interface Props {
 		partID: string
@@ -27,19 +30,23 @@
 		refetchInterval: 500,
 	})
 
-	const numPositionsQuery = createResourceQuery(client, 'getNumberOfPositions', {
-		refetchInterval: 500,
-	})
+	const numberOfPositionsQuery = createResourceQuery(client, 'getNumberOfPositions')
 
-	const setPositionMutation = createResourceMutation(
-		client,
-		'setPosition',
-		() => positionQuery.queryKey
-	)
+	const setPositionMutation = createResourceMutation(client, 'setPosition')
 
-	const onSelect = async (position: number) => {
-		await setPositionMutation.mutateAsync([position])
-		await positionQuery.refetch()
+	const { position } = untrack(() => useSwitchState(partID, resourceName))
+
+	let statusText = $state('')
+
+	// No optimistic write: the selection follows GetPosition, re-read once SetPosition settles.
+	const onSelect = async (index: number, label: string) => {
+		const outcome = await position.run(() => {
+			statusText = `Sending ${label}.`
+			return setPositionMutation.mutateAsync([index])
+		})
+		if (outcome === undefined) return
+		statusText = outcome === 'succeeded' ? `Set to ${label}.` : ''
+		void positionQuery.refetch()
 	}
 </script>
 
@@ -47,15 +54,20 @@
 	class="flex-col gap-4"
 	method="SetPosition"
 	api={ResourceTriplets.Switch}
-	queries={[positionQuery, numPositionsQuery]}
+	queries={[positionQuery, numberOfPositionsQuery]}
 	mutations={[setPositionMutation]}
 >
-	{#if positionQuery.data !== undefined && numPositionsQuery.data !== undefined}
-		<Position
-			numPositions={numPositionsQuery.data[0]}
-			labels={numPositionsQuery.data[1]}
-			currentPosition={positionQuery.data}
-			{onSelect}
-		/>
+	{#if positionQuery.data !== undefined && numberOfPositionsQuery.data !== undefined}
+		{@const labels = numberOfPositionsQuery.data[1]}
+		<div class="flex w-full min-w-0 flex-col gap-1">
+			<Position
+				numPositions={numberOfPositionsQuery.data[0]}
+				{labels}
+				currentPosition={positionQuery.data}
+				isBusy={position.isBusy}
+				onSelect={(index) => onSelect(index, labels[index] ?? String(index))}
+			/>
+			<StatusLine text={statusText} />
+		</div>
 	{/if}
 </ApiSection>
