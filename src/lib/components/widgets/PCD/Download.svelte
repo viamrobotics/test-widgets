@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
+	import HeldBack from '../../HeldBack.svelte'
 
 	interface Props {
-		data: Uint8Array
+		/** `undefined` holds the button back until a point cloud has loaded. */
+		data: Uint8Array | undefined
 	}
 
 	const { data }: Props = $props()
 
+	const blockedReason = $derived(data === undefined ? 'No point cloud has loaded yet.' : undefined)
+
 	const downloadRawData = () => {
-		const file = new File([data as BlobPart], 'pointcloud.pcd', {
+		if (data === undefined) return
+		const file = new File([new Uint8Array(data)], 'pointcloud.pcd', {
 			type: 'pointcloud/pcd',
 		})
 		const url = URL.createObjectURL(file)
@@ -22,4 +26,15 @@
 	}
 </script>
 
-<Button onclick={downloadRawData}>Download raw data</Button>
+<HeldBack reason={blockedReason}>
+	{#snippet children(heldBack)}
+		<button
+			type="button"
+			class="button button-xs"
+			{...heldBack}
+			onclick={downloadRawData}
+		>
+			Download raw data
+		</button>
+	{/snippet}
+</HeldBack>
