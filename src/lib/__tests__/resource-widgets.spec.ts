@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Motion, Motor } from '../index.ts'
+import { Arm, Base, Gantry, Motion, Motor } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -61,8 +61,18 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'Encoder', triplet: ResourceTriplets.Encoder, keys: ['getPosition'] },
 	{
 		label: 'Gantry',
+		namespace: Gantry,
 		triplet: ResourceTriplets.Gantry,
-		keys: ['home', 'moveToPosition', 'quickMove', 'getPosition', 'isMoving'],
+		keys: [
+			'home',
+			'moveToPosition',
+			'quickMove',
+			'getPosition',
+			'isMoving',
+			'getLengths',
+			'stop',
+			'homingStatus',
+		],
 	},
 	{
 		label: 'Gripper',

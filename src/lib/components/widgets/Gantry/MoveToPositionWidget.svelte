@@ -7,7 +7,9 @@
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useGantryState } from './gantry-state.svelte'
 	import MoveToPosition from './MoveToPosition.svelte'
 
 	interface Props {
@@ -27,6 +29,7 @@
 		refetchInterval: 500,
 	})
 	const moveMutation = createResourceMutation(client, 'moveToPosition')
+	const { motion } = untrack(() => useGantryState(partID, resourceName))
 </script>
 
 <ApiSection
@@ -40,8 +43,9 @@
 		<MoveToPosition
 			positions={positionQuery.data}
 			moveTo={(newPos: number[], speeds: number[]) => {
-				moveMutation.mutate([newPos, speeds], {})
+				void motion.run(() => moveMutation.mutateAsync([newPos, speeds]))
 			}}
+			isBusy={motion.isBusy}
 		/>
 	{/if}
 </ApiSection>

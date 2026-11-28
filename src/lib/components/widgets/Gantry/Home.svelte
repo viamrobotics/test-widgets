@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { Button } from '@viamrobotics/prime-core'
+	import { mdiPlayCircleOutline } from '@mdi/js'
+	import { Icon } from '@viamrobotics/prime-ui'
 	import { GantryClient } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
-	import { Section } from '#lib/components/Section/index.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
+
+	import { useGantryState } from './gantry-state.svelte'
+	import HomedReadout from './HomedReadout.svelte'
+	import { HOMING_STATUS } from './homing-status'
 
 	interface Props {
 		partID: string
@@ -20,6 +25,26 @@
 	)
 
 	const homeMutation = createResourceMutation(client, 'home')
+
+	const { motion, homing } = untrack(() => useGantryState(partID, resourceName))
+
+	// Another Home for the same gantry also writes the shared state, so this button tracks only its own call.
+	let isHoming = $state(false)
+
+	const setHoming = (isInFlight: boolean) => {
+		isHoming = isInFlight
+		homing.isHoming = isInFlight
+		homing.busyStatus = isInFlight ? HOMING_STATUS : ''
+	}
+
+	const home = async () => {
+		const outcome = await motion.run(() => {
+			setHoming(true)
+			return homeMutation.mutateAsync([])
+		})
+		if (outcome === undefined) return
+		setHoming(false)
+	}
 </script>
 
 <ApiSection
@@ -28,16 +53,27 @@
 	api={ResourceTriplets.Gantry}
 	mutations={[homeMutation]}
 >
-	{#snippet subheading()}
-		<Section.Text>Run the homing sequence</Section.Text>
-	{/snippet}
-	<Button
-		class="w-fit"
-		icon="play-circle-outline"
-		onclick={() => {
-			homeMutation.mutate([], {})
-		}}
-	>
-		Execute
-	</Button>
+	<div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+		<button
+			type="button"
+			class="button button-compact"
+			aria-busy={isHoming}
+			aria-disabled={motion.isBusy || undefined}
+			onclick={home}
+		>
+			{#if isHoming}
+				<span
+					class="progress-dots"
+					aria-hidden="true"
+				></span>
+			{:else}
+				<Icon
+					icon={mdiPlayCircleOutline}
+					size="sm"
+				/>
+			{/if}
+			Home
+		</button>
+		<HomedReadout isHomed={homeMutation.data} />
+	</div>
 </ApiSection>

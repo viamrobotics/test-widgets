@@ -28,13 +28,6 @@ export { default as ResourceDoCommandWidget } from './widgets/DoCommand/Resource
 export { default as EncoderWidget } from './widgets/Encoder/Encoder.svelte'
 export { default as EncoderGetPositionWidget } from './widgets/Encoder/GetPositionWidget.svelte'
 
-export { default as GantryWidget } from './widgets/Gantry/Gantry.svelte'
-export { default as GantryGetPositionWidget } from './widgets/Gantry/GetPositionWidget.svelte'
-export { default as GantryIsMovingWidget } from './widgets/Gantry/IsMovingWidget.svelte'
-export { default as GantryHomeWidget } from './widgets/Gantry/Home.svelte'
-export { default as GantryMoveToPositionWidget } from './widgets/Gantry/MoveToPositionWidget.svelte'
-export { default as GantryQuickMoveWidget } from './widgets/Gantry/QuickMoveWidget.svelte'
-
 export { default as GenericWidget } from './widgets/Generic/Generic.svelte'
 
 export { default as GripperGrabWidget } from './widgets/Gripper/GrabWidget.svelte'
