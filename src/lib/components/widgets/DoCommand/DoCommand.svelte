@@ -1,15 +1,24 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Button, Progress } from '@viamrobotics/prime-core'
-	import { CodeEditor } from '@viamrobotics/prime-core/code-editor'
+	import { mdiAlertCircle } from '@mdi/js'
+	import { CodeEditor } from '@viamrobotics/prime-editor'
+	import { Banner, Icon, Progress, Tooltip } from '@viamrobotics/prime-ui'
 	import { type ResourceName, Struct } from '@viamrobotics/sdk'
 	import { createResourceMutation } from '@viamrobotics/svelte-sdk'
 	import { supportsDoCommand } from '#lib/client-map.js'
+	import HeldBack from '#lib/components/HeldBack.svelte'
 	import { Section } from '#lib/components/Section/index.js'
+	import {
+		claimSectionHostScope,
+		createSectionScope,
+		provideSectionScope,
+	} from '#lib/components/Section/section-scope-context.svelte.js'
+	import StatusLine from '#lib/components/StatusLine.svelte'
 	import { getResourceAPI } from '#lib/get-resource-api.js'
 	import { getResourceKey } from '#lib/get-resource-key.js'
 	import { PersistedState } from 'runed'
+	import { untrack } from 'svelte'
 
 	import { createDoCommandClient } from './create-do-command-client.svelte'
 
@@ -39,13 +48,17 @@
 
 	const isSupported = $derived(supportsDoCommand(resource))
 
-	let lastErr = $state<Error | null>()
+	let lastError = $state<Error | null>(null)
+	let hasLastCommandFailed = $state(false)
 
-	const uid = $props.id()
+	const BUSY_REASON = 'Wait for the command in flight to finish.'
+	const statusText = $derived(hasLastCommandFailed ? 'Execute failed' : '')
 
 	const persisted = $derived(new PersistedState(`${partID}/${getResourceKey(resource)}`, '{\n}'))
 
 	const displayInput = $derived(input ?? persisted.current ?? '{\n}')
+
+	const uid = $props.id()
 
 	let output = $state('')
 
@@ -54,87 +67,138 @@
 		persisted.current = value
 	}
 
-	const setInput = (value: string) => {
-		updateInput(value)
-	}
+	const inputError = $derived.by(() => {
+		try {
+			Struct.fromJsonString(displayInput)
+			return null
+		} catch (error) {
+			return error instanceof Error ? error : new Error(String(error))
+		}
+	})
+
+	// Inside a host's scope the host's header carries the indicator. Bare, the widget scopes itself.
+	const hostScope = claimSectionHostScope()
+	const getOwnSources = () => ({ method: 'DoCommand' })
+	if (hostScope === undefined) provideSectionScope(createSectionScope(getOwnSources))
+
+	$effect(() => {
+		// Registering writes the scope's contributors, so it must not subscribe this effect to them.
+		return untrack(() => hostScope?.register(getOwnSources))
+	})
 
 	const execute = async () => {
+		if (doCommandMutation.isPending) return
+		if (inputError) {
+			lastError = inputError
+			hasLastCommandFailed = true
+			return
+		}
 		try {
-			lastErr = null
-			output = ''
+			lastError = null
+			hasLastCommandFailed = false
 			const parsedInput = Struct.fromJsonString(displayInput)
 			const data = await doCommandMutation.mutateAsync([parsedInput])
 			output = JSON.stringify(data, null, 2)
-			lastErr = null
 		} catch (error) {
-			lastErr = error instanceof Error ? error : new Error(String(error))
+			lastError = error instanceof Error ? error : new Error(String(error))
+			hasLastCommandFailed = true
 		}
 	}
 </script>
 
 {#if isSupported}
+	<Section.Error error={lastError} />
 	{#if header}
 		<div class="border-b">
-			{@render header({ input: displayInput, setInput })}
+			{@render header({ input: displayInput, setInput: updateInput })}
 		</div>
 	{/if}
 	<div class="@container">
 		<div class="flex flex-col @2xl:flex-row">
 			<div class="flex min-w-0 flex-col gap-2 py-2 @2xl:flex-1">
-				<span class="text-gray-9 px-4 text-sm font-medium">Input</span>
+				<div class="flex flex-row items-center gap-1 px-4">
+					<span
+						id="{uid}-input"
+						class="text-default text-sm font-medium">Input</span
+					>
+					{#if inputError}
+						<Tooltip>
+							<Tooltip.Trigger>
+								<button
+									type="button"
+									class="text-danger-dark icon-button size-6"
+									aria-label="Input is not valid JSON"
+								>
+									<Icon
+										icon={mdiAlertCircle}
+										size="sm"
+									/>
+								</button>
+							</Tooltip.Trigger>
+							<Tooltip.Content>{inputError.message}</Tooltip.Content>
+						</Tooltip>
+					{/if}
+				</div>
 				<CodeEditor
-					label="input"
+					aria-labelledby="{uid}-input"
+					aria-invalid={inputError ? 'true' : undefined}
 					language="json"
-					value={displayInput}
-					onChange={(nextInput: string) => {
-						updateInput(nextInput)
-					}}
-					class="h-40 overflow-y-auto @2xl:h-56"
-					errorMessageID={lastErr ? uid : undefined}
+					bind:value={() => displayInput, updateInput}
+					class={['h-40 overflow-y-auto @2xl:h-56', inputError && 'border-danger-dark border']}
 				/>
 			</div>
 
 			<div
-				class="flex shrink-0 items-center justify-center border-y px-4 py-2 @2xl:border-x @2xl:border-y-0 @2xl:py-0"
+				class="flex shrink-0 flex-col items-center justify-center gap-1 border-y px-4 py-2 @2xl:border-x @2xl:border-y-0 @2xl:py-0"
 			>
-				<Button onclick={execute}>Execute</Button>
+				<HeldBack reason={doCommandMutation.isPending ? BUSY_REASON : undefined}>
+					{#snippet children(heldBack)}
+						<button
+							type="button"
+							class="button button-compact"
+							{...heldBack}
+							onclick={execute}
+						>
+							Execute
+						</button>
+					{/snippet}
+				</HeldBack>
+				<StatusLine text={statusText} />
 			</div>
 
 			<div class="flex min-w-0 flex-col gap-2 py-2 @2xl:flex-1">
-				<div class="flex flex-row items-center">
-					<span class="text-gray-9 px-4 text-sm font-medium">Output</span>
+				<div class="flex flex-row items-center gap-2 pr-4">
+					<span
+						id="{uid}-output"
+						class="text-default pl-4 text-sm font-medium">Output</span
+					>
 					{#if doCommandMutation.isPending}
 						<Progress
-							size="medium"
-							variant="dark"
+							label="Running command"
+							class="w-24"
 						/>
 					{/if}
+					{#if hostScope === undefined}
+						<span class="ml-auto"><Section.Errors /></span>
+					{/if}
 				</div>
-				{#if !lastErr}
-					<CodeEditor
-						label="output"
-						language="json"
-						value={output}
-						readonly
-						class="h-40 overflow-y-auto @2xl:h-56"
-					/>
-				{:else}
-					<Section.Error
-						id={uid}
-						class="h-40 px-4 @2xl:h-56"
-						error={lastErr}
-					/>
-				{/if}
+				<CodeEditor
+					aria-labelledby="{uid}-output"
+					language="json"
+					value={output}
+					readonly
+					class="h-40 overflow-y-auto @2xl:h-56"
+				/>
 			</div>
 		</div>
 	</div>
 {:else}
-	<Section.Error
-		class="p-4"
-		error={new Error(
-			`DoCommand for ${getResourceAPI(
-				resource
-			)} is not supported in the UI. Consider using one of our SDKs.`
-		)}
-	/>
+	<div class="p-4">
+		<Banner variant="info">
+			<Banner.Description>
+				DoCommand for {getResourceAPI(resource)} is not supported in the UI. Consider using one of our
+				SDKs.
+			</Banner.Description>
+		</Banner>
+	</div>
 {/if}

@@ -1,10 +1,16 @@
-import type { ComponentProps } from 'svelte'
+import type { Component, ComponentProps } from 'svelte'
 
-import { render, screen } from '@testing-library/svelte'
+import { render, screen, within } from '@testing-library/svelte'
 import { robotApi } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
 import Subject from '../SessionsTable.svelte'
+import PaneFixture, { type InPaneProps } from './__fixtures__/InPane.svelte'
+
+const Pane: Component<InPaneProps<ComponentProps<typeof Subject>>> = PaneFixture
+
+const NARROW_PX = 320
+const WIDE_PX = 672
 
 describe('SessionsTable', () => {
 	const createMockSession = (
@@ -22,11 +28,13 @@ describe('SessionsTable', () => {
 			},
 		})
 
-	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
-		render(Subject, {
-			sessions: [],
-			ourSessionId: undefined,
-			...props,
+	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>, width: number = WIDE_PX) =>
+		render(Pane, {
+			props: {
+				widget: Subject,
+				width,
+				props: { sessions: [], ourSessionId: undefined, ...props },
+			},
 		})
 
 	it('displays a message when no sessions are available', () => {
@@ -69,6 +77,64 @@ describe('SessionsTable', () => {
 		expect(cells[3]).toMatchTextContent('test-local')
 	})
 
+	it('renders each session as a row below @2xl, with an Ours badge on ours', () => {
+		renderSubject(
+			{
+				sessions: [
+					createMockSession('1', robotApi.PeerConnectionType.GRPC, 'remote1', 'local1'),
+					createMockSession('2', robotApi.PeerConnectionType.WEBRTC, 'remote2', 'local2'),
+				],
+				ourSessionId: '2',
+			},
+			NARROW_PX
+		)
+
+		expect(screen.queryByRole('table')).not.toBeInTheDocument()
+		const items = screen.getAllByRole('listitem')
+		expect(items).toHaveLength(2)
+		expect(items[0]).not.toMatchTextContent('Ours')
+		expect(items[1]).toMatchTextContent('Ours')
+		expect(items[1]).toMatchTextContent('WebRTC')
+		expect(items[1]).toMatchTextContent('remote2')
+		expect(items[1]).toMatchTextContent('local2')
+		expect(within(items[1]).getByText('Ours')).toHaveClass('badge', 'badge-neutral')
+	})
+
+	it('keeps the narrow rows within 320 px', () => {
+		renderSubject(
+			{
+				sessions: [
+					createMockSession(
+						'a-session-id-that-is-far-too-long-to-fit-in-a-pane',
+						robotApi.PeerConnectionType.GRPC,
+						'a-remote-address-that-is-far-too-long-to-fit-in-a-pane:443',
+						'a-local-address-that-is-far-too-long-to-fit-in-a-pane:443'
+					),
+				],
+			},
+			NARROW_PX
+		)
+
+		const pane = screen.getByTestId('pane')
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
+	})
+
+	it('has no sideways scroll at 672 px', () => {
+		renderSubject({
+			sessions: [
+				createMockSession(
+					'a-session-id-that-is-far-too-long-to-fit-in-a-pane',
+					robotApi.PeerConnectionType.GRPC,
+					'remote',
+					'local'
+				),
+			],
+		})
+
+		const pane = screen.getByTestId('pane')
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
+	})
+
 	it('highlights our session', () => {
 		const mockSessions = [
 			createMockSession('1', robotApi.PeerConnectionType.GRPC, 'remote1', 'local1'),
@@ -81,7 +147,7 @@ describe('SessionsTable', () => {
 		})
 
 		const rows = screen.getAllByRole('row')
-		expect(rows[2]).toMatchTextContent('(Ours)')
+		expect(rows[2]).toMatchTextContent('Ours')
 	})
 
 	it('sorts sessions by id', () => {

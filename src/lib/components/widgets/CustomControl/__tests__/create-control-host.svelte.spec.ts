@@ -1,7 +1,7 @@
 import { ResourceName, type RobotClient, Struct } from '@viamrobotics/sdk'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { createControlHost } from '../create-control-host.svelte'
+import { createControlHost, createSizeHandler } from '../create-control-host.svelte'
 
 const RESOURCE = 'my-sensor'
 const OTHER_RESOURCE = 'other-resource'
@@ -86,11 +86,13 @@ describe('createControlHost', () => {
 
 		const robot = withRobot ? createFakeRobot() : undefined
 		const onHeight = vi.fn()
+		const onLayout = vi.fn()
 		const controlHost = createControlHost({
 			getRobot: () => robot,
 			getIframe: () => iframe,
 			resourceName: () => RESOURCE,
 			onHeight,
+			onLayout,
 		})
 		teardowns.push(controlHost.stop, () => iframe.remove())
 
@@ -103,7 +105,7 @@ describe('createControlHost', () => {
 				})
 		}
 
-		return { iframe, onHeight, controlHost, startAndConnect }
+		return { iframe, onHeight, onLayout, controlHost, startAndConnect }
 	}
 
 	it('posts connect to the iframe with one MessagePort and the resource name when started', async () => {
@@ -130,7 +132,7 @@ describe('createControlHost', () => {
 		await startAndConnect()
 
 		sendFromGuest(iframe, readingsRequest('1'))
-		sendFromGuest(iframe, { type: 'size', height: 300 })
+		sendFromGuest(iframe, { type: 'size', width: 320, height: 300 })
 
 		await expect
 			.poll(() => readLog(iframe))
@@ -155,20 +157,43 @@ describe('createControlHost', () => {
 		const { iframe, onHeight, startAndConnect } = await setup()
 		await startAndConnect()
 
-		sendFromGuest(iframe, { type: 'size', height: 5000 })
+		sendFromGuest(iframe, { type: 'size', width: 320, height: 5000 })
 
 		await vi.waitFor(() => expect(onHeight).toHaveBeenCalledExactlyOnceWith(5000))
 	})
 
-	it('ignores a reported height that is not finite', async () => {
-		const { iframe, onHeight, startAndConnect } = await setup()
+	it('passes a stated layout to the layout callback once, bounded', async () => {
+		const { iframe, onLayout, startAndConnect } = await setup()
 		await startAndConnect()
 
-		sendFromGuest(iframe, { type: 'size', height: Number.NaN })
-		sendFromGuest(iframe, { type: 'size', height: Number.POSITIVE_INFINITY })
-		sendFromGuest(iframe, { type: 'size', height: 300 })
+		sendFromGuest(iframe, { type: 'layout', minWidth: 240, minHeight: 144, idealHeight: 100 })
+
+		await vi.waitFor(() =>
+			expect(onLayout).toHaveBeenCalledExactlyOnceWith({
+				minWidth: 240,
+				minHeight: 144,
+				idealHeight: 144,
+			})
+		)
+	})
+
+	it('caps a stated minWidth of 400 at 320', async () => {
+		const { iframe, onLayout, startAndConnect } = await setup()
+		await startAndConnect()
+
+		sendFromGuest(iframe, { type: 'layout', minWidth: 400 })
+
+		await vi.waitFor(() => expect(onLayout).toHaveBeenCalledExactlyOnceWith({ minWidth: 320 }))
+	})
+
+	it('never calls the layout callback for a guest that states no layout, while its size arrives', async () => {
+		const { iframe, onHeight, onLayout, startAndConnect } = await setup()
+		await startAndConnect()
+
+		sendFromGuest(iframe, { type: 'size', width: 320, height: 300 })
 
 		await vi.waitFor(() => expect(onHeight).toHaveBeenCalledExactlyOnceWith(300))
+		expect(onLayout).not.toHaveBeenCalled()
 	})
 
 	it('replaces the running host when started again', async () => {
@@ -197,5 +222,23 @@ describe('createControlHost', () => {
 		expect(readLog(iframe)).not.toContainEqual(
 			expect.objectContaining({ port: expect.objectContaining({ id: 'late' }) })
 		)
+	})
+})
+
+describe('createSizeHandler', () => {
+	it('passes the height of a report with no width, as a guest on SDK 0.3.0 or older sends under SDK 0.4.1', () => {
+		const onHeight = vi.fn()
+
+		createSizeHandler(onHeight)({ height: 300 })
+
+		expect(onHeight).toHaveBeenCalledExactlyOnceWith(300)
+	})
+
+	it.each([Number.NaN, Number.POSITIVE_INFINITY])('drops a height of %s', (height) => {
+		const onHeight = vi.fn()
+
+		createSizeHandler(onHeight)({ width: 320, height })
+
+		expect(onHeight).not.toHaveBeenCalled()
 	})
 })

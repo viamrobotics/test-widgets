@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte'
 import { userEvent } from '@testing-library/user-event'
 import { robotApi } from '@viamrobotics/sdk'
 import { createRawSnippet } from 'svelte'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../widgets.svelte'
 
@@ -29,8 +29,12 @@ vi.mock('@viamrobotics/svelte-sdk', async (importOriginal) => ({
 	}),
 }))
 
+const drawer = vi.hoisted(() => ({ mounted: 0 }))
+
 vi.mock('#lib/components/widgets/OperationsAndSessions/OperationsAndSessions.svelte', () => ({
-	default: () => {},
+	default: () => {
+		drawer.mounted += 1
+	},
 }))
 
 vi.mock('../card-list-item.svelte', () => ({
@@ -42,6 +46,10 @@ vi.mock('../card-list-item.svelte', () => ({
 const children = createRawSnippet(() => ({ render: () => '<div></div>' }))
 
 describe('Widgets', () => {
+	beforeEach(() => {
+		drawer.mounted = 0
+	})
+
 	it('names the single card checkbox after its label', () => {
 		render(Subject, { partID: 'part-a', urlHash: '', children })
 
@@ -58,5 +66,27 @@ describe('Widgets', () => {
 
 		expect(screen.queryByText(/no resources on this part/iu)).not.toBeInTheDocument()
 		expect(screen.getByRole('button', { name: /collapse all/iu })).toBeInTheDocument()
+	})
+
+	it('opens and closes the operations and sessions drawer', async () => {
+		const user = userEvent.setup()
+		render(Subject, { partID: 'part-a', urlHash: '', children })
+		const toggle = screen.getByRole('button', { name: /operations and sessions/iu })
+		const body = document.querySelector(`[id="${toggle.getAttribute('aria-controls')}"]`)
+
+		expect(toggle).toHaveAttribute('aria-expanded', 'false')
+		expect(body).toHaveAttribute('hidden')
+		expect(drawer.mounted).toBe(0)
+
+		await user.click(toggle)
+
+		expect(toggle).toHaveAttribute('aria-expanded', 'true')
+		expect(body).not.toHaveAttribute('hidden')
+		expect(drawer.mounted).toBe(1)
+
+		await user.click(toggle)
+
+		expect(toggle).toHaveAttribute('aria-expanded', 'false')
+		expect(body).toHaveAttribute('hidden')
 	})
 })
