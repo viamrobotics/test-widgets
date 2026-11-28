@@ -58,13 +58,6 @@ export { default as PowerSensorGetPowerWidget } from './widgets/PowerSensor/GetP
 
 export { default as SensorWidget } from './widgets/Sensor/Sensor.svelte'
 
-export { default as ServoGetPositionWidget } from './widgets/Servo/GetPositionWidget.svelte'
-export { default as ServoMoveWidget } from './widgets/Servo/MoveWidget.svelte'
-export { default as ServoQuickMoveWidget } from './widgets/Servo/QuickMoveWidget.svelte'
-export { default as ServoWidget } from './widgets/Servo/Servo.svelte'
-export { default as ServoIsMovingWidget } from './widgets/Servo/IsMovingWidget.svelte'
-export { default as ServoStopWidget } from './widgets/Servo/StopWidget.svelte'
-
 export { default as SlamMap2D } from './Slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/Slam/Slam.svelte'
 export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidget.svelte'
