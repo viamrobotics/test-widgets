@@ -29,4 +29,5 @@ export type {
 export { showResourceWidget } from './show-resource-widget'
 export { default as WidgetsProvider } from './WidgetsProvider.svelte'
 
+export * as Arm from './components/widgets/Arm/index.ts'
 export * as Motor from './components/widgets/Motor/index.ts'

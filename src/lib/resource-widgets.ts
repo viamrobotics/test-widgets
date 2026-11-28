@@ -3,13 +3,6 @@ import type { ResourceName } from '@viamrobotics/sdk'
 import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-widget-types.ts'
 
 import {
-	ArmGetJointPositionsWidget,
-	ArmIsMovingWidget,
-	ArmManualModeWidget,
-	ArmMoveToJointPositionsWidget,
-	ArmMoveToPositionWidget,
-	ArmQuickMoveWidget,
-	ArmStopWidget,
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
 	BaseIsMovingWidget,
@@ -46,6 +39,7 @@ import {
 	ServoStopWidget,
 	SlamGetPositionWidget,
 } from './components/index.ts'
+import * as Arm from './components/widgets/Arm/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
@@ -56,12 +50,17 @@ import { ResourceTriplets } from './resource-triplet.ts'
  */
 interface ResourceWidgetKeys {
 	[ResourceTriplets.Arm]:
+		| 'jog'
+		| 'joints'
 		| 'moveToJointPositions'
 		| 'moveToPosition'
-		| 'quickMove'
 		| 'getJointPositions'
+		| 'getEndPosition'
 		| 'isMoving'
 		| 'manualMode'
+		| 'setManualMode'
+		| 'getManualMode'
+		| 'getProperties'
 		| 'stop'
 	[ResourceTriplets.Base]:
 		| 'quickMove'
@@ -134,13 +133,18 @@ type ResourceWidgetsCatalog = {
 export const resourceWidgets: ResourceWidgetsCatalog = {
 	[ResourceTriplets.Arm]: {
 		widgets: {
-			moveToJointPositions: { component: ArmMoveToJointPositionsWidget, kind: 'api' },
-			moveToPosition: { component: ArmMoveToPositionWidget, kind: 'api' },
-			quickMove: { component: ArmQuickMoveWidget, kind: 'control' },
-			getJointPositions: { component: ArmGetJointPositionsWidget, kind: 'api' },
-			isMoving: { component: ArmIsMovingWidget, kind: 'api' },
-			manualMode: { component: ArmManualModeWidget, kind: 'control' },
-			stop: { component: ArmStopWidget, kind: 'api' },
+			jog: { component: Arm.Jog, kind: 'control' },
+			joints: { component: Arm.Joints, kind: 'control' },
+			moveToJointPositions: { component: Arm.MoveToJointPositions, kind: 'api' },
+			moveToPosition: { component: Arm.MoveToPosition, kind: 'api' },
+			getJointPositions: { component: Arm.GetJointPositions, kind: 'api' },
+			getEndPosition: { component: Arm.GetEndPosition, kind: 'api' },
+			isMoving: { component: Arm.IsMoving, kind: 'api' },
+			manualMode: { component: Arm.ManualMode, kind: 'control' },
+			setManualMode: { component: Arm.SetManualMode, kind: 'api' },
+			getManualMode: { component: Arm.GetManualMode, kind: 'api' },
+			getProperties: { component: Arm.GetProperties, kind: 'api' },
+			stop: { component: Arm.Stop, kind: 'api' },
 		},
 	},
 	[ResourceTriplets.Base]: {

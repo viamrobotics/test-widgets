@@ -6,20 +6,18 @@
 		createResourceQuery,
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
-	import { Section } from '#lib/components/Section/index.js'
-	import { useSectionErrors } from '#lib/components/Section/use-section-errors.svelte.js'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useArmState } from './arm-state.svelte'
 	import ManualMode from './ManualMode.svelte'
 
 	interface Props {
 		partID: string
 		resourceName: string
-		/** Render as a one-line band with an inline title instead of a titled ApiSection. */
-		band?: boolean
 	}
 
-	const { partID, resourceName, band = false }: Props = $props()
+	const { partID, resourceName }: Props = $props()
 
 	const client = createResourceClient(
 		ArmClient,
@@ -37,44 +35,25 @@
 
 	const setManualModeMutation = createResourceMutation(client, 'setManualMode')
 
-	// The band renders no ApiSection, so it reads the same sources through the errors indicator.
-	const bandErrors = useSectionErrors(() => ({
-		queries: [propertiesQuery, manualModeQuery],
-		mutations: [setManualModeMutation],
-	}))
+	const { manualMode: manualModeGuard } = untrack(() => useArmState(partID, resourceName))
 
 	const setManualMode = (manualMode: boolean, enabledFor: number) => {
-		setManualModeMutation.mutate([manualMode, enabledFor], {})
+		void manualModeGuard.run(() => setManualModeMutation.mutateAsync([manualMode, enabledFor]))
 	}
 </script>
 
 {#if supportsManualMode}
-	{#if band}
-		<section
-			aria-label="SetManualMode"
-			class="flex items-start justify-between gap-2 border-b px-4 py-3"
-		>
-			<ManualMode
-				title="ManualMode"
-				isManualMode={manualModeQuery.data ?? false}
-				isPending={setManualModeMutation.isPending}
-				{setManualMode}
-			/>
-			<Section.Errors errors={bandErrors.errors} />
-		</section>
-	{:else}
-		<ApiSection
-			method="SetManualMode"
-			api={ResourceTriplets.Arm}
-			queries={[propertiesQuery, manualModeQuery]}
-			mutations={[setManualModeMutation]}
-			class="grow flex-col gap-4"
-		>
-			<ManualMode
-				isManualMode={manualModeQuery.data ?? false}
-				isPending={setManualModeMutation.isPending}
-				{setManualMode}
-			/>
-		</ApiSection>
-	{/if}
+	<ApiSection
+		method="SetManualMode"
+		api={ResourceTriplets.Arm}
+		queries={[propertiesQuery, manualModeQuery]}
+		mutations={[setManualModeMutation]}
+		class="grow flex-col gap-4"
+	>
+		<ManualMode
+			isManualMode={manualModeQuery.data ?? false}
+			isPending={manualModeGuard.isBusy}
+			{setManualMode}
+		/>
+	</ApiSection>
 {/if}

@@ -7,7 +7,9 @@
 	} from '@viamrobotics/svelte-sdk'
 	import ApiSection from '#lib/components/ApiSection.svelte'
 	import { ResourceTriplets } from '#lib/resource-triplet.js'
+	import { untrack } from 'svelte'
 
+	import { useArmState } from './arm-state.svelte'
 	import { getJointPositionLimits, type KinematicsJSON } from './joint-position-limits'
 	import MoveToJointPositions from './MoveToJointPositions.svelte'
 	import { useArmMotionTracking } from './use-arm-motion-tracking.svelte'
@@ -26,9 +28,11 @@
 	)
 
 	const moveToJointPosMutation = createResourceMutation(client, 'moveToJointPositions')
+	const { motion: motionGuard } = untrack(() => useArmState(partID, resourceName))
 
+	// A move from any widget in the motion group locks the editor, the same as this widget's own.
 	const motionTracking = useArmMotionTracking(client, {
-		isMovePending: () => moveToJointPosMutation.isPending,
+		isMovePending: () => motionGuard.isBusy,
 		refetchPosition: () => jointPositionsQuery.refetch(),
 	})
 
@@ -40,8 +44,14 @@
 		refetchInterval: 500,
 	})
 
+	// The editors read a rejection as a failed move. A press dropped while the group is busy moved nothing either.
 	const moveToJointPositions = async (jointPositionsList: number[]) => {
-		await moveToJointPosMutation.mutateAsync([jointPositionsList])
+		const outcome = await motionGuard.run(() =>
+			moveToJointPosMutation.mutateAsync([jointPositionsList])
+		)
+		if (outcome !== 'succeeded') {
+			throw new Error('The arm did not move to the joint positions.')
+		}
 	}
 
 	const jointLimitsDegrees = $derived(

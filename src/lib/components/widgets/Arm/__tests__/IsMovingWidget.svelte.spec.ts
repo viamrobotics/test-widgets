@@ -3,6 +3,7 @@ import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../IsMovingWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 const { queryState } = vi.hoisted(() => {
 	const state: { data: boolean | undefined } = { data: undefined }
@@ -41,7 +42,7 @@ describe('Arm IsMoving widget', () => {
 		expect(screen.getByRole('heading', { name: 'IsMoving' })).toBeInTheDocument()
 	})
 
-	it('shows the moving pill while the arm reports motion', () => {
+	it('shows the moving badge while the arm reports motion', () => {
 		queryState.data = true
 
 		renderSubject()
@@ -49,12 +50,22 @@ describe('Arm IsMoving widget', () => {
 		expect(screen.getByText('Moving')).toBeInTheDocument()
 	})
 
-	it('shows the idle pill while the arm reports no motion', () => {
+	it('shows the idle badge while the arm reports no motion', () => {
 		queryState.data = false
 
 		renderSubject()
 
 		expect(screen.getByText('Idle')).toBeInTheDocument()
+	})
+
+	it('shows the update hint as a tooltip on the badge, not as section text', async () => {
+		queryState.data = false
+
+		renderSubject()
+
+		expect(screen.queryByText('Updates automatically')).not.toBeInTheDocument()
+		screen.getByText('Idle').focus()
+		expect(await screen.findByText('Updates automatically')).toBeInTheDocument()
 	})
 
 	it('polls isMoving every 500 ms', () => {
@@ -63,5 +74,31 @@ describe('Arm IsMoving widget', () => {
 		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'isMoving', {
 			refetchInterval: 500,
 		})
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Arm IsMoving widget in a 320 px pane', () => {
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		queryState.data = true
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

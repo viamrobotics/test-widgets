@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
 import { createResourceMutation, createResourceQuery } from '@viamrobotics/svelte-sdk'
+import InWidgetsProvider from '#lib/__tests__/__fixtures__/InWidgetsProvider.svelte'
 import { describe, expect, it, vi } from 'vitest'
 
 import Subject from '../ManualModeWidget.svelte'
+import SetManualModeWidget from '../SetManualModeWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 vi.mock('@viamrobotics/sdk', () => ({
 	ArmClient: class {},
@@ -16,7 +20,11 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 		isError: false,
 		error: null,
 	})),
-	createResourceMutation: vi.fn(() => ({ mutate: vi.fn(), error: null })),
+	createResourceMutation: vi.fn(() => ({
+		mutateAsync: vi.fn(() => new Promise(() => {})),
+		isPending: false,
+		error: null,
+	})),
 }))
 
 const queryResult = (data: unknown) =>
@@ -30,8 +38,8 @@ const mockQueries = ({ supportManualMode = true, manualMode = false } = {}) => {
 }
 
 const renderSubject = () =>
-	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-arm' },
+	render(InWidgetsProvider, {
+		props: { component: Subject, props: { partID: 'test-part', resourceName: 'test-arm' } },
 	})
 
 const getManualModeOptions = () => {
@@ -59,15 +67,19 @@ describe('Arm SetManualMode widget', () => {
 		expect(screen.getByRole('button', { name: 'Enter' })).toBeInTheDocument()
 	})
 
-	it('renders an inline ManualMode title instead of a section title in band mode', () => {
-		mockQueries()
-
-		render(Subject, {
-			props: { partID: 'test-part', resourceName: 'test-arm', band: true },
+	it('disables Enter and Exit while a SetManualMode call for the same arm is in flight', async () => {
+		mockQueries({ manualMode: true })
+		render(InWidgetsProvider, {
+			props: {
+				component: [Subject, SetManualModeWidget],
+				props: { partID: 'test-part', resourceName: 'test-arm' },
+			},
 		})
 
-		expect(screen.getByRole('heading', { name: 'ManualMode' })).toBeInTheDocument()
-		expect(screen.queryByText('SetManualMode')).not.toBeInTheDocument()
+		await userEvent.click(screen.getByRole('button', { name: 'Execute' }))
+
+		expect(screen.getByRole('button', { name: 'Exit' })).toBeDisabled()
+		expect(screen.getByRole('button', { name: 'Enter' })).toBeDisabled()
 	})
 
 	it('polls getManualMode every second while manual mode is supported', () => {
@@ -95,11 +107,25 @@ describe('Arm SetManualMode widget', () => {
 		expect(createResourceMutation).toHaveBeenCalledWith(expect.anything(), 'setManualMode')
 	})
 
-	it('shows the enabled pill from the polled manual mode state', () => {
+	it('shows manual mode on from the polled state', () => {
 		mockQueries({ manualMode: true })
 
 		renderSubject()
 
-		expect(screen.getByText('Enabled')).toBeInTheDocument()
+		expect(screen.getByText('Manual mode')).toBeInTheDocument()
+	})
+})
+
+describe('Arm SetManualMode widget in a 320 px pane', () => {
+	it('does not scroll horizontally', () => {
+		mockQueries()
+		render(PaneSubject, { props: { widget: Subject } })
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild
+		if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+
+		expect(screen.getByRole('button', { name: 'Enter' })).toBeInTheDocument()
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

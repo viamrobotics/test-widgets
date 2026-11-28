@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Button, Icon, IconButton, Tooltip } from '@viamrobotics/prime-core'
-	import StatusPill from '#lib/components/StatusPill.svelte'
-	import Table from '#lib/components/Table.svelte'
+	import { mdiInformationOutline, mdiPlayCircleOutline } from '@mdi/js'
+	import { type FieldState, FieldStates, Icon, Tooltip } from '@viamrobotics/prime-ui'
+	import ResetToCurrentButton from '#lib/components/ResetToCurrentButton.svelte'
 	import { degreesToRadians, formatNumeric } from '#lib/format.js'
 
 	import type { EditedTargets } from './use-edited-targets.svelte'
 
-	import { type JointLimit } from './joint-position-limits'
+	import { isOutsideJointLimit, type JointLimit } from './joint-position-limits'
 	import JointPositionSlider from './JointPositionSlider.svelte'
 
 	interface Props {
@@ -27,27 +27,49 @@
 		isMoving = false,
 	}: Props = $props()
 
+	const DEFAULT_LIMIT_DEGREES = 180
+
 	interface StatusIndicator {
-		status: 'info' | 'warn'
+		state: FieldState
 		message: string
 	}
 
-	const getSliderMin = (index: number): number => jointLimitsDegrees[index]?.minDegrees ?? -180
-	const getSliderMax = (index: number): number => jointLimitsDegrees[index]?.maxDegrees ?? 180
+	const quickSetLabelId = $props.id()
+
+	const getSliderMin = (index: number): number =>
+		jointLimitsDegrees[index]?.minDegrees ?? -DEFAULT_LIMIT_DEGREES
+	const getSliderMax = (index: number): number =>
+		jointLimitsDegrees[index]?.maxDegrees ?? DEFAULT_LIMIT_DEGREES
 
 	const formatAngle = (degrees: number) =>
 		useRadians ? `${formatNumeric(degreesToRadians(degrees))} rad` : `${formatNumeric(degrees)}°`
 
+	// A typed target is never clamped, so a joint with known limits says so before Execute sends it.
+	const limitIndicator = (index: number): StatusIndicator | undefined => {
+		const limit = jointLimitsDegrees[index]
+		if (!limit) return undefined
+		if (!isOutsideJointLimit(targets.target(index), limit.minDegrees, limit.maxDegrees)) {
+			return undefined
+		}
+		return {
+			state: FieldStates.Error,
+			message: `Joint ${index} is outside its limits, ${formatAngle(limit.minDegrees)} to ${formatAngle(limit.maxDegrees)}.`,
+		}
+	}
+
 	const statusIndicator = (index: number): StatusIndicator | undefined => {
+		const outsideLimit = limitIndicator(index)
+		if (outsideLimit) return outsideLimit
+
 		const drift = targets.drift(index)
 		if (drift !== undefined) {
 			return {
-				status: 'warn',
+				state: FieldStates.Warn,
 				message: `Arm moved ${formatAngle(drift)} since you edited joint ${index}.`,
 			}
 		}
 		if (isMoving && targets.isEdited(index)) {
-			return { status: 'info', message: 'The arm is moving. Your edit is kept.' }
+			return { state: FieldStates.Info, message: 'The arm is moving. Your edit is kept.' }
 		}
 		return undefined
 	}
@@ -67,105 +89,110 @@
 	}
 </script>
 
-<Table>
-	<thead>
-		<tr>
-			<th>Joint</th>
-			<th>Position ({useRadians ? 'radians' : 'degrees'})</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each [...positions.keys()] as index (index)}
-			{@const indicator = statusIndicator(index)}
-			<tr>
-				<th scope="row">{index}</th>
-				<th>
-					<div class="flex flex-col gap-0.5">
-						<div class="flex items-center gap-1">
-							<div class="min-w-0 grow">
-								<JointPositionSlider
-									value={targets.target(index)}
-									onValueChange={(degrees) => {
-										targets.edit(index, degrees)
-									}}
-									minDegrees={getSliderMin(index)}
-									maxDegrees={getSliderMax(index)}
-									{useRadians}
-								/>
-							</div>
-							{#if indicator}
-								<Tooltip>
-									<Icon
-										name={indicator.status === 'warn' ? 'alert' : 'information'}
-										cx={indicator.status === 'warn' ? 'text-warning-bright' : 'text-info-dark'}
-									/>
-									<span slot="description">{indicator.message}</span>
-								</Tooltip>
-								<!-- The tweakpane slider takes no aria-describedby, so screen readers get the message here. -->
-								<span class="sr-only">{indicator.message}</span>
-							{/if}
-							{#if targets.isEdited(index)}
-								<Tooltip>
-									<IconButton
-										icon="backup-restore"
-										label="Reset joint {index} to current"
-										onclick={() => {
-											targets.reset(index)
-										}}
-									/>
-									<span slot="description">Reset joint {index} to its current value</span>
-								</Tooltip>
-							{/if}
-						</div>
-						<span class="text-subtle-2 font-roboto-mono text-xs font-normal">
-							Current {formatAngle(positions[index] ?? 0)}
-						</span>
-					</div>
-				</th>
-			</tr>
-		{/each}
-	</tbody>
-</Table>
+<div class="flex flex-col gap-2">
+	{#each [...positions.keys()] as index (index)}
+		{@const indicator = statusIndicator(index)}
+		{@const current = formatAngle(positions[index] ?? 0)}
+		<div class="flex flex-col gap-1">
+			<Tooltip disabled={!indicator}>
+				<Tooltip.Trigger class="block min-w-0">
+					<JointPositionSlider
+						label="Joint {index}"
+						value={targets.target(index)}
+						onValueChange={(degrees) => {
+							targets.edit(index, degrees)
+						}}
+						minDegrees={getSliderMin(index)}
+						maxDegrees={getSliderMax(index)}
+						{useRadians}
+						state={indicator?.state}
+					>
+						{#snippet trailing()}
+							<ResetToCurrentButton
+								label="joint {index}"
+								{current}
+								isEdited={targets.isEdited(index)}
+								onreset={() => {
+									targets.reset(index)
+								}}
+							/>
+						{/snippet}
+					</JointPositionSlider>
+				</Tooltip.Trigger>
+				<Tooltip.Content class="max-w-72">{indicator?.message}</Tooltip.Content>
+			</Tooltip>
+			{#if indicator}
+				<!-- The tooltip is not in the page until it opens, and Slider takes no aria-describedby, so screen readers get the message here. -->
+				<span class="sr-only">{indicator.message}</span>
+			{/if}
+		</div>
+	{/each}
+</div>
 
-<div class="mb-2 flex flex-col gap-2">
-	<span class="flex flex-row gap-2">
-		<h4 class="text-xs font-semibold">Quick set</h4>
+<div class="flex flex-col gap-1">
+	<div class="flex items-center gap-1">
+		<span
+			id={quickSetLabelId}
+			class="text-xs font-semibold"
+		>
+			Quick set
+		</span>
 		<Tooltip>
-			<Icon
-				name="information-outline"
-				cx="text-gray-6"
-			/>
-			<span slot="description">Will update the slider values but will not execute</span>
+			<Tooltip.Trigger>
+				<button
+					type="button"
+					class="icon-button size-6"
+					aria-label="About Quick set"
+				>
+					<Icon
+						icon={mdiInformationOutline}
+						size="sm"
+					/>
+				</button>
+			</Tooltip.Trigger>
+			<Tooltip.Content>Will update the slider values but will not execute</Tooltip.Content>
 		</Tooltip>
-	</span>
-	<div class="flex flex-col gap-2 sm:flex-row">
-		<Button onclick={resetToZero}>Zero</Button>
-		<Button
+	</div>
+	<div
+		role="group"
+		aria-labelledby={quickSetLabelId}
+		class="flex flex-wrap gap-2"
+	>
+		<button
+			type="button"
+			class="button button-compact"
+			onclick={resetToZero}
+		>
+			Zero
+		</button>
+		<button
+			type="button"
+			class="button button-compact"
 			onclick={() => {
 				targets.resetAll()
 			}}
 		>
 			Current position
-		</Button>
+		</button>
 	</div>
 </div>
 
-<div class="mt-auto flex items-center gap-2">
-	<Button
-		class="w-fit"
-		icon="play-circle-outline"
-		variant="dark"
+<div class="flex items-center gap-2">
+	<button
+		type="button"
+		class="button button-dark button-compact"
 		disabled={isMoving}
 		onclick={execute}
 	>
+		<Icon
+			icon={mdiPlayCircleOutline}
+			size="sm"
+		/>
 		Execute
-	</Button>
+	</button>
 	<span role="status">
 		{#if isMoving}
-			<StatusPill
-				isActive
-				activeText="Arm is moving"
-			/>
+			<span class="badge badge-success">Arm is moving</span>
 		{/if}
 	</span>
 </div>

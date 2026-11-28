@@ -1,13 +1,7 @@
 <script lang="ts">
-	import {
-		Badge,
-		Button,
-		Icon,
-		type IconName,
-		Label,
-		Select,
-		Tooltip,
-	} from '@viamrobotics/prime-core'
+	import { mdiAlert, mdiInformationOutline } from '@mdi/js'
+	import { Select } from '@viamrobotics/prime-controls'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { degreesToRadians, formatNumeric } from '#lib/format.js'
 
 	import type { JointLimit } from './joint-position-limits'
@@ -23,19 +17,19 @@
 	const JOG_STEP_OPTIONS_DEGREES = [1, 5, 10, 15] as const
 	type JogStepDegrees = (typeof JOG_STEP_OPTIONS_DEGREES)[number]
 	const DEFAULT_JOG_STEP_DEGREES: JogStepDegrees = 5
+	const JOG_STEP_ITEMS = JOG_STEP_OPTIONS_DEGREES.map((step) => ({
+		value: String(step),
+		label: `${step}°`,
+	}))
 
 	type JogDirection = 'decrease' | 'increase'
 
-	interface StatusBadge {
-		variant: 'pending' | 'progress' | 'success' | 'danger'
-		icon?: IconName
-	}
-
-	const STATUS_BADGES: Record<JogQueueStatus, StatusBadge> = {
-		queuing: { variant: 'pending' },
-		sending: { variant: 'progress' },
-		sent: { variant: 'success' },
-		failed: { variant: 'danger' },
+	// Queued and sending share the pending color. Sending adds progress dots, so the two still read apart.
+	const STATUS_BADGE_CLASSES: Record<JogQueueStatus, string> = {
+		queuing: 'badge-pending',
+		sending: 'badge-pending',
+		sent: 'badge-success',
+		failed: 'badge-danger',
 	}
 
 	interface Props {
@@ -51,6 +45,10 @@
 	const { positions, jointLimitsDegrees, useRadians, isMoving, moveToJointPositions }: Props =
 		$props()
 
+	const instanceId = $props.id()
+	const jogStepLabelId = `${instanceId}-jog-step`
+	const jointLabelId = (jointIndex: number) => `${instanceId}-joint-${jointIndex}`
+
 	let jogStepDegrees = $state<JogStepDegrees>(DEFAULT_JOG_STEP_DEGREES)
 
 	const queue = useJogQueue({
@@ -65,8 +63,13 @@
 	const isJointDisabled = (jointIndex: number) =>
 		isMoving || queue.entryFor(jointIndex)?.status === 'sending'
 
+	const angleSuffix = $derived(useRadians ? 'rad' : '°')
+
+	const formatAngleValue = (degrees: number) =>
+		formatNumeric(useRadians ? degreesToRadians(degrees) : degrees)
+
 	const formatAngle = (degrees: number) =>
-		useRadians ? `${formatNumeric(degreesToRadians(degrees))} rad` : `${formatNumeric(degrees)}°`
+		`${formatAngleValue(degrees)}${useRadians ? ` ${angleSuffix}` : angleSuffix}`
 
 	const rangeFor = (jointIndex: number): JogJointRange => ({
 		startDegrees: positions[jointIndex] ?? 0,
@@ -77,10 +80,8 @@
 	const stepFor = (direction: JogDirection) =>
 		direction === 'decrease' ? -jogStepDegrees : jogStepDegrees
 
-	const handleStepChange = (event: Event) => {
-		if (!(event.target instanceof HTMLSelectElement)) return
-
-		const selected = Number(event.target.value)
+	const selectStep = (next: string | undefined) => {
+		const selected = Number(next)
 		const step = JOG_STEP_OPTIONS_DEGREES.find((option) => option === selected)
 		if (step !== undefined) jogStepDegrees = step
 	}
@@ -125,87 +126,112 @@
 </script>
 
 {#snippet jogButton(jointIndex: number, direction: JogDirection)}
-	<Tooltip
-		hoverDelayMS={400}
-		targetClass="inline-flex"
+	<button
+		type="button"
+		class="button button-xs font-roboto-mono"
+		aria-label="Joint {jointIndex}, {direction === 'decrease'
+			? 'minus'
+			: 'plus'} {jogStepDegrees} degrees"
+		disabled={isJointDisabled(jointIndex)}
+		onpointerdown={(event) => handlePointerDown(event, jointIndex, direction)}
+		onpointerup={queue.endHold}
+		onpointerleave={queue.endHold}
+		onpointercancel={queue.endHold}
+		onclick={(event) => handleClick(event, jointIndex, direction)}
 	>
-		<Button
-			aria-label="{direction === 'decrease'
-				? 'Decrease'
-				: 'Increase'} joint {jointIndex} by {jogStepDegrees} degrees"
-			disabled={isJointDisabled(jointIndex)}
-			onpointerdown={(event) => handlePointerDown(event, jointIndex, direction)}
-			onpointerup={queue.endHold}
-			onpointerleave={queue.endHold}
-			onpointercancel={queue.endHold}
-			onclick={(event) => handleClick(event, jointIndex, direction)}
-		>
-			{direction === 'decrease' ? '−' : '+'}{jogStepDegrees}°
-		</Button>
-		<span slot="description">
-			Tap or hold to {direction === 'decrease' ? 'subtract' : 'add'}
-			{jogStepDegrees}°
-		</span>
-	</Tooltip>
+		{direction === 'decrease' ? '−' : '+'}{jogStepDegrees}°
+	</button>
 {/snippet}
 
-<div class="flex flex-col gap-x-4 gap-y-2">
-	<Label position="left">
-		<span class="w-12"> Jog step</span>
-		<Select
-			slot="input"
-			value={String(jogStepDegrees)}
-			on:change={handleStepChange}
+<div class="flex flex-col gap-2">
+	<div class="flex items-center gap-2">
+		<span
+			id={jogStepLabelId}
+			class="text-xs font-semibold"
 		>
-			{#each JOG_STEP_OPTIONS_DEGREES as step (step)}
-				<option value={String(step)}>{step}°</option>
-			{/each}
-		</Select>
-	</Label>
-	<Tooltip>
-		<span class="flex items-center gap-1 text-xs text-amber-600">
+			Jog step
+		</span>
+		<div class="w-20">
+			<Select
+				items={JOG_STEP_ITEMS}
+				aria-labelledby={jogStepLabelId}
+				bind:value={() => String(jogStepDegrees), selectStep}
+			/>
+		</div>
+	</div>
+	<div class="flex items-center gap-1">
+		<p class="text-warning-text flex items-center gap-1 text-xs">
 			<Icon
-				name="alert"
+				icon={mdiAlert}
 				size="sm"
-				cx="text-amber-600"
 			/>
 			Jogging executes immediately on release
-		</span>
-		<span slot="description">
-			Jog buttons send a move to the arm as soon as you release them. There is no confirm step.
-			Buttons are disabled while the arm is moving.
-		</span>
-	</Tooltip>
+		</p>
+		<Tooltip>
+			<Tooltip.Trigger>
+				<button
+					type="button"
+					class="icon-button size-6"
+					aria-label="About jogging"
+				>
+					<Icon
+						icon={mdiInformationOutline}
+						size="sm"
+					/>
+				</button>
+			</Tooltip.Trigger>
+			<Tooltip.Content class="max-w-72">
+				Tap or hold a jog button to step its joint. Jog buttons send a move to the arm as soon as
+				you release them. There is no confirm step. Buttons are disabled while the arm is moving.
+			</Tooltip.Content>
+		</Tooltip>
+	</div>
 </div>
 
-<ul class="flex flex-col divide-y">
+<ul class="divide-gray-3 flex flex-col divide-y">
 	{#each positions as position, index (index)}
 		{@const entry = queue.entryFor(index)}
 		<!-- flex-wrap with a stepper that keeps its min-content width: it drops under the label only when the row is too narrow for both. -->
 		<li class="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-1.5">
-			<span class="font-roboto-mono text-subtle-1 w-14 shrink-0 text-xs">Joint {index}</span>
-			<div class="flex flex-1 items-center gap-1.5">
+			<span
+				id={jointLabelId(index)}
+				class="font-roboto-mono text-subtle-1 w-14 shrink-0 text-xs"
+			>
+				Joint {index}
+			</span>
+			<div
+				role="group"
+				aria-labelledby={jointLabelId(index)}
+				class="flex flex-1 items-center gap-1.5"
+			>
 				{@render jogButton(index, 'decrease')}
-				<!-- The badge overlays the readout so the row keeps one width in the narrow three-column card. -->
-				<span class="grid min-w-20 flex-1 items-center justify-center">
-					{#if entry}
-						<span
-							role="status"
-							class="row-start-1l col-start-1"
-						>
-							<span aria-hidden="true">
-								<Badge
-									label={formatTarget(entry)}
-									cx="font-roboto-mono tabular-nums"
-									{...STATUS_BADGES[entry.status]}
-								/>
+				<!-- The badge takes the readout's grid cell, so the row keeps one width while a step is pending. -->
+				<span class="grid min-w-20 flex-1 place-items-center">
+					<!-- Mounted in every row, empty while idle, so a screen reader is already watching it when a step starts. -->
+					<span
+						role="status"
+						class="col-start-1 row-start-1"
+					>
+						{#if entry}
+							<span
+								aria-hidden="true"
+								class={['badge font-roboto-mono tabular-nums', STATUS_BADGE_CLASSES[entry.status]]}
+							>
+								{#if entry.status === 'sending'}
+									<span class="progress-dots"></span>
+								{/if}
+								{formatTarget(entry)}
 							</span>
 							<span class="sr-only">{describeEntry(entry)}</span>
-						</span>
-					{:else}
-						<span class="font-roboto-mono col-start-1 row-start-1 text-xs tabular-nums">
-							{formatAngle(position)}
-						</span>
+						{/if}
+					</span>
+					{#if !entry}
+						<span
+							class="font-roboto-mono text-default col-start-1 row-start-1 inline-flex items-baseline gap-1 text-xs tabular-nums"
+							><span>{formatAngleValue(position)}</span><span class="text-subtle-2"
+								>{angleSuffix}</span
+							></span
+						>
 					{/if}
 				</span>
 				{@render jogButton(index, 'increase')}

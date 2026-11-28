@@ -31,7 +31,7 @@ describe('Arm move-to-joint-positions', () => {
 	}
 
 	const switchToJointPositions = async () => {
-		await user.click(screen.getByRole('button', { name: /joint positions/iu }))
+		await user.click(screen.getByRole('radio', { name: /joint positions/iu }))
 	}
 
 	const renderJointPositionsEditor = async (props: Partial<ComponentProps<typeof Subject>>) => {
@@ -40,13 +40,21 @@ describe('Arm move-to-joint-positions', () => {
 		return result
 	}
 
-	it('renders a slider with text input for each joint', async () => {
+	const jointReadout = (jointIndex: number) =>
+		screen.getByRole('spinbutton', { name: `Joint ${jointIndex}` })
+
+	const typeJointValue = (jointIndex: number, value: string) => {
+		fireEvent.input(jointReadout(jointIndex), { target: { value } })
+	}
+
+	it('renders a range and a numeric readout for each joint', async () => {
 		await renderJointPositionsEditor({
 			positions: [1, 2, 3],
 			jointLimitsDegrees: jointLimitsForCount(3),
 		})
 
-		expect(screen.getAllByRole('textbox')).toHaveLength(3)
+		expect(screen.getAllByRole('slider')).toHaveLength(3)
+		expect(screen.getAllByRole('spinbutton')).toHaveLength(3)
 	})
 
 	it('labels each slider with its joint index', async () => {
@@ -55,11 +63,20 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		expect(screen.getByRole('rowheader', { name: '0' })).toBeInTheDocument()
-		expect(screen.getByRole('rowheader', { name: '1' })).toBeInTheDocument()
+		expect(screen.getByRole('slider', { name: 'Joint 0' })).toBeInTheDocument()
+		expect(screen.getByRole('slider', { name: 'Joint 1' })).toBeInTheDocument()
 	})
 
-	it('does not execute when a slider value is changed', async () => {
+	it('suffixes each readout with the angle unit', async () => {
+		await renderJointPositionsEditor({
+			positions: [0],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		expect(jointReadout(0)).toHaveAccessibleDescription('°')
+	})
+
+	it('does not execute when a readout value is typed', async () => {
 		const moveToJointPositions = vi.fn()
 		await renderJointPositionsEditor({
 			positions: [0],
@@ -67,13 +84,29 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '3' } })
+		typeJointValue(0, '3')
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 	})
 
-	it('does not execute when a large slider change is staged', async () => {
+	it('does not execute while the range is dragged', async () => {
+		const moveToJointPositions = vi.fn()
+		await renderJointPositionsEditor({
+			positions: [0],
+			moveToJointPositions,
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+		const range = screen.getByRole('slider', { name: 'Joint 0' })
+
+		for (const value of ['10', '20', '30', '40', '50']) {
+			fireEvent.input(range, { target: { value } })
+		}
+
+		expect(moveToJointPositions).not.toHaveBeenCalled()
+		expect(jointReadout(0)).toHaveValue(50)
+	})
+
+	it('does not execute when a large change is staged', async () => {
 		const moveToJointPositions = vi.fn()
 		await renderJointPositionsEditor({
 			positions: [0],
@@ -81,8 +114,7 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '50' } })
+		typeJointValue(0, '50')
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 		expect(screen.queryByText(/large move/iu)).not.toBeInTheDocument()
@@ -96,15 +128,46 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		const textInput = screen.getByRole('textbox')
-		fireEvent.change(textInput, { target: { value: '45' } })
+		typeJointValue(0, '45')
 
 		expect(moveToJointPositions).not.toHaveBeenCalled()
 
-		const executeButton = screen.getByRole('button', { name: /execute/iu })
-		await user.click(executeButton)
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
 
 		expect(moveToJointPositions).toHaveBeenCalledWith([45])
+	})
+
+	describe('a typed value past the joint limit', () => {
+		const renderWithNarrowLimit = async (moveToJointPositions = vi.fn()) => {
+			await renderJointPositionsEditor({
+				positions: [0],
+				moveToJointPositions,
+				jointLimitsDegrees: [{ minDegrees: -90, maxDegrees: 90 }],
+			})
+			typeJointValue(0, '120')
+			return moveToJointPositions
+		}
+
+		it('is flagged on the readout before the move runs', async () => {
+			const moveToJointPositions = await renderWithNarrowLimit()
+
+			expect(moveToJointPositions).not.toHaveBeenCalled()
+			expect(jointReadout(0)).toHaveAttribute('aria-invalid', 'true')
+			expect(
+				screen.getByText('Joint 0 is outside its limits, -90.00° to 90.00°.', {
+					selector: '.sr-only',
+				})
+			).toBeInTheDocument()
+		})
+
+		it('is not clamped', async () => {
+			const moveToJointPositions = await renderWithNarrowLimit()
+
+			await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+			expect(jointReadout(0)).toHaveValue(120)
+			expect(moveToJointPositions).toHaveBeenCalledWith([120])
+		})
 	})
 
 	it('resets all sliders to zero when Zero button is clicked', async () => {
@@ -113,12 +176,10 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		const zeroButton = screen.getByRole('button', { name: /zero/iu })
-		await user.click(zeroButton)
+		await user.click(screen.getByRole('button', { name: /zero/iu }))
 
-		for (const textInput of screen.getAllByRole('textbox')) {
-			expect(Number((textInput as HTMLInputElement).value)).toBeCloseTo(0)
-		}
+		expect(jointReadout(0)).toHaveValue(0)
+		expect(jointReadout(1)).toHaveValue(0)
 	})
 
 	it('Zero button does not auto-execute', async () => {
@@ -140,15 +201,11 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		const [textInput] = screen.getAllByRole('textbox')
-		fireEvent.change(textInput!, { target: { value: '45' } })
+		typeJointValue(0, '45')
+		await user.click(screen.getByRole('button', { name: /current position/iu }))
 
-		const currentPositionButton = screen.getByRole('button', { name: /current position/iu })
-		await user.click(currentPositionButton)
-
-		const textInputs = screen.getAllByRole('textbox')
-		expect(textInputs[0]).toHaveValue('10.0')
-		expect(textInputs[1]).toHaveValue('20.0')
+		expect(jointReadout(0)).toHaveValue(10)
+		expect(jointReadout(1)).toHaveValue(20)
 	})
 
 	it('follows the live position in joints the user has not edited', async () => {
@@ -159,8 +216,28 @@ describe('Arm move-to-joint-positions', () => {
 
 		await rerender({ positions: [20] })
 
-		expect(screen.getByRole('textbox')).toHaveValue('20.0')
-		expect(screen.getByText(/current 20(\.0+)?°/iu)).toBeInTheDocument()
+		expect(jointReadout(0)).toHaveValue(20)
+		expect(
+			document.querySelector('button[aria-label="Reset joint 0 to 20.00°"]')
+		).toBeInTheDocument()
+	})
+
+	it('rounds a live reading to the step on the readout', async () => {
+		await renderJointPositionsEditor({
+			positions: [12.3456],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		expect(jointReadout(0)).toHaveValue(12.3)
+	})
+
+	it('hides the restore button of a joint the user has not edited', async () => {
+		await renderJointPositionsEditor({
+			positions: [10],
+			jointLimitsDegrees: jointLimitsForCount(1),
+		})
+
+		expect(screen.queryByRole('button', { name: /^Reset joint 0 to / })).not.toBeInTheDocument()
 	})
 
 	it('keeps an edited joint and flags it once the arm drifts past the threshold', async () => {
@@ -169,10 +246,11 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		fireEvent.change(screen.getByRole('textbox'), { target: { value: '45' } })
+		typeJointValue(0, '45')
 		await rerender({ positions: [12] })
 
-		expect(screen.getByRole('textbox')).toHaveValue('45.0')
+		expect(jointReadout(0)).toHaveValue(45)
+		expect(jointReadout(0)).toHaveAttribute('data-field-state', 'warn')
 		expect(
 			screen.getByText(/arm moved 2(\.0+)?° since you edited joint 0/iu, { selector: '.sr-only' })
 		).toBeInTheDocument()
@@ -184,10 +262,10 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(1),
 		})
 
-		fireEvent.change(screen.getByRole('textbox'), { target: { value: '45' } })
-		await user.click(screen.getByRole('button', { name: /reset joint 0 to current/iu }))
+		typeJointValue(0, '45')
+		await user.click(screen.getByRole('button', { name: 'Reset joint 0 to 10.00°' }))
 
-		expect(screen.getByRole('textbox')).toHaveValue('10.0')
+		expect(jointReadout(0)).toHaveValue(10)
 	})
 
 	it('locks Execute and marks only edited joints while the arm moves', async () => {
@@ -196,8 +274,7 @@ describe('Arm move-to-joint-positions', () => {
 			jointLimitsDegrees: jointLimitsForCount(2),
 		})
 
-		const [firstInput] = screen.getAllByRole('textbox')
-		fireEvent.change(firstInput!, { target: { value: '45' } })
+		typeJointValue(0, '45')
 		await rerender({ isMoving: true })
 
 		expect(screen.getByRole('button', { name: /execute/iu })).toBeDisabled()
@@ -237,27 +314,27 @@ describe('Arm move-to-joint-positions', () => {
 
 			await user.click(screen.getByRole('button', { name: /paste from clipboard/iu }))
 
-			expect(screen.getByRole('textbox')).toHaveValue('90.0')
+			expect(jointReadout(0)).toHaveValue(90)
 		})
 	})
 
 	describe('control mode toggle', () => {
-		it('defaults to Jogging and marks the selected mode as pressed', async () => {
+		it('defaults to Jogging and marks the selected mode as checked', async () => {
 			renderSubject({
 				positions: [0],
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const jogging = screen.getByRole('button', { name: /jogging/iu })
-			const jointPositions = screen.getByRole('button', { name: /joint positions/iu })
+			const jogging = screen.getByRole('radio', { name: /jogging/iu })
+			const jointPositions = screen.getByRole('radio', { name: /joint positions/iu })
 
-			expect(jogging).toHaveAttribute('aria-pressed', 'true')
-			expect(jointPositions).toHaveAttribute('aria-pressed', 'false')
+			expect(jogging).toHaveAttribute('aria-checked', 'true')
+			expect(jointPositions).toHaveAttribute('aria-checked', 'false')
 
 			await switchToJointPositions()
 
-			expect(jogging).toHaveAttribute('aria-pressed', 'false')
-			expect(jointPositions).toHaveAttribute('aria-pressed', 'true')
+			expect(jogging).toHaveAttribute('aria-checked', 'false')
+			expect(jointPositions).toHaveAttribute('aria-checked', 'true')
 		})
 
 		it('lists Jogging before Joint Positions', () => {
@@ -266,9 +343,9 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			const modeGroup = screen.getByRole('group', { name: /control mode/iu })
+			const modeGroup = screen.getByRole('radiogroup', { name: /control mode/iu })
 			const labels = within(modeGroup)
-				.getAllByRole('button')
+				.getAllByRole('radio')
 				.map((button) => button.textContent?.trim())
 			expect(labels).toEqual(['Jogging', 'Joint Positions'])
 		})
@@ -279,21 +356,19 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+			expect(screen.queryByRole('slider')).not.toBeInTheDocument()
 
 			await switchToJointPositions()
 
-			expect(screen.getByRole('textbox')).toBeInTheDocument()
+			expect(screen.getByRole('slider')).toBeInTheDocument()
 			expect(
-				screen.queryByRole('button', { name: /increase joint 0 by 5 degrees/iu })
+				screen.queryByRole('button', { name: 'Joint 0, plus 5 degrees' })
 			).not.toBeInTheDocument()
 
-			await user.click(screen.getByRole('button', { name: /jogging/iu }))
+			await user.click(screen.getByRole('radio', { name: /jogging/iu }))
 
-			expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-			expect(
-				screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu })
-			).toBeInTheDocument()
+			expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'Joint 0, plus 5 degrees' })).toBeInTheDocument()
 		})
 	})
 
@@ -304,12 +379,8 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(2),
 			})
 
-			expect(
-				screen.getAllByRole('button', { name: /decrease joint \d by 5 degrees/iu })
-			).toHaveLength(2)
-			expect(
-				screen.getAllByRole('button', { name: /increase joint \d by 5 degrees/iu })
-			).toHaveLength(2)
+			expect(screen.getAllByRole('button', { name: /joint \d, minus 5 degrees/iu })).toHaveLength(2)
+			expect(screen.getAllByRole('button', { name: /joint \d, plus 5 degrees/iu })).toHaveLength(2)
 		})
 
 		it('+5° sends the current position plus 5 once the queue settles', async () => {
@@ -320,7 +391,7 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await user.click(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu }))
+			await user.click(screen.getByRole('button', { name: 'Joint 0, plus 5 degrees' }))
 
 			expect(moveToJointPositions).not.toHaveBeenCalled()
 			await vi.waitFor(() => {
@@ -336,7 +407,7 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			await user.click(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu }))
+			await user.click(screen.getByRole('button', { name: 'Joint 0, minus 5 degrees' }))
 
 			await vi.waitFor(() => {
 				expect(moveToJointPositions).toHaveBeenCalledWith([5])
@@ -350,8 +421,8 @@ describe('Arm move-to-joint-positions', () => {
 				jointLimitsDegrees: jointLimitsForCount(1),
 			})
 
-			expect(screen.getByRole('button', { name: /decrease joint 0 by 5 degrees/iu })).toBeDisabled()
-			expect(screen.getByRole('button', { name: /increase joint 0 by 5 degrees/iu })).toBeDisabled()
+			expect(screen.getByRole('button', { name: 'Joint 0, minus 5 degrees' })).toBeDisabled()
+			expect(screen.getByRole('button', { name: 'Joint 0, plus 5 degrees' })).toBeDisabled()
 		})
 
 		it('hides the copy and paste controls', () => {
