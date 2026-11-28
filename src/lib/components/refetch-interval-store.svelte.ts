@@ -2,15 +2,18 @@ import type { ValueOf } from 'type-fest'
 
 import { PersistedState } from 'runed'
 
+/** How often a read refetches. Each label finishes the sentence "Updates …" in `RefetchController`. */
 export const RefetchRates = {
-	LIVE: 'Live',
-	ONE_SEC: 'Refresh every second',
-	FIVE_SEC: 'Refresh every 5 seconds',
+	LIVE: 'live',
+	HALF_SEC: 'every 500 ms',
+	ONE_SEC: 'every second',
+	FIVE_SEC: 'every 5 seconds',
 	MANUAL: 'Manual refresh',
 } as const
 
 export const RefetchIntervals = {
 	LIVE: 33.3333,
+	HALF_SEC: 500,
 	ONE_SEC: 1000,
 	FIVE_SEC: 5000,
 	MANUAL: false,

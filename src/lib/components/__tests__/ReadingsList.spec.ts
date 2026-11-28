@@ -1,3 +1,5 @@
+import '../../../app.css'
+
 import { render, screen } from '@testing-library/svelte'
 import { describe, expect, it } from 'vitest'
 
@@ -52,6 +54,39 @@ describe('<ReadingsList>', () => {
 		const { container } = render(Subject, { data })
 		expect(screen.getByRole('definition')).toMatchTextContent('null')
 		expect(container.querySelector('pre')).toBeNull()
+	})
+
+	it('draws the placeholder dash when there are no readings', () => {
+		render(Subject, { data: {} })
+		expect(screen.getByText('-')).toBeInTheDocument()
+		expect(screen.queryByRole('term')).toBeNull()
+	})
+
+	it('draws the Copy JSON button by default', () => {
+		render(Subject, { data: { a: 1 } })
+		expect(screen.getByRole('button', { name: 'Copy JSON' })).toBeInTheDocument()
+	})
+
+	it('omits the Copy JSON button when showCopy is false', () => {
+		render(Subject, { data: { a: 1 }, showCopy: false })
+		expect(screen.queryByRole('button', { name: 'Copy JSON' })).toBeNull()
+	})
+
+	it('keeps a long string reading whole and inside a 320 px pane', () => {
+		const status = `status ${'overheating-'.repeat(12)}end`
+		const { container } = render(Subject, { data: { status }, showCopy: false })
+		const pane = document.createElement('div')
+		pane.style.width = '320px'
+		pane.style.overflowX = 'auto'
+		pane.append(...container.childNodes)
+		document.body.append(pane)
+
+		const value = screen.getByText(`"${status}"`)
+
+		expect(value).toBeInTheDocument()
+		expect(value.scrollWidth).toBeLessThanOrEqual(value.clientWidth)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
+		pane.remove()
 	})
 
 	it('renders nested image', () => {

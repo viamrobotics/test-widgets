@@ -42,8 +42,6 @@ export { default as PowerSensorGetVoltageWidget } from './widgets/PowerSensor/Ge
 export { default as PowerSensorGetCurrentWidget } from './widgets/PowerSensor/GetCurrentWidget.svelte'
 export { default as PowerSensorGetPowerWidget } from './widgets/PowerSensor/GetPowerWidget.svelte'
 
-export { default as SensorWidget } from './widgets/Sensor/Sensor.svelte'
-
 export { default as SlamMap2D } from './Slam/map2d/index.svelte'
 export { default as SlamWidget } from './widgets/Slam/Slam.svelte'
 export { default as SlamGetPositionWidget } from './widgets/Slam/GetPositionWidget.svelte'
