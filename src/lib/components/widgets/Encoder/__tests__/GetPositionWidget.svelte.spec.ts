@@ -1,8 +1,13 @@
+import '../../../../../app.css'
+
 import { fireEvent, render, screen } from '@testing-library/svelte'
+import userEvent from '@testing-library/user-event'
+import { EncoderPositionType } from '@viamrobotics/sdk'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../GetPositionWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 interface Properties {
 	ticksCountSupported: boolean
@@ -14,10 +19,12 @@ const { state } = vi.hoisted(() => {
 		properties: Properties | undefined
 		position: [number, number] | undefined
 		positionError: Error | null
+		propertiesError: Error | null
 	} = {
 		properties: undefined,
 		position: undefined,
 		positionError: null,
+		propertiesError: null,
 	}
 	return { state: hoisted }
 })
@@ -34,8 +41,8 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 			? {
 					data: state.properties,
 					isLoading: false,
-					isError: false,
-					error: null,
+					isError: state.propertiesError !== null,
+					error: state.propertiesError,
 				}
 			: {
 					data: state.position,
@@ -82,7 +89,9 @@ describe('Encoder GetPosition widget', () => {
 		state.properties = undefined
 		state.position = undefined
 		state.positionError = null
+		state.propertiesError = null
 		vi.mocked(createResourceQuery).mockClear()
+		localStorage.clear()
 	})
 
 	it('renders the GetPosition section heading', () => {
@@ -92,12 +101,12 @@ describe('Encoder GetPosition widget', () => {
 	})
 
 	it('renders an angle position in degrees with one decimal', () => {
-		state.position = [123.456, 2]
+		state.position = [123.456, EncoderPositionType.ANGLE_DEGREES]
 
 		renderSubject()
 
 		expect(screen.getByText('123.5')).toBeInTheDocument()
-		expect(screen.getByText('º')).toBeInTheDocument()
+		expect(screen.getByText('°')).toBeInTheDocument()
 	})
 
 	it('renders a ticks position with two decimals and a ticks unit', () => {
@@ -109,18 +118,66 @@ describe('Encoder GetPosition widget', () => {
 		expect(screen.getByText('ticks')).toBeInTheDocument()
 	})
 
-	it('polls getProperties every 500 ms', () => {
+	it('reads getProperties once, with no poll', () => {
 		renderSubject()
 
 		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getProperties', {
-			refetchInterval: 500,
+			refetchInterval: false,
 		})
 	})
 
-	it('polls getPosition every 500 ms', () => {
+	it('polls getPosition every second until Pause is pressed', async () => {
+		state.properties = { ticksCountSupported: true, angleDegreesSupported: false }
 		renderSubject()
 
-		expect(positionOptions().refetchInterval).toBe(500)
+		expect(positionOptions().refetchInterval).toBe(1000)
+		expect(screen.getByText('Updates')).toBeInTheDocument()
+
+		await userEvent.click(screen.getByRole('button', { name: 'Pause' }))
+
+		expect(positionOptions().refetchInterval).toBe(false)
+		expect(screen.getByText('Paused')).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument()
+	})
+
+	it('shows the type the properties picked in the Position type field', () => {
+		state.properties = { ticksCountSupported: true, angleDegreesSupported: false }
+
+		renderSubject()
+
+		expect(screen.getByRole('combobox', { name: 'Position type' })).toHaveTextContent('Ticks count')
+	})
+
+	it('requests the type the person picks, over the one the properties picked', async () => {
+		state.properties = { ticksCountSupported: true, angleDegreesSupported: true }
+		renderSubject()
+		expect(positionArgs()).toEqual([2])
+
+		await userEvent.click(screen.getByRole('combobox', { name: 'Position type' }))
+		await userEvent.click(await screen.findByRole('option', { name: 'Ticks count' }))
+
+		expect(positionArgs()).toEqual([1])
+	})
+
+	it('requests the unspecified type the field shows when the properties fail to load', () => {
+		state.propertiesError = new Error('unimplemented')
+
+		renderSubject()
+
+		expect(screen.getByRole('combobox', { name: 'Position type' })).toHaveTextContent('Unspecified')
+		expect(positionArgs()).toEqual([0])
+		expect(positionOptions().enabled).toBe(true)
+	})
+
+	it('enables getPosition for a picked type when the properties never load', async () => {
+		renderSubject()
+		expect(positionOptions().enabled).toBe(false)
+
+		await userEvent.click(screen.getByRole('combobox', { name: 'Position type' }))
+		await userEvent.click(await screen.findByRole('option', { name: 'Angle degrees' }))
+
+		expect(positionArgs()).toEqual([2])
+		expect(positionOptions().enabled).toBe(true)
 	})
 
 	it('keeps getPosition disabled until properties have loaded', () => {
@@ -162,5 +219,37 @@ describe('Encoder GetPosition widget', () => {
 		)
 
 		expect(screen.getByText(/encoder position unavailable/iu)).toBeInTheDocument()
+	})
+})
+
+const PANE_WIDTH = '320px'
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Encoder GetPosition widget in a 320 px pane', () => {
+	beforeEach(() => {
+		state.properties = undefined
+		state.position = undefined
+		state.positionError = null
+	})
+
+	it('loads the app stylesheet, so the pane takes its utility width', () => {
+		const { pane } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe(PANE_WIDTH)
+	})
+
+	it('does not scroll horizontally', () => {
+		state.position = [123456.789, 1]
+		const { pane, root } = renderInPane()
+
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

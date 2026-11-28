@@ -19,9 +19,6 @@ export { default as DiscoveryWidget } from './widgets/Discovery/Discovery.svelte
 export { default as DoCommandWidget } from './widgets/DoCommand/DoCommand.svelte'
 export { default as ResourceDoCommandWidget } from './widgets/DoCommand/ResourceDoCommand.svelte'
 
-export { default as EncoderWidget } from './widgets/Encoder/Encoder.svelte'
-export { default as EncoderGetPositionWidget } from './widgets/Encoder/GetPositionWidget.svelte'
-
 export { default as GenericWidget } from './widgets/Generic/Generic.svelte'
 
 export { default as InputControllerWidget } from './widgets/InputController/InputController.svelte'
