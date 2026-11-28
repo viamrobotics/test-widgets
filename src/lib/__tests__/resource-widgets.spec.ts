@@ -11,6 +11,7 @@ import {
 	Motion,
 	Motor,
 	MovementSensor,
+	PowerSensor,
 	Sensor,
 	Servo,
 	Switch,
@@ -167,8 +168,16 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'Navigation', triplet: ResourceTriplets.Navigation, keys: [] },
 	{
 		label: 'PowerSensor',
+		namespace: PowerSensor,
 		triplet: ResourceTriplets.PowerSensor,
-		keys: ['getVoltage', 'getCurrent', 'getPower'],
+		keys: [
+			'getVoltage',
+			'getCurrent',
+			'getPower',
+			'getBatteryPercent',
+			'getReadings',
+			'readingHistory',
+		],
 	},
 	{ label: 'Sensor', namespace: Sensor, triplet: ResourceTriplets.Sensor, keys: ['getReadings'] },
 	{

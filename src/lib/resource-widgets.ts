@@ -7,9 +7,6 @@ import {
 	AudioOutputGetPropertiesWidget,
 	EncoderGetPositionWidget,
 	MLModelServiceMetadataWidget,
-	PowerSensorGetCurrentWidget,
-	PowerSensorGetPowerWidget,
-	PowerSensorGetVoltageWidget,
 	SlamGetPositionWidget,
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
@@ -21,6 +18,7 @@ import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import * as MovementSensor from './components/widgets/MovementSensor/index.ts'
+import * as PowerSensor from './components/widgets/PowerSensor/index.ts'
 import * as Sensor from './components/widgets/Sensor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
 import * as Switch from './components/widgets/Switch/index.ts'
@@ -124,7 +122,13 @@ interface ResourceWidgetKeys {
 		| 'getReadings'
 		| 'positionMap'
 	[ResourceTriplets.Navigation]: never
-	[ResourceTriplets.PowerSensor]: 'getVoltage' | 'getCurrent' | 'getPower'
+	[ResourceTriplets.PowerSensor]:
+		| 'getVoltage'
+		| 'getCurrent'
+		| 'getPower'
+		| 'getBatteryPercent'
+		| 'getReadings'
+		| 'readingHistory'
 	[ResourceTriplets.Sensor]: 'getReadings'
 	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
 	[ResourceTriplets.Slam]: 'getPosition'
@@ -454,9 +458,30 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.PowerSensor]: {
 		widgets: {
-			getVoltage: { component: PowerSensorGetVoltageWidget, kind: 'api' },
-			getCurrent: { component: PowerSensorGetCurrentWidget, kind: 'api' },
-			getPower: { component: PowerSensorGetPowerWidget, kind: 'api' },
+			getVoltage: {
+				component: PowerSensor.GetVoltage,
+				kind: 'api',
+			},
+			getCurrent: {
+				component: PowerSensor.GetCurrent,
+				kind: 'api',
+			},
+			getPower: {
+				component: PowerSensor.GetPower,
+				kind: 'api',
+			},
+			getBatteryPercent: {
+				component: PowerSensor.GetBatteryPercent,
+				kind: 'api',
+			},
+			getReadings: {
+				component: PowerSensor.GetReadings,
+				kind: 'api',
+			},
+			readingHistory: {
+				component: PowerSensor.ReadingHistory,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.Sensor]: {
