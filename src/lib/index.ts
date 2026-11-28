@@ -18,8 +18,11 @@ export { providePip, usePip } from './pip/context.svelte'
 export { ResourceTriplets } from './resource-triplet'
 export type { ResourceTriplet } from './resource-triplet'
 export type {
-	ResourceAPIWidget,
 	ResourceWidget,
+	ResourceWidgetDefinition,
+	ResourceWidgetKind,
 	ResourceWidgetProps,
+	ResourceWidgetsEntry,
 } from './resource-widget-types'
 export { showResourceWidget } from './show-resource-widget'
+export { default as WidgetsProvider } from './WidgetsProvider.svelte'

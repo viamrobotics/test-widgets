@@ -1,6 +1,9 @@
 import type { Component } from 'svelte'
 
-/** Every resource widget shares this prop contract and is self-contained. */
+/**
+ * Every resource widget shares this prop contract. The pair is also the key into the shared state
+ * `WidgetsProvider` holds, so two widgets naming the same resource share its guards.
+ */
 export interface ResourceWidgetProps {
 	partID: string
 	resourceName: string
@@ -8,18 +11,23 @@ export interface ResourceWidgetProps {
 
 export type ResourceWidget = Component<ResourceWidgetProps>
 
-/** One of a resource's individual API widgets (e.g. a menu entry); renders one or more self-contained widgets. */
-export interface ResourceAPIWidget {
-	/** Stable identifier, safe to persist. Never rename. e.g. `'move-to-joint-positions'`. */
-	id: string
-	/** Human-readable menu label. e.g. `'MoveToJointPositions'` or `'Quick move'`. */
-	label: string
-	/** The self-contained widget(s) this entry renders, each with `{ partID, resourceName }`. */
-	widgets: ResourceWidget[]
+/**
+ * What a widget is. `api` renders one RDK method, and its key is that method's name in camelCase.
+ * `control` is bespoke and bound to no one method, such as quick move.
+ */
+export type ResourceWidgetKind = 'api' | 'control'
+
+/** One of a resource's widgets, as `resourceWidgets` lists it. */
+export interface ResourceWidgetDefinition {
+	component: ResourceWidget
+	kind: ResourceWidgetKind
 }
 
-/** A registry entry: a resource's composite card plus its individual API widgets. */
-export interface ResourceWidgetEntry {
-	widget: ResourceWidget
-	apis: ResourceAPIWidget[]
+/** A resource's entry in `resourceWidgets`. */
+export interface ResourceWidgetsEntry {
+	/**
+	 * Keyed by id: the method or control name in camelCase. A key is safe to persist. The order is
+	 * the declared order, which a host's menu can keep.
+	 */
+	widgets: Record<string, ResourceWidgetDefinition>
 }

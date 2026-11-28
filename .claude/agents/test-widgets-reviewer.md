@@ -25,9 +25,9 @@ plus the kit rules (`typescript.md`, `svelte.md`, `three.md`, `three-threlte.md`
    matching rules' relevant sections directly. Never rely on memory.
 3. Quote the source verbatim, and cite file paths with line numbers.
 4. **Downstream ripple:** if the change alters an exported shape from the package entry
-   points (`src/lib/index.ts` for `.`, `src/lib/registry.ts` for `./registry`), name the
-   export. This package is published as `@viamrobotics/test-widgets` and the registry's
-   widget option ids are read by the app's teleop builder, so ids must stay stable.
+   points (`src/lib/index.ts` for `.`, `src/lib/resource-widgets.ts` for `./widgets`), name
+   the export. This package is published as `@viamrobotics/test-widgets` and the
+   `resourceWidgets` keys are read by the app's teleop builder, so keys must stay stable.
    Don't audit consumers yourself. Surface it so the implementer files a follow-up.
 5. Return one verdict: **OK** | **Conflict** (quote rule + conflicting code) | **Gap**
    (source silent), optionally tagged **Downstream ripple**.
