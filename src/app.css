@@ -6,7 +6,6 @@
 @import '@viamrobotics/prime-map/styles.css';
 @import '@viamrobotics/prime-panes/styles.css';
 @import '@viamrobotics/prime-tree/styles.css';
-@source '../node_modules/@viamrobotics/prime-core/src/lib';
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,

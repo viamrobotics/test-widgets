@@ -230,7 +230,6 @@
 		"@threlte/extras": ">=9.22.3",
 		"@viamrobotics/prime-controls": ">=0.7",
 		"@viamrobotics/prime-editor": ">=0.1",
-		"@viamrobotics/prime-core": ">=0.1",
 		"@viamrobotics/prime-ui": ">=0.7.1",
 		"@viamrobotics/sdk": ">=0.79.2",
 		"@viamrobotics/svelte-sdk": ">=1.5",
@@ -285,7 +284,6 @@
 		"@types/three": "^0.187.0",
 		"@viamrobotics/prime-controls": "^0.7.0",
 		"@viamrobotics/prime-editor": "^0.1.1",
-		"@viamrobotics/prime-core": "^0.1.22",
 		"@viamrobotics/prime-panes": "^0.2.0",
 		"@viamrobotics/prime-tree": "^0.2.0",
 		"@viamrobotics/prime-ui": "^0.7.1",
@@ -349,8 +347,7 @@
 	"dependencies": {
 		"@mdi/js": "^7.4.47",
 		"@viamrobotics/post-message-sdk": "0.4.1",
-		"@viamrobotics/prime-map": "^0.1.0",
-		"svelte-tweakpane-ui": "^1.5.17"
+		"@viamrobotics/prime-map": "^0.1.0"
 	},
 	"imports": {
 		"#lib": "./src/lib/index.js",

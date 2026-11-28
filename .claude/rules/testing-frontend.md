@@ -27,8 +27,6 @@ A cold run can fail while Vite optimizes dependencies. Re-run once before invest
 
 Where a spec needs SDK data, mock the SDK boundary rather than the widget: `vi.mock('@viamrobotics/svelte-sdk')` or `vi.mock('@viamrobotics/sdk')`, then `vi.mocked(createResourceQuery).mockReturnValue(...)` per test. Threlte scenes are tested with `render` and `cleanup` from `@threlte/test`, asserting on the returned `scene` and `camera` rather than on pixels (see `src/lib/components/widgets/Vision/__tests__/Scene.spec.ts`).
 
-The `fix-prime-core-theme` plugin in `vite.config.ts` rewrites Tailwind v3 `theme(...)` calls inside prime-core CSS so it compiles under Tailwind v4. A prime-core style error in a spec usually traces there.
-
 ## Layout
 
 Specs colocate under `__tests__/` beside the subject. Shared host components go in `__tests__/__fixtures__/`, for example `with-host-scene.svelte`, which mounts a `<Canvas>` around the component under test. The `__screenshots__/` directories are leftovers from removed screenshot assertions, not a convention. Do not add new ones.
