@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	Arm,
+	AudioInput,
 	Base,
 	Board,
 	Button,
@@ -56,7 +57,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 			'stop',
 		],
 	},
-	{ label: 'AudioInput', triplet: ResourceTriplets.AudioInput, keys: ['getProperties'] },
+	{
+		label: 'AudioInput',
+		namespace: AudioInput,
+		triplet: ResourceTriplets.AudioInput,
+		keys: ['getAudio', 'getProperties', 'listen'],
+	},
 	{ label: 'AudioOutput', triplet: ResourceTriplets.AudioOutput, keys: ['getProperties'] },
 	{
 		label: 'Base',

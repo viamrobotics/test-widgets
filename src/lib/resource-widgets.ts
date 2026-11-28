@@ -2,12 +2,9 @@ import type { ResourceName } from '@viamrobotics/sdk'
 
 import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-widget-types.ts'
 
-import {
-	AudioInputGetPropertiesWidget,
-	AudioOutputGetPropertiesWidget,
-	MLModelServiceMetadataWidget,
-} from './components/index.ts'
+import { AudioOutputGetPropertiesWidget, MLModelServiceMetadataWidget } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
+import * as AudioInput from './components/widgets/AudioInput/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
 import * as Button from './components/widgets/Button/index.ts'
@@ -55,7 +52,7 @@ interface ResourceWidgetKeys {
 		| 'isMoving'
 		| 'stop'
 		| 'getProperties'
-	[ResourceTriplets.AudioInput]: 'getProperties'
+	[ResourceTriplets.AudioInput]: 'getAudio' | 'getProperties' | 'listen'
 	[ResourceTriplets.AudioOutput]: 'getProperties'
 	[ResourceTriplets.Board]:
 		| 'pins'
@@ -223,7 +220,18 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.AudioInput]: {
 		widgets: {
-			getProperties: { component: AudioInputGetPropertiesWidget, kind: 'api' },
+			getAudio: {
+				component: AudioInput.GetAudio,
+				kind: 'api',
+			},
+			getProperties: {
+				component: AudioInput.GetProperties,
+				kind: 'api',
+			},
+			listen: {
+				component: AudioInput.Listen,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.AudioOutput]: {
