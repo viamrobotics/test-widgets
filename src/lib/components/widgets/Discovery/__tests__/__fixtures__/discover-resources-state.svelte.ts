@@ -1,0 +1,17 @@
+import type { appRobotApi } from '@viamrobotics/sdk'
+
+export const discoverState = $state<{
+	data: appRobotApi.ComponentConfig[] | undefined
+	response: appRobotApi.ComponentConfig[]
+	isFetching: boolean
+	fetched: number
+	refetchError: Error | null
+}>({ data: undefined, response: [], isFetching: false, fetched: 0, refetchError: null })
+
+export const resetDiscoverState = () => {
+	discoverState.data = undefined
+	discoverState.response = []
+	discoverState.isFetching = false
+	discoverState.fetched = 0
+	discoverState.refetchError = null
+}

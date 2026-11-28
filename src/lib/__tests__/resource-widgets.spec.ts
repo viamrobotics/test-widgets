@@ -9,6 +9,7 @@ import {
 	Board,
 	Button,
 	Camera,
+	Discovery,
 	Encoder,
 	Gantry,
 	Gripper,
@@ -115,7 +116,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 		triplet: ResourceTriplets.Camera,
 		keys: ['liveFeed', 'getImages', 'getPointCloud', 'getProperties'],
 	},
-	{ label: 'Discovery', triplet: ResourceTriplets.Discovery, keys: [] },
+	{
+		label: 'Discovery',
+		namespace: Discovery,
+		triplet: ResourceTriplets.Discovery,
+		keys: ['discoverResources', 'resourcePreview'],
+	},
 	{
 		label: 'Encoder',
 		namespace: Encoder,
