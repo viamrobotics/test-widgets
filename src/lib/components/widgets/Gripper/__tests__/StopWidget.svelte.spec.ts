@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../StopWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 const { stopMutate, mutationState } = vi.hoisted(() => {
 	const state: { error: Error | null } = { error: null }
@@ -56,5 +57,23 @@ describe('Gripper Stop widget', () => {
 		)
 
 		expect(screen.getByText(/gripper refused to stop/iu)).toBeInTheDocument()
+	})
+})
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Gripper Stop widget in a 320 px pane', () => {
+	it('does not scroll horizontally', () => {
+		const { pane, root } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe('320px')
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

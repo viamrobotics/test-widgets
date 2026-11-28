@@ -6,12 +6,6 @@ import {
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
 	EncoderGetPositionWidget,
-	GripperGrabWidget,
-	GripperIsHoldingSomethingWidget,
-	GripperIsMovingWidget,
-	GripperOpenGrabWidget,
-	GripperOpenWidget,
-	GripperStopWidget,
 	MLModelServiceMetadataWidget,
 	MovementSensorGetAccuracyWidget,
 	MovementSensorGetCompassHeadingWidget,
@@ -25,6 +19,7 @@ import {
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
+import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
@@ -76,11 +71,14 @@ interface ResourceWidgetKeys {
 		| 'homingStatus'
 	[ResourceTriplets.Gripper]:
 		| 'openGrab'
+		| 'status'
 		| 'isHoldingSomething'
 		| 'isMoving'
 		| 'open'
 		| 'grab'
 		| 'stop'
+		| 'getCurrentInputs'
+		| 'goToInputs'
 	[ResourceTriplets.InputController]: never
 	[ResourceTriplets.MLModel]: 'metadata'
 	[ResourceTriplets.Motion]: 'move'
@@ -244,12 +242,42 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Gripper]: {
 		widgets: {
-			openGrab: { component: GripperOpenGrabWidget, kind: 'control' },
-			isHoldingSomething: { component: GripperIsHoldingSomethingWidget, kind: 'api' },
-			isMoving: { component: GripperIsMovingWidget, kind: 'api' },
-			open: { component: GripperOpenWidget, kind: 'api' },
-			grab: { component: GripperGrabWidget, kind: 'api' },
-			stop: { component: GripperStopWidget, kind: 'api' },
+			openGrab: {
+				component: Gripper.OpenGrab,
+				kind: 'control',
+			},
+			status: {
+				component: Gripper.Status,
+				kind: 'control',
+			},
+			isHoldingSomething: {
+				component: Gripper.IsHoldingSomething,
+				kind: 'api',
+			},
+			isMoving: {
+				component: Gripper.IsMoving,
+				kind: 'api',
+			},
+			open: {
+				component: Gripper.Open,
+				kind: 'api',
+			},
+			grab: {
+				component: Gripper.Grab,
+				kind: 'api',
+			},
+			stop: {
+				component: Gripper.Stop,
+				kind: 'api',
+			},
+			getCurrentInputs: {
+				component: Gripper.GetCurrentInputs,
+				kind: 'api',
+			},
+			goToInputs: {
+				component: Gripper.GoToInputs,
+				kind: 'api',
+			},
 		},
 	},
 	[ResourceTriplets.InputController]: {
@@ -353,8 +381,8 @@ const hasEntry = (api: string): api is keyof typeof resourceWidgets =>
  * Returns a resource's entry, or `undefined` for a resource with no widgets.
  *
  * @example
- * widgetsForResource(gripperResourceName)?.widgets.openGrab
- * // { component: GripperOpenGrabWidget, kind: 'control' }
+ * widgetsForResource(armResourceName)?.widgets.jog
+ * // { component: Arm.Jog, kind: 'control' }
  */
 export const widgetsForResource = (resource: ResourceName): ResourceWidgetsEntry | undefined => {
 	const api = getResourceAPI(resource)

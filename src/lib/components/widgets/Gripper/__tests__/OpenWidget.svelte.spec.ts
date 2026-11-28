@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/svelte'
+import InWidgetsProvider from '#lib/__tests__/__fixtures__/InWidgetsProvider.svelte'
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import Subject from '../OpenWidget.svelte'
+import PaneSubject from './__fixtures__/In320Pane.svelte'
 
 const state = vi.hoisted((): { openMutate: Mock; error: Error | null } => ({
 	openMutate: vi.fn(),
@@ -15,7 +17,7 @@ vi.mock('@viamrobotics/sdk', () => ({
 vi.mock('@viamrobotics/svelte-sdk', () => ({
 	createResourceClient: vi.fn(() => ({ current: {} })),
 	createResourceMutation: vi.fn(() => ({
-		mutate: state.openMutate,
+		mutateAsync: state.openMutate,
 		isPending: false,
 		get error() {
 			return state.error
@@ -24,13 +26,13 @@ vi.mock('@viamrobotics/svelte-sdk', () => ({
 }))
 
 const renderSubject = () =>
-	render(Subject, {
-		props: { partID: 'test-part', resourceName: 'test-gripper' },
+	render(InWidgetsProvider, {
+		props: { component: Subject, props: { partID: 'test-part', resourceName: 'test-gripper' } },
 	})
 
 describe('Gripper Open widget', () => {
 	beforeEach(() => {
-		state.openMutate.mockClear()
+		state.openMutate.mockReset()
 		state.error = null
 	})
 
@@ -43,10 +45,49 @@ describe('Gripper Open widget', () => {
 	it('sends open when the button is clicked', async () => {
 		renderSubject()
 
-		await fireEvent.click(screen.getByRole('button', { name: /^open$/iu }))
+		await fireEvent.click(screen.getByRole('button', { name: 'Open' }))
 
 		expect(state.openMutate).toHaveBeenCalledTimes(1)
-		expect(state.openMutate).toHaveBeenCalledWith([], {})
+		expect(state.openMutate).toHaveBeenCalledWith([])
+	})
+
+	it('says Opened when Open returns', async () => {
+		renderSubject()
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Open' }))
+
+		expect(await screen.findByText('Opened')).toBeInTheDocument()
+	})
+
+	it('keeps Open focusable and says why while its call is in flight', async () => {
+		state.openMutate.mockReturnValue(new Promise(() => {}))
+		renderSubject()
+		const button = screen.getByRole('button', { name: 'Open' })
+
+		await fireEvent.click(button)
+
+		expect(await screen.findByText('Opening')).toBeInTheDocument()
+		expect(button).not.toHaveAttribute('disabled')
+		expect(button).toHaveAttribute('aria-disabled', 'true')
+		expect(button).toHaveAccessibleDescription('Wait for the gripper to finish moving.')
+	})
+
+	it('sends nothing for a second press while its call is in flight', async () => {
+		state.openMutate.mockReturnValue(new Promise(() => {}))
+		renderSubject()
+		const button = screen.getByRole('button', { name: 'Open' })
+		await fireEvent.click(button)
+		await screen.findByText('Opening')
+
+		await fireEvent.click(button)
+
+		expect(state.openMutate).toHaveBeenCalledTimes(1)
+	})
+
+	it('draws Open as a compact button', () => {
+		renderSubject()
+
+		expect(screen.getByRole('button', { name: 'Open' })).toHaveClass('button-compact')
 	})
 
 	it("shows the open error in the section's error indicator", async () => {
@@ -58,5 +99,23 @@ describe('Gripper Open widget', () => {
 		)
 
 		expect(screen.getByText(/gripper refused to open/iu)).toBeInTheDocument()
+	})
+})
+
+const renderInPane = () => {
+	render(PaneSubject, { props: { widget: Subject } })
+	const pane = screen.getByTestId('pane')
+	const root = pane.firstElementChild
+	if (!(root instanceof HTMLElement)) throw new Error('The widget rendered no root element')
+	return { pane, root }
+}
+
+describe('Gripper Open widget in a 320 px pane', () => {
+	it('does not scroll horizontally', () => {
+		const { pane, root } = renderInPane()
+
+		expect(getComputedStyle(pane).width).toBe('320px')
+		expect(root.scrollWidth, 'widget root').toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth, 'pane').toBeLessThanOrEqual(pane.clientWidth)
 	})
 })

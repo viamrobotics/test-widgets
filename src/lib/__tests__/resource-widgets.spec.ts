@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Gantry, Motion, Motor, Servo } from '../index.ts'
+import { Arm, Base, Gantry, Gripper, Motion, Motor, Servo } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -76,8 +76,19 @@ const RESOURCE_CASES: ResourceCase[] = [
 	},
 	{
 		label: 'Gripper',
+		namespace: Gripper,
 		triplet: ResourceTriplets.Gripper,
-		keys: ['openGrab', 'isHoldingSomething', 'isMoving', 'open', 'grab', 'stop'],
+		keys: [
+			'openGrab',
+			'status',
+			'isHoldingSomething',
+			'isMoving',
+			'open',
+			'grab',
+			'stop',
+			'getCurrentInputs',
+			'goToInputs',
+		],
 	},
 	{ label: 'InputController', triplet: ResourceTriplets.InputController, keys: [] },
 	{ label: 'MLModel', triplet: ResourceTriplets.MLModel, keys: ['metadata'] },
