@@ -29,11 +29,22 @@ describe('Slam position', () => {
 		expect(terms).toHaveLength(7)
 		expect(defs).toHaveLength(7)
 
-		// Pose position is displayed in meters, not millimeters
-		expect(defs[0]).toMatchTextContent('1.2')
-		expect(defs[1]).toMatchTextContent('2.3')
-		// 3.456 is rounded to 3.5
-		expect(defs[2]).toMatchTextContent('3.5')
+		// The position is shown in millimeters, as the method returns it.
+		expect(defs[0]).toMatchTextContent('1234')
+		expect(defs[1]).toMatchTextContent('2345')
+		expect(defs[2]).toMatchTextContent('3456')
+	})
+
+	it('applies units: mm on position, none on orientation, ° on theta', () => {
+		renderSubject({})
+
+		const defs = screen.getAllByRole('definition')
+
+		expect(defs[0]).toMatchTextContent('mm')
+		expect(defs[2]).toMatchTextContent('mm')
+		expect(defs[3]).not.toMatchTextContent(/[a-z°]/iu)
+		expect(defs[5]).not.toMatchTextContent(/[a-z°]/iu)
+		expect(defs[6]).toMatchTextContent('°')
 	})
 
 	it('renders empty position', () => {
@@ -46,6 +57,21 @@ describe('Slam position', () => {
 		expect(defs[0]).toMatchTextContent('–')
 	})
 
+	it('holds Copy back with a reason and writes nothing while there is no pose', async () => {
+		renderSubject({ position: emptyPosition })
+
+		const copyButton = screen.getByRole('button', { name: /copy/iu })
+
+		expect(copyButton).toHaveAttribute('aria-disabled', 'true')
+		expect(copyButton).not.toHaveAttribute('disabled')
+		expect(copyButton).toHaveAccessibleDescription('There is no pose to copy.')
+
+		await globalThis.navigator.clipboard.writeText('')
+		await user.click(copyButton)
+
+		expect(await globalThis.navigator.clipboard.readText()).toBe('')
+	})
+
 	it('copies position', async () => {
 		renderSubject({})
 
@@ -53,6 +79,16 @@ describe('Slam position', () => {
 
 		expect(await globalThis.navigator.clipboard.readText()).toBe('')
 		await user.click(copyButton)
-		expect(await globalThis.navigator.clipboard.readText()).not.toBe('')
+
+		// The copy is the pose the method returned, with nothing converted.
+		expect(JSON.parse(await globalThis.navigator.clipboard.readText())).toEqual({
+			x: 1234,
+			y: 2345,
+			z: 3456,
+			oX: 4,
+			oY: 5,
+			oZ: 6,
+			theta: 7,
+		})
 	})
 })

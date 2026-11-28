@@ -14,6 +14,7 @@
 
 <script lang="ts">
 	import { T } from '@threlte/core'
+	import { themeColor } from '@viamrobotics/tailwind-config/theme-color'
 
 	import { renderOrder } from './render-order'
 
@@ -35,7 +36,7 @@
 	<T.SpriteMaterial
 		map={textureLoader.load(url)}
 		sizeAttenuation={false}
-		color="#ff0047"
+		color={themeColor('--color-power-wire-bright')}
 		{rotation}
 	/>
 </T.Sprite>

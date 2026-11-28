@@ -6,7 +6,6 @@ import {
 	AudioInputGetPropertiesWidget,
 	AudioOutputGetPropertiesWidget,
 	MLModelServiceMetadataWidget,
-	SlamGetPositionWidget,
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
@@ -23,6 +22,7 @@ import * as MovementSensor from './components/widgets/MovementSensor/index.ts'
 import * as PowerSensor from './components/widgets/PowerSensor/index.ts'
 import * as Sensor from './components/widgets/Sensor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
+import * as Slam from './components/widgets/Slam/index.ts'
 import * as Switch from './components/widgets/Switch/index.ts'
 import * as Vision from './components/widgets/Vision/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
@@ -134,7 +134,13 @@ interface ResourceWidgetKeys {
 		| 'readingHistory'
 	[ResourceTriplets.Sensor]: 'getReadings'
 	[ResourceTriplets.Servo]: 'move' | 'quickMove' | 'moveTo' | 'isMoving' | 'getPosition' | 'stop'
-	[ResourceTriplets.Slam]: 'getPosition'
+	[ResourceTriplets.Slam]:
+		| 'map'
+		| 'moveOnMap'
+		| 'getPosition'
+		| 'getPointCloudMap'
+		| 'getProperties'
+		| 'getInternalState'
 	[ResourceTriplets.Switch]: 'setPosition' | 'getPosition' | 'getNumberOfPositions'
 	[ResourceTriplets.Vision]:
 		| 'overlayFeed'
@@ -575,7 +581,30 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Slam]: {
 		widgets: {
-			getPosition: { component: SlamGetPositionWidget, kind: 'api' },
+			map: {
+				component: Slam.Map,
+				kind: 'control',
+			},
+			moveOnMap: {
+				component: Slam.MoveOnMap,
+				kind: 'control',
+			},
+			getPosition: {
+				component: Slam.GetPosition,
+				kind: 'api',
+			},
+			getPointCloudMap: {
+				component: Slam.GetPointCloudMap,
+				kind: 'api',
+			},
+			getProperties: {
+				component: Slam.GetProperties,
+				kind: 'api',
+			},
+			getInternalState: {
+				component: Slam.GetInternalState,
+				kind: 'api',
+			},
 		},
 	},
 	[ResourceTriplets.Switch]: {
