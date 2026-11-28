@@ -46,7 +46,7 @@ describe('Gripper IsMoving widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('Moving...')).toBeInTheDocument()
+		expect(screen.getByText('Moving')).toBeInTheDocument()
 	})
 
 	it('shows the idle pill while the gripper reports no motion', () => {

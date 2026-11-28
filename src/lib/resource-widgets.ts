@@ -32,12 +32,6 @@ import {
 	GripperOpenWidget,
 	GripperStopWidget,
 	MLModelServiceMetadataWidget,
-	MotorGoForWidget,
-	MotorGoToWidget,
-	MotorIsMovingWidget,
-	MotorQuickMoveWidget,
-	MotorSetPowerWidget,
-	MotorSetRPMWidget,
 	MovementSensorGetAccuracyWidget,
 	MovementSensorGetCompassHeadingWidget,
 	MovementSensorGetOrientationWidget,
@@ -52,6 +46,7 @@ import {
 	ServoStopWidget,
 	SlamGetPositionWidget,
 } from './components/index.ts'
+import * as Motor from './components/widgets/Motor/index.ts'
 import { getResourceAPI } from './get-resource-api.ts'
 import { ResourceTriplets } from './resource-triplet.ts'
 
@@ -94,7 +89,19 @@ interface ResourceWidgetKeys {
 	[ResourceTriplets.InputController]: never
 	[ResourceTriplets.MLModel]: 'metadata'
 	[ResourceTriplets.Motion]: never
-	[ResourceTriplets.Motor]: 'quickMove' | 'setPower' | 'setRpm' | 'goFor' | 'goTo' | 'isMoving'
+	[ResourceTriplets.Motor]:
+		| 'quickMove'
+		| 'move'
+		| 'setPower'
+		| 'setRpm'
+		| 'goFor'
+		| 'goTo'
+		| 'isMoving'
+		| 'resetZeroPosition'
+		| 'getPosition'
+		| 'getProperties'
+		| 'stop'
+		| 'isPowered'
 	[ResourceTriplets.MovementSensor]:
 		| 'getPosition'
 		| 'getOrientation'
@@ -206,12 +213,18 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.Motor]: {
 		widgets: {
-			quickMove: { component: MotorQuickMoveWidget, kind: 'control' },
-			setPower: { component: MotorSetPowerWidget, kind: 'api' },
-			setRpm: { component: MotorSetRPMWidget, kind: 'api' },
-			goFor: { component: MotorGoForWidget, kind: 'api' },
-			goTo: { component: MotorGoToWidget, kind: 'api' },
-			isMoving: { component: MotorIsMovingWidget, kind: 'api' },
+			quickMove: { component: Motor.QuickMove, kind: 'control' },
+			move: { component: Motor.Move, kind: 'control' },
+			setPower: { component: Motor.SetPower, kind: 'api' },
+			setRpm: { component: Motor.SetRpm, kind: 'api' },
+			goFor: { component: Motor.GoFor, kind: 'api' },
+			goTo: { component: Motor.GoTo, kind: 'api' },
+			isMoving: { component: Motor.IsMoving, kind: 'api' },
+			resetZeroPosition: { component: Motor.ResetZeroPosition, kind: 'api' },
+			getPosition: { component: Motor.GetPosition, kind: 'api' },
+			getProperties: { component: Motor.GetProperties, kind: 'api' },
+			stop: { component: Motor.Stop, kind: 'api' },
+			isPowered: { component: Motor.IsPowered, kind: 'api' },
 		},
 	},
 	[ResourceTriplets.MovementSensor]: {

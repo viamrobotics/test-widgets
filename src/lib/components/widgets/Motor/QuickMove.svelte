@@ -1,80 +1,56 @@
 <script lang="ts">
-	import { Icon, Label, RangeInput } from '@viamrobotics/prime-core'
-	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { Slider } from '@viamrobotics/prime-controls'
+
+	import HoldDirectionButtons from './HoldDirectionButtons.svelte'
+	import { resolvePowerRange } from './resolve-power-range'
 
 	interface Props {
-		setPower: (_: number) => void
+		setPower: (power: number) => void
+		onRelease: () => void
+		/** True while another motion call is in flight, which disables the button not held. @default false */
+		isBusy?: boolean
+		/**
+		 * The lowest power fraction the slider reaches, from the gpio motor config's `min_power_pct`,
+		 * a fraction from 0 to 1. Used only when 0 <= min < max <= 1. @default 0
+		 */
+		minPowerPct?: number
+		/**
+		 * The highest power fraction the slider reaches, from the gpio motor config's `max_power_pct`,
+		 * a fraction from 0 to 1. Used only when 0 <= min < max <= 1. @default 1
+		 */
+		maxPowerPct?: number
 	}
 
-	const { setPower }: Props = $props()
+	type Direction = 'forward' | 'backward'
 
-	let powerPct = $state(0.5)
+	const DEFAULT_POWER_FRACTION = 0.5
+	const POWER_STEP = 0.05
 
-	let isPressed = false
-	const move = (forward: boolean) => {
-		isPressed = true
-		setPower((forward ? 1 : -1) * powerPct)
-	}
-	const stop = () => {
-		if (isPressed) {
-			setPower(0)
-		}
-		isPressed = false
+	const { setPower, onRelease, isBusy = false, minPowerPct, maxPowerPct }: Props = $props()
+
+	const range = $derived(resolvePowerRange(minPowerPct, maxPowerPct))
+
+	// The starting value is clamped into the range, and the slider keeps it there afterward.
+	let chosenFraction = $state(DEFAULT_POWER_FRACTION)
+	const powerFraction = $derived(Math.min(range.max, Math.max(range.min, chosenFraction)))
+
+	const start = (direction: Direction) => {
+		setPower((direction === 'forward' ? 1 : -1) * powerFraction)
 	}
 </script>
 
-<Label cx="max-w-[282px]">
-	<span class="text-subtle-1 text-xs">Power</span>
-
-	<RangeInput
-		slot="input"
-		value={powerPct}
-		max={1}
-		step={0.05}
-		on:input={(event) => {
-			// on:input is used instead of on:change because of the on:mousedown handlers and blur order
-			// on:change does not run in time.
-			powerPct = numberValueFromEvent(event) ?? 0
-		}}
+<div class="flex flex-col gap-1">
+	<Slider
+		label="Power"
+		min={range.min}
+		max={range.max}
+		step={POWER_STEP}
+		bind:value={() => powerFraction, (next) => (chosenFraction = next)}
 	/>
-</Label>
 
-<div class="flex flex-col gap-4">
-	<div class="flex flex-row gap-4">
-		<!-- NOTE(zp,2024-06-04) these are not prime buttons because prime does not provide on:mousedown or on:mouseup -->
-		<button
-			onmousedown={() => {
-				move(true)
-			}}
-			onmouseup={stop}
-			onmouseleave={stop}
-			class="border-light bg-light hover:border-medium hover:bg-medium active:bg-gray-2 w-20 border p-3 py-3"
-		>
-			<div class="flex flex-col gap-2">
-				<Icon
-					name="arrow-up"
-					cx="text-gray-6 self-center"
-				/>
-				<p class="font-roboto-mono text-xs uppercase">forward</p>
-			</div>
-		</button>
-		<button
-			onmousedown={() => {
-				move(false)
-			}}
-			onmouseup={stop}
-			onmouseleave={stop}
-			class="border-light bg-light hover:border-medium hover:bg-medium active:bg-gray-2 w-20 border p-3 py-3"
-		>
-			<div class="flex flex-col gap-2">
-				<Icon
-					name="arrow-up"
-					cx="text-gray-6 rotate-180 self-center"
-				/>
-				<p class="font-roboto-mono text-xs uppercase">backward</p>
-			</div>
-		</button>
-	</div>
-
-	<p class="text-subtle-2 mt-auto ml-auto text-xs">Press and hold</p>
+	<HoldDirectionButtons
+		onPress={start}
+		{onRelease}
+		isDisabled={isBusy}
+	/>
 </div>

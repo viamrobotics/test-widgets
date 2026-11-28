@@ -1,6 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
+import { Motor } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -11,6 +12,7 @@ const resourceName = (namespace: string, type: string, subtype: string): Resourc
 
 interface ResourceCase {
 	label: string
+	namespace?: Record<string, unknown>
 	triplet: keyof typeof resourceWidgets
 	keys: string[]
 }
@@ -56,8 +58,22 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'Motion', triplet: ResourceTriplets.Motion, keys: [] },
 	{
 		label: 'Motor',
+		namespace: Motor,
 		triplet: ResourceTriplets.Motor,
-		keys: ['quickMove', 'setPower', 'setRpm', 'goFor', 'goTo', 'isMoving'],
+		keys: [
+			'quickMove',
+			'move',
+			'setPower',
+			'setRpm',
+			'goFor',
+			'goTo',
+			'isMoving',
+			'resetZeroPosition',
+			'getPosition',
+			'getProperties',
+			'stop',
+			'isPowered',
+		],
 	},
 	{
 		label: 'MovementSensor',
@@ -81,7 +97,13 @@ const RESOURCE_CASES: ResourceCase[] = [
 	{ label: 'Vision', triplet: ResourceTriplets.Vision, keys: [] },
 ]
 
+const camelCase = (member: string): string => member.charAt(0).toLowerCase() + member.slice(1)
+
 const CAMEL_CASE_KEY = /^[a-z][a-zA-Z0-9]*$/
+
+const NAMESPACE_CASES = RESOURCE_CASES.flatMap(({ label, namespace, triplet }) =>
+	namespace ? [{ label, namespace, triplet }] : []
+)
 
 describe('resourceWidgets', () => {
 	it.each(RESOURCE_CASES)('lists exactly the $label widget keys, in order', ({ triplet, keys }) => {
@@ -93,6 +115,22 @@ describe('resourceWidgets', () => {
 			RESOURCE_CASES.map(({ triplet }) => triplet).toSorted()
 		)
 	})
+
+	it.each(NAMESPACE_CASES)(
+		'maps each $label namespace member to the camelCase key holding that component',
+		({ namespace, triplet }) => {
+			const widgets: Record<string, { component: unknown }> = resourceWidgets[triplet].widgets
+			const expectedByKey = Object.fromEntries(
+				Object.entries(namespace).map(([member, component]) => [camelCase(member), component])
+			)
+
+			expect(Object.keys(widgets).toSorted()).toEqual(Object.keys(expectedByKey).toSorted())
+			const mismatches = Object.entries(widgets)
+				.filter(([key, widget]) => widget.component !== expectedByKey[key])
+				.map(([key]) => key)
+			expect(mismatches).toEqual([])
+		}
+	)
 
 	it('gives every widget a camelCase key and a known kind', () => {
 		const problems = Object.entries(resourceWidgets).flatMap(([triplet, entry]) =>

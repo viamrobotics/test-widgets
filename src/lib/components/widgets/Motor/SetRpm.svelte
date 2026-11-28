@@ -1,51 +1,45 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
+	import { emptyOnClear } from '#lib/components/empty-on-clear.js'
 
 	interface Props {
 		setRPM: (_: number) => void
+		/** True while another motion call is in flight, which holds back Execute. @default false */
+		isBusy?: boolean
 	}
 
-	const { setRPM }: Props = $props()
+	const { setRPM, isBusy = false }: Props = $props()
 
-	let rpm = $state(20)
+	let rpm = $state<number | undefined>(20)
+
+	// An empty field is `undefined`, so it holds back Execute.
+	const validRpm: number | undefined = $derived(
+		rpm !== undefined && Number.isFinite(rpm) ? rpm : undefined
+	)
 </script>
 
-<div>
-	<Label cx="w-full max-w-[96px] gap-1 text-xs">
-		<div class="flex flex-row gap-1">
-			RPM
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<p
-					slot="description"
-					class="text-xs"
-				>
-					Speed in revolutions per minute.
-				</p>
-			</Tooltip>
-		</div>
-
-		<NumericInput
-			slot="input"
-			value={rpm}
-			on:change={(event) => {
-				rpm = numberValueFromEvent(event) ?? 0
-			}}
-		/>
-	</Label>
-</div>
-<div class="mt-auto">
-	<Button
-		icon="play-circle-outline"
+<div class="flex w-full flex-wrap items-end gap-2">
+	<NumberField
+		label="RPM"
+		hint="Speed in revolutions per minute."
+		state={validRpm === undefined ? 'error' : undefined}
+		class="min-w-40 flex-1"
+		{...emptyOnClear(() => (rpm = undefined))}
+		bind:value={rpm}
+	/>
+	<button
+		type="button"
+		class="button button-compact ml-auto"
+		disabled={validRpm === undefined || isBusy}
 		onclick={() => {
-			setRPM(rpm)
+			if (validRpm !== undefined) {
+				setRPM(validRpm)
+			}
 		}}
 	>
+		<Icon icon={mdiPlayCircleOutline} />
 		Execute
-	</Button>
+	</button>
 </div>

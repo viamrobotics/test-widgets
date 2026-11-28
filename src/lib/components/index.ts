@@ -71,14 +71,6 @@ export { default as MLModelServiceWidget } from './widgets/MLModel/MlModelServic
 export { default as MotionServiceWidget } from './widgets/Motion/Motion.svelte'
 export { default as MotionMoveWidget } from './widgets/Motion/MoveWidget.svelte'
 
-export { default as MotorGoForWidget } from './widgets/Motor/GoForView.svelte'
-export { default as MotorGoToWidget } from './widgets/Motor/GoToView.svelte'
-export { default as MotorWidget } from './widgets/Motor/Motor.svelte'
-export { default as MotorIsMovingWidget } from './widgets/Motor/IsMovingWidget.svelte'
-export { default as MotorQuickMoveWidget } from './widgets/Motor/QuickMoveWidget.svelte'
-export { default as MotorSetPowerWidget } from './widgets/Motor/SetPowerWidget.svelte'
-export { default as MotorSetRPMWidget } from './widgets/Motor/SetRpmWidget.svelte'
-
 export { default as MovementSensorWidget } from './widgets/MovementSensor/MovementSensor.svelte'
 export { default as MovementSensorGetPositionWidget } from './widgets/MovementSensor/GetPositionWidget.svelte'
 export { default as MovementSensorGetOrientationWidget } from './widgets/MovementSensor/GetOrientationWidget.svelte'

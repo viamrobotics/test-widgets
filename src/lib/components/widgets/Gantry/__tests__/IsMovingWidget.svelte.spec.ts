@@ -46,7 +46,7 @@ describe('Gantry IsMoving widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('Moving...')).toBeInTheDocument()
+		expect(screen.getByText('Moving')).toBeInTheDocument()
 	})
 
 	it('shows the idle pill while the gantry reports no motion', () => {

@@ -1,77 +1,58 @@
 <script lang="ts">
-	import { Button, Icon, Label, NumericInput, Tooltip } from '@viamrobotics/prime-core'
-	import { numberValueFromEvent } from '#lib/event-handlers.js'
+	import { mdiPlayCircleOutline } from '@mdi/js'
+	import { NumberField } from '@viamrobotics/prime-controls'
+	import { Icon } from '@viamrobotics/prime-ui'
+	import { emptyOnClear } from '#lib/components/empty-on-clear.js'
 
 	interface Props {
 		goTo: (rpm: number, pos: number) => void
+		/** True while another motion call is in flight, which holds back Execute. @default false */
+		isBusy?: boolean
 	}
 
-	const { goTo }: Props = $props()
+	const { goTo, isBusy = false }: Props = $props()
 
-	let targetPosition = $state(0.5)
-	let rpm = $state(10)
+	let targetPosition = $state<number | undefined>(0.5)
+	let rpm = $state<number | undefined>(10)
+
+	// An empty field is `undefined`, so it holds back Execute.
+	const validRpm: number | undefined = $derived(
+		rpm !== undefined && Number.isFinite(rpm) ? rpm : undefined
+	)
+	const validTargetPosition: number | undefined = $derived(
+		targetPosition !== undefined && Number.isFinite(targetPosition) ? targetPosition : undefined
+	)
 </script>
 
-<div class="flex flex-wrap gap-4">
-	<Label cx="max-w-[96px] grow gap-1 text-xs">
-		<p class="flex flex-row gap-1">
-			RPM
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<p
-					slot="description"
-					class="text-xs"
-				>
-					Speed at which the motor will move in revolutions per minute. Absolute value.
-				</p>
-			</Tooltip>
-		</p>
-
-		<NumericInput
-			slot="input"
-			value={rpm}
-			on:change={(event) => {
-				rpm = numberValueFromEvent(event) ?? 0
+<div class="flex w-full flex-col gap-1">
+	<NumberField
+		label="RPM"
+		hint="Speed at which the motor will move in revolutions per minute. Absolute value."
+		state={validRpm === undefined ? 'error' : undefined}
+		{...emptyOnClear(() => (rpm = undefined))}
+		bind:value={rpm}
+	/>
+	<NumberField
+		label="Target position"
+		hint="Target position the motor will turn to in revolutions from home/zero."
+		step={0.1}
+		state={validTargetPosition === undefined ? 'error' : undefined}
+		{...emptyOnClear(() => (targetPosition = undefined))}
+		bind:value={targetPosition}
+	/>
+	<div class="flex justify-end">
+		<button
+			type="button"
+			class="button button-compact"
+			disabled={validRpm === undefined || validTargetPosition === undefined || isBusy}
+			onclick={() => {
+				if (validRpm !== undefined && validTargetPosition !== undefined) {
+					goTo(validRpm, validTargetPosition)
+				}
 			}}
-		/>
-	</Label>
-	<Label cx="max-w-[96px] grow gap-1 text-xs">
-		<p class="flex flex-row gap-1 whitespace-nowrap">
-			Target position
-			<Tooltip>
-				<Icon
-					name="information-outline"
-					cx="text-gray-6"
-				/>
-
-				<p
-					slot="description"
-					class="text-xs whitespace-normal"
-				>
-					Target position the motor will turn to in revolutions from home/zero.
-				</p>
-			</Tooltip>
-		</p>
-
-		<NumericInput
-			slot="input"
-			value={targetPosition}
-			on:change={(event) => {
-				targetPosition = numberValueFromEvent(event) ?? 0
-			}}
-		/>
-	</Label>
-</div>
-
-<div class="mt-auto">
-	<Button
-		icon="play-circle-outline"
-		onclick={() => goTo(rpm, targetPosition)}
-	>
-		Execute
-	</Button>
+		>
+			<Icon icon={mdiPlayCircleOutline} />
+			Execute
+		</button>
+	</div>
 </div>
