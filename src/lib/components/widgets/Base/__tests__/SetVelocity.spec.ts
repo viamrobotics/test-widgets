@@ -16,6 +16,11 @@ describe('Base SetVelocity', () => {
 		setVelocity = vi.fn()
 	})
 
+	const replaceValue = async (input: HTMLElement, text: string) => {
+		await user.clear(input)
+		await user.type(input, text)
+	}
+
 	const renderSubject = (props: Partial<ComponentProps<typeof Subject>>) =>
 		render(Subject, {
 			setVelocity,
@@ -26,39 +31,43 @@ describe('Base SetVelocity', () => {
 		renderSubject({})
 
 		{
-			const linVel = screen.getByRole('region', { name: /linear velocity/iu })
+			const linVel = screen.getByRole('group', { name: /^linear/iu })
 			const xInput = within(linVel).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(linVel).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(linVel).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '10')
-			await user.clear(yInput)
-			await user.type(yInput, '20')
-			await user.clear(zInput)
-			await user.type(zInput, '30')
+			await replaceValue(xInput, '10')
+			await replaceValue(yInput, '20')
+			await replaceValue(zInput, '30')
 		}
 		{
-			const angVel = screen.getByRole('region', { name: /angular velocity/iu })
+			const angVel = screen.getByRole('group', { name: /^angular/iu })
 			const xInput = within(angVel).getByRole('spinbutton', { name: /^X/u })
 			const yInput = within(angVel).getByRole('spinbutton', { name: /^Y/u })
 			const zInput = within(angVel).getByRole('spinbutton', { name: /^Z/u })
 			expect(xInput).toBeInTheDocument()
 			expect(yInput).toBeInTheDocument()
 			expect(zInput).toBeInTheDocument()
-			await user.clear(xInput)
-			await user.type(xInput, '5')
-			await user.clear(yInput)
-			await user.type(yInput, '10')
-			await user.clear(zInput)
-			await user.type(zInput, '15')
+			await replaceValue(xInput, '5')
+			await replaceValue(yInput, '10')
+			await replaceValue(zInput, '15')
 		}
 
 		const executeButton = screen.getByRole('button', { name: /execute/iu })
 		await user.click(executeButton)
 
 		expect(setVelocity).toHaveBeenCalledWith({ x: 10, y: 20, z: 30 }, { x: 5, y: 10, z: 15 })
+	})
+
+	it('sends a negative value typed into a cleared axis', async () => {
+		renderSubject({})
+		const linear = screen.getByRole('group', { name: /^linear/iu })
+
+		await replaceValue(within(linear).getByRole('spinbutton', { name: /^Y/u }), '-25')
+		await user.click(screen.getByRole('button', { name: /execute/iu }))
+
+		expect(setVelocity).toHaveBeenCalledWith({ x: 0, y: -25, z: 0 }, { x: 0, y: 0, z: 15 })
 	})
 })

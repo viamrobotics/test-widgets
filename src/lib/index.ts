@@ -30,5 +30,6 @@ export { showResourceWidget } from './show-resource-widget'
 export { default as WidgetsProvider } from './WidgetsProvider.svelte'
 
 export * as Arm from './components/widgets/Arm/index.ts'
+export * as Base from './components/widgets/Base/index.ts'
 export * as Motion from './components/widgets/Motion/index.ts'
 export * as Motor from './components/widgets/Motor/index.ts'

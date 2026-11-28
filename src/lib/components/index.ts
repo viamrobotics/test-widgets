@@ -7,15 +7,6 @@ export { default as AudioInputGetPropertiesWidget } from './widgets/AudioInput/G
 export { default as AudioOutputWidget } from './widgets/AudioOutput/AudioOutput.svelte'
 export { default as AudioOutputGetPropertiesWidget } from './widgets/AudioOutput/GetPropertiesWidget.svelte'
 
-export { default as BaseWidget } from './widgets/Base/Base.svelte'
-export { default as BaseIsMovingWidget } from './widgets/Base/IsMovingWidget.svelte'
-export { default as BaseMoveStraightWidget } from './widgets/Base/MoveStraightWidget.svelte'
-export { default as BaseQuickMoveWidget } from './widgets/Base/QuickMoveWidget.svelte'
-export { default as BaseSetPowerWidget } from './widgets/Base/SetPowerWidget.svelte'
-export { default as BaseSetVelocityWidget } from './widgets/Base/SetVelocityWidget.svelte'
-export { default as BaseSpinWidget } from './widgets/Base/SpinWidget.svelte'
-export { default as BaseStopWidget } from './widgets/Base/StopWidget.svelte'
-
 export { default as BoardWidget } from './widgets/Board/Board.svelte'
 export { default as BoardReadWritePinsWidget } from './widgets/Board/ReadWritePinsWidget.svelte'
 
