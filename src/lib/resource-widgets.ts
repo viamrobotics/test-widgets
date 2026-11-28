@@ -7,10 +7,6 @@ import {
 	AudioOutputGetPropertiesWidget,
 	EncoderGetPositionWidget,
 	MLModelServiceMetadataWidget,
-	MovementSensorGetAccuracyWidget,
-	MovementSensorGetCompassHeadingWidget,
-	MovementSensorGetOrientationWidget,
-	MovementSensorGetPositionWidget,
 	PowerSensorGetCurrentWidget,
 	PowerSensorGetPowerWidget,
 	PowerSensorGetVoltageWidget,
@@ -24,6 +20,7 @@ import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
 import * as Motor from './components/widgets/Motor/index.ts'
+import * as MovementSensor from './components/widgets/MovementSensor/index.ts'
 import * as Sensor from './components/widgets/Sensor/index.ts'
 import * as Servo from './components/widgets/Servo/index.ts'
 import * as Switch from './components/widgets/Switch/index.ts'
@@ -120,6 +117,12 @@ interface ResourceWidgetKeys {
 		| 'getOrientation'
 		| 'getCompassHeading'
 		| 'getAccuracy'
+		| 'getLinearVelocity'
+		| 'getAngularVelocity'
+		| 'getLinearAcceleration'
+		| 'getProperties'
+		| 'getReadings'
+		| 'positionMap'
 	[ResourceTriplets.Navigation]: never
 	[ResourceTriplets.PowerSensor]: 'getVoltage' | 'getCurrent' | 'getPower'
 	[ResourceTriplets.Sensor]: 'getReadings'
@@ -404,10 +407,46 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.MovementSensor]: {
 		widgets: {
-			getPosition: { component: MovementSensorGetPositionWidget, kind: 'api' },
-			getOrientation: { component: MovementSensorGetOrientationWidget, kind: 'api' },
-			getCompassHeading: { component: MovementSensorGetCompassHeadingWidget, kind: 'api' },
-			getAccuracy: { component: MovementSensorGetAccuracyWidget, kind: 'api' },
+			getPosition: {
+				component: MovementSensor.GetPosition,
+				kind: 'api',
+			},
+			getOrientation: {
+				component: MovementSensor.GetOrientation,
+				kind: 'api',
+			},
+			getCompassHeading: {
+				component: MovementSensor.GetCompassHeading,
+				kind: 'api',
+			},
+			getAccuracy: {
+				component: MovementSensor.GetAccuracy,
+				kind: 'api',
+			},
+			getLinearVelocity: {
+				component: MovementSensor.GetLinearVelocity,
+				kind: 'api',
+			},
+			getAngularVelocity: {
+				component: MovementSensor.GetAngularVelocity,
+				kind: 'api',
+			},
+			getLinearAcceleration: {
+				component: MovementSensor.GetLinearAcceleration,
+				kind: 'api',
+			},
+			getProperties: {
+				component: MovementSensor.GetProperties,
+				kind: 'api',
+			},
+			getReadings: {
+				component: MovementSensor.GetReadings,
+				kind: 'api',
+			},
+			positionMap: {
+				component: MovementSensor.PositionMap,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.Navigation]: {
