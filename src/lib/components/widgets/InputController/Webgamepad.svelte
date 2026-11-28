@@ -2,8 +2,9 @@
 	import { Canvas } from '@threlte/core'
 	import { InputControllerClient, type InputControllerEvent } from '@viamrobotics/sdk'
 	import { createResourceClient, createResourceMutation } from '@viamrobotics/svelte-sdk'
-	import { Section } from '#lib/components/Section/index.js'
-	import StatusPill from '#lib/components/StatusPill.svelte'
+	import ConnectionStatus from '#lib/components/ConnectionStatus.svelte'
+	import HeldBack from '#lib/components/HeldBack.svelte'
+	import { Section, useSectionErrors } from '#lib/components/Section/index.js'
 
 	import type { StandardGamepadEvent } from './standard-gamepad-event'
 
@@ -12,10 +13,17 @@
 	interface Props {
 		partID: string
 		resourceName: string
-		refetch: () => void
 	}
 
-	const { partID, resourceName, refetch }: Props = $props()
+	const { partID, resourceName }: Props = $props()
+
+	// The webgamepad module is the input controller that takes a browser gamepad's events.
+	const WEBGAMEPAD_RESOURCE_NAME = 'webgamepad'
+
+	const isWebgamepad = $derived(resourceName.toLowerCase() === WEBGAMEPAD_RESOURCE_NAME)
+
+	/** True while the browser reports a gamepad. */
+	let isConnected = $state(false)
 
 	const client = createResourceClient(
 		InputControllerClient,
@@ -24,6 +32,11 @@
 	)
 
 	const triggerEventMutation = createResourceMutation(client, 'triggerEvent')
+
+	const sectionErrors = useSectionErrors(() => ({ mutations: [triggerEventMutation] }))
+
+	const badgeTone = $derived(isConnected ? 'badge-success' : 'badge-neutral')
+	const badgeText = $derived(isConnected ? 'Connected' : 'Disconnected')
 
 	// Threlte useGamepad button names → RDK input control names
 	const CONTROL_MAP: Record<string, string> = {
@@ -64,13 +77,38 @@
 		rightStick: { x: 'AbsoluteRX', y: 'AbsoluteRY' },
 	}
 
-	const triggerEvent = async (event: StandardGamepadEvent) => {
+	const BUTTON_EVENT_NAMES = new Set(['ButtonPress', 'ButtonRelease'])
+
+	// The last event sent per control, so a release can neutralize what is still held.
+	const lastSentByControl = new Map<string, { event: string; value: number }>()
+
+	const currentEventTime = () => {
 		// NOTE(ethanlook): Share this helper
 		const now = Date.now()
-		const time = {
+		return {
 			seconds: BigInt(Math.floor(now / 1000)),
 			nanos: (now % 1000) * 1_000_000,
 		}
+	}
+
+	const isHeld = (last: { event: string; value: number }) =>
+		last.event === 'ButtonPress' || last.value !== 0
+
+	const neutralEventName = (lastEventName: string) =>
+		BUTTON_EVENT_NAMES.has(lastEventName) ? 'ButtonRelease' : 'PositionChangeAbs'
+
+	const sendEvents = async (events: InputControllerEvent[]) => {
+		await Promise.allSettled(
+			events.map(async (icEvent) => triggerEventMutation.mutateAsync([icEvent]))
+		)
+	}
+
+	const triggerEvent = async (event: StandardGamepadEvent) => {
+		// Nothing is sent until the user engages forwarding.
+		if (!isForwarding) {
+			return
+		}
+		const time = currentEventTime()
 
 		const events: InputControllerEvent[] = []
 
@@ -107,35 +145,160 @@
 			events.push({ event: eventType, control, value, time })
 		}
 
-		await Promise.allSettled(
-			events.map(async (icEvent) => triggerEventMutation.mutateAsync([icEvent]))
-		)
+		for (const icEvent of events) {
+			lastSentByControl.set(icEvent.control, { event: icEvent.event, value: icEvent.value })
+		}
 
-		refetch()
+		await sendEvents(events)
 	}
 
-	// The Threlte useGamepad hook exposes a store for this,
-	// but to display it here we need to use another store
-	// and pass down the setter.
-	let isConnected = $state(false)
+	let isForwarding = $state(false)
+
+	// Read by a screen reader only. The badge and the hint are not live regions.
+	let announcement = $state('')
+
+	const hintId = $props.id()
+	const FORWARDING_HINT = 'Forwarding. Each change is sent as one TriggerEvent.'
+	const IDLE_HINT = 'Not forwarding. Turn on to send this gamepad’s changes as TriggerEvents.'
+	const NO_GAMEPAD_HINT = 'No gamepad connected. Press a button on a gamepad to connect it.'
+
+	const forwardingHint = $derived.by(() => {
+		if (!isConnected) return NO_GAMEPAD_HINT
+		return isForwarding ? FORWARDING_HINT : IDLE_HINT
+	})
+
+	// Every release path lands here. Once forwarding is off it does nothing, so two paths firing
+	// together send the neutral events once.
+	const releaseForwarding = () => {
+		if (!isForwarding) {
+			return
+		}
+		isForwarding = false
+
+		const time = currentEventTime()
+		const neutralEvents: InputControllerEvent[] = []
+		for (const [control, last] of lastSentByControl) {
+			if (isHeld(last)) {
+				neutralEvents.push({ event: neutralEventName(last.event), control, value: 0, time })
+			}
+		}
+		lastSentByControl.clear()
+
+		void sendEvents(neutralEvents)
+	}
+
+	const toggleForwarding = () => {
+		if (!isConnected) {
+			return
+		}
+		announcement = ''
+		if (isForwarding) {
+			releaseForwarding()
+			return
+		}
+		isForwarding = true
+	}
+
+	// The toggle is not what stopped forwarding here, so say that it stopped.
+	const releaseOnLeave = () => {
+		if (isForwarding) {
+			announcement = 'Forwarding stopped.'
+		}
+		releaseForwarding()
+	}
+
+	const setGamepadConnected = (connected: boolean) => {
+		if (connected === isConnected) {
+			return
+		}
+		isConnected = connected
+		if (connected) {
+			announcement = 'Gamepad connected.'
+			return
+		}
+		// An unplugged gamepad has nothing left to forward.
+		announcement = isForwarding
+			? 'Gamepad disconnected. Forwarding stopped.'
+			: 'Gamepad disconnected.'
+		releaseForwarding()
+	}
+
+	// Unmount is a release path: closing the pane with a stick held must not leave it driving.
+	$effect(() => releaseForwarding)
 </script>
 
-<!-- Hidden because a Threlte Canvas isn't actually shown,
-     but the context must be provided. -->
-<div hidden>
-	<Canvas>
-		<WebgamepadScene
-			onChange={triggerEvent}
-			onConnectionChange={(connected) => {
-				isConnected = connected
-			}}
-		/>
-	</Canvas>
-</div>
+<svelte:window onblur={releaseOnLeave} />
 
-<StatusPill
-	isActive={isConnected}
-	activeText="Connected"
-	inactiveText="Disconnected"
+<svelte:document
+	onvisibilitychange={() => {
+		if (document.visibilityState === 'hidden') {
+			releaseOnLeave()
+		}
+	}}
 />
-<Section.Error error={triggerEventMutation.error} />
+
+<ConnectionStatus {partID}>
+	{#snippet connected()}
+		<Section
+			errorReporter={sectionErrors}
+			class="min-w-0 flex-col gap-2 p-2"
+		>
+			<Section.Heading class="justify-between">
+				Web gamepad
+				{#snippet aside()}
+					{#if isWebgamepad}
+						<span class={['badge', badgeTone]}>{badgeText}</span>
+					{/if}
+					<Section.Errors errors={sectionErrors.errors} />
+				{/snippet}
+			</Section.Heading>
+
+			{#if isWebgamepad}
+				<!-- Hidden because a Threlte Canvas isn't actually shown,
+				     but the context must be provided. -->
+				<div hidden>
+					<Canvas>
+						<WebgamepadScene
+							onChange={triggerEvent}
+							onConnectionChange={setGamepadConnected}
+						/>
+					</Canvas>
+				</div>
+
+				<div class="flex flex-col items-start gap-2">
+					<HeldBack
+						reason={isConnected ? undefined : NO_GAMEPAD_HINT}
+						reasonId={hintId}
+					>
+						{#snippet children(heldBack)}
+							<button
+								type="button"
+								class={['button button-compact', isForwarding && 'button-dark']}
+								aria-pressed={isForwarding}
+								{...heldBack}
+								aria-describedby={hintId}
+								onclick={toggleForwarding}
+							>
+								Forward gamepad
+							</button>
+						{/snippet}
+					</HeldBack>
+					<p
+						id={hintId}
+						class="text-subtle-1 text-xs"
+					>
+						{forwardingHint}
+					</p>
+					<span
+						class="sr-only"
+						role="status"
+					>
+						{announcement}
+					</span>
+				</div>
+			{:else}
+				<Section.Text>Gamepad forwarding needs an input controller named webgamepad.</Section.Text>
+			{/if}
+		</Section>
+	{/snippet}
+</ConnectionStatus>

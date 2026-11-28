@@ -9,6 +9,7 @@ import {
 	Encoder,
 	Gantry,
 	Gripper,
+	InputController,
 	Motion,
 	Motor,
 	MovementSensor,
@@ -132,7 +133,12 @@ const RESOURCE_CASES: ResourceCase[] = [
 			'goToInputs',
 		],
 	},
-	{ label: 'InputController', triplet: ResourceTriplets.InputController, keys: [] },
+	{
+		label: 'InputController',
+		namespace: InputController,
+		triplet: ResourceTriplets.InputController,
+		keys: ['getEvents', 'triggerEvent', 'webGamepad'],
+	},
 	{ label: 'MLModel', triplet: ResourceTriplets.MLModel, keys: ['metadata'] },
 	{ label: 'Motion', namespace: Motion, triplet: ResourceTriplets.Motion, keys: ['move'] },
 	{
