@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../SectionErrors.svelte'
+import Scoped from './SectionErrorsScoped.spec.svelte'
 
 const error = (name: string, message: string) => {
 	const instance = new Error(message)
@@ -45,10 +46,22 @@ describe('<SectionErrors>', () => {
 		const button = screen.getByRole('button', { name: 'No errors' })
 		expect(button.textContent).not.toMatch(/\d/u)
 
-		await fireEvent.focus(button)
+		await fireEvent.focusIn(button)
 
 		expect(screen.getByText('No errors')).toBeInTheDocument()
 		expect(screen.queryByText('Click to copy')).not.toBeInTheDocument()
+	})
+
+	it('prefixes its name with the enclosing scope method', () => {
+		render(Scoped, { method: 'IsMoving' })
+
+		expect(screen.getByRole('button', { name: 'IsMoving: No errors' })).toBeInTheDocument()
+	})
+
+	it('keeps its plain name in a scope with no method', () => {
+		render(Scoped, {})
+
+		expect(screen.getByRole('button', { name: 'No errors' })).toBeInTheDocument()
 	})
 
 	it('names the count and lists each error in the tooltip', async () => {
@@ -57,7 +70,7 @@ describe('<SectionErrors>', () => {
 		const button = screen.getByRole('button', { name: '2 errors, copy to clipboard' })
 		expect(button).toHaveTextContent('2')
 
-		await fireEvent.focus(button)
+		await fireEvent.focusIn(button)
 
 		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
 		expect(screen.getByText('RpcError: base is not powered')).toBeInTheDocument()
@@ -68,6 +81,7 @@ describe('<SectionErrors>', () => {
 		const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 		render(Subject, { errors: [notFound(), notPowered()] })
 
+		await fireEvent.focusIn(screen.getByRole('button'))
 		await fireEvent.click(screen.getByRole('button'))
 		await vi.advanceTimersByTimeAsync(0)
 

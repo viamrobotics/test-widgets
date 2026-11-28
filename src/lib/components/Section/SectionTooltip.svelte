@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 
-	import { Icon, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiInformationOutline } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 
 	interface Props {
 		children: Snippet
@@ -11,15 +12,15 @@
 </script>
 
 <Tooltip>
-	<Icon
-		name="information-outline"
-		cx="text-gray-6"
-	/>
-
-	<p
-		slot="description"
-		class="text-xs whitespace-pre-line"
-	>
+	<Tooltip.Trigger>
+		<Icon
+			icon={mdiInformationOutline}
+			class="text-gray-6"
+			aria-label="More information"
+			tabindex={0}
+		/>
+	</Tooltip.Trigger>
+	<Tooltip.Content class="text-xs whitespace-pre-line">
 		{@render children()}
-	</p>
+	</Tooltip.Content>
 </Tooltip>

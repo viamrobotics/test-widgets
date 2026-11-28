@@ -3,12 +3,17 @@
 	import type { Snippet } from 'svelte'
 	import type { HTMLAttributes } from 'svelte/elements'
 
+	import { untrack } from 'svelte'
+
+	import type { SectionMutation, SectionQuery } from './Section/use-section-errors.svelte'
+
 	import { Section } from './Section'
 	import {
-		type SectionMutation,
-		type SectionQuery,
-		useSectionErrors,
-	} from './Section/use-section-errors.svelte'
+		claimSectionHostScope,
+		createSectionScope,
+		provideSectionScope,
+		type SectionScopeSources,
+	} from './Section/section-scope-context.svelte'
 
 	/**
 	 * What the section reads or writes. At least one list is required, so every section's errors
@@ -43,32 +48,51 @@
 		...rest
 	}: Props = $props()
 
-	const sectionErrors = useSectionErrors(() => ({ queries, mutations }))
+	const getSources = (): SectionScopeSources => ({
+		method,
+		api,
+		description: tooltip,
+		queries,
+		mutations,
+	})
+
+	// Inside a host's `Section.Scope`, the host's header draws the method, docs, and errors.
+	const hostScope = claimSectionHostScope()
+	const isUnderHostHeader = hostScope !== undefined
+	const scope = hostScope ?? provideSectionScope(createSectionScope(getSources))
+
+	$effect(() => {
+		// Registering writes the scope's contributors, so it must not subscribe this effect to them.
+		return untrack(() => hostScope?.register(getSources))
+	})
 </script>
 
 <Section
-	errorReporter={sectionErrors}
+	errorReporter={scope}
 	{...rest}
 >
-	<div class="flex flex-col gap-0.5">
-		<Section.Heading>
-			<Section.Method
-				{method}
-				{api}
-			/>
-			{#snippet aside()}
-				<Section.Errors errors={sectionErrors.errors} />
-				{#if tooltip}
-					<Section.Tooltip>{@render tooltip()}</Section.Tooltip>
-				{/if}
-			{/snippet}
-		</Section.Heading>
-		{@render subheading?.()}
-	</div>
+	{#if !isUnderHostHeader}
+		<div class="flex flex-col gap-0.5">
+			<Section.Heading>
+				<Section.Method
+					{method}
+					{api}
+				/>
+				{#snippet aside()}
+					<Section.Errors />
+					{#if tooltip}
+						<Section.Tooltip>{@render tooltip()}</Section.Tooltip>
+					{/if}
+				{/snippet}
+			</Section.Heading>
+			{@render subheading?.()}
+		</div>
+	{/if}
 
+	<!-- The host's `Section.Loading` is the bar under its header, so the controls stay drawn. -->
 	<Section.Body
-		isLoading={sectionErrors.isLoading}
-		{skeleton}
+		isLoading={scope.isLoading}
+		skeleton={skeleton || isUnderHostHeader}
 	>
 		{@render children?.()}
 	</Section.Body>

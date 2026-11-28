@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { ClassValue } from 'svelte/elements'
 
-	import { IconButton, Tooltip } from '@viamrobotics/prime-core'
+	import { mdiCheck, mdiContentCopy } from '@mdi/js'
+	import { Icon, Tooltip } from '@viamrobotics/prime-ui'
 	import { untrack } from 'svelte'
 
 	import { useSectionErrorReporter } from './section-error-reporter'
@@ -66,14 +67,18 @@
 			{errorText}
 		</p>
 		<div class="shrink-0">
-			<Tooltip let:tooltipID>
-				<IconButton
-					aria-describedby={tooltipID}
-					icon={isShowingCopySuccess ? 'check' : 'content-copy'}
-					label="Copy error"
-					on:click={copyErrorToClipboard}
-				/>
-				<div slot="description">Copy error</div>
+			<Tooltip>
+				<Tooltip.Trigger>
+					<button
+						type="button"
+						class="icon-button"
+						aria-label="Copy error"
+						onclick={copyErrorToClipboard}
+					>
+						<Icon icon={isShowingCopySuccess ? mdiCheck : mdiContentCopy} />
+					</button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Copy error</Tooltip.Content>
 			</Tooltip>
 		</div>
 	</div>

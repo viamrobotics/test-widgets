@@ -70,7 +70,9 @@ describe('Vision service widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'CaptureAllFromCamera: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 
 	it("shows a failing point cloud query in its section's error indicator", async () => {
@@ -79,7 +81,9 @@ describe('Vision service widget', () => {
 
 		await userEvent.click(screen.getByRole('switch', { name: /show object point clouds/iu }))
 
-		expect(screen.getByRole('button', { name: '1 error, copy to clipboard' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'GetObjectPointClouds: 1 error, copy to clipboard' })
+		).toBeInTheDocument()
 	})
 
 	it('shows the slow request message once a fetch passes the threshold', async () => {

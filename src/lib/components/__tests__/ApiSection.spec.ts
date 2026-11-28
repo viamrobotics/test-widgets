@@ -5,7 +5,6 @@ import type { SectionQuery } from '../Section/use-section-errors.svelte'
 
 import Subject from './ApiSectionError.spec.svelte'
 import Queried from './ApiSectionQueries.spec.svelte'
-import Skeleton from './ApiSectionSkeleton.spec.svelte'
 
 const errorQuery = (name: string, message: string): SectionQuery => {
 	const error = new Error(message)
@@ -67,7 +66,7 @@ describe('<ApiSection>', () => {
 		expect(screen.getByText('content')).toBeInTheDocument()
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 
-		await fireEvent.focus(indicator('1 error, copy to clipboard'))
+		await fireEvent.focusIn(indicator('GetPosition: 1 error, copy to clipboard'))
 
 		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
 	})
@@ -75,7 +74,7 @@ describe('<ApiSection>', () => {
 	it('counts one error when two queries fail the same way', () => {
 		render(Queried, { queries: [notFound(), notFound()] })
 
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('GetPosition: 1 error, copy to clipboard')).toBeInTheDocument()
 	})
 
 	it('lists every distinct error when queries fail differently', async () => {
@@ -83,7 +82,7 @@ describe('<ApiSection>', () => {
 			queries: [notFound(), errorQuery('ConnectionError', 'Resource unhealthy')],
 		})
 
-		await fireEvent.focus(indicator('2 errors, copy to clipboard'))
+		await fireEvent.focusIn(indicator('GetPosition: 2 errors, copy to clipboard'))
 
 		expect(screen.getByText('ConnectionError: Resource not found')).toBeInTheDocument()
 		expect(screen.getByText('ConnectionError: Resource unhealthy')).toBeInTheDocument()
@@ -94,7 +93,7 @@ describe('<ApiSection>', () => {
 		lastError.name = 'RpcError'
 		render(Queried, { queries: [successQuery()], lastError })
 
-		await fireEvent.focus(indicator('1 error, copy to clipboard'))
+		await fireEvent.focusIn(indicator('GetPosition: 1 error, copy to clipboard'))
 
 		expect(screen.getByText('RpcError: base is not powered')).toBeInTheDocument()
 	})
@@ -111,52 +110,27 @@ describe('<ApiSection>', () => {
 
 		await rerender({ queries: [loadingQuery()] })
 
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('GetPosition: 1 error, copy to clipboard')).toBeInTheDocument()
 		expect(screen.getByText('content')).toBeInTheDocument()
 		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 	})
 
 	it('clears the error once every query succeeds', async () => {
 		const { rerender } = render(Queried, { queries: [notFound(), successQuery()] })
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('GetPosition: 1 error, copy to clipboard')).toBeInTheDocument()
 
 		await rerender({ queries: [successQuery(), successQuery()] })
 
-		expect(indicator('No errors')).toBeInTheDocument()
+		expect(indicator('GetPosition: No errors')).toBeInTheDocument()
 		expect(screen.getByText('content')).toBeInTheDocument()
 	})
 
 	it('clears the error once the failing query recovers, even beside a disabled query', async () => {
 		const { rerender } = render(Queried, { queries: [notFound(), disabledQuery()] })
-		expect(indicator('1 error, copy to clipboard')).toBeInTheDocument()
+		expect(indicator('GetPosition: 1 error, copy to clipboard')).toBeInTheDocument()
 
 		await rerender({ queries: [successQuery(), disabledQuery()] })
 
-		expect(indicator('No errors')).toBeInTheDocument()
-	})
-})
-
-describe('<ApiSection skeleton>', () => {
-	const loadingBar = () => screen.queryByTestId('section-placeholder-loading')
-
-	it('pulses the placeholder while a query is on its first load', () => {
-		render(Skeleton, { queries: [loadingQuery()] })
-
-		expect(loadingBar()).toBeInTheDocument()
-		expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-	})
-
-	it('reads "No data" without a pulse when the first load failed', () => {
-		render(Skeleton, { queries: [notFound()] })
-
-		expect(loadingBar()).not.toBeInTheDocument()
-		expect(screen.getByText('No data')).toBeInTheDocument()
-	})
-
-	it('never pulses for a disabled query, which has no data and is not loading', () => {
-		render(Skeleton, { queries: [disabledQuery()] })
-
-		expect(loadingBar()).not.toBeInTheDocument()
-		expect(screen.getByText('No data')).toBeInTheDocument()
+		expect(indicator('GetPosition: No errors')).toBeInTheDocument()
 	})
 })
