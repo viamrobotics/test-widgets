@@ -1,7 +1,7 @@
 import { ResourceName } from '@viamrobotics/sdk'
 import { describe, expect, it } from 'vitest'
 
-import { Arm, Base, Gantry, Gripper, Motion, Motor, Servo } from '../index.ts'
+import { Arm, Base, Board, Gantry, Gripper, Motion, Motor, Servo } from '../index.ts'
 import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
@@ -54,7 +54,29 @@ const RESOURCE_CASES: ResourceCase[] = [
 			'getProperties',
 		],
 	},
-	{ label: 'Board', triplet: ResourceTriplets.Board, keys: [] },
+	{
+		label: 'Board',
+		namespace: Board,
+		triplet: ResourceTriplets.Board,
+		keys: [
+			'pins',
+			'setGpio',
+			'getGpio',
+			'pwm',
+			'setPwm',
+			'pwmFrequency',
+			'setPwmFrequency',
+			'readAnalogReader',
+			'writeAnalog',
+			'getDigitalInterruptValue',
+			'streamTicks',
+			'setPowerMode',
+			'pin',
+			'analogReader',
+			'digitalInterrupt',
+			'powerMode',
+		],
+	},
 	{ label: 'Button', triplet: ResourceTriplets.Button, keys: [] },
 	{ label: 'Camera', triplet: ResourceTriplets.Camera, keys: [] },
 	{ label: 'Discovery', triplet: ResourceTriplets.Discovery, keys: [] },

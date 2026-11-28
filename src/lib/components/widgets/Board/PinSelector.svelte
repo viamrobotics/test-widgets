@@ -1,69 +1,53 @@
 <script lang="ts">
-	import { Input, Label, ToggleButtons } from '@viamrobotics/prime-core'
+	import type { ClassValue } from 'svelte/elements'
 
-	import { PinModes, type PinSelection, PinTypes } from './board.ts'
+	import { TextField, ToggleButtons } from '@viamrobotics/prime-controls'
+
+	import {
+		isPinMode,
+		isPinType,
+		PIN_MODE_ITEMS,
+		PIN_TYPE_ITEMS,
+		type PinSelection,
+	} from './board.ts'
 
 	interface Props {
 		// NOTE(zp,2024-06-25) This was done instead of a bind:value to simplify unit-testing
 		value: PinSelection
-		onChange: (newVal: PinSelection) => void
+		onChange: (selection: PinSelection) => void
+		class?: ClassValue
 	}
 
-	const { value, onChange }: Props = $props()
+	const { value, onChange, class: className }: Props = $props()
 
-	const changePin = (event: Event) => {
-		const { value: newPinValue } = event.target as HTMLInputElement
-		onChange({ ...value, pin: newPinValue })
+	const changePin = (pin: string) => {
+		onChange({ ...value, pin })
 	}
 
-	const changeType = (event: CustomEvent<string>) => {
-		onChange({
-			...value,
-			type: event.detail === PinTypes.GPIO ? PinTypes.GPIO : PinTypes.ANALOG,
-		})
+	const changeType = (type: string) => {
+		if (isPinType(type)) onChange({ ...value, type })
 	}
 
-	const changeMode = (event: CustomEvent<string>) => {
-		onChange({
-			...value,
-			mode: event.detail === PinModes.READ ? PinModes.READ : PinModes.WRITE,
-		})
+	const changeMode = (mode: string) => {
+		if (isPinMode(mode)) onChange({ ...value, mode })
 	}
 </script>
 
-<div class="flex shrink-0 flex-col gap-4">
-	<Label>
-		Pin
-
-		<Input
-			slot="input"
-			cx="max-w-[120px]"
-			placeholder="0"
-			value={value.pin}
-			on:change={changePin}
-		/>
-	</Label>
-
+<div class={['flex flex-col gap-1', className]}>
+	<TextField
+		class="max-w-40"
+		label="Pin"
+		placeholder="11"
+		bind:value={() => value.pin, changePin}
+	/>
 	<ToggleButtons
-		cx="w-fit!"
-		options={[PinTypes.GPIO, PinTypes.ANALOG]}
-		selected={value.type}
-		on:input={changeType}
-	>
-		{#snippet legend()}
-			Pin type
-		{/snippet}
-	</ToggleButtons>
-
+		label="Pin type"
+		items={PIN_TYPE_ITEMS}
+		bind:value={() => value.type, changeType}
+	/>
 	<ToggleButtons
-		aria-label="Mode"
-		cx="w-fit!"
-		options={[PinModes.READ, PinModes.WRITE]}
-		selected={value.mode}
-		on:input={changeMode}
-	>
-		{#snippet legend()}
-			Mode
-		{/snippet}
-	</ToggleButtons>
+		label="Mode"
+		items={PIN_MODE_ITEMS}
+		bind:value={() => value.mode, changeMode}
+	/>
 </div>

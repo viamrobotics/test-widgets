@@ -18,6 +18,7 @@ import {
 } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
+import * as Board from './components/widgets/Board/index.ts'
 import * as Gantry from './components/widgets/Gantry/index.ts'
 import * as Gripper from './components/widgets/Gripper/index.ts'
 import * as Motion from './components/widgets/Motion/index.ts'
@@ -55,7 +56,23 @@ interface ResourceWidgetKeys {
 		| 'getProperties'
 	[ResourceTriplets.AudioInput]: 'getProperties'
 	[ResourceTriplets.AudioOutput]: 'getProperties'
-	[ResourceTriplets.Board]: never
+	[ResourceTriplets.Board]:
+		| 'pins'
+		| 'setGpio'
+		| 'getGpio'
+		| 'pwm'
+		| 'setPwm'
+		| 'pwmFrequency'
+		| 'setPwmFrequency'
+		| 'readAnalogReader'
+		| 'writeAnalog'
+		| 'getDigitalInterruptValue'
+		| 'streamTicks'
+		| 'setPowerMode'
+		| 'pin'
+		| 'analogReader'
+		| 'digitalInterrupt'
+		| 'powerMode'
 	[ResourceTriplets.Button]: never
 	[ResourceTriplets.Camera]: never
 	[ResourceTriplets.Discovery]: never
@@ -188,7 +205,72 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 		},
 	},
 	[ResourceTriplets.Board]: {
-		widgets: {},
+		widgets: {
+			pins: {
+				component: Board.Pins,
+				kind: 'control',
+			},
+			setGpio: {
+				component: Board.SetGpio,
+				kind: 'api',
+			},
+			getGpio: {
+				component: Board.GetGpio,
+				kind: 'api',
+			},
+			pwm: {
+				component: Board.Pwm,
+				kind: 'api',
+			},
+			setPwm: {
+				component: Board.SetPwm,
+				kind: 'api',
+			},
+			pwmFrequency: {
+				component: Board.PwmFrequency,
+				kind: 'api',
+			},
+			setPwmFrequency: {
+				component: Board.SetPwmFrequency,
+				kind: 'api',
+			},
+			readAnalogReader: {
+				component: Board.ReadAnalogReader,
+				kind: 'api',
+			},
+			writeAnalog: {
+				component: Board.WriteAnalog,
+				kind: 'api',
+			},
+			getDigitalInterruptValue: {
+				component: Board.GetDigitalInterruptValue,
+				kind: 'api',
+			},
+			streamTicks: {
+				component: Board.StreamTicks,
+				kind: 'api',
+			},
+			setPowerMode: {
+				component: Board.SetPowerMode,
+				kind: 'api',
+			},
+			pin: {
+				component: Board.Pin,
+				kind: 'control',
+			},
+			analogReader: {
+				component: Board.AnalogReader,
+				kind: 'control',
+			},
+			digitalInterrupt: {
+				component: Board.DigitalInterrupt,
+				kind: 'control',
+			},
+			powerMode: {
+				component: Board.PowerMode,
+				kind: 'control',
+			},
+		},
 	},
 	[ResourceTriplets.Button]: {
 		widgets: {},
