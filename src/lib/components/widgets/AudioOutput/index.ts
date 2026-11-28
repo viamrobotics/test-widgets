@@ -1,0 +1,5 @@
+export { default as Play } from './PlayWidget.svelte'
+export { default as PlayStream } from './PlayStreamWidget.svelte'
+export { default as GetProperties } from './GetPropertiesWidget.svelte'
+export { default as HoldToTalk } from './HoldToTalkControl.svelte'
+export { default as PlayFile } from './PlayFileControl.svelte'

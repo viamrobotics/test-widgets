@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import { createResourceQuery } from '@viamrobotics/svelte-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import Subject from '../GetPropertiesWidget.svelte'
+import Pane from './__fixtures__/In320Pane.svelte'
 
 interface Properties {
 	supportedCodecs: string[]
@@ -55,7 +56,10 @@ describe('Audio output GetProperties widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('opus, flac')).toBeInTheDocument()
+		const codecs = within(screen.getByRole('list', { name: 'Supported codecs' })).getAllByRole(
+			'listitem'
+		)
+		expect(codecs.map((codec) => codec.textContent.trim())).toEqual(['opus', 'flac'])
 	})
 
 	it('renders the sample rate in hertz', () => {
@@ -63,7 +67,8 @@ describe('Audio output GetProperties widget', () => {
 
 		renderSubject()
 
-		expect(screen.getByText('44100 Hz')).toBeInTheDocument()
+		expect(screen.getByText('44100')).toBeInTheDocument()
+		expect(screen.getByText('Hz')).toBeInTheDocument()
 	})
 
 	it('renders the channel count', () => {
@@ -74,12 +79,29 @@ describe('Audio output GetProperties widget', () => {
 		expect(screen.getByText('7')).toBeInTheDocument()
 	})
 
-	it('polls getProperties every 500 ms', () => {
+	it('reads getProperties once, with no polling', () => {
 		renderSubject()
 
 		expect(createResourceQuery).toHaveBeenCalledWith(expect.anything(), 'getProperties', {
-			refetchInterval: 500,
+			refetchInterval: false,
 		})
+	})
+
+	it('reads - for no codecs', () => {
+		queryState.data = { supportedCodecs: [], sampleRateHz: 44_100, numChannels: 7 }
+
+		renderSubject()
+
+		expect(screen.getByRole('group', { name: 'Supported codecs' }).textContent.trim()).toBe('-')
+	})
+
+	it('keeps the root and the pane within 320 px', () => {
+		const { container } = render(Pane, { props: { widget: Subject } })
+
+		const pane = screen.getByTestId('pane')
+		const root = pane.firstElementChild ?? container
+		expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth)
+		expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth)
 	})
 
 	it("shows the query error in the section's error indicator", async () => {

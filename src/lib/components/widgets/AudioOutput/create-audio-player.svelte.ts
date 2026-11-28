@@ -2,7 +2,9 @@ import { AudioOutClient, commonApi } from '@viamrobotics/sdk'
 
 type PlayStatus = 'idle' | 'playing' | 'done' | 'error'
 
-export const createAudioPlayer = (client: { current: AudioOutClient | undefined }) => {
+type AudioSink = Pick<AudioOutClient, 'play'>
+
+export const createAudioPlayer = (client: { current: AudioSink | undefined }) => {
 	let playStatus = $state<PlayStatus>('idle')
 	let playError = $state<Error | null>(null)
 

@@ -2,9 +2,10 @@ import type { ResourceName } from '@viamrobotics/sdk'
 
 import type { ResourceWidgetDefinition, ResourceWidgetsEntry } from './resource-widget-types.ts'
 
-import { AudioOutputGetPropertiesWidget, MLModelServiceMetadataWidget } from './components/index.ts'
+import { MLModelServiceMetadataWidget } from './components/index.ts'
 import * as Arm from './components/widgets/Arm/index.ts'
 import * as AudioInput from './components/widgets/AudioInput/index.ts'
+import * as AudioOutput from './components/widgets/AudioOutput/index.ts'
 import * as Base from './components/widgets/Base/index.ts'
 import * as Board from './components/widgets/Board/index.ts'
 import * as Button from './components/widgets/Button/index.ts'
@@ -53,7 +54,12 @@ interface ResourceWidgetKeys {
 		| 'stop'
 		| 'getProperties'
 	[ResourceTriplets.AudioInput]: 'getAudio' | 'getProperties' | 'listen'
-	[ResourceTriplets.AudioOutput]: 'getProperties'
+	[ResourceTriplets.AudioOutput]:
+		| 'play'
+		| 'playStream'
+		| 'getProperties'
+		| 'holdToTalk'
+		| 'playFile'
 	[ResourceTriplets.Board]:
 		| 'pins'
 		| 'setGpio'
@@ -236,7 +242,26 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 	},
 	[ResourceTriplets.AudioOutput]: {
 		widgets: {
-			getProperties: { component: AudioOutputGetPropertiesWidget, kind: 'api' },
+			play: {
+				component: AudioOutput.Play,
+				kind: 'api',
+			},
+			playStream: {
+				component: AudioOutput.PlayStream,
+				kind: 'api',
+			},
+			getProperties: {
+				component: AudioOutput.GetProperties,
+				kind: 'api',
+			},
+			holdToTalk: {
+				component: AudioOutput.HoldToTalk,
+				kind: 'control',
+			},
+			playFile: {
+				component: AudioOutput.PlayFile,
+				kind: 'control',
+			},
 		},
 	},
 	[ResourceTriplets.Board]: {
