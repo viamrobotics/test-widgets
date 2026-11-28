@@ -175,18 +175,66 @@ type ResourceWidgetsCatalog = {
 export const resourceWidgets: ResourceWidgetsCatalog = {
 	[ResourceTriplets.Arm]: {
 		widgets: {
-			jog: { component: Arm.Jog, kind: 'control' },
-			joints: { component: Arm.Joints, kind: 'control' },
-			moveToJointPositions: { component: Arm.MoveToJointPositions, kind: 'api' },
-			moveToPosition: { component: Arm.MoveToPosition, kind: 'api' },
-			getJointPositions: { component: Arm.GetJointPositions, kind: 'api' },
-			getEndPosition: { component: Arm.GetEndPosition, kind: 'api' },
-			isMoving: { component: Arm.IsMoving, kind: 'api' },
-			manualMode: { component: Arm.ManualMode, kind: 'control' },
-			setManualMode: { component: Arm.SetManualMode, kind: 'api' },
-			getManualMode: { component: Arm.GetManualMode, kind: 'api' },
-			getProperties: { component: Arm.GetProperties, kind: 'api' },
-			stop: { component: Arm.Stop, kind: 'api' },
+			jog: {
+				component: Arm.Jog,
+				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
+			},
+			joints: {
+				component: Arm.Joints,
+				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
+			},
+			moveToJointPositions: {
+				component: Arm.MoveToJointPositions,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
+			},
+			moveToPosition: {
+				component: Arm.MoveToPosition,
+				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'xl' },
+			},
+			getJointPositions: {
+				component: Arm.GetJointPositions,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
+			},
+			getEndPosition: {
+				component: Arm.GetEndPosition,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
+			},
+			isMoving: {
+				component: Arm.IsMoving,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			manualMode: {
+				component: Arm.ManualMode,
+				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
+			},
+			setManualMode: {
+				component: Arm.SetManualMode,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
+			},
+			getManualMode: {
+				component: Arm.GetManualMode,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			getProperties: {
+				component: Arm.GetProperties,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			stop: {
+				component: Arm.Stop,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
 		},
 	},
 	[ResourceTriplets.Base]: {
@@ -194,34 +242,42 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			quickMove: {
 				component: Base.QuickMove,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 			moveStraight: {
 				component: Base.MoveStraight,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			spin: {
 				component: Base.Spin,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			setPower: {
 				component: Base.SetPower,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			setVelocity: {
 				component: Base.SetVelocity,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			isMoving: {
 				component: Base.IsMoving,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			stop: {
 				component: Base.Stop,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getProperties: {
 				component: Base.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 		},
 	},
@@ -230,14 +286,17 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			getAudio: {
 				component: AudioInput.GetAudio,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getProperties: {
 				component: AudioInput.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			listen: {
 				component: AudioInput.Listen,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 		},
 	},
@@ -246,22 +305,27 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			play: {
 				component: AudioOutput.Play,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			playStream: {
 				component: AudioOutput.PlayStream,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			getProperties: {
 				component: AudioOutput.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			holdToTalk: {
 				component: AudioOutput.HoldToTalk,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			playFile: {
 				component: AudioOutput.PlayFile,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 		},
 	},
@@ -270,66 +334,82 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			pins: {
 				component: Board.Pins,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 			setGpio: {
 				component: Board.SetGpio,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getGpio: {
 				component: Board.GetGpio,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			pwm: {
 				component: Board.Pwm,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			setPwm: {
 				component: Board.SetPwm,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			pwmFrequency: {
 				component: Board.PwmFrequency,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			setPwmFrequency: {
 				component: Board.SetPwmFrequency,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			readAnalogReader: {
 				component: Board.ReadAnalogReader,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			writeAnalog: {
 				component: Board.WriteAnalog,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getDigitalInterruptValue: {
 				component: Board.GetDigitalInterruptValue,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			streamTicks: {
 				component: Board.StreamTicks,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			setPowerMode: {
 				component: Board.SetPowerMode,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			pin: {
 				component: Board.Pin,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'sm' },
 			},
 			analogReader: {
 				component: Board.AnalogReader,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'sm' },
 			},
 			digitalInterrupt: {
 				component: Board.DigitalInterrupt,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'sm' },
 			},
 			powerMode: {
 				component: Board.PowerMode,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 		},
 	},
@@ -338,6 +418,7 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			push: {
 				component: Button.Push,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 		},
 	},
@@ -346,18 +427,22 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			liveFeed: {
 				component: Camera.LiveFeed,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'xl' },
 			},
 			getImages: {
 				component: Camera.GetImages,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'md' },
 			},
 			getPointCloud: {
 				component: Camera.GetPointCloud,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'sm' },
 			},
 			getProperties: {
 				component: Camera.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 		},
 	},
@@ -366,10 +451,12 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			discoverResources: {
 				component: Discovery.DiscoverResources,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			resourcePreview: {
 				component: Discovery.ResourcePreview,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'sm' },
 			},
 		},
 	},
@@ -378,18 +465,22 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			getPosition: {
 				component: Encoder.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			resetPosition: {
 				component: Encoder.ResetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getProperties: {
 				component: Encoder.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			zeroPosition: {
 				component: Encoder.ZeroPosition,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'fill' }, height: 'md' },
 			},
 		},
 	},
@@ -398,34 +489,42 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			home: {
 				component: Gantry.Home,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			moveToPosition: {
 				component: Gantry.MoveToPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			quickMove: {
 				component: Gantry.QuickMove,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			getPosition: {
 				component: Gantry.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			isMoving: {
 				component: Gantry.IsMoving,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getLengths: {
 				component: Gantry.GetLengths,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			stop: {
 				component: Gantry.Stop,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			homingStatus: {
 				component: Gantry.HomingStatus,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 		},
 	},
@@ -434,38 +533,47 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			openGrab: {
 				component: Gripper.OpenGrab,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			status: {
 				component: Gripper.Status,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			isHoldingSomething: {
 				component: Gripper.IsHoldingSomething,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			isMoving: {
 				component: Gripper.IsMoving,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			open: {
 				component: Gripper.Open,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			grab: {
 				component: Gripper.Grab,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			stop: {
 				component: Gripper.Stop,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getCurrentInputs: {
 				component: Gripper.GetCurrentInputs,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			goToInputs: {
 				component: Gripper.GoToInputs,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 		},
 	},
@@ -474,14 +582,17 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			getEvents: {
 				component: InputController.GetEvents,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			triggerEvent: {
 				component: InputController.TriggerEvent,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			webGamepad: {
 				component: InputController.WebGamepad,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 		},
 	},
@@ -490,10 +601,12 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			metadata: {
 				component: MLModel.Metadata,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			infer: {
 				component: MLModel.Infer,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 		},
 	},
@@ -502,23 +615,72 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			move: {
 				component: Motion.Move,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'xl' },
 			},
 		},
 	},
 	[ResourceTriplets.Motor]: {
 		widgets: {
-			quickMove: { component: Motor.QuickMove, kind: 'control' },
-			move: { component: Motor.Move, kind: 'control' },
-			setPower: { component: Motor.SetPower, kind: 'api' },
-			setRpm: { component: Motor.SetRpm, kind: 'api' },
-			goFor: { component: Motor.GoFor, kind: 'api' },
-			goTo: { component: Motor.GoTo, kind: 'api' },
-			isMoving: { component: Motor.IsMoving, kind: 'api' },
-			resetZeroPosition: { component: Motor.ResetZeroPosition, kind: 'api' },
-			getPosition: { component: Motor.GetPosition, kind: 'api' },
-			getProperties: { component: Motor.GetProperties, kind: 'api' },
-			stop: { component: Motor.Stop, kind: 'api' },
-			isPowered: { component: Motor.IsPowered, kind: 'api' },
+			quickMove: {
+				component: Motor.QuickMove,
+				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
+			},
+			move: {
+				component: Motor.Move,
+				kind: 'control',
+				size: { width: { min: '2xl', max: '2xl' }, height: 'md' },
+			},
+			setPower: {
+				component: Motor.SetPower,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			setRpm: {
+				component: Motor.SetRpm,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			goFor: {
+				component: Motor.GoFor,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
+			},
+			goTo: {
+				component: Motor.GoTo,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
+			},
+			isMoving: {
+				component: Motor.IsMoving,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			resetZeroPosition: {
+				component: Motor.ResetZeroPosition,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			getPosition: {
+				component: Motor.GetPosition,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			getProperties: {
+				component: Motor.GetProperties,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			stop: {
+				component: Motor.Stop,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
+			isPowered: {
+				component: Motor.IsPowered,
+				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
+			},
 		},
 	},
 	[ResourceTriplets.MovementSensor]: {
@@ -526,42 +688,52 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			getPosition: {
 				component: MovementSensor.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getOrientation: {
 				component: MovementSensor.GetOrientation,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getCompassHeading: {
 				component: MovementSensor.GetCompassHeading,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getAccuracy: {
 				component: MovementSensor.GetAccuracy,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			getLinearVelocity: {
 				component: MovementSensor.GetLinearVelocity,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getAngularVelocity: {
 				component: MovementSensor.GetAngularVelocity,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getLinearAcceleration: {
 				component: MovementSensor.GetLinearAcceleration,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getProperties: {
 				component: MovementSensor.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getReadings: {
 				component: MovementSensor.GetReadings,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'lg' },
 			},
 			positionMap: {
 				component: MovementSensor.PositionMap,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'fill' }, height: 'lg' },
 			},
 		},
 	},
@@ -573,32 +745,42 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			getVoltage: {
 				component: PowerSensor.GetVoltage,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getCurrent: {
 				component: PowerSensor.GetCurrent,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getPower: {
 				component: PowerSensor.GetPower,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getBatteryPercent: {
 				component: PowerSensor.GetBatteryPercent,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getReadings: {
 				component: PowerSensor.GetReadings,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'lg' },
 			},
 			readingHistory: {
 				component: PowerSensor.ReadingHistory,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'fill' }, height: 'md' },
 			},
 		},
 	},
 	[ResourceTriplets.Sensor]: {
 		widgets: {
-			getReadings: { component: Sensor.GetReadings, kind: 'api' },
+			getReadings: {
+				component: Sensor.GetReadings,
+				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'lg' },
+			},
 		},
 	},
 	[ResourceTriplets.Servo]: {
@@ -606,26 +788,32 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			move: {
 				component: Servo.Move,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			quickMove: {
 				component: Servo.QuickMove,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			moveTo: {
 				component: Servo.MoveTo,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			isMoving: {
 				component: Servo.IsMoving,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getPosition: {
 				component: Servo.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			stop: {
 				component: Servo.Stop,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 		},
 	},
@@ -634,26 +822,32 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			map: {
 				component: Slam.Map,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'lg' },
 			},
 			moveOnMap: {
 				component: Slam.MoveOnMap,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			getPosition: {
 				component: Slam.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'lg' },
 			},
 			getPointCloudMap: {
 				component: Slam.GetPointCloudMap,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getProperties: {
 				component: Slam.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getInternalState: {
 				component: Slam.GetInternalState,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 		},
 	},
@@ -662,14 +856,17 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			setPosition: {
 				component: Switch.SetPosition,
 				kind: 'control',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getPosition: {
 				component: Switch.GetPosition,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'sm' },
 			},
 			getNumberOfPositions: {
 				component: Switch.GetNumberOfPositions,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 		},
 	},
@@ -678,34 +875,42 @@ export const resourceWidgets: ResourceWidgetsCatalog = {
 			overlayFeed: {
 				component: Vision.OverlayFeed,
 				kind: 'control',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'lg' },
 			},
 			captureAllFromCamera: {
 				component: Vision.CaptureAllFromCamera,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'lg' },
 			},
 			getProperties: {
 				component: Vision.GetProperties,
 				kind: 'api',
+				size: { width: { min: 'xs', max: 'xs' }, height: 'md' },
 			},
 			getObjectPointClouds: {
 				component: Vision.GetObjectPointClouds,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'md' },
 			},
 			getDetectionsFromCamera: {
 				component: Vision.GetDetectionsFromCamera,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 			getClassificationsFromCamera: {
 				component: Vision.GetClassificationsFromCamera,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '2xl' }, height: 'md' },
 			},
 			getDetections: {
 				component: Vision.GetDetections,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'md' },
 			},
 			getClassifications: {
 				component: Vision.GetClassifications,
 				kind: 'api',
+				size: { width: { min: 'xs', max: '4xl' }, height: 'md' },
 			},
 		},
 	},
@@ -719,7 +924,7 @@ const hasEntry = (api: string): api is keyof typeof resourceWidgets =>
  *
  * @example
  * widgetsForResource(armResourceName)?.widgets.jog
- * // { component: Arm.Jog, kind: 'control' }
+ * // { component: Arm.Jog, kind: 'control', size: { width: { min: 'xs', max: 'xs' }, height: 'lg' } }
  */
 export const widgetsForResource = (resource: ResourceName): ResourceWidgetsEntry | undefined => {
 	const api = getResourceAPI(resource)

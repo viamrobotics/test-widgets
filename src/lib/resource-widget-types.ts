@@ -1,5 +1,7 @@
 import type { Component } from 'svelte'
 
+import type { WidgetSize } from './widget-size.ts'
+
 /**
  * Every resource widget shares this prop contract. The pair is also the key into the shared state
  * `WidgetsProvider` holds, so two widgets naming the same resource share its guards.
@@ -21,6 +23,7 @@ export type ResourceWidgetKind = 'api' | 'control'
 export interface ResourceWidgetDefinition {
 	component: ResourceWidget
 	kind: ResourceWidgetKind
+	size: WidgetSize
 }
 
 /** A resource's entry in `resourceWidgets`. */

@@ -29,6 +29,7 @@ import { isKnownResource } from '../is-known-resource.ts'
 import { ResourceTriplets } from '../resource-triplet.ts'
 import { resourceWidgets, widgetsForResource } from '../resource-widgets.ts'
 import { showResourceWidget } from '../show-resource-widget.ts'
+import { HEIGHT_BAND_PX, WIDTH_CLASS_PX } from '../widget-size.ts'
 
 const resourceName = (namespace: string, type: string, subtype: string): ResourceName =>
 	new ResourceName({ namespace, type, subtype, name: 'test' })
@@ -275,6 +276,27 @@ const camelCase = (member: string): string => member.charAt(0).toLowerCase() + m
 
 const CAMEL_CASE_KEY = /^[a-z][a-zA-Z0-9]*$/
 
+const WIDTH_ORDER = [...Object.keys(WIDTH_CLASS_PX), 'fill']
+
+interface LooseSize {
+	width: { min: string; max: string }
+	height: string
+}
+
+const sizeProblems = (name: string, size: LooseSize): string[] => {
+	const problems: string[] = []
+	const { min, max } = size.width
+	if (!(min in WIDTH_CLASS_PX)) problems.push(`${name} width.min is ${min}`)
+	if (!WIDTH_ORDER.includes(max)) problems.push(`${name} width.max is ${max}`)
+	if (WIDTH_ORDER.indexOf(max) < WIDTH_ORDER.indexOf(min)) {
+		problems.push(`${name} width.max ${max} is below width.min ${min}`)
+	}
+	if (!(size.height in HEIGHT_BAND_PX) && size.height !== 'xl') {
+		problems.push(`${name} height is ${size.height}`)
+	}
+	return problems
+}
+
 describe('resourceWidgets', () => {
 	it.each(RESOURCE_CASES)('lists exactly the $label widget keys, in order', ({ triplet, keys }) => {
 		expect(Object.keys(resourceWidgets[triplet].widgets)).toEqual(keys)
@@ -302,7 +324,7 @@ describe('resourceWidgets', () => {
 		}
 	)
 
-	it('gives every widget a camelCase key and a known kind', () => {
+	it('gives every widget a camelCase key, a known kind, and a valid size', () => {
 		const problems = Object.entries(resourceWidgets).flatMap(([triplet, entry]) =>
 			Object.entries(entry.widgets).flatMap(([key, widget]) => {
 				const name = `${triplet} ${key}`
@@ -311,11 +333,20 @@ describe('resourceWidgets', () => {
 					widget.kind === 'api' || widget.kind === 'control'
 						? []
 						: [`${name} kind is ${widget.kind}`]
-				return [...keyProblems, ...kindProblems]
+				return [...keyProblems, ...kindProblems, ...sizeProblems(name, widget.size)]
 			})
 		)
 
 		expect(problems).toEqual([])
+	})
+
+	it.each([
+		{ problem: 'a max below its min', width: { min: '2xl', max: 'xs' }, expected: 1 },
+		{ problem: 'an unknown min class', width: { min: 'sm', max: 'fill' }, expected: 1 },
+	])('flags $problem', ({ width, expected }) => {
+		const size = { width, height: 'sm' }
+
+		expect(sizeProblems('x', size)).toHaveLength(expected)
 	})
 
 	it('marks bespoke widgets as controls', () => {

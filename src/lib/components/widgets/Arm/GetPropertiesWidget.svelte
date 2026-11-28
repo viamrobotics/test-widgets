@@ -39,7 +39,7 @@
 	method="GetProperties"
 	api={ResourceTriplets.Arm}
 	queries={[query]}
-	class="min-w-0 grow flex-col gap-2"
+	class="min-w-0 grow flex-col gap-1"
 >
 	<div
 		role="group"

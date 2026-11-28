@@ -47,6 +47,8 @@ export type {
 	ResourceWidgetProps,
 	ResourceWidgetsEntry,
 } from './resource-widget-types'
+export { HEIGHT_BAND_PX, WIDTH_CLASS_PX } from './widget-size'
+export type { HeightBand, WidgetSize, WidthClass } from './widget-size'
 export { showResourceWidget } from './show-resource-widget'
 export { default as WidgetsProvider } from './WidgetsProvider.svelte'
 
